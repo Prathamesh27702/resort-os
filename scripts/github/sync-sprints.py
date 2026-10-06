@@ -262,7 +262,8 @@ def sync_tasks(repo, plan, sprint_id):
         area = ("area:db" if t.startswith("DB") else "area:web" if t.startswith("UI") else
                 "area:integration" if any(k in t for k in ("Razorpay", "Zoho", "WhatsApp", "OTA", "IChannel")) else
                 "type:docs" if t.startswith("Docs") else "area:api")
-        title = f"S{sprint_id:02d}: {t.split(' — ')[0].split(';')[0][:90]}"
+        head = t.split(". ")[0].split(";")[0]
+        title = f"S{sprint_id:02d}: {head if len(head) <= 90 else head[:87].rsplit(' ', 1)[0] + '…'}"
         if title in existing:
             continue
         body = (f"Part of **{milestone_title(s)}**.\n\n### What\n{t}\n\n### Guide\n"
