@@ -52,6 +52,22 @@ jobs:
         run: dotnet format ResortOS.sln --verify-no-changes --no-restore
       - name: Test (unit + integration on PostgreSQL 16)
         run: dotnet test ResortOS.sln -c Release --no-build --logger "trx;LogFileName=results.trx" --results-directory TestResults
+      - name: Test summary (fail if no tests ran)
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, sys, xml.etree.ElementTree as ET
+          ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          files = glob.glob("TestResults/*.trx")
+          if not files:
+              print("::error::No test results produced"); sys.exit(1)
+          c = ET.parse(files[0]).getroot().find("t:ResultSummary/t:Counters", ns).attrib
+          total, passed, failed = int(c["total"]), int(c["passed"]), int(c["failed"])
+          print(f"::notice title=Backend tests::{passed} passed, {failed} failed, {total} total")
+          with open(__import__("os").environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"### Backend tests\n{passed} passed · {failed} failed · {total} total\n")
+          sys.exit(1 if total == 0 or failed else 0)
+          PY
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
