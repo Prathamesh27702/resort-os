@@ -5,6 +5,10 @@ updates:
     schedule: { interval: weekly, day: monday }
     target-branch: develop
     open-pull-requests-limit: 5
+    ignore:
+      # Major upgrades (e.g. .NET 11) are planned decisions, not automatic PRs.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       microsoft: { patterns: ["Microsoft.*", "System.*"] }
       opentelemetry: { patterns: ["OpenTelemetry*"] }
@@ -13,6 +17,10 @@ updates:
     schedule: { interval: weekly, day: monday }
     target-branch: develop
     open-pull-requests-limit: 5
+    ignore:
+      # Stay on Angular 20 LTS / current TypeScript & ESLint majors until the team decides to upgrade (ADR-0002).
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       angular: { patterns: ["@angular/*", "@angular-devkit/*", "angular-eslint", "@angular-eslint/*"] }
   - package-ecosystem: github-actions
