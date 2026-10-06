@@ -1,0 +1,16 @@
+/* Tailwind utilities only — no preflight, so Angular Material keeps its own base styles. */
+@layer theme, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --color-tide: #0e3b43;
+  --color-tide-soft: #164c56;
+  --color-wash: #f5f7f6;
+  --color-kokum: #8a2449;
+  --color-palm: #2e6b3c;
+  --color-ink: #1b2a2e;
+  --color-mute: #5b6b6e;
+  --color-line: #d9e0de;
+}

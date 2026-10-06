@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Resort.Domain\Resort.Domain.csproj" />
+    <ProjectReference Include="..\Resort.Contracts\Resort.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Resort.Tests" />
+  </ItemGroup>
+</Project>

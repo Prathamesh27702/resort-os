@@ -1,0 +1,146 @@
+# Continuous integration (brief §78): build → unit + integration tests → lint → security scan → artefacts.
+# Deployment to staging/production is added in Sprint 29 (deploy.yml, GitHub Environments with approval).
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend — build, lint, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-throwaway   # ephemeral CI container, not a secret
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=ci;Password=ci-only-throwaway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props', '**/*.csproj') }}
+      - name: Restore
+        run: dotnet restore ResortOS.sln
+      - name: Build (warnings are errors)
+        run: dotnet build ResortOS.sln -c Release --no-restore -warnaserror
+      - name: Lint (dotnet format)
+        run: dotnet format ResortOS.sln --verify-no-changes --no-restore
+      - name: Test (unit + integration on PostgreSQL 16)
+        run: dotnet test ResortOS.sln -c Release --no-build --logger "trx;LogFileName=results.trx" --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: TestResults
+      - name: Publish API artefact
+        if: github.event_name == 'push'
+        run: dotnet publish backend/Resort.Api -c Release --no-build -o out/api
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: api
+          path: out/api
+          retention-days: 14
+
+  frontend:
+    name: Frontend — lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npx ng lint
+      - name: Unit tests (headless Chrome)
+        run: npm run test:ci
+      - name: Production build
+        run: npm run build:prod
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: web
+          path: frontend/dist/resort-web/browser
+          retention-days: 14
+
+  migrations:
+    name: Migrations — immutable and ordered
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Applied migrations must not change
+        if: github.event_name == 'pull_request'
+        run: |
+          changed=$(git diff --name-status "origin/${{ github.base_ref }}...HEAD" -- database/migrations | grep -E '^(M|D|R)' || true)
+          if [ -n "$changed" ]; then
+            echo "::error::Existing migrations were modified/deleted/renamed. Add a new V###__*.sql instead."
+            echo "$changed"; exit 1
+          fi
+      - name: Version numbers unique and well-formed
+        run: |
+          cd database/migrations
+          bad=$(ls | grep -vE '^V[0-9]{3,}__[a-z0-9_]+\.sql$' || true)
+          [ -z "$bad" ] || { echo "::error::Bad migration file names: $bad"; exit 1; }
+          dups=$(ls | sed -E 's/__.*//' | sort | uniq -d)
+          [ -z "$dups" ] || { echo "::error::Duplicate migration versions: $dups"; exit 1; }
+
+  security:
+    name: Security — secrets and vulnerable packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Vulnerable NuGet packages
+        run: |
+          dotnet restore ResortOS.sln
+          dotnet list ResortOS.sln package --vulnerable --include-transitive 2>&1 | tee vuln.txt
+          if grep -q "has the following vulnerable packages" vuln.txt; then echo "::error::Vulnerable NuGet packages"; exit 1; fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Vulnerable npm packages (runtime dependencies)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high

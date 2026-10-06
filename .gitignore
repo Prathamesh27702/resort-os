@@ -1,0 +1,25 @@
+bin/
+obj/
+*.user
+.vs/
+.idea/
+node_modules/
+dist/
+.angular/
+coverage/
+*.log
+appsettings.*.local.json
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+*.key
+appsettings.*.local.json
+secrets.json
+
+# tooling
+.DS_Store
+TestResults/

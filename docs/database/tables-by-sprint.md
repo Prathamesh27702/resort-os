@@ -1,0 +1,156 @@
+# Tables by sprint
+
+_Generated from docs/sprints/sprints.yml — do not edit by hand._
+
+148 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+
+| Table | Sprint | Status |
+|---|---|---|
+| `organizations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `properties` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `property_settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `system_settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `users` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `role_permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `user_roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `refresh_tokens` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `login_events` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `audit_logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `schema_migrations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
+| `accommodation_types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `accommodation_units` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `accommodation_type_amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `unit_images` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `unit_blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `guests` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `guest_addresses` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `guest_documents` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `guest_preferences` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `guest_consents` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `rate_plans` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
+| `rate_plan_prices` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
+| `packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
+| `package_components` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
+| `reservation_sources` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
+| `reservations` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `reservation_units` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `reservation_guests` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `reservation_rate_breakdowns` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `reservation_notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `reservation_status_history` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `idempotency_keys` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
+| `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
+| `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
+| `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
+| `gst_registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
+| `tax_categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
+| `tax_rules` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
+| `tax_rule_slabs` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
+| `payments` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `payment_allocations` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `refunds` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `cash_drawers` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `cash_drawer_sessions` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `cash_drawer_movements` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `payment_gateway_orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | ⚪ Planned |
+| `webhook_events` | [Sprint 11](../sprints/sprint-11-razorpay.md) | ⚪ Planned |
+| `invoice_series` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `invoice_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `invoice_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `credit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `credit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `debit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `unit_housekeeping_status` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `maintenance_assets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `maintenance_tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `maintenance_comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `maintenance_attachments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `menu_categories` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `menu_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `menu_item_variants` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `modifier_groups` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `modifiers` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `restaurant_tables` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `orders` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `order_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `kots` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `kot_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `inventory_categories` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `inventory_units` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `stock_locations` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `stock_movements` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `stock_adjustments` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `recipe_ingredients` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `suppliers` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `purchase_requests` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `purchase_request_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `purchase_orders` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `purchase_order_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `goods_received_notes` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `grn_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `supplier_invoices` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `supplier_invoice_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `supplier_payments` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `departments` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `designations` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `employees` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `employee_documents` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `employee_compensation` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `shift_templates` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `roster_shifts` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `attendance_events` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
+| `geofences` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
+| `timesheets` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
+| `timesheet_lines` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
+| `timesheet_corrections` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
+| `leave_types` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `leave_policies` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `leave_balances` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `leave_ledger` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `leave_requests` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `holidays` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `payroll_exports` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `activities` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `activity_schedules` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `activity_bookings` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `equipment_types` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `equipment` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `equipment_assignments` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `vehicles` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
+| `transport_routes` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
+| `vehicle_trips` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
+| `trip_passengers` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
+| `expense_categories` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `cost_centres` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `expenses` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `expense_attachments` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `budgets` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `budget_lines` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `message_templates` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
+| `outbox_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
+| `notifications` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
+| `whatsapp_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
+| `email_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
+| `job_runs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
+| `accounting_connections` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
+| `accounting_sync_records` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
+| `ota_channels` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
+| `ota_room_mappings` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
+| `ota_rate_mappings` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
+| `ota_reservations` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
+| `ota_events` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
+| `ota_inventory_pushes` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |

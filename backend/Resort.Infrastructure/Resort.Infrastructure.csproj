@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\Resort.Application\Resort.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Resort.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The SQL migrations in /db/migrations are the single source of truth for the schema -->
+    <EmbeddedResource Include="..\..\database\migrations\*.sql" LogicalName="migrations/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

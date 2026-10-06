@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule: { interval: weekly, day: monday }
+    target-branch: develop
+    open-pull-requests-limit: 5
+    groups:
+      microsoft: { patterns: ["Microsoft.*", "System.*"] }
+      opentelemetry: { patterns: ["OpenTelemetry*"] }
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule: { interval: weekly, day: monday }
+    target-branch: develop
+    open-pull-requests-limit: 5
+    groups:
+      angular: { patterns: ["@angular/*", "@angular-devkit/*", "angular-eslint", "@angular-eslint/*"] }
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule: { interval: monthly }
+    target-branch: develop

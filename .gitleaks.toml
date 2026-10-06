@@ -1,0 +1,11 @@
+# Secret scanning configuration (used by CI). Extends the default rules.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Throwaway values that are not secrets"
+paths = [
+  '''backend/Resort\.Tests/.*''',          # test-only signing key / passwords for ephemeral test databases
+  '''\.github/workflows/ci\.yml''',        # CI service-container password
+  '''frontend/package-lock\.json''',
+]

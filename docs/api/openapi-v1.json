@@ -1,0 +1,1759 @@
+{
+    "openapi": "3.1.1",
+    "info": {
+        "title": "Resort OS API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5181/"
+        }
+    ],
+    "paths": {
+        "/api/v1/roles": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RoleDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/permissions": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PermissionDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/audit-logs": {
+            "get": {
+                "tags": [
+                    "Audit"
+                ],
+                "parameters": [
+                    {
+                        "name": "EntityType",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "EntityId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "UserId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "From",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "To",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "Page",
+                        "in": "query",
+                        "schema": {
+                            "pattern": "^-?(?:0|[1-9]\\d*)$",
+                            "type": [
+                                "integer",
+                                "string"
+                            ],
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "PageSize",
+                        "in": "query",
+                        "schema": {
+                            "pattern": "^-?(?:0|[1-9]\\d*)$",
+                            "type": [
+                                "integer",
+                                "string"
+                            ],
+                            "format": "int32",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResultOfAuditLogDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/change-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePasswordRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/organization": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrganizationDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Organization"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrganizationDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PropertyDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Properties"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatePropertyRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PropertyDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Properties"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdatePropertyRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PropertyDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/settings": {
+            "get": {
+                "tags": [
+                    "Properties"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PropertySettingDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/settings/{key}": {
+            "put": {
+                "tags": [
+                    "Properties"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PutPropertySettingRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PropertySettingDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateUserRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}/roles": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SetUserRolesRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}/deactivate": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}/activate": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}/reset-password": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResetPasswordRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AccessGrantDto": {
+                "required": [
+                    "propertyId",
+                    "roles",
+                    "permissions"
+                ],
+                "type": "object",
+                "properties": {
+                    "propertyId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "AuditLogDto": {
+                "required": [
+                    "id",
+                    "occurredAt",
+                    "userId",
+                    "userName",
+                    "propertyId",
+                    "action",
+                    "entityType",
+                    "entityId",
+                    "changes",
+                    "reason",
+                    "device",
+                    "ipAddress",
+                    "correlationId",
+                    "requestId"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int64"
+                    },
+                    "occurredAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "userId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    },
+                    "userName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "propertyId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    },
+                    "action": {
+                        "type": "string"
+                    },
+                    "entityType": {
+                        "type": "string"
+                    },
+                    "entityId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "changes": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "$ref": "#/components/schemas/JsonElement"
+                            }
+                        ]
+                    },
+                    "reason": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "device": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "ipAddress": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "correlationId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "requestId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "ChangePasswordRequest": {
+                "required": [
+                    "currentPassword",
+                    "newPassword"
+                ],
+                "type": "object",
+                "properties": {
+                    "currentPassword": {
+                        "type": "string"
+                    },
+                    "newPassword": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreatePropertyRequest": {
+                "required": [
+                    "code",
+                    "name",
+                    "legalName",
+                    "propertyType",
+                    "timezone",
+                    "currency",
+                    "addressLine1",
+                    "addressLine2",
+                    "city",
+                    "district",
+                    "stateName",
+                    "gstStateCode",
+                    "postalCode",
+                    "countryCode",
+                    "phone",
+                    "email",
+                    "checkInTime",
+                    "checkOutTime",
+                    "latitude",
+                    "longitude"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "legalName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "propertyType": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "addressLine1": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "addressLine2": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "city": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "district": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "stateName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "gstStateCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "postalCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "countryCode": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "checkInTime": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "checkOutTime": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "latitude": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "longitude": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    }
+                }
+            },
+            "CreateUserRequest": {
+                "required": [
+                    "email",
+                    "fullName",
+                    "phone",
+                    "temporaryPassword",
+                    "roles"
+                ],
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "temporaryPassword": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoleGrantDto"
+                        }
+                    }
+                }
+            },
+            "JsonElement": {},
+            "LoginRequest": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MeResponse": {
+                "required": [
+                    "userId",
+                    "email",
+                    "fullName",
+                    "mustChangePassword",
+                    "organization",
+                    "grants"
+                ],
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "mustChangePassword": {
+                        "type": "boolean"
+                    },
+                    "organization": {
+                        "$ref": "#/components/schemas/OrganizationSummary"
+                    },
+                    "grants": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AccessGrantDto"
+                        }
+                    }
+                }
+            },
+            "OrganizationDto": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "legalName",
+                    "baseCurrency",
+                    "countryCode",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "legalName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "baseCurrency": {
+                        "type": "string"
+                    },
+                    "countryCode": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "OrganizationSummary": {
+                "required": [
+                    "id",
+                    "code",
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PagedResultOfAuditLogDto": {
+                "required": [
+                    "items",
+                    "page",
+                    "pageSize",
+                    "total"
+                ],
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AuditLogDto"
+                        }
+                    },
+                    "page": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "total": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int64"
+                    }
+                }
+            },
+            "PermissionDto": {
+                "required": [
+                    "code",
+                    "module",
+                    "description",
+                    "isSensitive"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "module": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "isSensitive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PropertyDto": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "legalName",
+                    "propertyType",
+                    "timezone",
+                    "currency",
+                    "addressLine1",
+                    "addressLine2",
+                    "city",
+                    "district",
+                    "stateName",
+                    "gstStateCode",
+                    "postalCode",
+                    "countryCode",
+                    "phone",
+                    "email",
+                    "checkInTime",
+                    "checkOutTime",
+                    "latitude",
+                    "longitude",
+                    "isActive",
+                    "localDate",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "legalName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "propertyType": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "addressLine1": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "addressLine2": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "city": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "district": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "stateName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "gstStateCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "postalCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "countryCode": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "checkInTime": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "checkOutTime": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "latitude": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "longitude": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "localDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "PropertySettingDto": {
+                "required": [
+                    "key",
+                    "value",
+                    "updatedAt"
+                ],
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "$ref": "#/components/schemas/JsonElement"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "PutPropertySettingRequest": {
+                "required": [
+                    "value"
+                ],
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "$ref": "#/components/schemas/JsonElement"
+                    }
+                }
+            },
+            "ResetPasswordRequest": {
+                "required": [
+                    "temporaryPassword"
+                ],
+                "type": "object",
+                "properties": {
+                    "temporaryPassword": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RoleDto": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "description",
+                    "isSystem",
+                    "permissions"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "isSystem": {
+                        "type": "boolean"
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "RoleGrantDto": {
+                "required": [
+                    "roleCode",
+                    "propertyId"
+                ],
+                "type": "object",
+                "properties": {
+                    "roleCode": {
+                        "type": "string"
+                    },
+                    "propertyId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    }
+                }
+            },
+            "SetUserRolesRequest": {
+                "required": [
+                    "roles"
+                ],
+                "type": "object",
+                "properties": {
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoleGrantDto"
+                        }
+                    }
+                }
+            },
+            "UpdateOrganizationRequest": {
+                "required": [
+                    "name",
+                    "legalName",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "legalName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "UpdatePropertyRequest": {
+                "required": [
+                    "name",
+                    "legalName",
+                    "propertyType",
+                    "timezone",
+                    "currency",
+                    "addressLine1",
+                    "addressLine2",
+                    "city",
+                    "district",
+                    "stateName",
+                    "gstStateCode",
+                    "postalCode",
+                    "countryCode",
+                    "phone",
+                    "email",
+                    "checkInTime",
+                    "checkOutTime",
+                    "latitude",
+                    "longitude",
+                    "isActive",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "legalName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "propertyType": {
+                        "type": "string"
+                    },
+                    "timezone": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "addressLine1": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "addressLine2": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "city": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "district": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "stateName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "gstStateCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "postalCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "countryCode": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "checkInTime": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "checkOutTime": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "latitude": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "longitude": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "UpdateUserRequest": {
+                "required": [
+                    "fullName",
+                    "phone",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "UserDto": {
+                "required": [
+                    "id",
+                    "email",
+                    "fullName",
+                    "phone",
+                    "isActive",
+                    "mustChangePassword",
+                    "lastLoginAt",
+                    "roles",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "mustChangePassword": {
+                        "type": "boolean"
+                    },
+                    "lastLoginAt": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoleGrantDto"
+                        }
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "Bearer": {
+                "type": "http",
+                "description": "Paste the accessToken from POST /api/v1/auth/login",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "security": [
+        {
+            "Bearer": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Roles"
+        },
+        {
+            "name": "Audit"
+        },
+        {
+            "name": "Auth"
+        },
+        {
+            "name": "Organization"
+        },
+        {
+            "name": "Properties"
+        },
+        {
+            "name": "Users"
+        }
+    ]
+}

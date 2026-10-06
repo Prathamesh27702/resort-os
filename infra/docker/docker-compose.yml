@@ -1,0 +1,23 @@
+# Local development services. Run from the repo root:
+#   docker compose --env-file .env -f infra/docker/docker-compose.yml up -d
+# Production deployment: docs/DEPLOYMENT.md (Sprint 26).
+name: resort-os
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-resort_dev}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - resort-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      retries: 20
+volumes:
+  resort-pg:

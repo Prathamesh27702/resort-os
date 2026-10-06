@@ -1,0 +1,7 @@
+# Reviewers requested automatically. Add the tech lead's handle alongside the owner once assigned.
+*                                   @Prathamesh27702
+/database/migrations/               @Prathamesh27702
+/backend/Resort.Api/Infrastructure/ @Prathamesh27702
+/backend/Resort.Application/Identity/ @Prathamesh27702
+/docs/security/                     @Prathamesh27702
+/.github/                           @Prathamesh27702

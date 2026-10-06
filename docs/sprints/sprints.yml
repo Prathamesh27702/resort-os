@@ -1,0 +1,890 @@
+# Single source of truth for the sprint plan.
+# docs/sprints/sprint-*.md and the GitHub milestones/issues are generated from this file
+# (scripts/github/sync-sprints.py). Edit here, then re-run the script.
+#
+# status: planned | in-progress | in-review | done
+# size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
+
+current: 1
+
+sprints:
+
+- id: 0
+  title: Architecture and requirements
+  phase: 0
+  status: in-review
+  size: M
+  depends: []
+  goal: Agree the architecture, data model, permission model, API conventions and delivery plan before more code is written.
+  scope:
+    docs: [ARCHITECTURE.md, DATABASE.md, API.md, SECURITY.md, docs/architecture/lifecycles.md, docs/architecture/frontend.md, docs/architecture/decisions.md, docs/architecture/risks-and-open-questions.md, docs/security/permission-matrix.md]
+  tasks:
+    - Owner reviews ARCHITECTURE.md (system + module map) and records approval in docs/architecture/decisions.md
+    - Owner reviews the role/permission matrix and lists changes as issues
+    - Owner answers the open questions in docs/architecture/risks-and-open-questions.md
+    - Owner confirms hosting budget and region (affects Sprint 29)
+  tests:
+    - None (documentation sprint). Diagrams render on GitHub.
+  acceptance:
+    - Every open question has an owner and a due sprint
+    - Architecture marked approved in decisions.md (ADR-0000)
+  debug: []
+  demo:
+    - Walk through the module map and the booking lifecycle diagram
+
+- id: 1
+  title: Foundation — identity, RBAC, organisation, properties, audit
+  phase: 1
+  status: in-review
+  size: L
+  depends: [0]
+  goal: A secure, multi-tenant base that every later module plugs into.
+  scope:
+    tables: [organizations, properties, property_settings, system_settings, users, roles, permissions, role_permissions, user_roles, refresh_tokens, login_events, audit_logs, schema_migrations]
+    migrations: [V001__foundation, V002__seed_permissions_roles, V003__audit_request_context]
+    api:
+      - POST /api/v1/auth/login
+      - POST /api/v1/auth/refresh
+      - POST /api/v1/auth/logout
+      - GET /api/v1/auth/me
+      - POST /api/v1/auth/change-password
+      - GET|PUT /api/v1/organization
+      - GET|POST /api/v1/properties
+      - GET|PUT /api/v1/properties/{propertyId}
+      - GET /api/v1/properties/{propertyId}/settings
+      - PUT /api/v1/properties/{propertyId}/settings/{key}
+      - GET|POST /api/v1/users
+      - GET|PUT /api/v1/users/{id}
+      - PUT /api/v1/users/{id}/roles
+      - POST /api/v1/users/{id}/deactivate | activate | reset-password
+      - GET /api/v1/roles
+      - GET /api/v1/permissions
+      - GET /api/v1/audit-logs
+    screens: [/login, /dashboard, /account/password, /settings/properties, /users, /roles, /audit]
+    other:
+      - "Screenshots of the built screens: docs/sprints/sprint-01-screens/"
+  tasks:
+    - "[done] Modular-monolith solution, SQL migrator with checksum guard"
+    - "[done] JWT access tokens + rotating refresh cookie with reuse detection"
+    - "[done] Permission-based authorisation with property-scoped grants and escalation guard"
+    - "[done] Organisation/property/settings APIs with optimistic concurrency"
+    - "[done] User administration APIs (create, roles, deactivate, reset)"
+    - "[done] Audit interceptor + append-only triggers + audit query API"
+    - "[done] Standard error shape, correlation/request IDs, /api/v1 prefix"
+    - "[done] Angular shell, login, properties, users, roles matrix, audit screens"
+    - "[done] 30 backend + 6 frontend tests"
+    - Review and sign-off by owner (open issues for any change requests)
+  tests:
+    - Login, lockout, same error for unknown email vs wrong password
+    - Refresh rotation and reuse detection revoking the family
+    - Permission denial (403) and property scoping
+    - Tenant isolation (404 across tenants)
+    - Escalation guard (GM cannot grant OWNER)
+    - Optimistic concurrency (409)
+    - Audit with masked secrets, reason, device, request id; append-only at DB level
+    - Migrator idempotent; edited migration refused
+  acceptance:
+    - Owner signs in, creates a property, creates a receptionist limited to one property, and sees both actions in the audit trail
+    - Receptionist sees only Today and Properties; /users redirects
+    - Deactivating a user signs them out immediately
+  debug:
+    - "401 on every call after a password change is expected: the security stamp rotated. Sign in again."
+    - "403 PASSWORD_CHANGE_REQUIRED: the account still has a temporary password."
+    - Access is cached for 30 s per user; restart the API if you edit user_roles directly in SQL.
+  demo:
+    - Sign in as owner → Today checklist → edit property → add staff → roles matrix → audit trail
+
+- id: 2
+  title: Accommodation — room types, rooms, dormitory beds, blocks
+  phase: 1
+  status: planned
+  size: M
+  depends: [1]
+  goal: Model the 6 rooms and the dormitory correctly (room-based vs bed-based inventory) and let managers block units.
+  scope:
+    tables: [accommodation_types, accommodation_units, beds, amenities, accommodation_type_amenities, unit_images, unit_blocks]
+    api:
+      - GET|POST /api/v1/properties/{propertyId}/accommodation-types
+      - GET|PUT /api/v1/properties/{propertyId}/accommodation-types/{id}
+      - GET|POST /api/v1/properties/{propertyId}/rooms
+      - GET|PUT /api/v1/properties/{propertyId}/rooms/{id}
+      - GET|POST /api/v1/properties/{propertyId}/rooms/{id}/beds
+      - PUT /api/v1/properties/{propertyId}/beds/{id}
+      - GET|POST /api/v1/properties/{propertyId}/blocks
+      - POST /api/v1/properties/{propertyId}/blocks/{id}/release
+      - GET /api/v1/properties/{propertyId}/amenities
+    screens:
+      - "/rooms"
+      - "/rooms/status (read-only for now)"
+      - "/settings/room-types"
+    other:
+      - "Development seed-data runner (database/seed/dev) — brief §71"
+  tasks:
+    - "DB: new migration — accommodation tables. accommodation_types.inventory_mode CHECK IN ('UNIT','BED'); beds only allowed under BED-mode units (trigger or app rule + test)"
+    - "DB: unit_blocks with tstzrange/daterange + EXCLUDE constraint preventing overlapping active blocks on the same unit/bed"
+    - "API: accommodation types CRUD (accommodation.manage), rooms CRUD, beds CRUD, blocks create/release (unit_block.manage) — all audited, reason required on block"
+    - "API: deactivate rather than delete units that have history"
+    - "Seed: dev seed runner (Development only, idempotent) + seed 1 property, 6 rooms (2 deluxe, 4 standard), 1 dormitory with 10 beds"
+    - "UI: /rooms list grouped by type with bed counts; room editor; dorm bed editor; block dialog with date range + reason"
+    - "Docs: update DATABASE.md table list, API.md catalogue, sprint-02 guide status"
+  tests:
+    - Integration — cannot add beds to a UNIT-mode room (422)
+    - Integration — overlapping blocks on the same unit rejected by the DB (409 OVERLAP)
+    - Integration — receptionist can read rooms but not create them (403)
+    - Integration — block create/release audited with reason
+    - Unit — inventory capacity calculation (room = 1 sellable unit, dorm = N beds)
+    - Frontend — room editor form validation
+  acceptance:
+    - A manager configures 6 rooms and a 10-bed dorm from the UI in under 10 minutes
+    - Blocking Room 103 for 2 nights shows it as blocked; a second overlapping block is refused
+  debug:
+    - "EXCLUDE constraints need the btree_gist extension: the migration must CREATE EXTENSION IF NOT EXISTS btree_gist."
+    - "Date ranges are [check-in, check-out) in the property's local dates — never convert to UTC for availability."
+  demo:
+    - Create types → rooms → dorm with beds → block a room → try an overlapping block
+
+- id: 3
+  title: Guests
+  phase: 2
+  status: planned
+  size: M
+  depends: [1]
+  goal: Guest profiles with only the data that is needed, encrypted sensitive fields, de-duplication and retention.
+  scope:
+    tables: [guests, guest_addresses, guest_documents, guest_preferences, guest_consents]
+    api:
+      - GET|POST /api/v1/guests
+      - GET|PUT /api/v1/guests/{id}
+      - GET /api/v1/guests/{id}/stays
+      - POST /api/v1/guests/{id}/documents
+      - GET /api/v1/guests/{id}/documents/{docId}  (guest_document.read only)
+      - POST /api/v1/guests/{id}/anonymise
+      - POST /api/v1/guests/merge
+    screens: [/guests, /guests/:id]
+  tasks:
+    - "DB: new migration — guest tables; data-classification comment on every column (public/internal/confidential/sensitive, brief §59)"
+    - "Infra: field-level encryption (AES-GCM, key from configuration) for ID numbers and document metadata; key rotation design documented"
+    - "Infra: blob storage abstraction (IFileStore) with local-disk dev implementation for ID scans"
+    - "API: search by name/phone/email (trigram index), de-duplication hint on create, merge with audit"
+    - "API: anonymise (guest.delete) replaces PII, keeps stay history for accounting"
+    - "Job: retention dry-run report (what would be purged) — actual purge enabled only after owner approval"
+    - "Seed: 20 realistic guests (Indian + international)"
+    - "UI: guest list/search, profile, documents tab hidden without guest_document.read"
+  tests:
+    - Integration — WAITER and HOUSEKEEPER cannot read guest documents (403) — brief §59
+    - Integration — ID number stored encrypted (raw column is not plaintext)
+    - Integration — anonymise keeps stays, removes PII, audited with reason
+    - Unit — phone normalisation (+91 and international)
+  acceptance:
+    - Reception finds a returning guest by phone in one search
+  debug:
+    - "Lost the encryption key = lost ID data. Dev key lives in .env (Encryption__Key); never reuse across environments."
+  demo:
+    - Create guest → duplicate warning → upload ID → view as receptionist vs waiter
+
+- id: 4
+  title: Rate plans and packages
+  phase: 2
+  status: planned
+  size: M
+  depends: [2]
+  goal: Configurable prices per type/date and packages whose revenue is split into room/food/transport/activity.
+  scope:
+    tables: [rate_plans, rate_plan_prices, packages, package_components, reservation_sources]
+    api:
+      - GET|POST /api/v1/properties/{propertyId}/rate-plans
+      - PUT /api/v1/properties/{propertyId}/rate-plans/{id}
+      - PUT /api/v1/properties/{propertyId}/rate-plans/{id}/prices  (bulk date range)
+      - GET /api/v1/properties/{propertyId}/rates/quote?type&from&to&adults&children
+      - GET|POST /api/v1/properties/{propertyId}/packages
+    screens: [/settings/rates, /settings/packages]
+  tasks:
+    - "DB: new migration — rate tables; prices stored per date (numeric(12,2)); per-bed prices for BED mode"
+    - "Domain: quote engine — nightly breakdown, extra adult/child, min stay; pure functions, fully unit-tested"
+    - "Domain: package revenue split must sum exactly to package price (rounding rule documented)"
+    - "API: price changes audited with old/new (brief §87)"
+    - "Seed: BAR (best available rate), weekend uplift, Couple and Room + breakfast packages"
+    - "UI: rate grid (type × date) with bulk edit"
+  tests:
+    - Unit — quote for 3 nights across a weekend boundary
+    - Unit — package split rounding never loses or gains a paisa
+    - Integration — price change audited
+  acceptance:
+    - A quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid
+  debug:
+    - "Money is decimal in C# and numeric in SQL. Never float/double."
+  demo:
+    - Set weekend prices → quote → create a package and show its split
+
+- id: 5
+  title: Availability engine and reservations core
+  phase: 2
+  status: planned
+  size: L
+  depends: [2, 3, 4]
+  goal: Race-free booking of rooms and dorm beds with idempotent create and full status history (brief §14–16).
+  scope:
+    tables: [reservations, reservation_units, reservation_guests, reservation_rate_breakdowns, reservation_notes, reservation_status_history, idempotency_keys]
+    api:
+      - GET /api/v1/properties/{propertyId}/availability?from&to&adults
+      - POST /api/v1/properties/{propertyId}/reservations  (Idempotency-Key header required)
+      - GET /api/v1/properties/{propertyId}/reservations
+      - GET /api/v1/properties/{propertyId}/reservations/{id}
+      - POST /api/v1/properties/{propertyId}/reservations/{id}/confirm | cancel | no-show
+      - PUT /api/v1/properties/{propertyId}/reservations/{id}  (dates/guests; re-checks availability)
+      - POST /api/v1/properties/{propertyId}/reservations/{id}/notes
+    screens: [/reservations, /reservations/new, /reservations/:id]
+  tasks:
+    - "DB: reservation_units.stay daterange + EXCLUDE USING gist (unit_id WITH =, stay WITH &&) WHERE status is active; same for bed_id"
+    - "Algorithm: transaction → SELECT ... FOR UPDATE on the unit rows → availability check → insert; exclusion constraint is the final guarantee; map 23P01 to ROOM_UNAVAILABLE"
+    - "Idempotency: idempotency_keys(key, request_hash, response) — same key + same body returns the stored response; same key + different body = 422"
+    - "Status machine INQUIRY→PENDING→CONFIRMED→CHECKED_IN→CHECKED_OUT, CANCELLED, NO_SHOW, REFUNDED; transitions table-driven and audited"
+    - "Never delete reservations (brief §87); enquiry-stage delete is a status"
+    - "Docs: write docs/architecture/booking-algorithm.md with the exact PostgreSQL behaviour"
+    - "UI: new reservation wizard (dates → availability → guest → rate → confirm) in ≤ 5 clicks for a walk-in"
+  tests:
+    - Concurrency — two simultaneous bookings for the last room → exactly one SUCCESS, one ROOM_UNAVAILABLE (run 50×)
+    - Concurrency — dorm with 1 bed left, 5 parallel requests → 1 success
+    - Idempotency — same request retried → one reservation, identical response
+    - Integration — cancelled reservation frees inventory
+    - Integration — status transitions outside the allowed graph → 422
+  acceptance:
+    - Brief §16 scenario passes reliably in CI
+  debug:
+    - "Reproduce races locally with tests/…/ConcurrencyTests using Task.WhenAll + a Barrier; never with sleeps."
+    - "Look at pg_locks while a test is paused to see who holds what."
+  demo:
+    - Book the last room from two browsers at once
+
+- id: 6
+  title: Reservation calendar
+  phase: 2
+  status: planned
+  size: M
+  depends: [5]
+  goal: Day/week/month calendar showing room, guest, dates, status, source and payment status; safe drag-and-drop reassignment.
+  scope:
+    api:
+      - GET /api/v1/properties/{propertyId}/calendar?from&to
+      - POST /api/v1/properties/{propertyId}/reservations/{id}/reassign  (reason required)
+    screens: [/reservations/calendar]
+  tasks:
+    - "API: calendar read model (single query, indexed) including blocks and maintenance blocks"
+    - "API: reassign room — same locking as booking; audited with reason (brief §58)"
+    - "UI: calendar component (CDK drag-drop); optimistic UI only after server confirms; conflicts shown inline"
+    - "UI: mobile view = list by day"
+  tests:
+    - Concurrency — two users reassigning into the same room → one wins
+    - Frontend — calendar renders 7 rooms × 31 days under 200 ms
+  acceptance:
+    - Reception moves a guest from 102 to 103 in two actions; the audit trail shows who/why
+  debug:
+    - "If the UI shows a booking the server rejected, the optimistic update wasn't rolled back — check the reassign error handler."
+  demo:
+    - Drag a booking to another room; drag onto a blocked room is refused
+
+- id: 7
+  title: Front desk — arrivals, departures, in-house, check-in/out
+  phase: 2
+  status: planned
+  size: M
+  depends: [5]
+  goal: Reception completes check-in and check-out in very few clicks.
+  scope:
+    api:
+      - GET /api/v1/properties/{propertyId}/front-desk/arrivals?date
+      - GET /api/v1/properties/{propertyId}/front-desk/departures?date
+      - GET /api/v1/properties/{propertyId}/front-desk/in-house
+      - POST /api/v1/properties/{propertyId}/reservations/{id}/assign-room
+      - POST /api/v1/properties/{propertyId}/reservations/{id}/check-in
+      - POST /api/v1/properties/{propertyId}/reservations/{id}/check-out
+      - POST /api/v1/properties/{propertyId}/walk-ins
+    screens: [/front-desk/arrivals, /front-desk/departures, /front-desk/in-house]
+  tasks:
+    - "Business date from property timezone; 'today' never from the server clock"
+    - "Check-in requires assigned room/bed with housekeeping READY (configurable override with reason)"
+    - "Check-out sets housekeeping DIRTY (event consumed in Sprint 13) and is blocked while folio balance > 0 (setting frontdesk.allow_checkout_with_balance)"
+    - "Walk-in = guest + reservation + check-in in one call (one transaction)"
+    - "Reception dashboard (brief §54)"
+  tests:
+    - Concurrency — simultaneous check-in of the same reservation → one succeeds
+    - Integration — arrivals use the property's local date at 23:30 IST and 00:30 IST
+  acceptance:
+    - Walk-in to checked-in in ≤ 3 screens
+  debug: []
+  demo:
+    - Today's arrivals → assign room → check in → in-house list
+
+- id: 8
+  title: Folio
+  phase: 3
+  status: planned
+  size: M
+  depends: [7]
+  goal: The folio is the central financial object for a stay (brief §20).
+  scope:
+    tables: [folios, folio_items, folio_item_taxes]
+    api:
+      - GET /api/v1/properties/{propertyId}/folios/{id}
+      - POST /api/v1/properties/{propertyId}/folios/{id}/charges  (Idempotency-Key)
+      - POST /api/v1/properties/{propertyId}/folios/{id}/charges/{itemId}/reverse  (reason required)
+      - POST /api/v1/properties/{propertyId}/folios/{id}/split
+    screens: [/folios, /folios/:id]
+  tasks:
+    - "Folio created at reservation confirmation; room charges posted nightly (job) or at check-in for the stay"
+    - "Charges are immutable; corrections are reversal lines (brief §85)"
+    - "Charge categories: ROOM, FOOD, BEVERAGE, ACTIVITY, TRANSPORT, EQUIPMENT, LAUNDRY, OTHER"
+    - "Package charges split by package_components"
+  tests:
+    - Integration — brief §20 example totals ₹10,950
+    - Integration — DELETE on folio_items rejected by DB trigger
+    - Integration — reversal requires folio.adjust and reason
+  acceptance:
+    - Folio shows charges, reversals and balance; nothing can be deleted
+  debug: []
+  demo:
+    - Post restaurant/transport/activity charges → reverse one → balance
+
+- id: 9
+  title: GST configuration and tax engine
+  phase: 3
+  status: planned
+  size: M
+  depends: [8]
+  goal: GST as a first-class, versioned, configurable domain (brief §23, §86).
+  scope:
+    tables: [gst_registrations, tax_categories, tax_rules, tax_rule_slabs]
+    api:
+      - GET|POST /api/v1/properties/{propertyId}/gst-registrations
+      - GET|POST /api/v1/tax/categories
+      - GET|POST /api/v1/tax/rules  (effective_from/effective_to)
+      - POST /api/v1/tax/calculate  (preview)
+    screens: [/settings/gst]
+  tasks:
+    - "No GST percentage in code. Rules keyed by HSN/SAC category, effective dates and (for accommodation) value slabs"
+    - "CGST+SGST when place of supply = supplier state, else IGST"
+    - "Every folio_item_tax row stores the rule id + rate used (historical invoices never change)"
+    - "Seed: current accommodation and restaurant rules as DATA, with source and effective date recorded; owner/accountant must verify before go-live"
+    - "Docs: GST.md worked examples"
+  tests:
+    - Unit — slab boundaries (value exactly at threshold)
+    - Unit — intra- vs inter-state split, rounding per line
+    - Integration — changing a rule doesn't change an already-posted charge's tax
+  acceptance:
+    - Accountant can add a new rule effective next month without a deployment
+  debug:
+    - "Tax is calculated on taxable value after discount; check discount allocation first when totals differ by a few paise."
+  demo:
+    - Same charge before/after a rule change date
+
+- id: 10
+  title: Payments, refunds, cash drawer
+  phase: 3
+  status: planned
+  size: M
+  depends: [8]
+  goal: Record cash/UPI/card/bank payments, allocate them to folios, refund safely, reconcile the cash drawer (brief §21, §39).
+  scope:
+    tables: [payments, payment_allocations, refunds, cash_drawers, cash_drawer_sessions, cash_drawer_movements]
+    api:
+      - POST /api/v1/properties/{propertyId}/payments  (Idempotency-Key)
+      - POST /api/v1/properties/{propertyId}/payments/{id}/allocate
+      - POST /api/v1/properties/{propertyId}/payments/{id}/refund  (reason required)
+      - POST /api/v1/properties/{propertyId}/payments/{id}/void  (reason required)
+      - POST /api/v1/properties/{propertyId}/cash-drawer/open | close
+      - POST /api/v1/properties/{propertyId}/cash-drawer/sessions/{id}/approve-variance
+    screens: [/payments, cash drawer panel on front desk]
+  tasks:
+    - "No card data stored, ever (brief §3)"
+    - "Payment status machine PENDING→AUTHORIZED→CAPTURED, FAILED, REFUNDED, PARTIALLY_REFUNDED, CANCELLED"
+    - "Refund ≤ captured − already refunded, enforced in a transaction with row lock"
+    - "Drawer close computes expected vs actual; variance needs cash_drawer.approve_variance"
+  tests:
+    - Concurrency — two refunds on the same payment cannot exceed the captured amount
+    - Integration — DELETE payments rejected by DB
+  acceptance:
+    - End of shift: drawer closes with variance approval flow
+  debug: []
+  demo:
+    - Take cash + UPI → partial refund → close drawer with ₹50 short
+
+- id: 11
+  title: Razorpay
+  phase: 3
+  status: planned
+  size: M
+  depends: [10]
+  goal: Online payments where the server-verified webhook is authoritative (brief §22).
+  scope:
+    tables: [payment_gateway_orders, webhook_events]
+    api:
+      - POST /api/v1/properties/{propertyId}/payments/razorpay/orders
+      - POST /api/v1/webhooks/razorpay  (no auth; HMAC signature)
+    external: [Razorpay Orders API, Razorpay Payments API, Razorpay webhooks]
+  tasks:
+    - "IPaymentGateway + RazorpayPaymentGateway (HttpClient, retries with jitter, timeouts)"
+    - "Webhook: verify X-Razorpay-Signature over the raw body; dedupe on event id (webhook_events unique); process in a transaction"
+    - "Browser callback only shows status; it never marks a payment captured"
+    - "Fake Razorpay server for tests (tests/fakes)"
+  tests:
+    - Payment webhook — duplicate delivery processed once
+    - Payment webhook — bad signature → 401, nothing stored
+    - Payment webhook — out-of-order events (captured before authorized)
+  acceptance:
+    - Test-mode payment in Razorpay dashboard confirms the reservation via webhook
+  debug:
+    - "Use ngrok/cloudflared to expose /api/v1/webhooks/razorpay to Razorpay test mode. Never point test webhooks at production."
+  demo:
+    - Pay with a Razorpay test card → webhook → reservation confirmed
+
+- id: 12
+  title: GST invoices, credit/debit notes, receipts
+  phase: 3
+  status: planned
+  size: L
+  depends: [9, 10]
+  goal: Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
+  scope:
+    tables: [invoice_series, invoices, invoice_items, invoice_item_taxes, credit_notes, credit_note_items, debit_notes, debit_note_items, receipts, einvoice_records]
+    api:
+      - POST /api/v1/properties/{propertyId}/folios/{id}/invoice
+      - GET /api/v1/properties/{propertyId}/invoices
+      - GET /api/v1/properties/{propertyId}/invoices/{id}  (+ /pdf)
+      - POST /api/v1/properties/{propertyId}/invoices/{id}/credit-notes  (reason required)
+      - GET /api/v1/properties/{propertyId}/receipts/{id}/pdf
+    screens: [/invoices]
+  tasks:
+    - "Gap-free numbering per series and financial year (row lock on invoice_series)"
+    - "B2B (customer GSTIN validated) and B2C; place of supply"
+    - "Invoice copies tax rule ids/rates from folio lines — never recalculates"
+    - "PDF generation (QuestPDF or similar, server-side)"
+    - "e-invoice fields stored (IRN, ack no/date, signed QR) for Sprint 25 integration"
+  tests:
+    - Concurrency — 20 parallel invoices → numbers 1..20 with no gaps or duplicates
+    - Invoice — B2B intra-state and inter-state totals
+    - Integration — invoice DELETE/UPDATE of totals rejected
+  acceptance:
+    - Checkout produces a GST invoice and receipt PDF
+  debug: []
+  demo:
+    - Check out → invoice PDF → credit note
+
+- id: 13
+  title: Housekeeping and maintenance (mobile-first)
+  phase: 4
+  status: planned
+  size: M
+  depends: [7]
+  goal: Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
+  scope:
+    tables: [unit_housekeeping_status, housekeeping_tasks, housekeeping_checklist_templates, housekeeping_checklist_items, maintenance_assets, maintenance_tickets, maintenance_comments, maintenance_attachments]
+    api:
+      - GET /api/v1/properties/{propertyId}/housekeeping/board
+      - POST /api/v1/properties/{propertyId}/housekeeping/tasks/{id}/assign | start | finish | inspect
+      - GET|POST /api/v1/properties/{propertyId}/maintenance/tickets
+      - POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/assign | progress | resolve | close
+    screens: [/housekeeping, /maintenance, /rooms/status]
+  tasks:
+    - "States DIRTY→CLEANING→CLEAN→INSPECTION→READY, OUT_OF_ORDER; check-out event creates the task"
+    - "Out-of-order ticket creates a unit block automatically"
+    - "Photo upload via IFileStore (compressed on device)"
+    - "Housekeeping dashboard (brief §53) usable one-handed on a 360 px phone"
+  tests:
+    - Integration — checkout → DIRTY task created once (idempotent on retry)
+    - Frontend — housekeeping flow on mobile viewport (Playwright)
+  acceptance:
+    - Housekeeper finishes a room in 2 taps; supervisor marks READY
+  debug: []
+  demo:
+    - Checkout → task → clean → inspect → READY → room available
+
+- id: 14
+  title: Menu, restaurant POS and KOT
+  phase: 5
+  status: planned
+  size: L
+  depends: [8, 9]
+  goal: Orders, kitchen tickets, and charging to a room folio (brief §35, §55).
+  scope:
+    tables: [menu_categories, menu_items, menu_item_variants, modifier_groups, modifiers, restaurant_tables, orders, order_items, kots, kot_items]
+    api:
+      - "/api/v1/properties/{propertyId}/menu/*"
+      - "/api/v1/properties/{propertyId}/orders/*"
+      - "/api/v1/properties/{propertyId}/kitchen/*"
+    screens: [/restaurant, /restaurant/orders, /restaurant/kitchen, /restaurant/menu]
+  tasks:
+    - "Order → KOT → kitchen ready → served → paid or charged to room (folio)"
+    - "Optimistic concurrency on orders (two waiters editing)"
+    - "Discounts need pos.discount; voids need pos_order.void + reason"
+    - "Kitchen display auto-refresh (polling every 10 s; no websockets yet — brief §76)"
+    - "Seed: sample menu"
+  tests:
+    - Concurrency — two users modifying the same order → second gets 409
+    - Integration — room charge posts ₹1,250 to the guest folio (brief §73)
+  acceptance:
+    - Waiter takes an order on a phone, kitchen sees the KOT, bill charged to room
+  debug: []
+  demo:
+    - Order → KOT → ready → charge to Room 103
+
+- id: 15
+  title: Inventory and recipe costing
+  phase: 5
+  status: planned
+  size: M
+  depends: [14]
+  goal: Stock ledger, consumption from recipes, wastage, and food-cost reporting (brief §36, §37).
+  scope:
+    tables: [inventory_categories, inventory_units, inventory_items, stock_locations, stock_movements, stock_adjustments, stock_counts, recipes, recipe_ingredients]
+    screens: [/inventory]
+  tasks:
+    - "stock_movements is an append-only ledger; on-hand = sum of movements (materialised per item/location)"
+    - "Served order lines consume recipe ingredients"
+    - "Adjustments require reason; audited (brief §58)"
+    - "Food cost %, contribution, margin per item"
+    - "Seed: sample inventory"
+  tests:
+    - Concurrency — two adjustments on the same item don't lose updates
+    - Unit — Paneer Tikka ₹280 / ₹105 → 37.5 % food cost
+  acceptance:
+    - Owner sees highest/lowest margin items
+  debug: []
+  demo:
+    - Sell 3 Paneer Tikka → stock reduced → food-cost report
+
+- id: 16
+  title: Suppliers and purchasing
+  phase: 5
+  status: planned
+  size: M
+  depends: [15]
+  goal: Purchase request → PO → goods received → supplier invoice → payment (brief §38).
+  scope:
+    tables: [suppliers, purchase_requests, purchase_request_items, purchase_orders, purchase_order_items, goods_received_notes, grn_items, supplier_invoices, supplier_invoice_items, supplier_payments]
+    screens: [/inventory/suppliers, /inventory/purchases]
+  tasks:
+    - "PO approval (purchase.approve) with thresholds"
+    - "GRN increases stock via stock_movements"
+    - "Supplier GSTIN and input tax captured"
+    - "Seed: sample suppliers"
+  tests:
+    - Integration — partial GRN, remaining quantity tracked
+  acceptance:
+    - PO raised, approved, received, invoiced, paid — stock updated
+  debug: []
+  demo:
+    - Full purchase cycle for vegetables
+
+- id: 17
+  title: Employees and roster
+  phase: 6
+  status: planned
+  size: M
+  depends: [1]
+  goal: Employee records (salary restricted) and shift rosters with clash detection (brief §42, §46).
+  scope:
+    tables: [departments, designations, employees, employee_documents, employee_compensation, shift_templates, roster_shifts]
+    screens: [/employees, /roster]
+  tasks:
+    - "employee_compensation readable only with employee_salary.read (separate table, separate endpoint)"
+    - "Link employee ↔ user (optional)"
+    - "Roster: prevent overlapping shifts (EXCLUDE) unless explicitly allowed; staffing shortage view"
+    - "Seed: 10 employees"
+  tests:
+    - Authorization — MANAGER cannot read salaries
+    - Integration — overlapping shift rejected
+  acceptance:
+    - Manager builds next week's roster; shortages highlighted
+  debug: []
+  demo:
+    - Create roster → clash → shortage view
+
+- id: 18
+  title: Attendance and timesheets (PWA)
+  phase: 6
+  status: planned
+  size: L
+  depends: [17]
+  goal: Mobile clock-in/out with geofence, breaks, timesheets with approval and locked corrections (brief §43, §44, §74).
+  scope:
+    tables: [attendance_events, geofences, timesheets, timesheet_lines, timesheet_corrections]
+    screens: [/attendance, /timesheets, employee dashboard]
+  tasks:
+    - "Angular PWA (service worker, install prompt)"
+    - "Geofence check server-side from device coordinates; manager override with reason"
+    - "Worked hours/breaks/overtime/late/early computed in property timezone"
+    - "States DRAFT→SUBMITTED→APPROVED/REJECTED→LOCKED; corrections audited"
+  tests:
+    - Timesheet — 08:03 in, 12:00–12:30 break, 16:10 out = 7h 37m (brief §44)
+    - Timesheet — shift crossing midnight
+    - E2E — employee acceptance test §74 (first half)
+  acceptance:
+    - Employee clocks in/out on a phone; manager approves the week
+  debug: []
+  demo:
+    - Brief §74 up to approval
+
+- id: 19
+  title: Leave, holidays and payroll export
+  phase: 6
+  status: planned
+  size: M
+  depends: [18]
+  goal: Leave requests with balance/overlap/coverage checks feeding roster and payroll (brief §45).
+  scope:
+    tables: [leave_types, leave_policies, leave_balances, leave_ledger, leave_requests, holidays, payroll_exports]
+    screens: [/leave]
+  tasks:
+    - "Balance = ledger sum; accrual job"
+    - "Approval updates roster and creates ledger entries; audited"
+    - "Payroll export CSV for the chosen Indian payroll provider (format decided in Sprint 0)"
+  tests:
+    - Leave — half days, holidays inside range, insufficient balance
+    - E2E — brief §74 second half
+  acceptance:
+    - Brief §74 passes end to end
+  debug: []
+  demo:
+    - Request → notify manager → approve → balance & roster updated
+
+- id: 20
+  title: Activities and equipment
+  phase: 7
+  status: planned
+  size: M
+  depends: [8]
+  goal: Capacity-safe activity bookings and equipment issue/return (brief §48, §49).
+  scope:
+    tables: [activities, activity_schedules, activity_bookings, equipment_types, equipment, equipment_assignments]
+    screens: [/activities, /equipment]
+  tasks:
+    - "Capacity enforced with the same locking approach as Sprint 5"
+    - "Weather cancellation flow with refunds/credits"
+    - "Equipment states AVAILABLE→RESERVED→ISSUED→RETURNED, DAMAGED, MAINTENANCE, LOST"
+    - "Seed: sample activities and equipment"
+  tests:
+    - Concurrency — last kayak seat booked twice → one wins
+  acceptance:
+    - Kayaking at 7am with 6 seats cannot be oversold
+  debug: []
+  demo:
+    - Book activity → issue life jackets → return one damaged
+
+- id: 21
+  title: Beach transport
+  phase: 7
+  status: planned
+  size: S
+  depends: [20]
+  goal: Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
+  scope:
+    tables: [vehicles, transport_routes, vehicle_trips, trip_passengers]
+    screens: [/transport]
+  tasks:
+    - "Trip capacity locking; driver view (DRIVER role) on phone"
+    - "Charge ₹500 to folio (brief §73)"
+    - "Passenger manifest PDF"
+    - "Seed: sample vehicles"
+  tests:
+    - Integration — transfer booking posts to folio
+  acceptance:
+    - Driver sees today's manifest
+  debug: []
+  demo:
+    - Book transfer → manifest → driver marks boarded
+
+- id: 22
+  title: Expenses and budgets
+  phase: 8
+  status: planned
+  size: M
+  depends: [10]
+  goal: Expense capture with approval and budget vs actual (brief §40, §41).
+  scope:
+    tables: [expense_categories, cost_centres, expenses, expense_attachments, budgets, budget_lines]
+    screens: [/expenses, /budgets]
+  tasks:
+    - "Receipt upload; GST info; approval (expense.approve) audited"
+    - "Monthly/annual/department budgets; variance and simple forecast"
+  tests:
+    - Integration — unapproved expense excluded from actuals
+  acceptance:
+    - Owner sees budget vs actual per department
+  debug: []
+  demo:
+    - Submit expense with photo → approve → budget variance
+
+- id: 23
+  title: Reports and dashboards
+  phase: 8
+  status: planned
+  size: L
+  depends: [12, 15, 19, 22]
+  goal: Owner and role dashboards plus the report list in brief §50–55, Power-BI-ready.
+  scope:
+    other: [reporting schema with views/materialised views, refreshed by jobs]
+    screens:
+      - "/dashboard (role-aware)"
+      - "/reports"
+  tasks:
+    - "reporting.* views: occupancy, ADR, RevPAR, revenue splits, OTA net, food/labour cost, GST, P&L"
+    - "No dashboard query scans raw transaction tables unbounded (brief §88)"
+    - "Read-only DB role for Power BI"
+  tests:
+    - Database — ADR/RevPAR against a hand-calculated fixture month
+  acceptance:
+    - Owner dashboard loads < 1 s on a year of seed data
+  debug: []
+  demo:
+    - Owner dashboard + monthly report
+
+- id: 24
+  title: Notification engine, WhatsApp, email, background jobs
+  phase: 9
+  status: planned
+  size: L
+  depends: [5]
+  goal: Configurable templates, delivery tracking and idempotent scheduled jobs (brief §32, §69, §70).
+  scope:
+    tables: [message_templates, outbox_messages, notifications, whatsapp_messages, email_messages, job_runs]
+    api: [/api/v1/webhooks/whatsapp]
+    external:
+      - "WhatsApp Business Platform (Cloud API)"
+      - "transactional email provider"
+  tasks:
+    - "Outbox pattern: business transaction writes outbox row; background worker sends"
+    - "Background jobs with PostgreSQL-backed scheduler (no Redis — brief §76); every job idempotent"
+    - "Jobs: reservation reminder, pre-arrival, checkout reminder, payment reminder, inventory alert, leave reminder"
+    - "WhatsApp template messages; status webhooks (sent/delivered/read/failed)"
+  tests:
+    - Integration — job run twice sends once
+    - Integration — WhatsApp status webhook signature check
+  acceptance:
+    - Guest gets confirmation + day-before reminder (brief §73)
+  debug: []
+  demo:
+    - Book → WhatsApp confirmation → reminder job
+
+- id: 25
+  title: Zoho Books, Tally export, e-invoice reconciliation
+  phase: 9
+  status: planned
+  size: L
+  depends: [12, 24]
+  goal: Sync accounting without duplicates on retry (brief §26, §27, §25).
+  scope:
+    tables: [accounting_connections, accounting_sync_records]
+    external:
+      - "Zoho Books API (India)"
+      - "IRP via accounting/e-invoicing provider"
+  tasks:
+    - "IAccountingProvider + ZohoBooksProvider; external_id/sync_status/last_sync_at/sync_error"
+    - "Sync customers, items, taxes, invoices, credit notes, payments, expenses via outbox"
+    - "Tally-compatible XML/CSV export"
+  tests:
+    - Integration — retry after timeout creates no duplicate invoice (fake Zoho server)
+  acceptance:
+    - Brief §73 step 'Invoice synced to Zoho Books' passes against Zoho sandbox
+  debug: []
+  demo:
+    - Invoice → appears in Zoho Books once
+
+- id: 26
+  title: OTA / channel manager
+  phase: 9
+  status: planned
+  size: L
+  depends: [5, 24]
+  goal: One channel manager integration with idempotent import/modify/cancel (brief §28, §29, §75).
+  scope:
+    tables: [ota_channels, ota_room_mappings, ota_rate_mappings, ota_reservations, ota_events, ota_inventory_pushes]
+    api: [/api/v1/webhooks/channel-manager]
+  tasks:
+    - "IChannelManager; provider chosen in Sprint 0"
+    - "OTA reservation id + event id dedupe; safe failure/reconciliation when no room"
+    - "Inventory and rate push jobs"
+  tests:
+    - OTA webhook — duplicate → no duplicate reservation
+    - OTA webhook — no availability → reconciliation queue
+  acceptance:
+    - Brief §75 passes
+  debug: []
+  demo:
+    - Simulated Booking.com reservation arrives twice
+
+- id: 27
+  title: Direct booking website
+  phase: 9
+  status: planned
+  size: L
+  depends: [11, 24]
+  goal: Public booking site with live availability and Razorpay (brief §30).
+  scope:
+    api:
+      - "/api/v1/public/* — separate"
+      - "rate-limited"
+      - "no admin data"
+    screens:
+      - "public app — dates"
+      - "rooms"
+      - "packages"
+      - "extras"
+      - "details"
+      - "pay"
+      - "confirmation"
+  tasks:
+    - "Separate public API surface; captcha/turnstile on pay step"
+    - "SEO-friendly pages served via Cloudflare"
+  tests:
+    - E2E — booking + payment (brief §73 start)
+  acceptance:
+    - Guest books Room 103 on the website and receives confirmation
+  debug: []
+  demo:
+    - Brief §73 first eight steps
+
+- id: 28
+  title: Offline PWA and security hardening
+  phase: 10
+  status: planned
+  size: L
+  depends: [13, 18]
+  goal: Work through poor connectivity safely; MFA and OWASP verification (brief §56, §57, §68).
+  scope:
+    other: [PWA caching of today's reservations, room status, housekeeping tasks, roster; ONLINE/OFFLINE/SYNCING/SYNC FAILED indicator]
+  tasks:
+    - "Read-only offline caches; no financial operations offline"
+    - "TOTP MFA for OWNER/GM/ACCOUNTANT"
+    - "OWASP Top 10 test pack (docs/SECURITY.md table) incl. SSRF on webhook/URL inputs"
+    - "Shared cache for access/permissions if >1 API instance"
+  tests:
+    - Security — every OWASP row has an automated test or a documented manual check
+  acceptance:
+    - Housekeeping works on airplane mode and syncs when back online
+  debug: []
+  demo:
+    - Toggle network off on a phone
+
+- id: 29
+  title: Backups, monitoring, CI/CD to production, acceptance
+  phase: 10
+  status: planned
+  size: L
+  depends: [28]
+  goal: Production-ready operations and the three acceptance tests (brief §60, §61, §73–75, §77, §78).
+  scope:
+    other: [staging + production environments, approvals, backups with PITR, alerts, runbooks, user/admin manuals]
+  tasks:
+    - "Deploy pipeline: develop → staging (auto) → production (manual approval)"
+    - "Daily backups + PITR; monthly restore drill; RPO/RTO documented"
+    - "Alerts: payment failures, OTA failures, DB failures, backup failures, error rate, auth attacks"
+    - "E2E suite for §73, §74, §75 on staging"
+    - "User manual and admin manual"
+  tests:
+    - E2E — brief §73, §74, §75 green on staging
+    - Restore drill documented with timings
+  acceptance:
+    - Go-live checklist signed by owner
+  debug: []
+  demo:
+    - Full guest journey on staging

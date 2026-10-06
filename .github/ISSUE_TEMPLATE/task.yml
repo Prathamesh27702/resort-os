@@ -1,0 +1,23 @@
+name: Sprint task
+description: A piece of work inside a sprint
+title: "S__: "
+labels: ["type:feature"]
+body:
+  - type: input
+    id: sprint
+    attributes: { label: Sprint, placeholder: "02" }
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes: { label: What needs to be done, description: "Outcome, not implementation detail" }
+    validations: { required: true }
+  - type: textarea
+    id: acceptance
+    attributes: { label: Acceptance criteria, value: "- [ ] \n- [ ] " }
+    validations: { required: true }
+  - type: input
+    id: permission
+    attributes: { label: Permission(s), placeholder: "accommodation.manage" }
+  - type: textarea
+    id: notes
+    attributes: { label: Tables / endpoints / screens, description: "Link the sprint guide section" }
