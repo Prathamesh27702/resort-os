@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # One-time local setup: creates .env with generated local secrets, starts PostgreSQL, restores packages.
 # Safe to re-run: never overwrites values already in .env.
+# --env-only: only create/fill .env (no Docker, restore or npm). Used by CI to test this script.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+ENV_ONLY=0; [ "${1:-}" = "--env-only" ] && ENV_ONLY=1
 
-need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing $1 — see docs/SETUP.md"; exit 1; }; }
-need docker; need dotnet; need node; need npm; need openssl
+need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing $1 — see docs/GETTING_STARTED.md"; exit 1; }; }
+need openssl
+[ "$ENV_ONLY" = 1 ] || { need docker; need dotnet; need node; need npm; }
 
 [ -f .env ] || { cp .env.example .env; echo "Created .env from .env.example"; }
 
@@ -30,6 +33,8 @@ if [ -z "$(get Bootstrap__OwnerPassword)" ]; then
   echo "  Local owner sign-in: $(get Bootstrap__OwnerEmail) / $OWNER_PW   (also in .env)"
 fi
 
+[ "$ENV_ONLY" = 1 ] && { echo ".env ready (--env-only: skipped Docker, restore and npm)."; exit 0; }
+
 echo "Starting PostgreSQL…"
 docker compose --env-file .env -f infra/docker/docker-compose.yml up -d --wait db
 
@@ -39,7 +44,7 @@ echo "Installing frontend packages…"; (cd frontend && npm ci)
 cat <<MSG
 
 Done. Next:
-  API:      cd backend/Resort.Api && dotnet run          → http://localhost:5180/swagger
+  API:      cd backend/Resort.Api && dotnet watch run    → http://localhost:5180/swagger
   Web app:  cd frontend && npm start                     → http://localhost:4300
   Tests:    scripts/test.sh
 MSG

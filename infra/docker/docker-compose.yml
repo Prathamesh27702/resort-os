@@ -1,6 +1,6 @@
 # Local development services. Run from the repo root:
 #   docker compose --env-file .env -f infra/docker/docker-compose.yml up -d
-# Production deployment: docs/DEPLOYMENT.md (Sprint 26).
+# Production deployment: docs/DEPLOYMENT.md (Sprint 29).
 name: resort-os
 services:
   db:

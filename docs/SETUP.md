@@ -1,6 +1,7 @@
-# Developer setup guide
+# Developer setup reference
 
-From a fresh laptop to a running system with passing tests in about 30 minutes.
+First time? Follow the step-by-step **[GETTING_STARTED.md](GETTING_STARTED.md)** instead. This page is the
+compact reference (versions, database commands, troubleshooting).
 
 ## 1. Install
 
@@ -45,7 +46,7 @@ git switch develop
 # macOS / Linux / WSL
 scripts/setup-dev.sh
 # Windows PowerShell
-scripts/setup-dev.ps1
+pwsh -ExecutionPolicy Bypass -File scripts/setup-dev.ps1
 ```
 
 `setup-dev` will:
@@ -78,7 +79,7 @@ Sign in with `owner@demo.local` and the password `setup-dev` printed (`Bootstrap
 ## 5. Test
 
 ```bash
-scripts/test.sh          # or scripts/test.ps1 — backend unit+integration and frontend unit tests
+scripts/test.sh          # Windows: pwsh -File scripts/test.ps1 — backend unit+integration and frontend unit tests
 ```
 
 Integration tests create a throwaway database per test class on your local PostgreSQL (the `RESORT_TEST_DB` login
@@ -90,7 +91,7 @@ needs CREATEDB, which the Docker superuser has). See [TESTING.md](TESTING.md).
 |---|---|
 | Open a SQL shell | `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U resort resort_dev` |
 | Connect a GUI | host `localhost`, port `5433`, user/password/db from `.env` |
-| Reset to empty | `scripts/db-reset.sh`, then restart the API |
+| Reset to empty | `scripts/db-reset.sh` (Windows: `pwsh -File scripts/db-reset.ps1`), then restart the API |
 | Back up your local DB | `docker compose … exec db pg_dump -U resort -Fc resort_dev > local.dump` |
 | Restore it | `docker compose … exec -T db pg_restore -U resort -d resort_dev --clean < local.dump` |
 | Stop / start | `docker compose --env-file .env -f infra/docker/docker-compose.yml stop` / `up -d db` |
