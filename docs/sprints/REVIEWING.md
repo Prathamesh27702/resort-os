@@ -148,5 +148,5 @@ These need the owner's GitHub account; Claude's access can't change repository s
 |---|---|---|
 | Settings → General → **Default branch** | `develop` | New PRs target `develop` automatically |
 | Settings → General → Pull Requests | ✅ Allow merge commits · ✅ Allow squash merging · ☐ Allow rebase merging · ✅ Automatically delete head branches | Matches CONTRIBUTING.md |
-| Settings → **Collaborators** | Invite each developer with **Write** | So they can push branches and open PRs |
+| Settings → **Collaborators** → **Add people** | Each developer's GitHub username (full steps: [../ONBOARDING.md](../ONBOARDING.md)) | So they can push branches and open PRs |
 | Settings → Branches → Branch protection *(needs GitHub Pro, see [../COSTS.md](../COSTS.md))* | `main` and `develop`: require PR, 1 approval, status checks *Backend*, *Frontend*, *Migrations*, *Security* | Stops anyone pushing straight to `main`/`develop` |

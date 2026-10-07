@@ -3,7 +3,7 @@
 A step-by-step walkthrough for Windows 10/11 (macOS notes at the end of each step). It takes about 45 minutes the
 first time, mostly downloads. Everything here is **free** (see [COSTS.md](COSTS.md)).
 
-After this guide: [sprints/REVIEWING.md](sprints/REVIEWING.md) (how to review a sprint) and
+Joining as a developer? [ONBOARDING.md](ONBOARDING.md) is the full checklist; this guide is its setup part. After this guide: [sprints/REVIEWING.md](sprints/REVIEWING.md) (how to review a sprint) and
 [sprints/README.md](sprints/README.md) (what each sprint is doing). Reference material and troubleshooting:
 [SETUP.md](SETUP.md).
 
