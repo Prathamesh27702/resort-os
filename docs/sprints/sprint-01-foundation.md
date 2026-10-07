@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and merged to develop. Waiting for the owner's review: see the 'Sprint 01 review' pull request and docs/sprints/REVIEWING.md.
+**Now:** Built and merged to develop. Waiting for the owner's review in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — how to: [REVIEWING.md](REVIEWING.md).
 
 **Done so far**
 

@@ -57,7 +57,7 @@ sprints:
   status: in-review
   size: L
   progress:
-    now: "Built and merged to develop. Waiting for the owner's review: see the 'Sprint 01 review' pull request and docs/sprints/REVIEWING.md."
+    now: "Built and merged to develop. Waiting for the owner's review in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — how to: [REVIEWING.md](REVIEWING.md)."
     done:
       - "Solution: Resort.Api / Application / Domain / Infrastructure / Contracts / Tests on .NET 10"
       - "Migrations V001 (13 tables, append-only triggers), V002 (117 permissions, 17 roles, default matrix), V003 (audit device/reason/request id)"
