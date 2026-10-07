@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
+using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
 using Resort.Domain.Identity;
@@ -33,6 +34,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<LoginEvent> LoginEvents => Set<LoginEvent>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Amenity> Amenities => Set<Amenity>();
+    public DbSet<AccommodationType> AccommodationTypes => Set<AccommodationType>();
+    public DbSet<AccommodationTypeAmenity> AccommodationTypeAmenities => Set<AccommodationTypeAmenity>();
+    public DbSet<AccommodationUnit> AccommodationUnits => Set<AccommodationUnit>();
+    public DbSet<Bed> Beds => Set<Bed>();
+    public DbSet<UnitImage> UnitImages => Set<UnitImage>();
+    public DbSet<UnitBlock> UnitBlocks => Set<UnitBlock>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -90,6 +98,34 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.ToTable("audit_logs");
             e.Property(x => x.Id).UseIdentityAlwaysColumn();
             e.Property(x => x.Changes).HasColumnType("jsonb");
+        });
+
+        // ---- Sprint 2: accommodation (database/migrations/V004__accommodation.sql)
+        b.Entity<Amenity>().ToTable("amenities");
+        b.Entity<AccommodationType>(e =>
+        {
+            e.ToTable("accommodation_types");
+            e.Property(x => x.SizeSqm).HasColumnType("numeric(6,1)");
+            e.HasMany(x => x.Amenities).WithOne().HasForeignKey(x => x.AccommodationTypeId);
+        });
+        b.Entity<AccommodationTypeAmenity>(e =>
+        {
+            e.ToTable("accommodation_type_amenities");
+            e.HasKey(x => new { x.AccommodationTypeId, x.AmenityId });
+        });
+        b.Entity<AccommodationUnit>(e =>
+        {
+            e.ToTable("accommodation_units");
+            e.HasOne(x => x.Type).WithMany().HasForeignKey(x => x.AccommodationTypeId);
+            e.HasMany(x => x.Beds).WithOne().HasForeignKey(x => x.UnitId);
+        });
+        b.Entity<Bed>().ToTable("beds");
+        b.Entity<UnitImage>().ToTable("unit_images");
+        b.Entity<UnitBlock>(e =>
+        {
+            e.ToTable("unit_blocks");
+            // "period" is a generated column used only by the database's EXCLUDE constraint; not mapped.
+            e.Ignore(x => x.IsActive);
         });
 
         foreach (var entity in b.Model.GetEntityTypes())

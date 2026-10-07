@@ -14,5 +14,7 @@
   <ItemGroup>
     <!-- The SQL migrations in /db/migrations are the single source of truth for the schema -->
     <EmbeddedResource Include="..\..\database\migrations\*.sql" LogicalName="migrations/%(Filename)%(Extension)" />
+    <!-- Development-only demo data, applied by DevSeeder -->
+    <EmbeddedResource Include="..\..\database\seed\dev\*.sql" LogicalName="seed/dev/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
