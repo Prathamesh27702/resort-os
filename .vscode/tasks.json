@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "db: start PostgreSQL",
+      "type": "shell",
+      "command": "docker compose --env-file .env -f infra/docker/docker-compose.yml up -d --wait db",
+      "problemMatcher": []
+    },
+    {
+      "label": "api: dotnet watch",
+      "type": "shell",
+      "command": "dotnet watch run",
+      "options": { "cwd": "${workspaceFolder}/backend/Resort.Api" },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "web: npm start",
+      "type": "shell",
+      "command": "npm start",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "test: everything",
+      "type": "shell",
+      "windows": { "command": "pwsh -ExecutionPolicy Bypass -File scripts/test.ps1" },
+      "command": "bash scripts/test.sh",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

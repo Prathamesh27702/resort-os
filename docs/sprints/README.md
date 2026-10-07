@@ -5,7 +5,9 @@
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
 
-How we work: [PROCESS.md](PROCESS.md) (cadence, ceremonies, branching, Definition of Ready/Done).
+How we work: [PROCESS.md](PROCESS.md) (cadence, ceremonies, branching, Definition of Ready/Done) · how the owner reviews and accepts a sprint: [REVIEWING.md](REVIEWING.md).
+
+Each guide starts with **Where this sprint stands**: what is happening now, what is done, the files added or changed (expected files for sprints not started), test results and the outcome. Then scope, tasks, how to run, debug and test, acceptance criteria and the review demo.
 
 | # | Sprint | Phase | Size | Status |
 |---|---|---|---|---|

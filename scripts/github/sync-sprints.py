@@ -90,6 +90,82 @@ def bullet(items, code=False):
     return "".join(f"- `{i}`\n" if code else f"- {i}\n" for i in items)
 
 
+CUSTOM_FILES = {
+    28: ["frontend/ — service worker config (ngsw-config.json), offline status chip in layout/shell.ts, read caches in core/",
+         "backend/Resort.Application/Identity/ — TOTP MFA; backend/Resort.Api/Endpoints/AuthEndpoints.cs",
+         "database/migrations/V###__mfa.sql", "backend/Resort.Tests/Security/ — OWASP test pack",
+         "docs/SECURITY.md (OWASP table → test links)"],
+    29: [".github/workflows/deploy.yml (staging + production with approval)", "infra/ — production compose/IaC, reverse proxy",
+         "docs/OPERATIONS.md, docs/DEPLOYMENT.md, docs/manuals/user-manual.md, docs/manuals/admin-manual.md",
+         "e2e/ — Playwright acceptance tests §73–§75"],
+    27: ["public-web/ — new Angular app for the public booking site", "backend/Resort.Api/Endpoints/PublicBookingEndpoints.cs (/api/v1/public/*)",
+         "backend/Resort.Application/PublicBooking/", "backend/Resort.Tests/Integration/PublicBookingTests.cs", "e2e/booking.spec.ts"],
+}
+
+
+def expected_files(s):
+    """Files a sprint is expected to add or change, from its module/feature. Planning aid, not a contract."""
+    if s["id"] in CUSTOM_FILES:
+        return CUSTOM_FILES[s["id"]]
+    m, f = s.get("module"), s.get("feature")
+    if not m:
+        return []
+    snake = "".join("_" + c.lower() if c.isupper() else c for c in m).lstrip("_")
+    out = []
+    if (s.get("scope") or {}).get("tables"):
+        out.append(f"database/migrations/V###__{snake}.sql — new tables (next free number)")
+    out += [
+        f"backend/Resort.Domain/{m}/ — entities",
+        "backend/Resort.Contracts/Contracts.cs — request/response records",
+        f"backend/Resort.Application/{m}/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs",
+        "backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings",
+    ]
+    if (s.get("scope") or {}).get("external"):
+        out.append(f"backend/Resort.Infrastructure/{m}/ — external API adapter + fake server for tests")
+    out += [
+        f"backend/Resort.Api/Endpoints/{m}Endpoints.cs + Program.cs registration",
+        f"backend/Resort.Tests/Integration/{m}Tests.cs (+ Unit/ for pure calculations)",
+    ]
+    if f:
+        out.append(f"frontend/src/app/features/{f}/ — screens; app.routes.ts; layout/shell.ts menu entry")
+    out.append(f"docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-{s['id']:02d}.md, this guide, CHANGELOG.md")
+    return out
+
+
+NOW_DEFAULT = {
+    "planned": "Not started.",
+    "in-progress": "In progress — see the open issues in this sprint's milestone.",
+    "in-review": "Built; waiting for the owner's review (docs/sprints/REVIEWING.md).",
+    "done": "Accepted by the owner and released to main.",
+}
+
+
+def render_progress(s):
+    pr = s.get("progress") or {}
+    deps = ", ".join(f"Sprint {d:02d}" for d in s.get("depends", []))
+    now = pr.get("now")
+    if not now:
+        now = NOW_DEFAULT[s["status"]]
+        if s["status"] == "planned" and deps:
+            now += f" Can start once {deps} {'is' if len(s.get('depends', [])) == 1 else 'are'} accepted."
+    md = ["## Where this sprint stands\n\n", f"**Now:** {now}\n\n", "**Done so far**\n\n"]
+    md.append(bullet(pr.get("done")) if pr.get("done") else "_Nothing yet._\n")
+    if pr.get("files"):
+        md.append("\n**Files added / changed**\n\n" + bullet(pr["files"]))
+    else:
+        exp = expected_files(s)
+        md.append("\n**Files this sprint will add / change** (expected)\n\n" + (bullet(exp) if exp else "_Documentation only._\n"))
+    md.append("\n**Test results**\n\n")
+    md.append(bullet(pr["results"]) if pr.get("results") else "_Not run yet — see How to test below._\n")
+    md.append("\n**Outcome**\n\n")
+    if pr.get("outcome"):
+        md.append(pr["outcome"] + "\n")
+    else:
+        md.append("Expected when accepted:\n\n" + bullet(s.get("acceptance", [])))
+    md.append("\n")
+    return "".join(md)
+
+
 def render(s, plan):
     sc = s.get("scope", {}) or {}
     deps = ", ".join(f"[Sprint {d:02d}]({fname(next(x for x in plan['sprints'] if x['id'] == d))})" for d in s.get("depends", [])) or "—"
@@ -99,6 +175,7 @@ def render(s, plan):
           f"| {STATUS[s['status']]}{current} | {PHASES[s['phase']]} | {s['size']} | {deps} |\n\n",
           f"**Goal:** {s['goal']}\n\n",
           f"**GitHub:** milestone *{milestone_title(s)}* · branch prefix `feature/S{s['id']:02d}-`\n\n",
+          render_progress(s),
           "## Scope\n\n"]
     for key, label, code in [("tables", "Tables", True), ("migrations", "Migrations", True), ("api", "API endpoints", True),
                              ("screens", "Screens / routes", True), ("external", "External APIs used", False),
@@ -117,15 +194,15 @@ def render(s, plan):
 
 1. **Start from the latest `develop`:** `git switch develop && git pull`
 2. **One branch per issue:** `git switch -c feature/S{s['id']:02d}-<issue-number>-<short-name>`
-3. **Database up:** `docker compose --env-file .env -f infra/docker/docker-compose.yml up -d db`
+3. **Database up:** Docker Desktop running, then `docker compose --env-file .env -f infra/docker/docker-compose.yml up -d db` (or VS Code task *db: start PostgreSQL*)
 4. **Schema changes:** add the next `database/migrations/V###__<name>.sql` (never edit an applied one). The API applies it on start.
 5. **API:** `cd backend/Resort.Api && dotnet watch run` → http://localhost:5180/swagger
 6. **Web:** `cd frontend && npm start` → http://localhost:4300
-7. **Fresh data:** `scripts/db-reset.sh`, then restart the API (migrations + bootstrap owner run again; dev seed data from Sprint 2 onward)
+7. **Fresh data:** `pwsh -File scripts/db-reset.ps1` (macOS/Linux `bash scripts/db-reset.sh`), then restart the API (migrations + bootstrap owner run again; dev seed data from Sprint 2 onward)
 
 ## How to debug
 
-- **API:** run the `Resort.Api` launch profile in VS Code (C# Dev Kit), Rider or Visual Studio and set breakpoints; Swagger's *Authorize* button takes the `accessToken` from `POST /api/v1/auth/login`.
+- **API:** in VS Code press **F5 → API (Resort.Api)** (C# Dev Kit) and set breakpoints; Swagger's *Authorize* button takes the `accessToken` from `POST /api/v1/auth/login`.
 - **Every error response has a `correlationId`.** Search the API console/log for it to find the full exception.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
@@ -142,18 +219,20 @@ def render(s, plan):
 Commands:
 
 ```bash
-scripts/test.sh                                   # everything (backend + frontend)
+pwsh -File scripts/test.ps1                       # everything, Windows  (macOS/Linux: bash scripts/test.sh)
 dotnet test --filter "FullyQualifiedName~Integration"   # backend integration only
 cd frontend && npm run test:ci                    # frontend unit tests
 ```
 
 Rules: integration tests use a real PostgreSQL (each test class gets its own database); no in-memory EF provider; concurrency tests use `Task.WhenAll` with a barrier, never `Thread.Sleep`. See [TESTING.md](../TESTING.md).
 
+Results: CI shows *Backend tests: N passed, 0 failed* on every PR (Checks → Backend → annotations).
+
 ## Acceptance criteria
 
 """)
     md.append(bullet(s.get("acceptance", [])))
-    md.append("\n## Sprint review demo\n\n")
+    md.append("\n## Sprint review demo\n\nThe owner runs this during review, following [REVIEWING.md](REVIEWING.md):\n\n")
     md.append(bullet(s.get("demo", [])))
     md.append("""
 ## Definition of Done
@@ -182,7 +261,7 @@ def render_index(plan):
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
 
-How we work: [PROCESS.md](PROCESS.md) (cadence, ceremonies, branching, Definition of Ready/Done).
+How we work: [PROCESS.md](PROCESS.md) (cadence, ceremonies, branching, Definition of Ready/Done) · how the owner reviews and accepts a sprint: [REVIEWING.md](REVIEWING.md).\n\nEach guide starts with **Where this sprint stands**: what is happening now, what is done, the files added or changed (expected files for sprints not started), test results and the outcome. Then scope, tasks, how to run, debug and test, acceptance criteria and the review demo.
 
 | # | Sprint | Phase | Size | Status |
 |---|---|---|---|---|

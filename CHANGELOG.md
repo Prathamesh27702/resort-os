@@ -13,3 +13,12 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - `/api/v1` routes; standard error body `{code, message, details, correlationId}`; security headers; rate limiting; health checks; OpenAPI.
 - Angular 20 staff app: login, dashboard setup checklist, properties, staff accounts, roles matrix, audit trail, change password.
 - 30 backend tests (integration on real PostgreSQL) and 6 frontend tests; GitHub Actions CI.
+- Owner and developer guides: `docs/GETTING_STARTED.md` (Windows/macOS step by step, VS Code), `docs/sprints/REVIEWING.md`,
+  `docs/COSTS.md`; every sprint guide now opens with *Where this sprint stands* (now / done / files / results / outcome).
+- Shared VS Code workspace (`.vscode/`: recommended extensions, F5 debugging, tasks); `.gitattributes` (LF everywhere).
+- `Onboarding` workflow: runs the setup script on a clean Linux runner through to a signed-in API, and the PowerShell
+  script on Windows.
+
+### Fixed
+- `scripts/setup-dev.ps1` failed to generate keys (PowerShell unrolled the byte array); now requires PowerShell 7 and
+  stops on any failed step. Added `scripts/db-reset.ps1`.

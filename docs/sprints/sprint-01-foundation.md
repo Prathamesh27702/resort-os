@@ -8,6 +8,44 @@
 
 **GitHub:** milestone *Sprint 01 — Foundation — identity, RBAC, organisation, properties, audit* · branch prefix `feature/S01-`
 
+## Where this sprint stands
+
+**Now:** Built and merged to develop. Waiting for the owner's review: see the 'Sprint 01 review' pull request and docs/sprints/REVIEWING.md.
+
+**Done so far**
+
+- Solution: Resort.Api / Application / Domain / Infrastructure / Contracts / Tests on .NET 10
+- Migrations V001 (13 tables, append-only triggers), V002 (117 permissions, 17 roles, default matrix), V003 (audit device/reason/request id)
+- Sign-in, rotating refresh cookie with theft detection, lockout, forced password change, sign-out everywhere on deactivation
+- Organisation, properties, property settings; staff accounts with property-scoped roles; escalation and last-owner guards
+- Audit trail written in the same transaction; reason via X-Change-Reason; correlation and request ids
+- /api/v1 routes, standard error body, security headers, rate limits, health checks, OpenAPI/Swagger
+- Angular 20 staff app: sign-in, Today checklist, properties, staff accounts, roles matrix, audit trail, change password
+- CI on GitHub (build, lint, tests on PostgreSQL 16, secret and dependency scans); onboarding scripts for Windows/macOS/Linux
+
+**Files added / changed**
+
+- database/migrations/V001__foundation.sql, V002__seed_permissions_roles.sql, V003__audit_request_context.sql
+- backend/Resort.Domain/ — Common/Entity.cs, Identity/Identity.cs, Organizations/Organization.cs, Audit/AuditLog.cs
+- backend/Resort.Contracts/Contracts.cs
+- backend/Resort.Application/ — Identity/AuthService.cs, Identity/UserService.cs, Properties/PropertyService.cs, Audit/AuditQueryService.cs, Common/*, Validation/Validators.cs
+- backend/Resort.Infrastructure/ — Persistence/AppDbContext.cs, AuditInterceptor.cs, DatabaseMigrator.cs, Bootstrapper.cs; Identity/Security.cs
+- backend/Resort.Api/ — Program.cs, Endpoints/AuthEndpoints.cs, Endpoints/AdminEndpoints.cs, Infrastructure/* (auth, errors, request context, .env loader)
+- backend/Resort.Tests/ — Integration/AuthTests.cs, Integration/AccessControlTests.cs, Unit/UnitTests.cs, Support/ResortApiFactory.cs
+- frontend/src/app/ — core/*, shared/can.directive.ts, layout/shell.ts, features/{auth,dashboard,settings/properties,users,audit}
+- scripts/*, .github/workflows/*, .vscode/*, .env.example
+
+**Test results**
+
+- Backend: 30 passed, 0 failed (GitHub CI, real PostgreSQL 16)
+- Frontend: 6 of 6 passed; ESLint clean; production build OK
+- Build warnings: 0; dotnet format clean; gitleaks: no secrets in history
+- Manual walkthrough as owner and receptionist on desktop and 390 px phone width ([screenshots](sprint-01-screens/); step-by-step script in [REVIEWING.md](REVIEWING.md#part-b--try-it-yourself-2030-minutes))
+
+**Outcome**
+
+Pending owner acceptance. On acceptance: merge to main, tag sprint-01, Sprint 02 starts.
+
 ## Scope
 
 **Tables**
@@ -87,15 +125,15 @@ Each task becomes a GitHub issue under this sprint's milestone.
 
 1. **Start from the latest `develop`:** `git switch develop && git pull`
 2. **One branch per issue:** `git switch -c feature/S01-<issue-number>-<short-name>`
-3. **Database up:** `docker compose --env-file .env -f infra/docker/docker-compose.yml up -d db`
+3. **Database up:** Docker Desktop running, then `docker compose --env-file .env -f infra/docker/docker-compose.yml up -d db` (or VS Code task *db: start PostgreSQL*)
 4. **Schema changes:** add the next `database/migrations/V###__<name>.sql` (never edit an applied one). The API applies it on start.
 5. **API:** `cd backend/Resort.Api && dotnet watch run` → http://localhost:5180/swagger
 6. **Web:** `cd frontend && npm start` → http://localhost:4300
-7. **Fresh data:** `scripts/db-reset.sh`, then restart the API (migrations + bootstrap owner run again; dev seed data from Sprint 2 onward)
+7. **Fresh data:** `pwsh -File scripts/db-reset.ps1` (macOS/Linux `bash scripts/db-reset.sh`), then restart the API (migrations + bootstrap owner run again; dev seed data from Sprint 2 onward)
 
 ## How to debug
 
-- **API:** run the `Resort.Api` launch profile in VS Code (C# Dev Kit), Rider or Visual Studio and set breakpoints; Swagger's *Authorize* button takes the `accessToken` from `POST /api/v1/auth/login`.
+- **API:** in VS Code press **F5 → API (Resort.Api)** (C# Dev Kit) and set breakpoints; Swagger's *Authorize* button takes the `accessToken` from `POST /api/v1/auth/login`.
 - **Every error response has a `correlationId`.** Search the API console/log for it to find the full exception.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
@@ -123,12 +161,14 @@ Required tests for this sprint (the sprint is not done without them):
 Commands:
 
 ```bash
-scripts/test.sh                                   # everything (backend + frontend)
+pwsh -File scripts/test.ps1                       # everything, Windows  (macOS/Linux: bash scripts/test.sh)
 dotnet test --filter "FullyQualifiedName~Integration"   # backend integration only
 cd frontend && npm run test:ci                    # frontend unit tests
 ```
 
 Rules: integration tests use a real PostgreSQL (each test class gets its own database); no in-memory EF provider; concurrency tests use `Task.WhenAll` with a barrier, never `Thread.Sleep`. See [TESTING.md](../TESTING.md).
+
+Results: CI shows *Backend tests: N passed, 0 failed* on every PR (Checks → Backend → annotations).
 
 ## Acceptance criteria
 
@@ -137,6 +177,8 @@ Rules: integration tests use a real PostgreSQL (each test class gets its own dat
 - Deactivating a user signs them out immediately
 
 ## Sprint review demo
+
+The owner runs this during review, following [REVIEWING.md](REVIEWING.md):
 
 - Sign in as owner → Today checklist → edit property → add staff → roles matrix → audit trail
 

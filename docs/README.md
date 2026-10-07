@@ -2,7 +2,10 @@
 
 | Start here | |
 |---|---|
-| [SETUP.md](SETUP.md) | Install, clone, run, debug, reset the database |
+| [GETTING_STARTED.md](GETTING_STARTED.md) | Step by step: install tools (links), VS Code extensions, clone, run, test |
+| [SETUP.md](SETUP.md) | Reference: database commands, troubleshooting |
+| [sprints/REVIEWING.md](sprints/REVIEWING.md) | How the owner reviews and accepts a sprint |
+| [COSTS.md](COSTS.md) | ₹0 during development; what's paid at go-live and when to upgrade |
 | [sprints/README.md](sprints/README.md) | Current sprint, all sprints, per-sprint guides |
 | [sprints/PROCESS.md](sprints/PROCESS.md) | Ceremonies, Definition of Ready/Done, branching, releases |
 
