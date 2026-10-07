@@ -31,7 +31,7 @@ docker compose version
 
 Ask the product owner for:
 
-1. **GitHub access** to `Prathamesh27702/resort-os` (private).
+1. **GitHub access** to `Prathamesh27702/resort-os` (private). The whole joining process is in [ONBOARDING.md](ONBOARDING.md).
 2. **Integration keys**, only when your sprint needs them (Razorpay test mode from Sprint 11, WhatsApp/email from
    Sprint 24, Zoho Books sandbox from Sprint 25, channel manager from Sprint 26). They are shared privately, never
    in Git, chat channels or issues.
