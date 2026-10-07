@@ -61,3 +61,13 @@ public class DevSeedDiscoveryTests
         Assert.All(seeds, s => Assert.Contains("{{PROPERTY_CODE}}", s.Sql));
     }
 }
+
+public class BlockMessageTests
+{
+    [Theory]
+    [InlineData("2026-10-07", "2026-10-08", "for the night of 7 Oct 2026")]
+    [InlineData("2026-10-07", "2026-10-09", "for the nights of 7 Oct – 8 Oct 2026")]
+    [InlineData("2026-12-30", "2027-01-02", "for the nights of 30 Dec 2026 – 1 Jan 2027")]
+    public void Overlap_message_names_the_blocked_nights_not_the_free_day(string start, string end, string expected) =>
+        Assert.Equal(expected, Resort.Application.Accommodation.BlockService.NightsText(DateOnly.Parse(start, System.Globalization.CultureInfo.InvariantCulture), DateOnly.Parse(end, System.Globalization.CultureInfo.InvariantCulture)));
+}

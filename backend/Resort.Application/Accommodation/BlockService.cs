@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
 using Resort.Contracts;
@@ -77,7 +78,7 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
             .FirstOrDefaultAsync(ct);
         if (clash is not null)
             throw new ConflictAppException("BLOCK_OVERLAP",
-                $"{unit.Name}{(clash.BedId is null ? "" : " (a bed)")} is already blocked {clash.StartDate:d MMM yyyy} – {clash.EndDate:d MMM yyyy} ({clash.Reason}).");
+                $"{unit.Name}{(clash.BedId is null ? "" : " (a bed)")} is already blocked {NightsText(clash.StartDate, clash.EndDate)} ({clash.Reason}).");
 
         var block = new UnitBlock
         {
@@ -134,4 +135,16 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
     internal static UnitBlockDto ToDto(UnitBlock b, Domain.Accommodation.AccommodationUnit u, string? bedCode, string? createdByName) => new(
         b.Id, b.UnitId, u.Code, u.Name, b.BedId, bedCode, b.BlockType, b.StartDate, b.EndDate,
         b.EndDate.DayNumber - b.StartDate.DayNumber, b.Reason, b.Status, b.CreatedAt, createdByName, b.ReleasedAt, b.ReleaseReason);
+
+    /// <summary>"the night of 7 Oct 2026" or "the nights of 7 Oct – 8 Oct 2026" (the end date itself is not blocked).</summary>
+    internal static string NightsText(DateOnly start, DateOnly endExclusive)
+    {
+        var last = endExclusive.AddDays(-1);
+        var c = CultureInfo.InvariantCulture;
+        return last == start
+            ? string.Create(c, $"for the night of {start:d MMM yyyy}")
+            : start.Year == last.Year
+                ? string.Create(c, $"for the nights of {start:d MMM} – {last:d MMM yyyy}")
+                : string.Create(c, $"for the nights of {start:d MMM yyyy} – {last:d MMM yyyy}");
+    }
 }
