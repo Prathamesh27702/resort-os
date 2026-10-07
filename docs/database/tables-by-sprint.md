@@ -19,13 +19,13 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `login_events` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
 | `audit_logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
 | `schema_migrations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `accommodation_types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `accommodation_units` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `accommodation_type_amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `unit_images` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `unit_blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `accommodation_types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `accommodation_units` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `accommodation_type_amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `unit_images` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `unit_blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
 | `guests` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
 | `guest_addresses` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
 | `guest_documents` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |

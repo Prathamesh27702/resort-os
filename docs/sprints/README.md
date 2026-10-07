@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 01 — Foundation — identity, RBAC, organisation, properties, audit](sprint-01-foundation.md)** · status: 🟡 In review
+> **Current sprint: [Sprint 02 — Accommodation — room types, rooms, dormitory beds, blocks](sprint-02-accommodation.md)** · status: 🟡 In review
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -13,7 +13,7 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 |---|---|---|---|---|
 | 00 | [Architecture and requirements](sprint-00-architecture-and-requirements.md) | Phase 0 | M | 🟡 In review |
 | 01 | [Foundation — identity, RBAC, organisation, properties, audit](sprint-01-foundation.md) | Phase 1 | L | 🟡 In review |
-| 02 | [Accommodation — room types, rooms, dormitory beds, blocks](sprint-02-accommodation.md) | Phase 1 | M | ⚪ Planned |
+| 02 | [Accommodation — room types, rooms, dormitory beds, blocks](sprint-02-accommodation.md) | Phase 1 | M | 🟡 In review |
 | 03 | [Guests](sprint-03-guests.md) | Phase 2 | M | ⚪ Planned |
 | 04 | [Rate plans and packages](sprint-04-rate-plans-and-packages.md) | Phase 2 | M | ⚪ Planned |
 | 05 | [Availability engine and reservations core](sprint-05-availability-engine-and-reservations.md) | Phase 2 | L | ⚪ Planned |

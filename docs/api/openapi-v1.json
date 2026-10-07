@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:5181/"
+            "url": "http://localhost:5180/"
         }
     ],
     "paths": {
@@ -705,6 +705,652 @@
                     }
                 }
             }
+        },
+        "/api/v1/properties/{propertyId}/amenities": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AmenityDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/beds/{id}": {
+            "put": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateBedRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BedDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/accommodation-types": {
+            "get": {
+                "tags": [
+                    "Room types"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AccommodationTypeDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Room types"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateAccommodationTypeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/accommodation-types/{id}": {
+            "get": {
+                "tags": [
+                    "Room types"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccommodationTypeDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Room types"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateAccommodationTypeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccommodationTypeDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/rooms": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RoomDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRoomRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/rooms/status": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoomStatusBoardDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/rooms/{id}": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoomDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateRoomRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoomDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/rooms/{id}/beds": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BedDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Rooms"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateBedRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/blocks": {
+            "get": {
+                "tags": [
+                    "Blocks"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "unitId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "includeReleased",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UnitBlockDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Blocks"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateBlockRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/{propertyId}/blocks/{id}/release": {
+            "post": {
+                "tags": [
+                    "Blocks"
+                ],
+                "parameters": [
+                    {
+                        "name": "propertyId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReleaseBlockRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnitBlockDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -735,6 +1381,146 @@
                         "items": {
                             "type": "string"
                         }
+                    }
+                }
+            },
+            "AccommodationTypeDto": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "description",
+                    "inventoryMode",
+                    "baseOccupancy",
+                    "maxOccupancy",
+                    "sizeSqm",
+                    "sortOrder",
+                    "isActive",
+                    "amenityIds",
+                    "unitCount",
+                    "sellableItems",
+                    "maxGuests",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "inventoryMode": {
+                        "type": "string"
+                    },
+                    "baseOccupancy": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int16"
+                    },
+                    "maxOccupancy": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int16"
+                    },
+                    "sizeSqm": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "amenityIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "unitCount": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "sellableItems": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "maxGuests": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "AmenityDto": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "category"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
                     }
                 }
             },
@@ -843,6 +1629,93 @@
                     }
                 }
             },
+            "BedDto": {
+                "required": [
+                    "id",
+                    "unitId",
+                    "code",
+                    "name",
+                    "bedType",
+                    "sortOrder",
+                    "isActive",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "unitId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "bedType": {
+                        "type": "string"
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "BedStatusDto": {
+                "required": [
+                    "bedId",
+                    "code",
+                    "name",
+                    "isActive",
+                    "status",
+                    "blockId"
+                ],
+                "type": "object",
+                "properties": {
+                    "bedId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "blockId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    }
+                }
+            },
             "ChangePasswordRequest": {
                 "required": [
                     "currentPassword",
@@ -854,6 +1727,146 @@
                         "type": "string"
                     },
                     "newPassword": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreateAccommodationTypeRequest": {
+                "required": [
+                    "code",
+                    "name",
+                    "description",
+                    "inventoryMode",
+                    "baseOccupancy",
+                    "maxOccupancy",
+                    "sizeSqm",
+                    "sortOrder",
+                    "amenityIds"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "inventoryMode": {
+                        "type": "string"
+                    },
+                    "baseOccupancy": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int16"
+                    },
+                    "maxOccupancy": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int16"
+                    },
+                    "sizeSqm": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "amenityIds": {
+                        "type": [
+                            "null",
+                            "array"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                }
+            },
+            "CreateBedRequest": {
+                "required": [
+                    "code",
+                    "name",
+                    "bedType",
+                    "sortOrder"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "bedType": {
+                        "type": "string"
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    }
+                }
+            },
+            "CreateBlockRequest": {
+                "required": [
+                    "unitId",
+                    "bedId",
+                    "blockType",
+                    "startDate",
+                    "endDate",
+                    "reason"
+                ],
+                "type": "object",
+                "properties": {
+                    "unitId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "bedId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    },
+                    "blockType": {
+                        "type": "string"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "reason": {
                         "type": "string"
                     }
                 }
@@ -986,6 +1999,49 @@
                             "string"
                         ],
                         "format": "double"
+                    }
+                }
+            },
+            "CreateRoomRequest": {
+                "required": [
+                    "code",
+                    "name",
+                    "accommodationTypeId",
+                    "floor",
+                    "notes",
+                    "sortOrder"
+                ],
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "accommodationTypeId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "floor": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
                     }
                 }
             },
@@ -1386,6 +2442,17 @@
                     }
                 }
             },
+            "ReleaseBlockRequest": {
+                "required": [
+                    "reason"
+                ],
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string"
+                    }
+                }
+            },
             "ResetPasswordRequest": {
                 "required": [
                     "temporaryPassword"
@@ -1454,6 +2521,173 @@
                     }
                 }
             },
+            "RoomDto": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "accommodationTypeId",
+                    "accommodationTypeName",
+                    "inventoryMode",
+                    "floor",
+                    "notes",
+                    "sortOrder",
+                    "isActive",
+                    "beds",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "accommodationTypeId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "accommodationTypeName": {
+                        "type": "string"
+                    },
+                    "inventoryMode": {
+                        "type": "string"
+                    },
+                    "floor": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "beds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BedDto"
+                        }
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "RoomStatusBoardDto": {
+                "required": [
+                    "date",
+                    "rooms"
+                ],
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "rooms": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoomStatusDto"
+                        }
+                    }
+                }
+            },
+            "RoomStatusDto": {
+                "required": [
+                    "unitId",
+                    "code",
+                    "name",
+                    "typeName",
+                    "inventoryMode",
+                    "isActive",
+                    "status",
+                    "block",
+                    "activeBeds",
+                    "blockedBeds",
+                    "beds"
+                ],
+                "type": "object",
+                "properties": {
+                    "unitId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "typeName": {
+                        "type": "string"
+                    },
+                    "inventoryMode": {
+                        "type": "string"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "block": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "$ref": "#/components/schemas/UnitBlockDto"
+                            }
+                        ]
+                    },
+                    "activeBeds": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "blockedBeds": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "beds": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BedStatusDto"
+                        }
+                    }
+                }
+            },
             "SetUserRolesRequest": {
                 "required": [
                     "roles"
@@ -1465,6 +2699,224 @@
                         "items": {
                             "$ref": "#/components/schemas/RoleGrantDto"
                         }
+                    }
+                }
+            },
+            "UnitBlockDto": {
+                "required": [
+                    "id",
+                    "unitId",
+                    "unitCode",
+                    "unitName",
+                    "bedId",
+                    "bedCode",
+                    "blockType",
+                    "startDate",
+                    "endDate",
+                    "nights",
+                    "reason",
+                    "status",
+                    "createdAt",
+                    "createdByName",
+                    "releasedAt",
+                    "releaseReason"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "unitId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "unitCode": {
+                        "type": "string"
+                    },
+                    "unitName": {
+                        "type": "string"
+                    },
+                    "bedId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    },
+                    "bedCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "blockType": {
+                        "type": "string"
+                    },
+                    "startDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "endDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "nights": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "createdByName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "releasedAt": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "releaseReason": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "UpdateAccommodationTypeRequest": {
+                "required": [
+                    "name",
+                    "description",
+                    "inventoryMode",
+                    "baseOccupancy",
+                    "maxOccupancy",
+                    "sizeSqm",
+                    "sortOrder",
+                    "amenityIds",
+                    "isActive",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "inventoryMode": {
+                        "type": "string"
+                    },
+                    "baseOccupancy": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int16"
+                    },
+                    "maxOccupancy": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int16"
+                    },
+                    "sizeSqm": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+                        "type": [
+                            "null",
+                            "number",
+                            "string"
+                        ],
+                        "format": "double"
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "amenityIds": {
+                        "type": [
+                            "null",
+                            "array"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "UpdateBedRequest": {
+                "required": [
+                    "name",
+                    "bedType",
+                    "sortOrder",
+                    "isActive",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "bedType": {
+                        "type": "string"
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
                     }
                 }
             },
@@ -1635,6 +3087,58 @@
                     }
                 }
             },
+            "UpdateRoomRequest": {
+                "required": [
+                    "name",
+                    "accommodationTypeId",
+                    "floor",
+                    "notes",
+                    "sortOrder",
+                    "isActive",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "accommodationTypeId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "floor": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "sortOrder": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
             "UpdateUserRequest": {
                 "required": [
                     "fullName",
@@ -1754,6 +3258,15 @@
         },
         {
             "name": "Users"
+        },
+        {
+            "name": "Rooms"
+        },
+        {
+            "name": "Room types"
+        },
+        {
+            "name": "Blocks"
         }
     ]
 }

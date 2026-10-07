@@ -1,7 +1,7 @@
 # Reviewing a sprint
 
-How the product owner checks a finished sprint and accepts it (or sends it back). The example throughout is
-**Sprint 01**, which is waiting for this review now. You need the setup from [../GETTING_STARTED.md](../GETTING_STARTED.md).
+How the product owner checks a finished sprint and accepts it (or sends it back). **Sprints 01 and 02 are waiting
+for review now, together in one review PR**: do Part A once, then Part B's script for Sprint 01 followed by Sprint 02's. You need the setup from [../GETTING_STARTED.md](../GETTING_STARTED.md).
 
 ## How a sprint reaches you
 
@@ -21,7 +21,7 @@ flowchart LR
 
 ## Part A — Review on GitHub (20–40 minutes)
 
-Open the repo → **Pull requests** → the PR titled **"Sprint 01 review — …"**
+Open the repo → **Pull requests** → the PR titled **"Sprint 01 + 02 review — …"**
 ([#74](https://github.com/Prathamesh27702/resort-os/pull/74)).
 
 > Sprint 01 only: its code came in the repository's first commit, which is on both `main` and `develop`, so *Files
@@ -55,8 +55,11 @@ git pull
 pwsh -ExecutionPolicy Bypass -File scripts/db-reset.ps1     # start clean (answer y)
 ```
 
-Start the API and web app (Getting started, Step 6) and run the tests (Step 7). Then follow the sprint's
-**acceptance script**. For Sprint 01:
+Start the API and web app (Getting started, Step 6) and run the tests (Step 7). Then follow each sprint's
+**acceptance script**.
+
+### Sprint 01 — sign-in, staff, roles, audit
+
 
 | # | Do | You should see |
 |---|---|---|
@@ -73,6 +76,30 @@ Start the API and web app (Getting started, Step 6) and run the tests (Step 7). 
 | 11 | Shrink the browser to phone width (F12 → device toolbar, 390 px) | Menu collapses behind ☰; pages still usable |
 | 12 | Add another staff account (e.g. `test@demo.local`). Sign out, then enter a **wrong password 5 times** for it, then the right one | *Too many failed attempts. Try again later or ask a manager to reset your password.* (locked 15 minutes) |
 
+### Sprint 02 — rooms, dormitory and blocks
+
+Continue as the owner after the Sprint 01 script. The demo rooms come from the dev seed
+([what it adds](../database/schema-sprint-02.md#development-seed-data)). Screenshots of each screen:
+[sprint-02-screens/](sprint-02-screens/).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Today** | A 4th checklist step *Set up rooms*, already ticked (demo rooms exist). Menu has **Rooms**, **Room status**, **Room types** |
+| 2 | **Rooms** | *6 rooms and 10 dorm beds*. Three groups: Deluxe room (101, 102 · up to 3 guests per room), Standard room (103–106 · up to 2), Dormitory bed (DORM · 10 beds). All *Available* |
+| 3 | On the **103** row click the ⦸ (Block) icon. Why: *Maintenance*. First night: today. Available again on: the day after tomorrow. Reason: *AC compressor replacement*. **Block** | The dialog says *2 nights: (today) – (tomorrow)* before you save. After: *Room 103 blocked for 2 nights*, 103 shows **Blocked**, and the **Blocks** list at the bottom shows it with your name |
+| 4 | Block **103** again for tomorrow → the day after, reason *Painting* | Refused inside the dialog: *Room 103 is already blocked … (AC compressor replacement)*. Nothing is saved |
+| 5 | **Room status** | A tile per room. 103 is orange with the reason and *Free from …*. Use › to step to the day after tomorrow: 103 is green again (the end date isn't included, like a check-out) |
+| 6 | **Rooms → DORM** | Its bed list B01–B10 (bunk lower/upper). Untick **In use** on B10 → **Save** | *Bed B10 saved*; Rooms now says *9 dorm beds* |
+| 7 | Block → Room *Dormitory*, Bed *B01*, 1 night, reason *Mattress replacement* | Room status: DORM is amber *1 of 9 beds blocked*. Now try blocking the **whole dormitory** for the same night: refused, because a bed in it is already blocked |
+| 8 | Try to add beds to a normal room: open **Rooms → 101** | No bed section: beds exist only in rooms whose type is sold per bed (the database refuses it too) |
+| 9 | **Room types → Add room type**: *Per room*, name *Garden cottage*, code *garden cottage*, max guests 4, tick *Balcony*. **Add room type** | Code becomes `GARDEN_COTTAGE`. You land on **Add room** with the type preselected. Add code *C1*, name *Cottage 1* → it appears on Rooms |
+| 10 | **Room types → Garden cottage**, untick **Active** → **Save** | Refused: *Deactivate or move the rooms of this type first.* Open **Rooms → C1**, switch off *Room is in use*, save; then the type can be deactivated |
+| 11 | **Rooms → Blocks** list → **Release** on the 103 block, reason *Fixed early* | *Block released*; 103 is *Available* again |
+| 12 | **Audit trail** | The type, room and bed changes with old → new values; the block and the release, each with its reason (*AC compressor replacement*, *Fixed early*) |
+| 13 | Sign in as the receptionist in a private window (re-activate Riya first: **Staff accounts → Riya → Activate**) | Riya sees **Rooms**, **Room status**, **Room types**, but no *Add room*, *Block* or *Release* buttons, and fields are read-only. Typing `localhost:4300/rooms/new` sends her back |
+| 14 | Phone width (390 px) → **Room status** | Two tiles per row, no sideways scrolling |
+| 15 | Acceptance timing: on a fresh database with `DevSeed__Enabled=false` in `.env`, time yourself setting up 2 types, 6 rooms and a 10-bed dorm (**Add beds** → 10, bunk pairs) | Under 10 minutes |
+
 Write down anything that's wrong or confusing, with the step number. A screenshot helps; never include passwords
 or real guest data.
 
@@ -82,7 +109,8 @@ or real guest data.
 
 1. On the review PR: **Merge pull request** → choose **Create a merge commit**, not *Squash*, so `develop` and `main`
    keep the same history → **Confirm**.
-2. **Tag the release:** repo home → **Releases** → **Draft a new release** → *Choose a tag* → type `sprint-01` →
+2. **Tag the release** (for a combined review, tag the same merge as both `sprint-01` and `sprint-02`):
+   repo home → **Releases** → **Draft a new release** → *Choose a tag* → type `sprint-01` →
    *Create new tag on publish* → target **main** → title *Sprint 01 — Foundation* → **Generate release notes** →
    **Publish release**.
 3. Tell the team (or Claude) *"Sprint 01 accepted"*. They set `status: done` and `current: 2` in

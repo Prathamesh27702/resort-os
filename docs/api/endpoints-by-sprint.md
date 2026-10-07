@@ -23,15 +23,16 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `GET /api/v1/roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
 | `GET /api/v1/permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
 | `GET /api/v1/audit-logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|POST /api/v1/properties/{propertyId}/accommodation-types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|PUT /api/v1/properties/{propertyId}/accommodation-types/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/rooms` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|PUT /api/v1/properties/{propertyId}/rooms/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/rooms/{id}/beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `PUT /api/v1/properties/{propertyId}/beds/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `POST /api/v1/properties/{propertyId}/blocks/{id}/release` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET /api/v1/properties/{propertyId}/amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
+| `GET|POST /api/v1/properties/{propertyId}/accommodation-types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET|PUT /api/v1/properties/{propertyId}/accommodation-types/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET|POST /api/v1/properties/{propertyId}/rooms` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET /api/v1/properties/{propertyId}/rooms/status` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET|PUT /api/v1/properties/{propertyId}/rooms/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET|POST /api/v1/properties/{propertyId}/rooms/{id}/beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `PUT /api/v1/properties/{propertyId}/beds/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET|POST /api/v1/properties/{propertyId}/blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `POST /api/v1/properties/{propertyId}/blocks/{id}/release` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
+| `GET /api/v1/properties/{propertyId}/amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟡 In review |
 | `GET|POST /api/v1/guests` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
 | `GET|PUT /api/v1/guests/{id}` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
 | `GET /api/v1/guests/{id}/stays` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
