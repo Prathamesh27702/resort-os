@@ -21,7 +21,12 @@ flowchart LR
 
 ## Part A — Review on GitHub (20–40 minutes)
 
-Open the repo → **Pull requests** → the PR titled **"Sprint 01 review — …"**.
+Open the repo → **Pull requests** → the PR titled **"Sprint 01 review — …"**
+([#74](https://github.com/Prathamesh27702/resort-os/pull/74)).
+
+> Sprint 01 only: its code came in the repository's first commit, which is on both `main` and `develop`, so *Files
+> changed* shows only later additions. The PR description links the Sprint 01 code folders. From Sprint 02 the
+> review PR shows every file.
 
 1. **Conversation tab.** Read the summary. It links the sprint guide and lists what to check.
 2. **Checks.** At the bottom of the Conversation tab every check must be ✅ green (*Backend*, *Frontend*,
