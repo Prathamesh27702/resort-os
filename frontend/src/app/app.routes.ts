@@ -23,6 +23,16 @@ export const routes: Routes = [
       { path: 'settings/properties/new', canActivate: [permissionGuard('property.create')], loadComponent: () => import('./features/settings/properties/property-edit.page').then(m => m.PropertyEditPage) },
       { path: 'settings/properties/:id', canActivate: [permissionGuard('property.read')], loadComponent: () => import('./features/settings/properties/property-edit.page').then(m => m.PropertyEditPage) },
 
+      { path: 'settings/room-types', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/settings/room-types/room-types.page').then(m => m.RoomTypesPage) },
+      { path: 'settings/room-types/new', canActivate: [permissionGuard('accommodation.manage')], loadComponent: () => import('./features/settings/room-types/room-type-edit.page').then(m => m.RoomTypeEditPage) },
+      { path: 'settings/room-types/:id', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/settings/room-types/room-type-edit.page').then(m => m.RoomTypeEditPage) },
+
+      // /rooms (Sprint 2)
+      { path: 'rooms', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/rooms.page').then(m => m.RoomsPage) },
+      { path: 'rooms/new', canActivate: [permissionGuard('accommodation.manage')], loadComponent: () => import('./features/rooms/room-edit.page').then(m => m.RoomEditPage) },
+      { path: 'rooms/status', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/room-status.page').then(m => m.RoomStatusPage) },
+      { path: 'rooms/:id', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/room-edit.page').then(m => m.RoomEditPage) },
+
       // /users, /roles, /audit
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

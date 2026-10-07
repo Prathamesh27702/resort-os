@@ -113,6 +113,10 @@ if (app.Configuration.GetValue("Database:MigrateOnStartup", true))
     await app.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync(CancellationToken.None);
     await using var scope = app.Services.CreateAsyncScope();
     await scope.ServiceProvider.GetRequiredService<Bootstrapper>().RunAsync(CancellationToken.None);
+
+    // Demo rooms etc. for local development only (database/seed/dev). Never runs outside Development.
+    if (app.Environment.IsDevelopment() && app.Configuration.GetValue("DevSeed:Enabled", false))
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
 }
 
 // ------------------------------------------------------------------ pipeline
@@ -147,6 +151,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 
 app.MapAuthEndpoints();
 app.MapAdminEndpoints();
+app.MapAccommodationEndpoints();
 
 app.Run();
 

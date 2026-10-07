@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🟡 In review — **current sprint** | Phase 1 — Foundation, property, rooms, beds | L | [Sprint 00](sprint-00-architecture-and-requirements.md) |
+| 🟡 In review | Phase 1 — Foundation, property, rooms, beds | L | [Sprint 00](sprint-00-architecture-and-requirements.md) |
 
 **Goal:** A secure, multi-tenant base that every later module plugs into.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and merged to develop. Waiting for the owner's review in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — how to: [REVIEWING.md](REVIEWING.md).
+**Now:** Built and merged to develop. Being reviewed together with Sprint 02 in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — how to: [REVIEWING.md](REVIEWING.md).
 
 **Done so far**
 

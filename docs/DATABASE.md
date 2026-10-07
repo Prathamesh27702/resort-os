@@ -5,8 +5,9 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
 
 - Local setup, reset, backup/restore: [SETUP.md §6](SETUP.md#6-the-database)
 - Every planned table and the sprint that creates it: [database/tables-by-sprint.md](database/tables-by-sprint.md)
-- Column-level definitions of built tables: [database/schema-sprint-01.md](database/schema-sprint-01.md)
-  (one file per sprint as tables are added)
+- Column-level definitions of built tables, one file per sprint:
+  [Sprint 1 — foundation](database/schema-sprint-01.md) ·
+  [Sprint 2 — accommodation](database/schema-sprint-02.md) (rooms, dorm beds, blocks, dev seed data)
 
 ## Conventions (every table)
 
@@ -31,7 +32,10 @@ database/migrations/
   V001__foundation.sql
   V002__seed_permissions_roles.sql
   V003__audit_request_context.sql
-  V004__<next>.sql   ← you add this
+  V004__accommodation.sql
+  V005__<next>.sql   ← you add this
+database/seed/dev/
+  S001__accommodation.sql   ← demo rooms; Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.
@@ -43,7 +47,8 @@ database/migrations/
 5. **Backwards-compatible first.** Add columns as NULL or with defaults; backfill; only then add NOT NULL in a later
    migration. Never drop or rename a column in the same release as the code that stops using it.
 6. **Seed reference data** (permissions, roles, tax categories) goes in migrations. **Demo/dev data** goes in
-   `database/seed/dev` (Sprint 2), which only runs in Development.
+   `database/seed/dev/S###__name.sql`, which only runs in Development (`DevSeed__Enabled`), must be idempotent and
+   may use the placeholders `{{ORGANIZATION_CODE}}` and `{{PROPERTY_CODE}}` (the bootstrap organisation/property).
 7. **New permission?** Add it in a migration (`INSERT INTO permissions …`) and grant it to roles there, then
    regenerate [security/permission-matrix.md](security/permission-matrix.md).
 

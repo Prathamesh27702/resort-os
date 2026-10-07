@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Resort.Application.Accommodation;
 using Resort.Application.Audit;
 using Resort.Application.Common;
 using Resort.Application.Identity;
@@ -14,6 +15,9 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
 
         services.AddScoped<CallerAccess>();
+        services.AddScoped<AuditContext>();
+        services.AddScoped<AccommodationService>();
+        services.AddScoped<BlockService>();
         services.AddScoped<AuthService>();
         services.AddScoped<UserService>();
         services.AddScoped<RoleService>();

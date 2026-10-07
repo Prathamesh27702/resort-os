@@ -7,6 +7,10 @@ After this guide: [sprints/REVIEWING.md](sprints/REVIEWING.md) (how to review a 
 [sprints/README.md](sprints/README.md) (what each sprint is doing). Reference material and troubleshooting:
 [SETUP.md](SETUP.md).
 
+> **Reviewing Sprint 01 and Sprint 02 together?** Do Steps 1–8 once, then read
+> [What each sprint needs](#what-each-sprint-needs) at the end. Sprint 02 needs **nothing new installed and no new
+> keys**. Pull, restart the API, and the demo rooms appear.
+
 ---
 
 ## Step 1 — Install the tools
@@ -165,8 +169,8 @@ pwsh -ExecutionPolicy Bypass -File scripts/test.ps1      # macOS/Linux: bash scr
 
 Expected result:
 
-- Backend: **30 passed, 0 failed.** These include real-database tests; each test class creates and deletes its own temporary database.
-- Frontend: **Executed 6 of 6 SUCCESS.**
+- Backend: **51 passed, 0 failed** (30 from Sprint 01, 21 from Sprint 02). These include real-database tests; each test class creates and deletes its own temporary database.
+- Frontend: **Executed 14 of 14 SUCCESS.**
 
 You can also run backend tests one by one from VS Code's **Testing** panel (beaker icon).
 
@@ -191,6 +195,42 @@ New database migrations apply automatically when the API starts.
 
 Fresh local database: `pwsh -File scripts/db-reset.ps1` (macOS/Linux `bash scripts/db-reset.sh`), then restart the API.
 
+## What each sprint needs
+
+What you have to do on top of Steps 1–8 before you can run or review a sprint. Each new sprint adds a row here.
+
+| Sprint | New tools to install | New keys in `.env` | One-time steps after `git pull` |
+|---|---|---|---|
+| 01 — Foundation | Everything in Step 1 | `Jwt__SigningKey`, `Bootstrap__OwnerPassword`, `Encryption__Key` (the setup script fills them) | Step 5 |
+| 02 — Rooms | **None** | **None** | Restart the API (it adds the new tables and demo rooms). Database reset optional |
+
+### Sprint 02 in detail
+
+1. **Get the code:** `git switch develop` then `git pull`.
+2. **Web packages:** nothing new was added, but running `cd frontend; npm ci` once is harmless and fixes a stale
+   `node_modules`.
+3. **Start the API.** Your Sprint 01 database is upgraded in place. For a clean start, as the review script
+   assumes, run `pwsh -ExecutionPolicy Bypass -File scripts/db-reset.ps1` (answer `y`) first. That deletes anything
+   you typed in locally during Sprint 01 testing.
+4. **What happens when the API starts** (watch the API terminal):
+   - `Applying migration V004__accommodation`: creates the room, bed and block tables. It also switches on the
+     PostgreSQL extension `btree_gist`, which ships with PostgreSQL, so no install is needed.
+   - `Dev seed S001__accommodation: … 3 room types, 7 units, 10 beds created`: demo data for trying the screens,
+     with Deluxe 101–102, Standard 103–106 and a dormitory with beds B01–B10.
+5. **Sign in as the owner.** The menu now has **Rooms**, **Room status** and **Room types**, and the Today checklist
+   has a *Set up rooms* step.
+
+Good to know:
+
+- **Demo rooms run only on your PC.** They're added only when `ASPNETCORE_ENVIRONMENT=Development` (the default
+  locally), never on staging or production. They're added only to a property that has **no room types yet**, so they
+  never overwrite rooms you created.
+- **No demo rooms?** Look for `Dev seed` in the API terminal. *"property already has room types, skipped"* means
+  you (or an earlier run) already added types: reset the database to start over. To switch the demo data off, set `DevSeed__Enabled=false` in `.env`.
+- **Who can do what:** Owner and GM can set up types, rooms and beds. A Manager can block and release rooms. A
+  Receptionist, housekeeper or maintenance user can only view.
+- **Costs:** still ₹0. Sprint 02 uses nothing paid (see [COSTS.md](COSTS.md)).
+
 ## Problems?
 
 | Symptom | Fix |
@@ -203,6 +243,8 @@ Fresh local database: `pwsh -File scripts/db-reset.ps1` (macOS/Linux `bash scrip
 | API stops at *No database configured* | `.env` is missing; run Step 5 again from the repo root |
 | Sign-in says *Email or password is incorrect* | Use the password in `.env` → `Bootstrap__OwnerPassword`. It's set when the database is first created, so if you changed `.env` afterwards, reset the DB |
 | Blank page at :4300 | The API isn't running, or check the browser console (F12) |
+| API stops with *checksum mismatch* for a `V00x` migration | Someone edited an applied migration. Pull the latest `develop`; if it persists, reset the database |
+| Rooms page is empty after pulling Sprint 02 | Restart the API and look for `Dev seed` in its output (see *What each sprint needs*) |
 | `npm ci` very slow or fails on Windows | Move the repo out of OneDrive; add `C:\dev` to Windows Defender exclusions |
 
 More: [SETUP.md → Troubleshooting](SETUP.md#troubleshooting).

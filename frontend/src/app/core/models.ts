@@ -52,3 +52,38 @@ export const GST_STATES: { code: string; name: string }[] = [
   { code: '35', name: 'Andaman and Nicobar Islands' }, { code: '36', name: 'Telangana' }, { code: '37', name: 'Andhra Pradesh' },
   { code: '38', name: 'Ladakh' },
 ];
+
+// ---------------------------------------------------------------- Sprint 2 — accommodation
+export type InventoryMode = 'UNIT' | 'BED';
+export const BED_TYPES = ['SINGLE', 'BUNK_LOWER', 'BUNK_UPPER', 'DOUBLE'] as const;
+export const BLOCK_TYPES = ['MAINTENANCE', 'OUT_OF_ORDER', 'OWNER_USE', 'HOLD', 'OTHER'] as const;
+
+export interface Amenity { id: string; code: string; name: string; category: string; }
+
+export interface AccommodationType {
+  id: string; code: string; name: string; description: string | null; inventoryMode: InventoryMode;
+  baseOccupancy: number; maxOccupancy: number; sizeSqm: number | null; sortOrder: number; isActive: boolean;
+  amenityIds: string[]; unitCount: number; sellableItems: number; maxGuests: number; version: number;
+}
+
+export interface Bed { id: string; unitId: string; code: string; name: string; bedType: string; sortOrder: number; isActive: boolean; version: number; }
+
+export interface Room {
+  id: string; code: string; name: string; accommodationTypeId: string; accommodationTypeName: string; inventoryMode: InventoryMode;
+  floor: string | null; notes: string | null; sortOrder: number; isActive: boolean; beds: Bed[]; version: number;
+}
+
+/** Dates are the property's local dates (YYYY-MM-DD); endDate is exclusive, like a check-out date. */
+export interface UnitBlock {
+  id: string; unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null;
+  blockType: string; startDate: string; endDate: string; nights: number; reason: string; status: 'ACTIVE' | 'RELEASED';
+  createdAt: string; createdByName: string | null; releasedAt: string | null; releaseReason: string | null;
+}
+
+export type RoomState = 'AVAILABLE' | 'BLOCKED' | 'PARTLY_BLOCKED' | 'INACTIVE';
+export interface BedStatus { bedId: string; code: string; name: string; isActive: boolean; status: RoomState; blockId: string | null; }
+export interface RoomStatus {
+  unitId: string; code: string; name: string; typeName: string; inventoryMode: InventoryMode; isActive: boolean; status: RoomState;
+  block: UnitBlock | null; activeBeds: number; blockedBeds: number; beds: BedStatus[];
+}
+export interface RoomStatusBoard { date: string; rooms: RoomStatus[]; }
