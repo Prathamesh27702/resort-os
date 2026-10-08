@@ -16,6 +16,20 @@ public class PropertyLocalDateTests
     }
 }
 
+public class TimezoneRuleTests
+{
+    [Theory]
+    [InlineData("Asia/Kolkata", true)]
+    [InlineData("UTC", true)]
+    [InlineData("IST", false)]            // accepted by Windows' ICU, ambiguous (India/Israel/Ireland)
+    [InlineData("EST", false)]            // exists as a Linux tzdata file
+    [InlineData("India Standard Time", false)] // Windows id, not IANA
+    [InlineData("Mars/Olympus", false)]
+    [InlineData("", false)]
+    public void Only_IANA_area_city_names_or_UTC_are_accepted(string tz, bool ok) =>
+        Assert.Equal(ok, Resort.Application.Validation.Rules.IsIanaTimezone(tz));
+}
+
 public class MigrationTests
 {
     [Fact]
