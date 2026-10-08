@@ -9,7 +9,12 @@ dotnet test --filter "FullyQualifiedName~AuthTests"     # one class
 dotnet test --filter "FullyQualifiedName~Unit"          # no database needed
 cd frontend && npm run test:ci                          # frontend (headless Chrome)
 cd frontend && npm test                                 # frontend, watch mode
+cd frontend && npm run e2e                              # browser tests (own API + throwaway DB, ports 5181/4301)
+cd frontend && npm run e2e:ui                           # same, in a window where you watch each step
+node scripts/check-api.mjs                              # API checks against your running API (PASS/FAIL list)
 ```
+
+For the owner's view (UI → API → database, feature by feature): [testing/VERIFYING.md](testing/VERIFYING.md).
 
 `RESORT_TEST_DB` is a login on your local PostgreSQL that can create databases. `setup-dev` puts it in `.env`.
 
@@ -24,7 +29,8 @@ cd frontend && npm test                                 # frontend, watch mode
 | Concurrency | same | `Task.WhenAll` + `Barrier` | Fire N identical requests at once; assert exactly the allowed number succeed. Run in a loop (≥ 20×) to catch flakiness |
 | Webhooks | same + `tests/fakes` | Fake Razorpay / channel manager / WhatsApp servers | Duplicate delivery, bad signature, out-of-order events |
 | Frontend unit | `frontend/src/**/*.spec.ts` | Jasmine + Karma | Services, guards, pipes, form validators; components with logic |
-| E2E | `e2e/` (Sprint 13+) | Playwright | Critical workflows at desktop and 360 px mobile widths |
+| Browser (E2E) | `frontend/e2e/` | Playwright | Each sprint's REVIEWING.md script, automated; test names = step numbers (`S02-03 …`). Own API on 5181 + throwaway DB `resort_e2e` |
+| Windows | CI job *Backend — tests on Windows* | same backend suite | Catches OS differences (time-zone names come from ICU on Windows) |
 
 ## What each sprint must test
 

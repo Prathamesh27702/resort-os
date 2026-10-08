@@ -37,9 +37,9 @@
 
 **Test results**
 
-- Backend: 51 passed, 0 failed (30 from Sprint 01 + 21 new), real PostgreSQL 16
+- Backend: 58 passed, 0 failed, real PostgreSQL 16, on Linux and Windows (incl. the IST time-zone fix found in review)
 - Concurrency: 10 simultaneous block requests on one room → exactly 1 created, 9 × 409; repeated 20 times, no flakes
-- Frontend: 14 of 14 passed; ESLint clean; production build OK, no warnings
+- Frontend: 14 of 14 unit tests passed; 26 of 26 browser tests (Sprint 01 + 02 review scripts, automated); ESLint clean; production build OK
 - All 14 steps of the REVIEWING.md Sprint 02 script run in Chromium as owner and receptionist, desktop and 390 px phone width, no page errors ([screenshots](sprint-02-screens/))
 
 **Outcome**

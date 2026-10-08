@@ -56,7 +56,8 @@ pwsh -ExecutionPolicy Bypass -File scripts/db-reset.ps1     # start clean (answe
 ```
 
 Start the API and web app (Getting started, Step 6) and run the tests (Step 7). Then follow each sprint's
-**acceptance script**.
+**acceptance script**. Want to watch it done automatically first, or check the API and the stored data too? See
+[../testing/VERIFYING.md](../testing/VERIFYING.md): browser tests, `check-api.mjs`, and SQL checks per feature.
 
 ### Sprint 01 — sign-in, staff, roles, audit
 

@@ -54,6 +54,7 @@ docs/                       everything below
 | Topic | Doc |
 |---|---|
 | Joining the team: owner's and developer's checklist, working together | [docs/ONBOARDING.md](docs/ONBOARDING.md) |
+| Checking a sprint yourself: UI, API, database (+ where `.env` is) | [docs/testing/VERIFYING.md](docs/testing/VERIFYING.md) |
 | First-time setup, step by step (Windows/macOS, VS Code) | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) |
 | Reference: database commands, troubleshooting | [docs/SETUP.md](docs/SETUP.md) |
 | Reviewing and accepting a sprint | [docs/sprints/REVIEWING.md](docs/sprints/REVIEWING.md) |
