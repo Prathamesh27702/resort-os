@@ -61,7 +61,7 @@ You're set up when all of these are true:
 
 | Check | Expected |
 |---|---|
-| `pwsh -ExecutionPolicy Bypass -File scripts/test.ps1` | Backend **51 passed, 0 failed**; frontend **14 of 14 SUCCESS** (the numbers grow each sprint, see the current sprint guide) |
+| `pwsh -ExecutionPolicy Bypass -File scripts/test.ps1` | Backend **58 passed, 0 failed**; frontend **14 of 14 SUCCESS** (the numbers grow each sprint, see the current sprint guide) |
 | http://localhost:5180/health/ready | `Healthy` |
 | http://localhost:4300, sign in as `owner@demo.local` with **your** `Bootstrap__OwnerPassword` from **your** `.env` | *Good morning/afternoon, Demo* and the Today checklist |
 | **Rooms** in the menu | Deluxe 101–102, Standard 103–106, a dormitory with 10 beds (demo data, only on your PC) |

@@ -112,6 +112,95 @@ jobs:
           path: frontend/dist/resort-web/browser
           retention-days: 14
 
+  backend-windows:
+    # The owner and developers work on Windows. Some .NET behaviour differs there (e.g. time-zone names come from
+    # ICU, so "IST" was accepted on Windows but not on Linux). Same tests, Windows runner, PostgreSQL preinstalled.
+    name: Backend — tests on Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      # The runner image's built-in PostgreSQL account (documented by GitHub), not a secret.
+      RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=postgres;Password=root
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Start PostgreSQL
+        shell: pwsh
+        run: |
+          $svc = Get-Service -Name 'postgresql*' | Select-Object -First 1
+          Set-Service -InputObject $svc -StartupType Automatic
+          Start-Service -InputObject $svc
+          & "$env:PGBIN\pg_isready.exe" -h localhost -p 5432
+      - name: Test (unit + integration)
+        run: dotnet test ResortOS.sln -c Release --logger "trx;LogFileName=results.trx" --results-directory TestResults
+      - name: Test summary (fail if no tests ran)
+        if: always()
+        shell: pwsh
+        run: |
+          $trx = Get-ChildItem TestResults/*.trx | Select-Object -First 1
+          if (-not $trx) { Write-Output "::error::No test results produced"; exit 1 }
+          $c = ([xml](Get-Content $trx.FullName)).TestRun.ResultSummary.Counters
+          Write-Output "::notice title=Windows backend tests::$($c.passed) passed, $($c.failed) failed, $($c.total) total"
+          if ([int]$c.total -eq 0 -or [int]$c.failed -gt 0) { exit 1 }
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-windows-test-results
+          path: TestResults
+
+  e2e:
+    # Clicks through the staff app like a person: docs/sprints/REVIEWING.md scripts, automated (frontend/e2e).
+    name: Browser tests — Sprint 01–02 screens
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-throwaway   # ephemeral CI container, not a secret
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=ci;Password=ci-only-throwaway
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: One-off keys for this run (what scripts/setup-dev writes to .env on a PC)
+        run: |
+          echo "Jwt__SigningKey=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+          echo "Encryption__Key=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - name: Browser tests
+        run: npm run e2e
+      - name: Upload report (screenshots of every step; traces for failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-report
+          path: frontend/e2e-report
+          retention-days: 14
+
   migrations:
     name: Migrations — immutable and ordered
     runs-on: ubuntu-latest

@@ -18,6 +18,16 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - Docs: Sprint 02 API spec in `docs/API.md`, `docs/database/schema-sprint-02.md`, *What each sprint needs* in
   `docs/GETTING_STARTED.md`, Sprint 02 review script in `docs/sprints/REVIEWING.md`, screenshots.
 
+- Browser tests (`frontend/e2e`, Playwright): the Sprint 01 and 02 review scripts automated, 26 steps; watch them
+  with `npm run e2e:ui`. They use their own API and a throwaway database.
+- `scripts/check-api.mjs` (34 API checks, PASS/FAIL) and `database/queries/check-sprint-01-02.sql` (16 read-only checks).
+- `docs/testing/VERIFYING.md`: UI → API → database checks per feature, and where `.env` is.
+- CI: *Browser tests* and *Backend — tests on Windows* jobs.
+
+### Fixed
+- Time zone "IST" was accepted on Windows (ICU alias) but refused on Linux. Only IANA `Area/City` names or `UTC`
+  are accepted everywhere now. Found by the owner's test run on Windows.
+
 ### Changed
 - An audit reason sent in the request body (e.g. a block's reason) is recorded in preference to the `X-Change-Reason` header.
 

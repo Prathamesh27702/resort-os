@@ -169,7 +169,7 @@ pwsh -ExecutionPolicy Bypass -File scripts/test.ps1      # macOS/Linux: bash scr
 
 Expected result:
 
-- Backend: **51 passed, 0 failed** (30 from Sprint 01, 21 from Sprint 02). These include real-database tests; each test class creates and deletes its own temporary database.
+- Backend: **58 passed, 0 failed**. These include real-database tests; each test class creates and deletes its own temporary database.
 - Frontend: **Executed 14 of 14 SUCCESS.**
 
 You can also run backend tests one by one from VS Code's **Testing** panel (beaker icon).

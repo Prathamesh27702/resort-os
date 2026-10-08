@@ -2,6 +2,7 @@
 
 | Start here | |
 |---|---|
+| [testing/VERIFYING.md](testing/VERIFYING.md) | Checking a sprint: browser tests, API checks, database queries; what's in `.env` |
 | [ONBOARDING.md](ONBOARDING.md) | Adding a developer: owner's checklist, developer's checklist, daily collaboration, leaving |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | Step by step: install tools (links), VS Code extensions, clone, run, test |
 | [SETUP.md](SETUP.md) | Reference: database commands, troubleshooting |

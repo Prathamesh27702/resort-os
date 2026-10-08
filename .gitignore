@@ -23,3 +23,7 @@ secrets.json
 # tooling
 .DS_Store
 TestResults/
+
+# browser test output (frontend/e2e)
+e2e-report/
+e2e-results/
