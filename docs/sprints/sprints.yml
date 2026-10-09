@@ -35,6 +35,7 @@ sprints:
     outcome: "Pending: owner approval recorded as ADR-0000 in docs/architecture/decisions.md."
   depends: []
   goal: Agree the architecture, data model, permission model, API conventions and delivery plan before more code is written.
+  client: "We agreed how the whole system fits together, what data it keeps, who may do what, and the order of work, before writing code."
   scope:
     docs: [ARCHITECTURE.md, DATABASE.md, API.md, SECURITY.md, docs/architecture/lifecycles.md, docs/architecture/frontend.md, docs/architecture/decisions.md, docs/architecture/risks-and-open-questions.md, docs/security/permission-matrix.md]
   tasks:
@@ -85,6 +86,27 @@ sprints:
     outcome: "Accepted 10 Oct 2026. On main as tag sprint-01."
   depends: [0]
   goal: A secure, multi-tenant base that every later module plugs into.
+  client: "Staff sign in securely, each person sees only what their role allows, the owner manages properties and staff accounts, and every change is recorded in an audit trail."
+  handbook:
+    # Used by tools/handbooks to write the client overview and the software documentation. Fill it in when the sprint closes.
+    highlights:
+      - "Secure sign-in with lockout after 5 wrong passwords and forced change of temporary passwords"
+      - "17 ready-made staff roles (Owner, General Manager, Receptionist, Housekeeper, Kitchen, Driver…) and 117 permissions"
+      - "Staff accounts limited to one property or all properties; deactivating someone signs them out at once"
+      - "Property details, GST state, time zone and check-in/out times"
+      - "Audit trail: who changed what, when, from which device, and why"
+      - "Works on desktop and phone"
+    design:
+      ui: "An Angular 20 staff app with a left navigation that shows only the screens a person's permissions allow, and a top bar with the property name and its local clock (IST). Screens: Sign in, Today (a setup checklist that ticks itself off), Properties (list and editor), Staff accounts (list, create, edit roles, deactivate, reset password), Roles & permissions (a read-only matrix of 17 roles × 117 permissions), Audit trail (filterable history) and Change password. Every list has loading, empty and error states; forms show the server's field-level messages; the layout collapses behind a menu button below 900 px."
+      api: "REST endpoints under /api/v1 for auth (login, refresh, logout, me, change-password), organisation, properties and property settings, users and their roles, roles, permissions and audit logs. Each endpoint requires one permission code, checked against the property in the route. Access tokens last 15 minutes and live in memory; the refresh token is an HttpOnly cookie that rotates on every use, and reusing an old one revokes the whole session family. Edits send back a version number (optimistic concurrency, 409 on a stale edit). Errors always come back as {code, message, details, correlationId}."
+      database: "Migrations V001–V003 create 13 tables: organisations, properties and settings; users, roles, permissions, role_permissions and user_roles (a grant can be organisation-wide or for one property); refresh_tokens and login_events; audit_logs; system_settings and schema_migrations. V002 seeds the 117 permissions and 17 system roles. Database triggers make audit_logs and login_events append-only. The migrator records a SHA-256 checksum per file and refuses to start if a merged migration is edited."
+    screenshots:
+      - {file: docs/sprints/sprint-01-screens/03-today.png, caption: "Today: the owner's setup checklist"}
+      - {file: docs/sprints/sprint-01-screens/05-property-edit.png, caption: "Property editor: address, GST state, time zone, check-in/out times"}
+      - {file: docs/sprints/sprint-01-screens/07-users.png, caption: "Staff accounts with role and status"}
+      - {file: docs/sprints/sprint-01-screens/08-roles.png, caption: "Roles and permissions matrix (17 roles × 117 permissions)"}
+      - {file: docs/sprints/sprint-01-screens/09-audit.png, caption: "Audit trail: who changed what, when and why"}
+      - {file: docs/sprints/sprint-01-screens/12-mobile-nav.png, caption: "Phone width: the menu folds behind a button", width: 2.4}
   scope:
     tables: [organizations, properties, property_settings, system_settings, users, roles, permissions, role_permissions, user_roles, refresh_tokens, login_events, audit_logs, schema_migrations]
     migrations: [V001__foundation, V002__seed_permissions_roles, V003__audit_request_context]
@@ -176,6 +198,28 @@ sprints:
     outcome: "Accepted 10 Oct 2026. On main as tag sprint-02. Sprint 03 (guests) started."
   depends: [1]
   goal: Model the 6 rooms and the dormitory correctly (room-based vs bed-based inventory) and let managers block units.
+  client: "The resort's rooms and dormitory beds are set up in the system, can be taken out of sale for repairs or owner use, and their status is visible at a glance."
+  handbook:
+    highlights:
+      - "Room types with amenities, rooms, and a dormitory sold bed by bed"
+      - "Rooms or single beds blocked for maintenance, owner use or a hold, with a reason; overlapping blocks are refused"
+      - "Room status board: available, blocked, inactive, at a glance"
+      - "Demo property ready to try: Deluxe 101–102, Standard 103–106, a 10-bed dormitory"
+      - "Reception can see rooms; only the owner and general manager can change them"
+    design:
+      ui: "Rooms (grouped by type with today's status and a list of current and upcoming blocks), the room editor (with a dormitory bed editor and bulk add), the block dialog (dates, type, reason), release with a reason, the Room status board, and Room types (list and editor with amenities grouped by category). The Today checklist gains a Set up rooms step. Receptionists get read-only views; buttons they cannot use are hidden."
+      api: "Endpoints under /api/v1/properties/{propertyId}: amenities, accommodation types, rooms, room status, dormitory beds, blocks and block release. Configuration needs accommodation.manage; blocking needs unit_block.manage; reading needs accommodation.read. Blocks use property-local dates with the end date not included (like a check-out date). The overlap check runs under a row lock, and the database is the final guard: 10 simultaneous block requests on one room give exactly one block and nine 409 OVERLAP answers."
+      database: "Migration V004 adds 7 tables: accommodation_types (inventory_mode UNIT or BED), accommodation_type_amenities, amenities (22 built in), accommodation_units, beds, unit_images and unit_blocks. btree_gist EXCLUDE constraints stop two active blocks overlapping on one room or one bed; a trigger stops a whole-dorm block overlapping a single-bed block; other triggers keep beds only under bed-based rooms and refuse deleting blocks. Composite foreign keys keep every row inside one property. A development-only seed runner (database/seed/dev) loads the demo rooms once."
+    diagrams:
+      - {file: tools/handbooks/assets/er-accommodation.png, caption: "Accommodation tables and how they relate"}
+    screenshots:
+      - {file: docs/sprints/sprint-02-screens/02-rooms.png, caption: "Rooms grouped by type with today's status"}
+      - {file: docs/sprints/sprint-02-screens/03-block-dialog.png, caption: "Blocking a room: dates, type and a reason"}
+      - {file: docs/sprints/sprint-02-screens/04-overlap-refused.png, caption: "An overlapping block is refused with a clear message"}
+      - {file: docs/sprints/sprint-02-screens/05-room-status.png, caption: "Room status board"}
+      - {file: docs/sprints/sprint-02-screens/06-dorm-beds.png, caption: "Dormitory: beds B01–B10 managed one by one"}
+      - {file: docs/sprints/sprint-02-screens/09-room-type-editor.png, caption: "Room type editor with amenities"}
+      - {file: docs/sprints/sprint-02-screens/14-phone-rooms.png, caption: "Rooms at phone width", width: 2.4}
   scope:
     tables: [accommodation_types, accommodation_units, beds, amenities, accommodation_type_amenities, unit_images, unit_blocks]
     migrations: [V004__accommodation]
@@ -241,6 +285,7 @@ sprints:
   feature: guests
   depends: [1]
   goal: Guest profiles with only the data that is needed, encrypted sensitive fields, de-duplication and retention.
+  client: "Reception keeps one clean record per guest, finds returning guests by phone in one search, and stores ID documents encrypted and visible only to permitted staff."
   scope:
     tables: [guests, guest_addresses, guest_documents, guest_preferences, guest_consents]
     api:
@@ -282,6 +327,7 @@ sprints:
   feature: settings/rates
   depends: [2]
   goal: Configurable prices per type/date and packages whose revenue is split into room/food/transport/activity.
+  client: "Managers set room and bed prices by date, weekend rates and packages (for example room + breakfast), and get an instant price quote for any stay."
   scope:
     tables: [rate_plans, rate_plan_prices, packages, package_components, reservation_sources]
     api:
@@ -318,6 +364,7 @@ sprints:
   feature: reservations
   depends: [2, 3, 4]
   goal: Race-free booking of rooms and dorm beds with idempotent create and full status history (brief §14–16).
+  client: "Bookings for rooms and dorm beds are taken without double-booking, even when two people book the last room at the same moment."
   scope:
     tables: [reservations, reservation_units, reservation_guests, reservation_rate_breakdowns, reservation_notes, reservation_status_history, idempotency_keys]
     api:
@@ -360,6 +407,7 @@ sprints:
   feature: reservations
   depends: [5]
   goal: Day/week/month calendar showing room, guest, dates, status, source and payment status; safe drag-and-drop reassignment.
+  client: "A calendar shows every room and bed with its bookings by day, week or month; bookings can be moved by drag-and-drop with safety checks."
   scope:
     api:
       - GET /api/v1/properties/{propertyId}/calendar?from&to
@@ -389,6 +437,7 @@ sprints:
   feature: front-desk
   depends: [5]
   goal: Reception completes check-in and check-out in very few clicks.
+  client: "Reception checks guests in and out in a few clicks, with today's arrivals, departures and in-house guests on one screen."
   scope:
     api:
       - GET /api/v1/properties/{propertyId}/front-desk/arrivals?date
@@ -423,6 +472,7 @@ sprints:
   feature: folios
   depends: [7]
   goal: The folio is the central financial object for a stay (brief §20).
+  client: "Every stay has one running bill (folio) that collects room charges, meals, activities and transport."
   scope:
     tables: [folios, folio_items, folio_item_taxes]
     api:
@@ -455,6 +505,7 @@ sprints:
   feature: settings/gst
   depends: [8]
   goal: GST as a first-class, versioned, configurable domain (brief §23, §86).
+  client: "GST is calculated automatically and correctly for each item (CGST/SGST or IGST), with rates kept up to date by configuration, not code."
   scope:
     tables: [gst_registrations, tax_categories, tax_rules, tax_rule_slabs]
     api:
@@ -489,6 +540,7 @@ sprints:
   feature: payments
   depends: [8]
   goal: Record cash/UPI/card/bank payments, allocate them to folios, refund safely, reconcile the cash drawer (brief §21, §39).
+  client: "Cash, UPI, card and bank payments are recorded against the bill, refunds are controlled, and the cash drawer balances at shift end."
   scope:
     tables: [payments, payment_allocations, refunds, cash_drawers, cash_drawer_sessions, cash_drawer_movements]
     api:
@@ -522,6 +574,7 @@ sprints:
   feature: payments
   depends: [10]
   goal: Online payments where the server-verified webhook is authoritative (brief §22).
+  client: "Guests pay online with UPI and cards through Razorpay; payment links can be sent before arrival."
   scope:
     tables: [payment_gateway_orders, webhook_events]
     api:
@@ -553,6 +606,7 @@ sprints:
   feature: invoices
   depends: [9, 10]
   goal: Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
+  client: "Legally numbered GST invoices are produced from the bill; corrections are made only through credit and debit notes."
   scope:
     tables: [invoice_series, invoices, invoice_items, invoice_item_taxes, credit_notes, credit_note_items, debit_notes, debit_note_items, receipts, einvoice_records]
     api:
@@ -587,6 +641,7 @@ sprints:
   feature: housekeeping
   depends: [7]
   goal: Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
+  client: "Housekeeping and maintenance staff see their tasks on their phones, update room status, and report repairs with photos."
   scope:
     tables: [unit_housekeeping_status, housekeeping_tasks, housekeeping_checklist_templates, housekeeping_checklist_items, maintenance_assets, maintenance_tickets, maintenance_comments, maintenance_attachments]
     api:
@@ -618,6 +673,7 @@ sprints:
   feature: restaurant
   depends: [8, 9]
   goal: Orders, kitchen tickets, and charging to a room folio (brief §35, §55).
+  client: "The restaurant takes orders by table, sends tickets to the kitchen, and charges in-house guests directly to their room."
   scope:
     tables: [menu_categories, menu_items, menu_item_variants, modifier_groups, modifiers, restaurant_tables, orders, order_items, kots, kot_items]
     api:
@@ -649,6 +705,7 @@ sprints:
   feature: inventory
   depends: [14]
   goal: Stock ledger, consumption from recipes, wastage, and food-cost reporting (brief §36, §37).
+  client: "Stock is tracked as it is used, recipes give the real food cost per dish, and wastage is recorded."
   scope:
     tables: [inventory_categories, inventory_units, inventory_items, stock_locations, stock_movements, stock_adjustments, stock_counts, recipes, recipe_ingredients]
     screens: [/inventory]
@@ -676,6 +733,7 @@ sprints:
   feature: inventory
   depends: [15]
   goal: Purchase request → PO → goods received → supplier invoice → payment (brief §38).
+  client: "Purchasing runs from request to purchase order, goods received, supplier invoice and payment."
   scope:
     tables: [suppliers, purchase_requests, purchase_request_items, purchase_orders, purchase_order_items, goods_received_notes, grn_items, supplier_invoices, supplier_invoice_items, supplier_payments]
     screens: [/inventory/suppliers, /inventory/purchases]
@@ -701,6 +759,7 @@ sprints:
   feature: employees
   depends: [1]
   goal: Employee records (salary restricted) and shift rosters with clash detection (brief §42, §46).
+  client: "Staff records (with salaries visible only to authorised people) and weekly shift rosters with clash warnings."
   scope:
     tables: [departments, designations, employees, employee_documents, employee_compensation, shift_templates, roster_shifts]
     screens: [/employees, /roster]
@@ -727,6 +786,7 @@ sprints:
   feature: attendance
   depends: [17]
   goal: Mobile clock-in/out with geofence, breaks, timesheets with approval and locked corrections (brief §43, §44, §74).
+  client: "Staff clock in and out on their phones at the resort, and timesheets are approved by managers."
   scope:
     tables: [attendance_events, geofences, timesheets, timesheet_lines, timesheet_corrections]
     screens: [/attendance, /timesheets, employee dashboard]
@@ -754,6 +814,7 @@ sprints:
   feature: leave
   depends: [18]
   goal: Leave requests with balance/overlap/coverage checks feeding roster and payroll (brief §45).
+  client: "Leave requests check balances and cover; holidays and approved hours flow into a payroll export file."
   scope:
     tables: [leave_types, leave_policies, leave_balances, leave_ledger, leave_requests, holidays, payroll_exports]
     screens: [/leave]
@@ -779,6 +840,7 @@ sprints:
   feature: activities
   depends: [8]
   goal: Capacity-safe activity bookings and equipment issue/return (brief §48, §49).
+  client: "Activities are booked within capacity, and equipment (kayaks, snorkels, bicycles) is issued and returned with a record."
   scope:
     tables: [activities, activity_schedules, activity_bookings, equipment_types, equipment, equipment_assignments]
     screens: [/activities, /equipment]
@@ -804,6 +866,7 @@ sprints:
   feature: transport
   depends: [20]
   goal: Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
+  client: "The beach shuttle runs on scheduled trips with seat limits, drivers and passenger lists."
   scope:
     tables: [vehicles, transport_routes, vehicle_trips, trip_passengers]
     screens: [/transport]
@@ -829,6 +892,7 @@ sprints:
   feature: expenses
   depends: [10]
   goal: Expense capture with approval and budget vs actual (brief §40, §41).
+  client: "Expenses are captured with receipts and approval, and spending is compared with the budget."
   scope:
     tables: [expense_categories, cost_centres, expenses, expense_attachments, budgets, budget_lines]
     screens: [/expenses, /budgets]
@@ -852,6 +916,7 @@ sprints:
   feature: reports
   depends: [12, 15, 19, 22]
   goal: Owner and role dashboards plus the report list in brief §50–55, Power-BI-ready.
+  client: "Owners and managers get dashboards and reports: occupancy, revenue, GST, food cost, staff hours and more."
   scope:
     other: [reporting schema with views/materialised views, refreshed by jobs]
     screens:
@@ -878,6 +943,7 @@ sprints:
   feature: integrations
   depends: [5]
   goal: Configurable templates, delivery tracking and idempotent scheduled jobs (brief §32, §69, §70).
+  client: "Guests and staff receive WhatsApp and email messages from templates (confirmations, reminders, invoices) with delivery tracking."
   scope:
     tables: [message_templates, outbox_messages, notifications, whatsapp_messages, email_messages, job_runs]
     api: [/api/v1/webhooks/whatsapp]
@@ -907,6 +973,7 @@ sprints:
   feature: integrations
   depends: [12, 24]
   goal: Sync accounting without duplicates on retry (brief §26, §27, §25).
+  client: "Accounts sync automatically to Zoho Books, with a Tally export option, without duplicate entries."
   scope:
     tables: [accounting_connections, accounting_sync_records]
     external:
@@ -933,6 +1000,7 @@ sprints:
   feature: integrations
   depends: [5, 24]
   goal: One channel manager integration with idempotent import/modify/cancel (brief §28, §29, §75).
+  client: "Bookings from Booking.com, MakeMyTrip and other channels arrive automatically through a channel manager, and availability is pushed back."
   scope:
     tables: [ota_channels, ota_room_mappings, ota_rate_mappings, ota_reservations, ota_events, ota_inventory_pushes]
     api: [/api/v1/webhooks/channel-manager]
@@ -956,6 +1024,7 @@ sprints:
   size: L
   depends: [11, 24]
   goal: Public booking site with live availability and Razorpay (brief §30).
+  client: "Guests book and pay directly on the resort's own website, saving OTA commission."
   scope:
     api:
       - "/api/v1/public/* — separate"
@@ -987,6 +1056,7 @@ sprints:
   size: L
   depends: [13, 18]
   goal: Work through poor connectivity safely; MFA and OWASP verification (brief §56, §57, §68).
+  client: "The staff app keeps working through poor connectivity, managers use two-factor sign-in, and the system passes an OWASP security check."
   scope:
     other: [PWA caching of today's reservations, room status, housekeeping tasks, roster; ONLINE/OFFLINE/SYNCING/SYNC FAILED indicator]
   tasks:
@@ -1009,6 +1079,7 @@ sprints:
   size: L
   depends: [28]
   goal: Production-ready operations and the three acceptance tests (brief §60, §61, §73–75, §77, §78).
+  client: "The system goes live with backups, monitoring, alerts and a tested recovery plan, and passes the final acceptance tests."
   scope:
     other: [staging + production environments, approvals, backups with PITR, alerts, runbooks, user/admin manuals]
   tasks:

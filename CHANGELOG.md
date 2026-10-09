@@ -4,7 +4,14 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 
 ## [Unreleased] — Sprint 03 (in progress)
 
+### Added
 - Guests module started.
+- Handbooks: `docs/handbooks/Resort-OS-Product-Overview.docx` (for clients) and
+  `Resort-OS-Software-Documentation.docx` (architecture, UI/API/database design per sprint, code, tests), generated
+  from the repository by `tools/handbooks` and rebuilt at every sprint close. Diagrams in `tools/handbooks/diagrams`.
+- `sprints.yml`: a plain-language `client:` line for every sprint and a `handbook:` block for accepted sprints.
+- *Release tags* workflow: tags `sprint-NN` on `main` for every sprint marked done.
+- PROCESS.md: *Closing a sprint* checklist.
 
 ## [sprint-02] — 2026-10-10 — Accommodation (accepted)
 
