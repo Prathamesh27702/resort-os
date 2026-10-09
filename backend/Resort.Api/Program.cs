@@ -107,6 +107,9 @@ builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecurityTransfor
 
 var app = builder.Build();
 
+// Fail at start-up, not on the first guest document, if the field-encryption key is missing or malformed.
+_ = app.Services.GetRequiredService<IFieldEncryptor>();
+
 // ------------------------------------------------------------------ database
 if (app.Configuration.GetValue("Database:MigrateOnStartup", true))
 {
@@ -152,6 +155,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 app.MapAuthEndpoints();
 app.MapAdminEndpoints();
 app.MapAccommodationEndpoints();
+app.MapGuestEndpoints();
 
 app.Run();
 

@@ -37,6 +37,9 @@ public class ResortApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected virtual int AuthRateLimit => 100_000;
 
+    /// <summary>Where this factory's API stores files (encrypted ID scans). Deleted with the database.</summary>
+    public string FileRoot { get; } = Path.Combine(Path.GetTempPath(), "resort-tests", Guid.NewGuid().ToString("N")[..8]);
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -55,6 +58,9 @@ public class ResortApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Bootstrap:OwnerPassword", OwnerPassword);
         builder.UseSetting("Bootstrap:OwnerMustChangePassword", "false");
         builder.UseSetting("Serilog:MinimumLevel:Default", "Warning");
+        // Throwaway test key (32 zero-to-31 bytes) and a private folder for ID scans.
+        builder.UseSetting("Encryption:Key", Convert.ToBase64String(Enumerable.Range(0, 32).Select(i => (byte)i).ToArray()));
+        builder.UseSetting("FileStore:Root", FileRoot);
     }
 
     public async Task InitializeAsync()
@@ -84,6 +90,7 @@ public class ResortApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await c.OpenAsync();
         await using var drop = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{dbName}\" WITH (FORCE)", c);
         await drop.ExecuteNonQueryAsync();
+        if (Directory.Exists(FileRoot)) Directory.Delete(FileRoot, recursive: true);
     }
 
     public TestClient NewClient() => new(CreateClient(new WebApplicationFactoryClientOptions
@@ -182,6 +189,14 @@ public sealed class TestClient(HttpClient http)
     public Task<HttpResponseMessage> GetAsync(string url) => SendAsync(HttpMethod.Get, url, null);
     public Task<HttpResponseMessage> PostAsync(string url, object? body = null) => SendAsync(HttpMethod.Post, url, body);
     public Task<HttpResponseMessage> PutAsync(string url, object body) => SendAsync(HttpMethod.Put, url, body);
+
+    /// <summary>Sends any body (e.g. multipart/form-data for document uploads) with the access token.</summary>
+    public async Task<HttpResponseMessage> PostContentAsync(string url, HttpContent content)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+        if (AccessToken is not null) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+        return await Http.SendAsync(req);
+    }
 
     public async Task<T> GetJsonAsync<T>(string url)
     {

@@ -33,7 +33,7 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
                 await Problems.Write(ctx, 400, "VALIDATION_FAILED", "Some fields need fixing.", errors);
                 return true;
             case NotFoundAppException e: await Problems.Write(ctx, 404, e.Code, e.Message); return true;
-            case ConflictAppException e: await Problems.Write(ctx, 409, e.Code, e.Message); return true;
+            case ConflictAppException e: await Problems.Write(ctx, 409, e.Code, e.Message, e.Details); return true;
             case ConcurrencyAppException e: await Problems.Write(ctx, 409, e.Code, e.Message); return true;
             case ForbiddenAppException e: await Problems.Write(ctx, 403, e.Code, e.Message); return true;
             case UnauthorizedAppException e: await Problems.Write(ctx, 401, e.Code, e.Message); return true;
