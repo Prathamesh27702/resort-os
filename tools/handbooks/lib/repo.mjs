@@ -63,6 +63,12 @@ export function loadRepo(root) {
     e2e: count(e2e.filter(f => f.endsWith('.spec.ts')), /^test\(/gm),
   };
 
+  // Hand-run checks: API check script and read-only SQL check files
+  const apiScript = read('scripts/check-api.mjs');
+  const apiChecks = (apiScript.match(/await expectCall\(/g) ?? []).length + (apiScript.match(/results\.push\(\{ section, name: '/g) ?? []).length;
+  const sqlFiles = readdirSync(join(root, 'database', 'queries')).filter(f => f.endsWith('.sql')).sort();
+  const sqlChecks = sqlFiles.map(f => ({ file: `database/queries/${f}`, count: (read(`database/queries/${f}`).match(/^-- \d+\./gm) ?? []).length }));
+
   // Backend projects
   const projects = readdirSync(join(root, 'backend')).filter(d => d.startsWith('Resort.'));
 
@@ -92,7 +98,7 @@ export function loadRepo(root) {
 
   return {
     root, plan, sprints, done, lastDone, current, history, permissions: permRows, roles: roleRows, migrations, operations,
-    code, testMethods, projects, pkgs, feVer, sdk, ciJobs, git,
+    code, testMethods, apiChecks, sqlChecks, projects, pkgs, feVer, sdk, ciJobs, git,
     rel: (p) => relative(root, p),
     abs: (p) => join(root, p),
   };

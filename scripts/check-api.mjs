@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–02: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–03: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -8,6 +8,8 @@
 // What it changes in your local database (safe to run again and again):
 //   - a staff account apicheck.receptionist@demo.local (created once; its password is reset on each run)
 //   - one block on Room 103, about 60 nights from today, which it then releases (released blocks stay as history)
+//   - a guest "API Check Guest" (+91 90000 00999, created once) with one more passport document per run, and one
+//     throwaway guest per run that it anonymises straight away
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -156,6 +158,57 @@ await expectCall('Receptionist can\'t add rooms (403)', 'POST', `${P}/rooms`, 40
   { token: R, body: { code: 'X1', name: 'X', accommodationTypeId: rooms.json[0].accommodationTypeId, sortOrder: 0 } });
 await expectCall('Audit trail has the block reasons', 'GET', '/api/v1/audit-logs?entityType=UnitBlock&pageSize=20', 200, { token: T },
   b => (b.items.some(a => a.reason === 'API check') && b.items.some(a => a.reason === 'API check done')) || 'reasons not found');
+
+// ---------------------------------------------------------------- Sprint 03 — guests
+title('Sprint 03 — guests, ID documents, privacy');
+const CHECK_PHONE = '+919000000999';
+let checkGuest = (await call('GET', `/api/v1/guests?q=${encodeURIComponent('90000 00999')}`, { token: T })).json?.items?.[0];
+if (!checkGuest) {
+  checkGuest = (await expectCall('Create the check guest (first run only)', 'POST', '/api/v1/guests', 201,
+    { token: T, body: { firstName: 'API Check', lastName: 'Guest', phone: CHECK_PHONE, nationality: 'GB', isVip: false, ignoreDuplicates: true } }))?.json;
+}
+await expectCall('Find the guest by phone, typed the local way', 'GET', `/api/v1/guests?q=${encodeURIComponent('090000 00999')}`, 200,
+  { token: R }, b => (b.items.length === 1 && b.items[0].phone === CHECK_PHONE) || `found ${b.items.length}`);
+await expectCall('Same phone again → 409 POSSIBLE_DUPLICATE (lists the existing profile)', 'POST', '/api/v1/guests', 409,
+  { token: R, body: { firstName: 'Api', lastName: 'Check', phone: '90000 00999', isVip: false } },
+  b => (b.code === 'POSSIBLE_DUPLICATE' && b.details.some(d => d.reasons.includes('Same phone'))) || b.code);
+await expectCall('Invalid phone → 400 with a field message', 'POST', '/api/v1/guests', 400,
+  { token: R, body: { firstName: 'X', phone: '12345', isVip: false } }, b => !!b.details?.Phone || 'no Phone message');
+await expectCall('Not signed in → 401', 'GET', '/api/v1/guests', 401);
+
+async function upload(token, guestId, fields, file) {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+  if (file) fd.set('file', new Blob([file], { type: 'image/png' }), 'passport.png');
+  const res = await fetch(`${BASE}/api/v1/guests/${guestId}/documents`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: fd });
+  return { status: res.status, json: await res.json().catch(() => undefined) };
+}
+const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+const passportNo = 'P' + randomBytes(4).toString('hex').toUpperCase().slice(0, 7);
+let doc;
+{
+  const r = await upload(R, checkGuest.id, { documentType: 'PASSPORT', number: passportNo, issuingCountry: 'GB' }, png);
+  const ok = r.status === 201 && r.json?.maskedNumber === '•••• ' + passportNo.slice(-4);
+  results.push({ section, name: 'Receptionist adds a passport with a scan (multipart)', ok });
+  console.log(`${ok ? ' PASS' : ' FAIL'}  Receptionist adds a passport with a scan (multipart)\n       POST /guests/{id}/documents → expected 201, masked number${ok ? '' : ` · got ${r.status} ${JSON.stringify(r.json)}`}`);
+  doc = r.json;
+}
+if (doc?.id) {
+  await expectCall('Open the document: number is decrypted for this view', 'GET', `/api/v1/guests/${checkGuest.id}/documents/${doc.id}`, 200,
+    { token: R }, b => b.number === passportNo || `number ${b.number}`);
+  await expectCall('The opening is in the audit trail (SENSITIVE_READ)', 'GET', `/api/v1/audit-logs?entityType=GuestDocument&entityId=${doc.id}`, 200,
+    { token: T }, b => b.items.some(a => a.action === 'SENSITIVE_READ') || 'no SENSITIVE_READ row');
+}
+const forgetMe = await expectCall('Create a throwaway guest to anonymise', 'POST', '/api/v1/guests', 201,
+  { token: T, body: { firstName: 'Forget', lastName: 'Me ' + randomBytes(2).toString('hex'), isVip: false, ignoreDuplicates: true } });
+if (forgetMe?.json?.id) {
+  await expectCall('Receptionist can\'t anonymise (403)', 'POST', `/api/v1/guests/${forgetMe.json.id}/anonymise`, 403, { token: R, body: { reason: 'test' } });
+  await expectCall('Owner anonymises with a reason', 'POST', `/api/v1/guests/${forgetMe.json.id}/anonymise`, 200,
+    { token: T, body: { reason: 'API check: guest asked to be forgotten' } },
+    b => (b.status === 'ANONYMISED' && b.lastName === null && b.fullName === 'Anonymised guest') || b.status);
+}
+await expectCall('Retention dry run lists what would be purged, deletes nothing', 'GET', '/api/v1/guests/retention/dry-run', 200,
+  { token: T }, b => (typeof b.retentionDays === 'number' && Array.isArray(b.items)) || 'unexpected body');
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

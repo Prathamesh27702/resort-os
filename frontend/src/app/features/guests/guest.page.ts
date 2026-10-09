@@ -191,6 +191,11 @@ const CONSENT_LABEL: Record<string, string> = {
     .row h2 { margin: 0; }
     .err { color: #b3261e; }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) {
+      .plain tr { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 6px 0; border-bottom: 1px solid #edf1f0; }
+      .plain td.right { grid-column: 1 / -1; text-align: left; }
+      dl { grid-template-columns: 96px 1fr; }
+    }
   `,
 })
 export class GuestPage implements OnInit, OnDestroy {

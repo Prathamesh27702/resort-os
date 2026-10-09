@@ -282,7 +282,7 @@ export function technicalBody(r) {
     'Backend — build, lint, test': 'Restore, build with warnings as errors, dotnet format check, all backend tests against PostgreSQL 16 on Linux',
     'Frontend — lint, test, build': 'npm ci, ESLint, unit tests in headless Chrome, production build',
     'Backend — tests on Windows': 'All backend tests on a Windows runner with PostgreSQL (catches platform differences such as time-zone lookup)',
-    'Browser tests — Sprint 01–02 screens': 'Starts its own API, web app and throwaway database; runs the sprint review scripts in Chromium; uploads the report',
+    'Browser tests — sprint review scripts': 'Starts its own API, web app and throwaway database; runs the sprint review scripts in Chromium; uploads the report',
     'Migrations — immutable and ordered': 'Merged migration files unchanged; numbering continuous',
     'Security — secrets and vulnerable packages': 'gitleaks over the history; known-vulnerable NuGet and npm packages fail the build',
   })[name] ?? '']), [3400, tw - 3400], { zebra: true, boldFirst: true }));
@@ -290,27 +290,30 @@ export function technicalBody(r) {
 
   // 10 ────────────────────────────────────────────────────────────
   b.h1('Sprint record');
-  b.add(p('One section per sprint that has been accepted, then the sprint in progress. Each accepted sprint lists its outcome, the UI, API and database design, the code that changed, the tests and their results, and the behaviours a developer should know about.'));
+  b.add(p('One section per sprint that has been accepted or is built and waiting for review, then the plan of the sprint in progress. Each lists its outcome, the UI, API and database design, the code that changed, the tests and their results, and the behaviours a developer should know about.'));
   b.add(table(['#', 'Sprint', 'Size', 'Status', 'Outcome'],
     r.sprints.filter(s => s.status !== 'planned').map(s => [two(s.id), s.title, s.size, STATUS[s.status].text, clean(s.progress?.outcome ?? s.progress?.now ?? '')]),
     [500, 2600, 600, 1200, tw - 4900],
     { size: 17, fills: (ri, ci, row) => (ci === 3 ? STATUS[r.sprints.find(s => two(s.id) === row[0]).status].fill : undefined) }));
-  for (const s of r.done) sprintSection(b, r, s);
-  currentSection(b, r, r.current);
+  // Accepted sprints, plus a sprint that is built and waiting for review (it has its handbook notes filled in).
+  const recorded = r.sprints.filter(s => s.status === 'done' || (s.status === 'in-review' && s.handbook && s.id > 0));
+  for (const s of recorded) sprintSection(b, r, s);
+  if (!recorded.includes(r.current)) currentSection(b, r, r.current);
 
   // 11 ────────────────────────────────────────────────────────────
   b.h1('Quality report');
-  b.add(p(`Results as recorded at the acceptance of Sprint ${last ? two(last.id) : '—'}, and the test inventory in the repository at commit ${r.git.sha}.`));
+  const latest = [...r.sprints].reverse().find(s => s.status !== 'planned' && s.progress?.results && s.id > 0) ?? last;
+  b.add(p(`Results as recorded for Sprint ${latest ? two(latest.id) : '—'} (${latest ? STATUS[latest.status].text.toLowerCase() : ''}), and the test inventory in the repository at commit ${r.git.sha}.`));
   b.add(table(['Kind', 'Where', 'Tool', 'Count', 'Runs'], [
     ['Backend unit + integration', 'backend/Resort.Tests', 'xUnit, real PostgreSQL 16', `${r.testMethods.backend} methods`, 'CI on Linux and Windows; scripts/test'],
     ['Frontend unit', 'frontend/src/**/*.spec.ts', 'Jasmine + Karma', `${r.testMethods.frontend} specs`, 'CI; npm test'],
     ['Browser (end to end)', 'frontend/e2e', 'Playwright, Chromium', `${r.testMethods.e2e} steps`, 'CI; npm run e2e:headed to watch'],
-    ['API checks', 'scripts/check-api.mjs', 'Node', '34 checks', 'By hand against a running API'],
-    ['Database checks', 'database/queries/check-sprint-01-02.sql', 'psql / any SQL client', '16 queries', 'By hand, read-only'],
+    ['API checks', 'scripts/check-api.mjs', 'Node', `${r.apiChecks} checks`, 'By hand against a running API'],
+    ...r.sqlChecks.map(q => ['Database checks', q.file, 'psql / any SQL client', `${q.count} queries`, 'By hand, read-only']),
   ], [2000, 2500, 1700, 1200, tw - 7400], { zebra: true, boldFirst: true, size: 18 }));
-  if (last?.progress?.results) {
-    b.h2(`Latest recorded results (Sprint ${two(last.id)})`);
-    b.add(bullets(last.progress.results.map(clean)));
+  if (latest?.progress?.results) {
+    b.h2(`Latest recorded results (Sprint ${two(latest.id)})`);
+    b.add(bullets(latest.progress.results.map(clean)));
   }
   b.h2('Code size');
   const cs = r.code;
@@ -372,12 +375,13 @@ export function technicalBody(r) {
 function sprintSection(b, r, s) {
   const tw = TEXT_W;
   const hb = s.handbook ?? {};
-  b.h2(`Sprint ${two(s.id)} — ${s.title}`);
+  b.h2(`Sprint ${two(s.id)} — ${s.title}${s.status === 'done' ? '' : ` (${STATUS[s.status].text.toLowerCase()})`}`);
   b.add(kv([
     ['Goal', clean(s.goal)],
     ['In plain words', s.client ?? ''],
     ['Phase / size', `${s.phase} — ${PHASES[s.phase]} · ${s.size}`],
     ['Depends on', (s.depends ?? []).map(d => `Sprint ${two(d)}`).join(', ') || '—'],
+    ['Status', STATUS[s.status].text],
     ['Outcome', clean(s.progress?.outcome ?? '')],
   ], 2100));
   if (s.progress?.done) { b.h3('What was delivered'); b.add(bullets(s.progress.done.map(clean))); }

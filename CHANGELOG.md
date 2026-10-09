@@ -2,10 +2,32 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [Unreleased] — Sprint 03 (in progress)
+## [Unreleased] — Sprint 03 — Guests (in review)
 
 ### Added
-- Guests module started.
+- Migration V005: `guests`, `guest_addresses`, `guest_documents`, `guest_preferences`, `guest_consents`, a data
+  classification on every column, `pg_trgm` search indexes and database guards (guests never deleted, anonymised rows
+  empty, Aadhaar never stored in full, consent history append-only).
+- Field-level encryption (AES-256-GCM, HKDF-derived keys, key id per row, row-bound associated data) for guest ID
+  numbers, document details and scans; key rotation steps in `docs/SECURITY.md`. The API refuses to start without a
+  valid `Encryption__Key`.
+- File storage abstraction (`IFileStore`) with a local-disk implementation (`App_Data/files`, gitignored).
+- Guest APIs under `/api/v1/guests`: search by any part of a phone number or by name/email/company, duplicate warning
+  (`409 POSSIBLE_DUPLICATE`), edit with versions, consent history, merge, anonymise, retention dry run, ID documents
+  (multipart upload, masked list, audited opening of number and scan).
+- Phone numbers normalised to E.164 (Indian numbers can be typed the local way).
+- Audit trail: personal guest fields are named but stored as `***`; `SENSITIVE_READ` rows when a document is opened;
+  labels for room, block and guest entries in the Audit trail screen.
+- Dev seed S002: 20 invented guests (14 Indian, 6 international).
+- Staff app: Guests list and search, add/edit guest with duplicate warning, guest profile with consent, stays and
+  ID documents, add-document, merge and anonymise dialogs.
+- Tests: 44 backend (13 integration, 31 unit), 6 frontend, 13 browser steps (S03-01…S03-13);
+  `check-api.mjs` Sprint 03 block (12 checks); `database/queries/check-sprint-03.sql` (14 queries).
+- `E2E_SCREENSHOTS=<folder>` makes the browser tests save the review screenshots.
+
+### Changed
+- CI job *Browser tests — Sprint 01–02 screens* renamed *Browser tests — sprint review scripts*.
+- `ConflictAppException` can carry details in the error body (used for the duplicate list).
 - Handbooks: `docs/handbooks/Resort-OS-Product-Overview.docx` (for clients) and
   `Resort-OS-Software-Documentation.docx` (architecture, UI/API/database design per sprint, code, tests), generated
   from the repository by `tools/handbooks` and rebuilt at every sprint close. Diagrams in `tools/handbooks/diagrams`.

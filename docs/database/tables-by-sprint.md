@@ -26,11 +26,11 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `accommodation_type_amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
 | `unit_images` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
 | `unit_blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
-| `guests` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `guest_addresses` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `guest_documents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `guest_preferences` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `guest_consents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `guests` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟡 In review |
+| `guest_addresses` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟡 In review |
+| `guest_documents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟡 In review |
+| `guest_preferences` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟡 In review |
+| `guest_consents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟡 In review |
 | `rate_plans` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
 | `rate_plan_prices` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
 | `packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |

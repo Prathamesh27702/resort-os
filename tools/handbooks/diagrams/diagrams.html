@@ -480,5 +480,105 @@
     <text class="xs" x="22" y="80" style="fill:#A9C3C7">Offline use, two-factor sign-in and security testing: Sprint 28 · Backups, monitoring, go-live: Sprint 29</text>
   </g>
 </svg>
+
+<!-- ============ 8. Guests ER (Sprint 3) ============ -->
+<svg id="er-guests" width="1200" height="640" viewBox="0 0 1200 640">
+  <rect width="1200" height="640" fill="#fff"/>
+  <style>
+    .tbl2 { fill: #fff; stroke: #2F6F7B; stroke-width: 1.6; }
+    .th2 { fill: #2F6F7B; }
+    .sens { fill: #8A2449; }
+    .c2 { fill: #1B2A2E; font-size: 12.5px; }
+    .t2 { fill: #7A888B; font-size: 11.5px; }
+    .k2 { fill: #8A2449; font-size: 11.5px; }
+    .rel2 { stroke: #4A5A5E; stroke-width: 1.5; fill: none; }
+    .card2 { fill: #8A2449; font-size: 11.5px; font-weight: 600; }
+  </style>
+  <!-- organizations -->
+  <g transform="translate(30,30)">
+    <rect class="tbl2" width="200" height="78" rx="6"/><rect class="th2" width="200" height="30" rx="6"/><rect class="th2" y="20" width="200" height="10"/>
+    <text class="t w b" x="12" y="21">organizations</text>
+    <text class="c2" x="12" y="52">id</text><text class="t2" x="120" y="52">uuid PK</text>
+    <text class="c2" x="12" y="70" style="fill:#7A888B">(Sprint 01)</text>
+  </g>
+  <!-- guests -->
+  <g transform="translate(330,30)">
+    <rect class="tbl2" width="290" height="378" rx="6"/><rect class="th2" width="290" height="30" rx="6"/><rect class="th2" y="20" width="290" height="10"/>
+    <text class="t w b" x="12" y="21">guests</text>
+    <text class="c2" x="12" y="52">id</text><text class="t2" x="170" y="52">uuid PK</text>
+    <text class="c2" x="12" y="72">organization_id</text><text class="t2" x="170" y="72">uuid FK</text>
+    <text class="c2" x="12" y="92">first_name, last_name</text><text class="t2" x="170" y="92">confidential</text>
+    <text class="c2" x="12" y="112">phone</text><text class="t2" x="170" y="112">E.164 +91…</text>
+    <text class="c2" x="12" y="132">email</text><text class="t2" x="170" y="132">lower-case</text>
+    <text class="c2" x="12" y="152">date_of_birth</text><text class="k2" x="170" y="152">sensitive</text>
+    <text class="c2" x="12" y="172">nationality</text><text class="t2" x="170" y="172">ISO-2 (Form-C)</text>
+    <text class="c2" x="12" y="192">company_name, gstin</text><text class="t2" x="170" y="192">B2B invoice</text>
+    <text class="c2" x="12" y="212">notes, is_vip</text>
+    <text class="c2" x="12" y="232">status</text><text class="t2" x="170" y="232">ACTIVE | MERGED |</text>
+    <text class="t2" x="170" y="248">ANONYMISED</text>
+    <text class="c2" x="12" y="268">merged_into_id, merged_at</text>
+    <text class="c2" x="12" y="288">anonymised_at, anonymised_by</text>
+    <text class="c2" x="12" y="308">search_text</text><text class="t2" x="170" y="308">generated, trigram</text>
+    <text class="c2" x="12" y="328">phone_digits</text><text class="t2" x="170" y="328">generated, trigram</text>
+    <text class="c2" x="12" y="348">version (xmin)</text>
+    <text class="k2" x="12" y="368">never deleted (trigger)</text>
+  </g>
+  <!-- addresses -->
+  <g transform="translate(30,170)">
+    <rect class="tbl2" width="230" height="158" rx="6"/><rect class="th2" width="230" height="30" rx="6"/><rect class="th2" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">guest_addresses</text>
+    <text class="c2" x="12" y="52">guest_id</text><text class="t2" x="130" y="52">uuid FK</text>
+    <text class="c2" x="12" y="72">address_type</text><text class="t2" x="130" y="72">HOME | BILLING</text>
+    <text class="c2" x="12" y="92">line1, line2, city</text>
+    <text class="c2" x="12" y="112">state, state_code</text><text class="t2" x="130" y="112">GST code</text>
+    <text class="c2" x="12" y="132">postal_code, country</text>
+    <text class="c2" x="12" y="150" style="fill:#7A888B">unique per guest + type</text>
+  </g>
+  <!-- preferences -->
+  <g transform="translate(30,380)">
+    <rect class="tbl2" width="230" height="98" rx="6"/><rect class="th2" width="230" height="30" rx="6"/><rect class="th2" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">guest_preferences</text>
+    <text class="c2" x="12" y="52">guest_id</text><text class="t2" x="130" y="52">uuid FK</text>
+    <text class="c2" x="12" y="72">category</text><text class="t2" x="130" y="72">ROOM, DIETARY…</text>
+    <text class="c2" x="12" y="90">value</text><text class="t2" x="130" y="90">1–500 chars</text>
+  </g>
+  <!-- documents -->
+  <g transform="translate(720,30)">
+    <rect class="tbl2" width="450" height="298" rx="6"/><rect class="sens" width="450" height="30" rx="6"/><rect class="sens" y="20" width="450" height="10"/>
+    <text class="t w b" x="12" y="21">guest_documents  ·  sensitive</text>
+    <text class="c2" x="12" y="52">guest_id</text><text class="t2" x="200" y="52">uuid FK</text>
+    <text class="c2" x="12" y="72">document_type</text><text class="t2" x="200" y="72">PASSPORT, AADHAAR, VISA, PAN…</text>
+    <text class="c2" x="12" y="92">number_encrypted</text><text class="k2" x="200" y="92">AES-256-GCM · NULL for Aadhaar</text>
+    <text class="c2" x="12" y="112">number_last4</text><text class="t2" x="200" y="112">"•••• 4567"</text>
+    <text class="c2" x="12" y="132">number_hash</text><text class="t2" x="200" y="132">HMAC: same ID on two profiles</text>
+    <text class="c2" x="12" y="152">issuing_country, expires_on</text>
+    <text class="c2" x="12" y="172">details_encrypted</text><text class="k2" x="200" y="172">AES-256-GCM (visa no. …)</text>
+    <text class="c2" x="12" y="192">storage_key, file_name</text><text class="t2" x="200" y="192">encrypted scan in file storage</text>
+    <text class="c2" x="12" y="212">content_type, size_bytes</text><text class="t2" x="200" y="212">JPEG | PNG | PDF, ≤ 5 MB</text>
+    <text class="c2" x="12" y="232">key_id</text><text class="t2" x="200" y="232">key rotation</text>
+    <text class="c2" x="12" y="252">status, purged_at</text><text class="t2" x="200" y="252">ACTIVE | PURGED</text>
+    <text class="c2" x="12" y="276" style="fill:#7A888B">read only with guest_document.read · every view audited</text>
+  </g>
+  <!-- consents -->
+  <g transform="translate(720,380)">
+    <rect class="tbl2" width="450" height="138" rx="6"/><rect class="th2" width="450" height="30" rx="6"/><rect class="th2" y="20" width="450" height="10"/>
+    <text class="t w b" x="12" y="21">guest_consents  ·  append-only</text>
+    <text class="c2" x="12" y="52">guest_id</text><text class="t2" x="200" y="52">uuid FK (re-pointed on merge)</text>
+    <text class="c2" x="12" y="72">purpose</text><text class="t2" x="200" y="72">WhatsApp / email marketing, data use</text>
+    <text class="c2" x="12" y="92">granted, source</text><text class="t2" x="200" y="92">FRONT_DESK, WEBSITE, OTA…</text>
+    <text class="c2" x="12" y="112">recorded_at, recorded_by</text><text class="t2" x="200" y="112">latest row = current answer</text>
+    <text class="c2" x="12" y="130" style="fill:#7A888B">UPDATE / DELETE refused by a trigger</text>
+  </g>
+  <!-- relations -->
+  <path class="rel2" d="M230,70 L328,70"/><text class="card2" x="236" y="64">1</text><text class="card2" x="316" y="64">*</text>
+  <path class="rel2" d="M328,250 L262,250"/><text class="card2" x="316" y="244">1</text><text class="card2" x="266" y="244">*</text>
+  <path class="rel2" d="M328,420 L262,420"/><text class="card2" x="316" y="414">1</text><text class="card2" x="266" y="414">*</text>
+  <path class="rel2" d="M620,150 L718,150"/><text class="card2" x="626" y="144">1</text><text class="card2" x="706" y="144">*</text>
+  <path class="rel2" d="M620,450 L718,450"/><text class="card2" x="626" y="444">1</text><text class="card2" x="706" y="444">*</text>
+  <path class="rel2" d="M475,408 L475,450 L560,450 L560,410"/><text class="xs" x="482" y="468">merged into (0..1)</text>
+  <text class="xs" x="30" y="560">Guests belong to the organisation and are shared by all its properties. Every table also has organization_id and created/updated at and by.</text>
+  <text class="xs" x="30" y="580">Audit trail: changed guest fields are named but their values are stored as *** so anonymising leaves no personal data behind.</text>
+  <text class="xs" x="30" y="600">Database guards: guests never deleted · anonymised rows hold no personal data · Aadhaar never stored in full · purged documents keep nothing identifying.</text>
+</svg>
 </body>
 </html>

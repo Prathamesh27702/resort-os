@@ -39,6 +39,7 @@ Listed in every sprint guide under **How to test**. The brief's required categor
 | Required test (brief) | Sprint |
 |---|---|
 | Authorization, auth failures | 1 *(built)* |
+| Sensitive data: who may read guest ID documents, encryption at rest, anonymisation | 3 *(built)* |
 | Two users booking the same room · same booking retry | 5 |
 | Two users assigning same room · simultaneous reassignment | 6 |
 | Simultaneous check-in | 7 |

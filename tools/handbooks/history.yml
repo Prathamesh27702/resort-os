@@ -3,3 +3,6 @@
 - version: "1.2"
   date: 2026-10-10
   change: "First edition. Sprints 01 (Foundation) and 02 (Accommodation) accepted; Sprint 03 (Guests) started."
+- version: "1.2.1"
+  date: 2026-10-10
+  change: "Sprint 03 (Guests) built and in review: guest profiles, encrypted ID documents, duplicates, merge, anonymise, consent."
