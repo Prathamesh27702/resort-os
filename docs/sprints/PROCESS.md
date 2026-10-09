@@ -60,7 +60,29 @@ hotfix/…  ── from main, only for production incidents; merged back to deve
 ```
 
 - Squash-merge feature PRs. The PR title becomes the commit: `feat(rooms): dorm bed editor (#41)`.
-- At sprint acceptance the tech lead merges `develop` → `main` (merge commit) and tags `sprint-NN`.
+- At sprint acceptance the tech lead merges `develop` → `main` (merge commit). The *Release tags* workflow then
+  tags `sprint-NN` on `main` for every sprint marked `done` in `sprints.yml` (or tag by hand:
+  `git tag -a sprint-NN origin/main -m "Sprint NN accepted"` and `git push origin sprint-NN`).
+
+## Closing a sprint (checklist)
+
+Done in one pull request into `develop` titled `chore(sprints): accept Sprint NN`, then released to `main`.
+
+1. **Plan:** in `docs/sprints/sprints.yml` set the sprint's `status: done`, update `progress` (now, done, files,
+   results, outcome) and fill its `handbook:` block — `highlights` (plain words, for clients), `design.ui`,
+   `design.api`, `design.database` (how each part is designed), `screenshots` and any `diagrams`. Set `current:` to
+   the next sprint and its `status: in-progress`.
+2. **Guides:** `python3 scripts/github/sync-sprints.py docs`.
+3. **Changelog:** date the sprint's entry in `CHANGELOG.md` (`## [sprint-NN] — YYYY-MM-DD — Title (accepted)`).
+4. **Handbooks:** add a line to `tools/handbooks/history.yml` (version `1.NN`), update any diagram whose status
+   changed (`tools/handbooks/diagrams/diagrams.html`, then `npm run diagrams`), and rebuild both Word documents:
+   `cd tools/handbooks && npm ci && npm run build`. Open both files in `docs/handbooks/` and check them.
+   See [tools/handbooks/README.md](../../tools/handbooks/README.md).
+5. **Merge and release:** merge the PR, then merge `develop` → `main` with a merge commit; the tags follow.
+6. **GitHub:** close the sign-off issue, then
+   `python3 scripts/github/sync-sprints.py github Prathamesh27702/resort-os` (closes the milestone, updates epics)
+   and `python3 scripts/github/sync-sprints.py tasks Prathamesh27702/resort-os <next>` (task issues for the next sprint).
+7. **Share:** send the client the new *Product Overview* if they follow progress.
 
 ## Updating the plan
 

@@ -1,0 +1,14 @@
+{
+  "name": "resort-os-handbooks",
+  "private": true,
+  "description": "Builds the two Word handbooks (client overview, software documentation) from the repository.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "diagrams": "node diagrams/render-diagrams.mjs"
+  },
+  "dependencies": {
+    "docx": "9.5.1",
+    "yaml": "2.8.1"
+  }
+}

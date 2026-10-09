@@ -9,7 +9,8 @@
 | [sprints/REVIEWING.md](sprints/REVIEWING.md) | How the owner reviews and accepts a sprint |
 | [COSTS.md](COSTS.md) | ₹0 during development; what's paid at go-live and when to upgrade |
 | [sprints/README.md](sprints/README.md) | Current sprint, all sprints, per-sprint guides |
-| [sprints/PROCESS.md](sprints/PROCESS.md) | Ceremonies, Definition of Ready/Done, branching, releases |
+| [sprints/PROCESS.md](sprints/PROCESS.md) | Ceremonies, Definition of Ready/Done, branching, releases, closing a sprint |
+| [handbooks/](handbooks/README.md) | **Word documents:** *Product Overview* (for clients) and *Software Documentation* (technical), rebuilt every sprint |
 
 | Reference (brief §80) | |
 |---|---|

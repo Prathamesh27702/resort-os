@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resort OS diagrams</title>
+<!--
+  Source of the diagrams used in the two handbooks. Each <svg> with an id becomes assets/<id>.png.
+  Edit here, then run: node render-diagrams.mjs   (see ../README.md)
+-->
+<style>
+  @font-face { font-family: Plex; font-weight: 400; src: url(../../../frontend/node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2); }
+  @font-face { font-family: Plex; font-weight: 500; src: url(../../../frontend/node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-500-normal.woff2); }
+  @font-face { font-family: Plex; font-weight: 600; src: url(../../../frontend/node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2); }
+  @font-face { font-family: Plex; font-weight: 700; src: url(../../../frontend/node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-700-normal.woff2); }
+  body { margin: 0; background: #fff; font-family: Plex, Arial, sans-serif; }
+  svg { display: block; margin: 0 0 40px; background: #fff; font-family: Plex, Arial, sans-serif; }
+  .t { fill: #1B2A2E; font-size: 15px; }
+  .s { fill: #4A5A5E; font-size: 12.5px; }
+  .xs { fill: #4A5A5E; font-size: 11px; }
+  .h { fill: #0E3B43; font-size: 16px; font-weight: 600; }
+  .w { fill: #fff; }
+  .b { font-weight: 600; }
+  .built { fill: #fff; stroke: #0E3B43; stroke-width: 2; }
+  .plan { fill: #fff; stroke: #9AA8AB; stroke-width: 1.6; stroke-dasharray: 6 4; }
+  .zone { fill: #F5F7F6; stroke: #DCE3E1; stroke-width: 1; }
+  .arrow { stroke: #0E3B43; stroke-width: 1.8; fill: none; marker-end: url(#ah); }
+  .arrowp { stroke: #9AA8AB; stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; marker-end: url(#ahp); }
+  .line { stroke: #0E3B43; stroke-width: 1.6; fill: none; }
+  .chip-built { fill: #E3F0E6; }
+  .chip-plan { fill: #ECEFF0; }
+  .chip-part { fill: #FBEFD8; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0E3B43"/></marker>
+    <marker id="ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9AA8AB"/></marker>
+    <marker id="ahk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8A2449"/></marker>
+  </defs>
+</svg>
+
+<!-- ============ 1. System architecture ============ -->
+<svg id="architecture" width="1200" height="640" viewBox="0 0 1200 640">
+  <rect x="0" y="0" width="1200" height="640" fill="#fff"/>
+  <!-- zones -->
+  <rect class="zone" x="20" y="20" width="210" height="540" rx="10"/>
+  <text class="h" x="40" y="50">Users</text>
+  <rect class="zone" x="250" y="20" width="220" height="540" rx="10"/>
+  <text class="h" x="270" y="50">Apps (browser / phone)</text>
+  <rect class="zone" x="490" y="20" width="170" height="540" rx="10"/>
+  <text class="h" x="510" y="50">Edge</text>
+  <rect class="zone" x="680" y="20" width="240" height="540" rx="10"/>
+  <text class="h" x="700" y="50">Resort OS server</text>
+  <rect class="zone" x="940" y="20" width="240" height="540" rx="10"/>
+  <text class="h" x="960" y="50">Data and partners</text>
+
+  <!-- users -->
+  <rect class="built" x="40" y="80" width="170" height="150" rx="8"/>
+  <text class="t b" x="56" y="108">Resort staff</text>
+  <text class="s" x="56" y="132">Reception, managers,</text>
+  <text class="s" x="56" y="150">housekeeping, kitchen,</text>
+  <text class="s" x="56" y="168">restaurant, drivers,</text>
+  <text class="s" x="56" y="186">accountant, owner</text>
+  <text class="xs" x="56" y="212">desktop · tablet · phone</text>
+
+  <rect class="plan" x="40" y="380" width="170" height="110" rx="8"/>
+  <text class="t b" x="56" y="408">Guests</text>
+  <text class="s" x="56" y="432">Book and pay online,</text>
+  <text class="s" x="56" y="450">receive confirmations</text>
+  <text class="s" x="56" y="468">on WhatsApp / email</text>
+
+  <!-- apps -->
+  <rect class="built" x="270" y="80" width="180" height="150" rx="8"/>
+  <text class="t b" x="286" y="108">Staff app</text>
+  <text class="s" x="286" y="132">Angular 20, installable</text>
+  <text class="s" x="286" y="150">(PWA). Shows only what</text>
+  <text class="s" x="286" y="168">each role may use.</text>
+  <text class="xs" x="286" y="212">Built · Sprints 1–2</text>
+
+  <rect class="plan" x="270" y="380" width="180" height="110" rx="8"/>
+  <text class="t b" x="286" y="408">Booking website</text>
+  <text class="s" x="286" y="432">Live availability,</text>
+  <text class="s" x="286" y="450">Razorpay checkout</text>
+  <text class="xs" x="286" y="476">Planned · Sprint 27</text>
+
+  <!-- edge -->
+  <rect class="plan" x="505" y="200" width="140" height="170" rx="8"/>
+  <text class="t b" x="521" y="228">Cloudflare</text>
+  <text class="s" x="521" y="252">Domain, HTTPS,</text>
+  <text class="s" x="521" y="270">firewall (WAF),</text>
+  <text class="s" x="521" y="288">bot protection,</text>
+  <text class="s" x="521" y="306">web-app hosting</text>
+  <text class="xs" x="521" y="352">Go-live · Sprint 29</text>
+
+  <!-- server -->
+  <rect class="built" x="700" y="80" width="200" height="230" rx="8"/>
+  <text class="t b" x="716" y="108">Resort.Api</text>
+  <text class="s" x="716" y="130">ASP.NET Core · .NET 10</text>
+  <text class="s" x="716" y="148">REST under /api/v1</text>
+  <line x1="716" y1="162" x2="884" y2="162" stroke="#DCE3E1"/>
+  <text class="s" x="716" y="184">• sign-in and permissions</text>
+  <text class="s" x="716" y="204">• business rules per module</text>
+  <text class="s" x="716" y="224">• validation</text>
+  <text class="s" x="716" y="244">• audit trail</text>
+  <text class="s" x="716" y="264">• webhooks from partners</text>
+  <text class="xs" x="716" y="294">Built · grows each sprint</text>
+
+  <rect class="plan" x="700" y="350" width="200" height="140" rx="8"/>
+  <text class="t b" x="716" y="378">Background worker</text>
+  <text class="s" x="716" y="402">Outbox: messages, sync</text>
+  <text class="s" x="716" y="420">to accounting/OTAs,</text>
+  <text class="s" x="716" y="438">scheduled jobs, retries</text>
+  <text class="xs" x="716" y="474">Planned · Sprint 24</text>
+
+  <!-- data -->
+  <rect class="built" x="960" y="80" width="200" height="90" rx="8"/>
+  <text class="t b" x="976" y="108">PostgreSQL 16</text>
+  <text class="s" x="976" y="130">One database, all modules,</text>
+  <text class="s" x="976" y="148">every row tagged by tenant</text>
+
+  <rect class="plan" x="960" y="185" width="200" height="70" rx="8"/>
+  <text class="t b" x="976" y="212">File storage</text>
+  <text class="s" x="976" y="234">ID scans, photos, PDFs</text>
+
+  <rect class="plan" x="960" y="275" width="200" height="270" rx="8"/>
+  <text class="t b" x="976" y="302">Partner services</text>
+  <text class="s" x="976" y="328">Razorpay (payments)</text>
+  <text class="s" x="976" y="350">Zoho Books / Tally</text>
+  <text class="s" x="976" y="372">WhatsApp Business</text>
+  <text class="s" x="976" y="394">Email provider</text>
+  <text class="s" x="976" y="416">Channel manager → OTAs</text>
+  <text class="s" x="976" y="438">(Booking.com, MakeMyTrip…)</text>
+  <text class="s" x="976" y="460">Payroll (file export)</text>
+  <text class="xs" x="976" y="490">Each behind its own adapter;</text>
+  <text class="xs" x="976" y="506">keys never stored in Git</text>
+  <text class="xs" x="976" y="530">Sprints 11, 24–27</text>
+
+  <!-- arrows -->
+  <path class="arrow" d="M210,155 L268,155"/>
+  <path class="arrowp" d="M210,435 L268,435"/>
+  <path class="arrow" d="M450,140 C 480,140 480,250 503,250"/>
+  <path class="arrowp" d="M450,435 C 480,435 480,330 503,330"/>
+  <path class="arrow" d="M645,250 C 670,250 670,195 698,195"/>
+  <path class="arrow" d="M900,125 L958,125"/>
+  <path class="arrowp" d="M900,220 L958,220"/>
+  <path class="arrowp" d="M900,420 L958,420"/>
+  <path class="arrowp" d="M958,330 C 930,330 930,280 902,280"/>
+  <text class="xs" x="904" y="266">webhooks</text>
+  <path class="arrowp" d="M800,348 L800,312"/>
+
+  <!-- legend -->
+  <rect class="built" x="40" y="590" width="34" height="20" rx="4"/>
+  <text class="s" x="84" y="605">Built and running</text>
+  <rect class="plan" x="230" y="590" width="34" height="20" rx="4"/>
+  <text class="s" x="274" y="605">Planned (sprint shown)</text>
+  <text class="s" x="470" y="605">One API, one database, one staff app: a modular monolith. No microservices to run or pay for.</text>
+</svg>
+
+<!-- ============ 2. Backend layers ============ -->
+<svg id="layers" width="1200" height="470" viewBox="0 0 1200 470">
+  <rect width="1200" height="470" fill="#fff"/>
+  <text class="h" x="30" y="40">Backend projects and the direction of dependencies</text>
+  <g>
+    <rect x="30" y="65" width="560" height="64" rx="8" fill="#0E3B43"/>
+    <text class="t w b" x="50" y="93">Resort.Api</text>
+    <text class="s w" x="50" y="114" style="fill:#D6E4E6">HTTP endpoints (thin), auth policies, error mapping, middleware</text>
+    <rect x="30" y="149" width="560" height="64" rx="8" fill="#1F5560"/>
+    <text class="t w b" x="50" y="177">Resort.Infrastructure</text>
+    <text class="s w" x="50" y="198" style="fill:#D6E4E6">EF Core + PostgreSQL, SQL migrator, audit interceptor, JWT, hashing, adapters</text>
+    <rect x="30" y="233" width="560" height="64" rx="8" fill="#2F6F7B"/>
+    <text class="t w b" x="50" y="261">Resort.Application</text>
+    <text class="s w" x="50" y="282" style="fill:#E3EEF0">Use-case services per module, validators, permission codes, business rules</text>
+    <rect x="30" y="317" width="272" height="64" rx="8" fill="#5D8F98"/>
+    <text class="t w b" x="50" y="345">Resort.Domain</text>
+    <text class="s w" x="50" y="366" style="fill:#F0F6F7">Entities and rules, no frameworks</text>
+    <rect x="318" y="317" width="272" height="64" rx="8" fill="#5D8F98"/>
+    <text class="t w b" x="338" y="345">Resort.Contracts</text>
+    <text class="s w" x="338" y="366" style="fill:#F0F6F7">Request / response shapes</text>
+    <path class="arrow" d="M610,97 C 640,97 640,181 612,181"/>
+    <path class="arrow" d="M610,181 C 640,181 640,265 612,265"/>
+    <path class="arrow" d="M610,265 C 640,265 640,349 612,349"/>
+    <text class="xs" x="650" y="183">depends on</text>
+    <rect x="30" y="401" width="560" height="44" rx="8" fill="#F5F7F6" stroke="#DCE3E1"/>
+    <text class="s" x="50" y="428">Resort.Tests: unit tests + integration tests against a real PostgreSQL 16</text>
+  </g>
+  <g>
+    <text class="h" x="720" y="40">Inside each layer: one folder per module</text>
+    <rect class="zone" x="720" y="65" width="450" height="380" rx="10"/>
+    <text class="s" x="742" y="98">Application/</text>
+    <text class="t" x="770" y="124">Identity/<tspan x="920">AuthService, UserService</tspan></text>
+    <text class="t" x="770" y="150">Properties/<tspan x="920">PropertyService</tspan></text>
+    <text class="t" x="770" y="176">Accommodation/<tspan x="920">AccommodationService,</tspan></text>
+    <text class="t" x="920" y="196">BlockService</text>
+    <text class="t" x="770" y="222">Audit/<tspan x="920">AuditQueryService</tspan></text>
+    <text class="t" x="770" y="248" style="fill:#8A2449">Guests/<tspan x="920">Sprint 03 (in progress)</tspan></text>
+    <text class="t" x="770" y="274" style="fill:#7A888B">Reservations/<tspan x="920">Sprint 05 …</tspan></text>
+    <line x1="742" y1="296" x2="1150" y2="296" stroke="#DCE3E1"/>
+    <text class="s" x="742" y="324">Rules that keep modules apart</text>
+    <text class="s" x="742" y="348">• business rules live in Application/Domain only,</text>
+    <text class="s" x="742" y="368">   never in endpoints or Angular screens</text>
+    <text class="s" x="742" y="392">• a module reads another module through its service,</text>
+    <text class="s" x="742" y="412">   never writes another module's tables</text>
+  </g>
+</svg>
+
+<!-- ============ 3. Request pipeline ============ -->
+<svg id="pipeline" width="1200" height="330" viewBox="0 0 1200 330">
+  <rect width="1200" height="330" fill="#fff"/>
+  <text class="h" x="30" y="36">What happens to every request, in order</text>
+  <g font-size="13">
+    <!-- row 1 -->
+    <g transform="translate(30,60)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">1 Request in</text><text class="s" x="12" y="50">HTTPS, behind</text><text class="s" x="12" y="66">proxy headers</text>
+    </g>
+    <g transform="translate(200,60)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">2 Tracking ids</text><text class="s" x="12" y="50">correlation id and</text><text class="s" x="12" y="66">request id attached</text>
+    </g>
+    <g transform="translate(370,60)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">3 Logging</text><text class="s" x="12" y="50">structured log line</text><text class="s" x="12" y="66">(Serilog)</text>
+    </g>
+    <g transform="translate(540,60)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">4 Error handler</text><text class="s" x="12" y="50">one safe error shape,</text><text class="s" x="12" y="66">no internals leaked</text>
+    </g>
+    <g transform="translate(710,60)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">5 Security headers</text><text class="s" x="12" y="50">HSTS, CSP, no-sniff,</text><text class="s" x="12" y="66">CORS allow-list</text>
+    </g>
+    <g transform="translate(880,60)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">6 Who is it?</text><text class="s" x="12" y="50">JWT checked, plus</text><text class="s" x="12" y="66">security stamp</text>
+    </g>
+    <g transform="translate(1050,60)">
+      <rect width="120" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">7 Rate limit</text><text class="s" x="12" y="50">10/min sign-in,</text><text class="s" x="12" y="66">600/min other</text>
+    </g>
+    <path class="arrow" d="M180,99 L198,99"/><path class="arrow" d="M350,99 L368,99"/><path class="arrow" d="M520,99 L538,99"/>
+    <path class="arrow" d="M690,99 L708,99"/><path class="arrow" d="M860,99 L878,99"/><path class="arrow" d="M1030,99 L1048,99"/>
+    <path class="arrow" d="M1110,140 L1110,188"/>
+    <!-- row 2 (right to left) -->
+    <g transform="translate(1020,190)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">8 Allowed?</text><text class="s" x="12" y="50">permission code for</text><text class="s" x="12" y="66">this property</text>
+    </g>
+    <g transform="translate(850,190)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">9 Valid input?</text><text class="s" x="12" y="50">FluentValidation,</text><text class="s" x="12" y="66">field-level messages</text>
+    </g>
+    <g transform="translate(680,190)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">10 Business rule</text><text class="s" x="12" y="50">application service</text><text class="s" x="12" y="66">for the module</text>
+    </g>
+    <g transform="translate(510,190)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">11 Data access</text><text class="s" x="12" y="50">EF Core, tenant filter,</text><text class="s" x="12" y="66">version check</text>
+    </g>
+    <g transform="translate(340,190)">
+      <rect width="150" height="78" rx="8" class="built"/><text class="t b" x="12" y="28">12 Audit entry</text><text class="s" x="12" y="50">old/new values, who,</text><text class="s" x="12" y="66">why — same commit</text>
+    </g>
+    <g transform="translate(170,190)">
+      <rect width="150" height="78" rx="8" fill="#0E3B43"/><text class="t b w" x="12" y="28">13 PostgreSQL</text><text class="s" x="12" y="50" style="fill:#D6E4E6">constraints are the</text><text class="s" x="12" y="66" style="fill:#D6E4E6">last line of defence</text>
+    </g>
+    <path class="arrow" d="M1018,229 L1002,229"/><path class="arrow" d="M848,229 L832,229"/><path class="arrow" d="M678,229 L662,229"/>
+    <path class="arrow" d="M508,229 L492,229"/><path class="arrow" d="M338,229 L322,229"/>
+    <text class="xs" x="30" y="300">A request that fails at any step stops there and returns {code, message, details, correlationId}. The correlation id finds the matching server log line.</text>
+  </g>
+</svg>
+
+<!-- ============ 4. Accommodation ER ============ -->
+<svg id="er-accommodation" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#fff"/>
+  <style>
+    .tbl { fill: #fff; stroke: #2F6F7B; stroke-width: 1.6; }
+    .th { fill: #2F6F7B; }
+    .col { fill: #1B2A2E; font-size: 12.5px; }
+    .ty { fill: #7A888B; font-size: 11.5px; }
+    .rel { stroke: #4A5A5E; stroke-width: 1.5; fill: none; }
+    .card { fill: #8A2449; font-size: 11.5px; font-weight: 600; }
+  </style>
+  <!-- properties -->
+  <g transform="translate(30,30)">
+    <rect class="tbl" width="220" height="118" rx="6"/><rect class="th" width="220" height="30" rx="6"/><rect class="th" y="20" width="220" height="10"/>
+    <text class="t w b" x="12" y="21">properties</text>
+    <text class="col" x="12" y="52">id</text><text class="ty" x="150" y="52">uuid PK</text>
+    <text class="col" x="12" y="72">organization_id</text><text class="ty" x="150" y="72">uuid FK</text>
+    <text class="col" x="12" y="92">timezone</text><text class="ty" x="150" y="92">text</text>
+    <text class="col" x="12" y="110" style="fill:#7A888B">(Sprint 01)</text>
+  </g>
+  <!-- accommodation_types -->
+  <g transform="translate(330,30)">
+    <rect class="tbl" width="250" height="198" rx="6"/><rect class="th" width="250" height="30" rx="6"/><rect class="th" y="20" width="250" height="10"/>
+    <text class="t w b" x="12" y="21">accommodation_types</text>
+    <text class="col" x="12" y="52">id</text><text class="ty" x="160" y="52">uuid PK</text>
+    <text class="col" x="12" y="72">property_id</text><text class="ty" x="160" y="72">uuid FK</text>
+    <text class="col" x="12" y="92">code</text><text class="ty" x="160" y="92">text UK</text>
+    <text class="col" x="12" y="112">name</text><text class="ty" x="160" y="112">text</text>
+    <text class="col" x="12" y="132">inventory_mode</text><text class="ty" x="160" y="132">UNIT | BED</text>
+    <text class="col" x="12" y="152">base / max_occupancy</text><text class="ty" x="160" y="152">smallint</text>
+    <text class="col" x="12" y="172">size_sqm</text><text class="ty" x="160" y="172">numeric</text>
+    <text class="col" x="12" y="190">is_active, version</text>
+  </g>
+  <!-- amenities -->
+  <g transform="translate(940,30)">
+    <rect class="tbl" width="230" height="138" rx="6"/><rect class="th" width="230" height="30" rx="6"/><rect class="th" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">amenities</text>
+    <text class="col" x="12" y="52">id</text><text class="ty" x="140" y="52">uuid PK</text>
+    <text class="col" x="12" y="72">organization_id</text><text class="ty" x="140" y="72">NULL = built-in</text>
+    <text class="col" x="12" y="92">code, name</text><text class="ty" x="140" y="92">text</text>
+    <text class="col" x="12" y="112">category</text><text class="ty" x="140" y="112">ROOM, VIEW…</text>
+    <text class="col" x="12" y="130" style="fill:#7A888B">22 built in</text>
+  </g>
+  <!-- type_amenities -->
+  <g transform="translate(605,60)">
+    <rect class="tbl" width="300" height="78" rx="6"/><rect class="th" width="300" height="30" rx="6"/><rect class="th" y="20" width="300" height="10"/>
+    <text class="t w b" x="12" y="21">accommodation_type_amenities</text>
+    <text class="col" x="12" y="52">accommodation_type_id</text><text class="ty" x="200" y="52">PK, FK</text>
+    <text class="col" x="12" y="70">amenity_id</text><text class="ty" x="200" y="70">PK, FK</text>
+  </g>
+  <!-- units -->
+  <g transform="translate(330,290)">
+    <rect class="tbl" width="250" height="178" rx="6"/><rect class="th" width="250" height="30" rx="6"/><rect class="th" y="20" width="250" height="10"/>
+    <text class="t w b" x="12" y="21">accommodation_units (rooms)</text>
+    <text class="col" x="12" y="52">id</text><text class="ty" x="160" y="52">uuid PK</text>
+    <text class="col" x="12" y="72">accommodation_type_id</text><text class="ty" x="160" y="72">uuid FK</text>
+    <text class="col" x="12" y="92">property_id</text><text class="ty" x="160" y="92">uuid FK</text>
+    <text class="col" x="12" y="112">code</text><text class="ty" x="160" y="112">101, DORM…</text>
+    <text class="col" x="12" y="132">name, floor, notes</text><text class="ty" x="160" y="132">text</text>
+    <text class="col" x="12" y="152">is_active</text><text class="ty" x="160" y="152">never deleted</text>
+    <text class="col" x="12" y="170">version</text>
+  </g>
+  <!-- beds -->
+  <g transform="translate(30,330)">
+    <rect class="tbl" width="220" height="138" rx="6"/><rect class="th" width="220" height="30" rx="6"/><rect class="th" y="20" width="220" height="10"/>
+    <text class="t w b" x="12" y="21">beds</text>
+    <text class="col" x="12" y="52">id</text><text class="ty" x="130" y="52">uuid PK</text>
+    <text class="col" x="12" y="72">unit_id</text><text class="ty" x="130" y="72">uuid FK</text>
+    <text class="col" x="12" y="92">code</text><text class="ty" x="130" y="92">B01…B10</text>
+    <text class="col" x="12" y="112">bed_type</text><text class="ty" x="130" y="112">SINGLE, BUNK…</text>
+    <text class="col" x="12" y="130">is_active</text>
+  </g>
+  <!-- unit_blocks -->
+  <g transform="translate(650,250)">
+    <rect class="tbl" width="270" height="238" rx="6"/><rect class="th" width="270" height="30" rx="6"/><rect class="th" y="20" width="270" height="10"/>
+    <text class="t w b" x="12" y="21">unit_blocks</text>
+    <text class="col" x="12" y="52">id</text><text class="ty" x="160" y="52">uuid PK</text>
+    <text class="col" x="12" y="72">unit_id</text><text class="ty" x="160" y="72">uuid FK</text>
+    <text class="col" x="12" y="92">bed_id</text><text class="ty" x="160" y="92">NULL = whole room</text>
+    <text class="col" x="12" y="112">block_type</text><text class="ty" x="160" y="112">MAINTENANCE…</text>
+    <text class="col" x="12" y="132">start_date, end_date</text><text class="ty" x="160" y="132">date, end excl.</text>
+    <text class="col" x="12" y="152">period</text><text class="ty" x="160" y="152">daterange [)</text>
+    <text class="col" x="12" y="172">reason</text><text class="ty" x="160" y="172">3–500 chars</text>
+    <text class="col" x="12" y="192">status</text><text class="ty" x="160" y="192">ACTIVE | RELEASED</text>
+    <text class="col" x="12" y="212">released_at / by / reason</text>
+    <text class="col" x="12" y="230" style="fill:#8A2449">EXCLUDE: no overlapping active</text>
+  </g>
+  <!-- unit_images -->
+  <g transform="translate(970,290)">
+    <rect class="tbl" width="200" height="118" rx="6"/><rect class="th" width="200" height="30" rx="6"/><rect class="th" y="20" width="200" height="10"/>
+    <text class="t w b" x="12" y="21">unit_images</text>
+    <text class="col" x="12" y="52">accommodation_type_id</text>
+    <text class="col" x="12" y="72">or unit_id (one of)</text>
+    <text class="col" x="12" y="92">storage_key</text>
+    <text class="col" x="12" y="110" style="fill:#7A888B">upload API: Sprint 03+</text>
+  </g>
+  <!-- relations -->
+  <path class="rel" d="M250,90 L328,90"/><text class="card" x="258" y="84">1</text><text class="card" x="314" y="84">*</text>
+  <path class="rel" d="M580,100 L603,100"/><text class="card" x="584" y="94">1</text><text class="card" x="594" y="116">*</text>
+  <path class="rel" d="M938,100 L907,100"/><text class="card" x="926" y="94">1</text><text class="card" x="910" y="94">*</text>
+  <path class="rel" d="M455,230 L455,288"/><text class="card" x="462" y="246">1</text><text class="card" x="462" y="282">*</text>
+  <path class="rel" d="M328,400 L252,400"/><text class="card" x="314" y="394">1</text><text class="card" x="258" y="394">*</text>
+  <text class="xs" x="256" y="418">BED types only</text>
+  <path class="rel" d="M580,370 L648,370"/><text class="card" x="586" y="364">1</text><text class="card" x="636" y="364">*</text>
+  <path class="rel" d="M140,468 L140,520 L700,520 L700,490"/><text class="card" x="146" y="484">1</text><text class="card" x="706" y="506">*</text>
+  <text class="xs" x="300" y="514">a single bed can be blocked (optional)</text>
+  <path class="rel" d="M580,200 L1070,200 L1070,288"/><text class="card" x="1076" y="282">*</text><text class="xs" x="930" y="194">photos (type or room)</text>
+  <text class="xs" x="30" y="560">Every table also carries organization_id, created/updated at and by. Composite foreign keys on (…, property_id) keep every row inside one property.</text>
+  <text class="xs" x="30" y="580">Database triggers: beds only under bed-based rooms · a whole-dorm block cannot overlap a single-bed block · blocks can be released but never deleted.</text>
+</svg>
+
+<!-- ============ 5. Delivery process ============ -->
+<svg id="sprint-process" width="1200" height="300" viewBox="0 0 1200 300">
+  <rect width="1200" height="300" fill="#fff"/>
+  <g>
+    <g transform="translate(20,40)"><path d="M0,0 H150 L175,45 L150,90 H0 Z" fill="#0E3B43"/><text class="t w b" x="16" y="34">1 Plan</text><text class="s" x="16" y="56" style="fill:#D6E4E6">sprint goal, tasks</text><text class="s" x="16" y="74" style="fill:#D6E4E6">as GitHub issues</text></g>
+    <g transform="translate(185,40)"><path d="M0,0 H150 L175,45 L150,90 H0 L25,45 Z" fill="#1F5560"/><text class="t w b" x="36" y="34">2 Build</text><text class="s" x="36" y="56" style="fill:#D6E4E6">one branch per</text><text class="s" x="36" y="74" style="fill:#D6E4E6">task, with tests</text></g>
+    <g transform="translate(350,40)"><path d="M0,0 H150 L175,45 L150,90 H0 L25,45 Z" fill="#2F6F7B"/><text class="t w b" x="36" y="34">3 Check</text><text class="s" x="36" y="56" style="fill:#E3EEF0">pull request + 7</text><text class="s" x="36" y="74" style="fill:#E3EEF0">automatic CI checks</text></g>
+    <g transform="translate(515,40)"><path d="M0,0 H150 L175,45 L150,90 H0 L25,45 Z" fill="#3F7F8A"/><text class="t w b" x="36" y="34">4 Integrate</text><text class="s" x="36" y="56" style="fill:#EEF5F6">merged to the</text><text class="s" x="36" y="74" style="fill:#EEF5F6">develop branch</text></g>
+    <g transform="translate(680,40)"><path d="M0,0 H150 L175,45 L150,90 H0 L25,45 Z" fill="#8A2449"/><text class="t w b" x="36" y="34">5 Review</text><text class="s" x="36" y="56" style="fill:#F6E3EA">owner runs the</text><text class="s" x="36" y="74" style="fill:#F6E3EA">review script</text></g>
+    <g transform="translate(845,40)"><path d="M0,0 H150 L175,45 L150,90 H0 L25,45 Z" fill="#2E6B3C"/><text class="t w b" x="36" y="34">6 Accept</text><text class="s" x="36" y="56" style="fill:#E3F0E6">released to main,</text><text class="s" x="36" y="74" style="fill:#E3F0E6">tagged sprint-NN</text></g>
+    <g transform="translate(1010,40)"><path d="M0,0 H170 V90 H0 L25,45 Z" fill="#46804F"/><text class="t w b" x="36" y="34">7 Publish</text><text class="s" x="36" y="56" style="fill:#E3F0E6">handbooks and</text><text class="s" x="36" y="74" style="fill:#E3F0E6">changelog updated</text></g>
+  </g>
+  <path d="M770,135 C 770,200 300,200 270,140" stroke="#8A2449" stroke-width="1.8" fill="none" stroke-dasharray="6 4" marker-end="url(#ahk)"/>
+  <text class="s" x="420" y="215" style="fill:#8A2449">change requests found in review become new issues and go round again</text>
+  <text class="xs" x="20" y="262">Every sprint: about 2 weeks. Nothing reaches main without green checks and the owner's acceptance. Secrets never enter the repository; keys are shared privately.</text>
+</svg>
+
+<!-- ============ 6. Guest journey ============ -->
+<svg id="guest-journey" width="1200" height="470" viewBox="0 0 1200 470">
+  <rect width="1200" height="470" fill="#fff"/>
+  <style>.stage{fill:#0E3B43}.mod{fill:#F5F7F6;stroke:#DCE3E1}</style>
+  <g>
+    <g transform="translate(20,20)"><path d="M0,0 H205 L228,30 L205,60 H0 Z" class="stage"/><text class="t w b" x="16" y="36">1 Find and book</text></g>
+    <g transform="translate(255,20)"><path d="M0,0 H205 L228,30 L205,60 H0 L23,30 Z" class="stage"/><text class="t w b" x="34" y="36">2 Before arrival</text></g>
+    <g transform="translate(490,20)"><path d="M0,0 H205 L228,30 L205,60 H0 L23,30 Z" class="stage"/><text class="t w b" x="34" y="36">3 Arrival</text></g>
+    <g transform="translate(725,20)"><path d="M0,0 H205 L228,30 L205,60 H0 L23,30 Z" class="stage"/><text class="t w b" x="34" y="36">4 During the stay</text></g>
+    <g transform="translate(960,20)"><path d="M0,0 H220 V60 H0 L23,30 Z" class="stage"/><text class="t w b" x="34" y="36">5 Departure and after</text></g>
+  </g>
+  <g class="s">
+    <text x="24" y="112">• booking website, OTAs or</text><text x="24" y="130">  phone/walk-in at the desk</text>
+    <text x="24" y="154">• live availability: rooms</text><text x="24" y="172">  and single dorm beds</text>
+    <text x="24" y="196">• pay online (UPI, cards)</text>
+    <text x="24" y="220">• confirmation on WhatsApp</text><text x="24" y="238">  and email</text>
+
+    <text x="259" y="112">• reminder message</text>
+    <text x="259" y="136">• guest profile found by</text><text x="259" y="154">  phone; duplicates merged</text>
+    <text x="259" y="178">• room prepared and marked</text><text x="259" y="196">  clean by housekeeping</text>
+    <text x="259" y="220">• beach transport booked</text>
+
+    <text x="494" y="112">• check-in in a few clicks</text>
+    <text x="494" y="136">• ID captured where the law</text><text x="494" y="154">  requires it; stored</text><text x="494" y="172">  encrypted, few can see it</text>
+    <text x="494" y="196">• room or bed assigned</text>
+    <text x="494" y="220">• advance taken, receipt</text>
+
+    <text x="729" y="112">• restaurant orders charged</text><text x="729" y="130">  to the room; kitchen ticket</text>
+    <text x="729" y="154">• activities and equipment</text><text x="729" y="172">  booked within capacity</text>
+    <text x="729" y="196">• housekeeping and repairs</text><text x="729" y="214">  tracked on staff phones</text>
+    <text x="729" y="238">• everything on one bill</text>
+
+    <text x="964" y="112">• bill settled: cash, UPI,</text><text x="964" y="130">  card, Razorpay link</text>
+    <text x="964" y="154">• GST invoice with the</text><text x="964" y="172">  right CGST/SGST/IGST</text>
+    <text x="964" y="196">• invoice sent on WhatsApp</text>
+    <text x="964" y="220">• accounts synced to</text><text x="964" y="238">  Zoho Books / Tally</text>
+  </g>
+  <line x1="20" y1="266" x2="1180" y2="266" stroke="#DCE3E1"/>
+  <text class="xs" x="20" y="290">Modules involved</text>
+  <g class="xs">
+    <rect class="mod" x="20" y="302" width="205" height="56" rx="6"/><text x="32" y="324">Booking website · OTA</text><text x="32" y="342">Reservations · Rates · Payments</text>
+    <rect class="mod" x="255" y="302" width="205" height="56" rx="6"/><text x="267" y="324">Guests · Notifications</text><text x="267" y="342">Housekeeping · Transport</text>
+    <rect class="mod" x="490" y="302" width="205" height="56" rx="6"/><text x="502" y="324">Front desk · Guests</text><text x="502" y="342">Rooms and beds · Folio</text>
+    <rect class="mod" x="725" y="302" width="205" height="56" rx="6"/><text x="737" y="324">Restaurant · Activities</text><text x="737" y="342">Housekeeping · Maintenance</text>
+    <rect class="mod" x="960" y="302" width="220" height="56" rx="6"/><text x="972" y="324">Folio · Payments · GST invoices</text><text x="972" y="342">WhatsApp · Accounting sync</text>
+  </g>
+  <rect x="20" y="380" width="1160" height="60" rx="8" fill="#E3F0E6"/>
+  <text class="t b" x="40" y="406" style="fill:#2E6B3C">Behind every step</text>
+  <text class="s" x="40" y="426">one guest record, one bill, one audit trail of who did what and why, and staff who only see what their role needs</text>
+</svg>
+
+<!-- ============ 7. Capability map ============ -->
+<svg id="capabilities" width="1200" height="640" viewBox="0 0 1200 640">
+  <rect width="1200" height="640" fill="#fff"/>
+  <style>.tile{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.tt{fill:#0E3B43;font-size:16px;font-weight:600}</style>
+  <!-- row 1 -->
+  <g transform="translate(20,20)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Rooms and reservations</text>
+    <text class="s" x="18" y="58">Room types, rooms and dormitory beds, blocks,</text><text class="s" x="18" y="76">prices and packages, race-free booking,</text><text class="s" x="18" y="94">calendar with drag-and-drop</text>
+    <rect class="chip-part" x="18" y="114" width="250" height="24" rx="12"/><text class="xs" x="30" y="131" style="fill:#8A5A00">Rooms built · bookings Sprints 4–6</text></g>
+  <g transform="translate(415,20)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Front desk and guests</text>
+    <text class="s" x="18" y="58">Guest profiles found by phone, duplicate</text><text class="s" x="18" y="76">merge, encrypted ID documents, arrivals,</text><text class="s" x="18" y="94">departures, in-house list, check-in/out</text>
+    <rect class="chip-part" x="18" y="114" width="230" height="24" rx="12"/><text class="xs" x="30" y="131" style="fill:#8A5A00">Guests in progress · Sprints 3, 7</text></g>
+  <g transform="translate(810,20)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Billing, GST and payments</text>
+    <text class="s" x="18" y="58">One bill per stay, GST engine, legal invoice</text><text class="s" x="18" y="76">series, credit notes, cash drawer, refunds,</text><text class="s" x="18" y="94">UPI and cards through Razorpay</text>
+    <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 8–12</text></g>
+  <!-- row 2 -->
+  <g transform="translate(20,190)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Housekeeping and maintenance</text>
+    <text class="s" x="18" y="58">Room status from dirty to inspected, tasks</text><text class="s" x="18" y="76">on staff phones, repair tickets with photos</text><text class="s" x="18" y="94">and asset history</text>
+    <rect class="chip-plan" x="18" y="114" width="110" height="24" rx="12"/><text class="xs" x="30" y="131">Sprint 13</text></g>
+  <g transform="translate(415,190)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Restaurant, stock and purchasing</text>
+    <text class="s" x="18" y="58">Menu, table orders, kitchen tickets, charge</text><text class="s" x="18" y="76">to room, recipes and food cost, stock ledger,</text><text class="s" x="18" y="94">suppliers, purchase orders, goods received</text>
+    <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 14–16</text></g>
+  <g transform="translate(810,190)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Staff and attendance</text>
+    <text class="s" x="18" y="58">Employee records (salary restricted), shift</text><text class="s" x="18" y="76">rosters, phone clock-in with geofence,</text><text class="s" x="18" y="94">timesheets, leave, payroll export</text>
+    <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 17–19</text></g>
+  <!-- row 3 -->
+  <g transform="translate(20,360)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Guest experiences</text>
+    <text class="s" x="18" y="58">Activities with capacity limits, equipment</text><text class="s" x="18" y="76">issue and return, the 8 km beach shuttle</text><text class="s" x="18" y="94">with trips and manifests</text>
+    <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 20–21</text></g>
+  <g transform="translate(415,360)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Control and reports</text>
+    <text class="s" x="18" y="58">Expenses with approval, budgets vs actual,</text><text class="s" x="18" y="76">owner and role dashboards, occupancy,</text><text class="s" x="18" y="94">revenue, GST and payroll reports</text>
+    <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 22–23</text></g>
+  <g transform="translate(810,360)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Connections</text>
+    <text class="s" x="18" y="58">Direct booking website, OTA channel</text><text class="s" x="18" y="76">manager, WhatsApp and email messages,</text><text class="s" x="18" y="94">Zoho Books and Tally accounting</text>
+    <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 24–27</text></g>
+  <!-- foundation -->
+  <g transform="translate(20,530)"><rect width="1160" height="90" rx="10" fill="#0E3B43"/>
+    <text class="tt" x="22" y="34" style="fill:#fff">Foundation — shared by every module</text>
+    <text class="s" x="22" y="60" style="fill:#D6E4E6">Secure sign-in · 17 staff roles and 117 permissions · properties and settings · complete audit trail · works on phones</text>
+    <rect class="chip-built" x="900" y="20" width="250" height="26" rx="13"/><text class="xs" x="914" y="38" style="fill:#2E6B3C">Built · Sprint 1 (accepted Oct 2026)</text>
+    <text class="xs" x="22" y="80" style="fill:#A9C3C7">Offline use, two-factor sign-in and security testing: Sprint 28 · Backups, monitoring, go-live: Sprint 29</text>
+  </g>
+</svg>
+</body>
+</html>
