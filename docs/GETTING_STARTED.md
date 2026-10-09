@@ -167,6 +167,8 @@ work. For Angular, start `web: npm start`, then F5 → **Web (Chrome on :4300)**
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1      # macOS/Linux: bash scripts/test.sh
 ```
 
+You can leave the API from Step 6 running: the tests build their own Release copy.
+
 Expected result:
 
 - Backend: **58 passed, 0 failed**. These include real-database tests; each test class creates and deletes its own temporary database.
@@ -243,6 +245,8 @@ Good to know:
 | API stops at *No database configured* | `.env` is missing; run Step 5 again from the repo root |
 | Sign-in says *Email or password is incorrect* | Use the password in `.env` → `Bootstrap__OwnerPassword`. It's set when the database is first created, so if you changed `.env` afterwards, reset the DB |
 | Blank page at :4300 | The API isn't running, or check the browser console (F12) |
+| Build fails: *file is locked by "Resort.Api (12345)"* / *MSB3027* | An API is already running (another terminal, or an F5 debug session). Stop it with **Ctrl+C** in that terminal, or `Get-Process Resort.Api \| Stop-Process`, then start it again. Only one API can run at a time |
+| `git pull` says *Your local changes … would be overwritten* | A file in the repo was changed on your PC. See what changed: `git diff <file>`. To throw your change away: `git restore <file>`, then `git pull` again |
 | API stops with *checksum mismatch* for a `V00x` migration | Someone edited an applied migration. Pull the latest `develop`; if it persists, reset the database |
 | Rooms page is empty after pulling Sprint 02 | Restart the API and look for `Dev seed` in its output (see *What each sprint needs*) |
 | `npm ci` very slow or fails on Windows | Move the repo out of OneDrive; add `C:\dev` to Windows Defender exclusions |
