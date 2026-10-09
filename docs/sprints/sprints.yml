@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 2
+current: 3
 
 sprints:
 
@@ -54,10 +54,10 @@ sprints:
 - id: 1
   title: Foundation — identity, RBAC, organisation, properties, audit
   phase: 1
-  status: in-review
+  status: done
   size: L
   progress:
-    now: "Built and merged to develop. Being reviewed together with Sprint 02 in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — how to: [REVIEWING.md](REVIEWING.md)."
+    now: "Accepted by the owner on 10 Oct 2026 together with Sprint 02 (pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74)). Merged to main and tagged `sprint-01`."
     done:
       - "Solution: Resort.Api / Application / Domain / Infrastructure / Contracts / Tests on .NET 10"
       - "Migrations V001 (13 tables, append-only triggers), V002 (117 permissions, 17 roles, default matrix), V003 (audit device/reason/request id)"
@@ -82,7 +82,7 @@ sprints:
       - "Frontend: 6 of 6 passed; ESLint clean; production build OK"
       - "Build warnings: 0; dotnet format clean; gitleaks: no secrets in history"
       - "Manual walkthrough as owner and receptionist on desktop and 390 px phone width ([screenshots](sprint-01-screens/); step-by-step script in [REVIEWING.md](REVIEWING.md#part-b--try-it-yourself-2030-minutes))"
-    outcome: "Pending owner acceptance. On acceptance: merge to main, tag sprint-01, Sprint 02 starts."
+    outcome: "Accepted 10 Oct 2026. On main as tag sprint-01."
   depends: [0]
   goal: A secure, multi-tenant base that every later module plugs into.
   scope:
@@ -119,7 +119,7 @@ sprints:
     - "[done] Standard error shape, correlation/request IDs, /api/v1 prefix"
     - "[done] Angular shell, login, properties, users, roles matrix, audit screens"
     - "[done] 30 backend + 6 frontend tests"
-    - Review and sign-off by owner (open issues for any change requests)
+    - "[done] Review and sign-off by owner (accepted 10 Oct 2026)"
   tests:
     - Login, lockout, same error for unknown email vs wrong password
     - Refresh rotation and reuse detection revoking the family
@@ -143,12 +143,12 @@ sprints:
 - id: 2
   title: Accommodation — room types, rooms, dormitory beds, blocks
   phase: 1
-  status: in-review
+  status: done
   size: M
   module: Accommodation
   feature: rooms
   progress:
-    now: "Built and merged to develop. Being reviewed together with Sprint 01 in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — script: [REVIEWING.md → Sprint 02](REVIEWING.md#sprint-02--rooms-dormitory-and-blocks)."
+    now: "Accepted by the owner on 10 Oct 2026 together with Sprint 01 (pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74)). Merged to main and tagged `sprint-02`."
     done:
       - "Migration V004: 7 tables, 22 built-in amenities, btree_gist EXCLUDE constraints for overlapping blocks, triggers that keep beds under bed-based rooms only"
       - "Room-based (UNIT) and bed-based (BED) inventory with a capacity calculation the availability engine (Sprint 05) will reuse"
@@ -173,7 +173,7 @@ sprints:
       - "Concurrency: 10 simultaneous block requests on one room → exactly 1 created, 9 × 409; repeated 20 times, no flakes"
       - "Frontend: 14 of 14 unit tests passed; 26 of 26 browser tests (Sprint 01 + 02 review scripts, automated); ESLint clean; production build OK"
       - "All 14 steps of the REVIEWING.md Sprint 02 script run in Chromium as owner and receptionist, desktop and 390 px phone width, no page errors ([screenshots](sprint-02-screens/))"
-    outcome: "Pending owner acceptance together with Sprint 01. On acceptance: merge to main, tag sprint-02, Sprint 03 (guests) starts."
+    outcome: "Accepted 10 Oct 2026. On main as tag sprint-02. Sprint 03 (guests) started."
   depends: [1]
   goal: Model the 6 rooms and the dormitory correctly (room-based vs bed-based inventory) and let managers block units.
   scope:
@@ -207,7 +207,7 @@ sprints:
     - "[done] Seed: dev seed runner (Development only, idempotent) + seed 1 property, 6 rooms (2 deluxe, 4 standard), 1 dormitory with 10 beds"
     - "[done] UI: /rooms list grouped by type with bed counts; room editor; dorm bed editor; block dialog with date range + reason"
     - "[done] Docs: update DATABASE.md table list, API.md catalogue, sprint-02 guide status"
-    - Review and sign-off by owner (open issues for any change requests)
+    - "[done] Review and sign-off by owner (accepted 10 Oct 2026)"
   tests:
     - Integration — cannot add beds to a UNIT-mode room (422)
     - Integration — overlapping blocks on the same unit rejected by the DB (409 OVERLAP)
@@ -235,7 +235,7 @@ sprints:
 - id: 3
   title: Guests
   phase: 2
-  status: planned
+  status: in-progress
   size: M
   module: Guests
   feature: guests
