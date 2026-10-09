@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
+using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 
@@ -31,6 +32,11 @@ public interface IAppDbContext
     DbSet<Bed> Beds { get; }
     DbSet<UnitImage> UnitImages { get; }
     DbSet<UnitBlock> UnitBlocks { get; }
+    DbSet<Guest> Guests { get; }
+    DbSet<GuestAddress> GuestAddresses { get; }
+    DbSet<GuestDocument> GuestDocuments { get; }
+    DbSet<GuestPreference> GuestPreferences { get; }
+    DbSet<GuestConsent> GuestConsents { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

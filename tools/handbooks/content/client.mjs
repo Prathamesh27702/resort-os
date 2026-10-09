@@ -52,7 +52,7 @@ export function clientBody(r) {
     ['Who it is for', 'Resort owners, general managers and every staff role: reception, housekeeping, kitchen and restaurant, stores, accounts, HR, drivers and activity staff.'],
     ['How staff use it', 'In a web browser on any computer, tablet or phone. No installation; it can be added to a phone\'s home screen like an app.'],
     ['What makes it different', 'One guest record, one bill and one audit trail across every department, and the rules (GST, no double-booking, who may see ID documents) enforced by the system rather than by memory.'],
-    ['Where it stands today', `${doneCount === 1 ? 'Sprint' : 'Sprints'} ${r.done.map(s => two(s.id)).join(' and ')} ${doneCount === 1 ? 'is' : 'are'} delivered and accepted. Sprint ${two(r.current.id)} (${r.current.title}) is in progress.`],
+    ['Where it stands today', `${doneCount === 1 ? 'Sprint' : 'Sprints'} ${r.done.map(s => two(s.id)).join(' and ')} ${doneCount === 1 ? 'is' : 'are'} delivered and accepted. Sprint ${two(r.current.id)} (${r.current.title}) is ${r.current.status === 'in-review' ? 'built and waiting for review' : 'in progress'}.`],
   ]));
   b.add(spacer(6), callout('In one sentence', 'A resort team should be able to run the whole property, from the first booking enquiry to the GST invoice and the month-end report, without re-typing anything into a second system.'));
 
@@ -157,9 +157,17 @@ export function clientBody(r) {
     const shots = (s.handbook?.screenshots ?? []).slice(0, 3);
     for (const sh of shots) b.add(image(r.abs(sh.file), { widthIn: sh.width ?? 5.6, caption: sh.caption, border: true }));
   }
-  b.h2(`In progress: Sprint ${two(r.current.id)} — ${r.current.title}`);
-  b.add(p(r.current.client));
-  if (r.current.acceptance) b.add(small(`It will be accepted when: ${r.current.acceptance.join('; ')}.`));
+  const cur = r.current;
+  if (cur.status === 'in-review' && cur.handbook) {
+    b.h2(`Ready for review: Sprint ${two(cur.id)} — ${cur.title.split(' — ')[0]}`);
+    b.add(p(`${cur.client} Built and tested; it becomes part of the system once the owner accepts it.`));
+    if (cur.handbook.highlights) b.add(bullets(cur.handbook.highlights));
+    for (const sh of (cur.handbook.screenshots ?? []).slice(0, 3)) b.add(image(r.abs(sh.file), { widthIn: sh.width ?? 5.6, caption: sh.caption, border: true }));
+  } else {
+    b.h2(`In progress: Sprint ${two(cur.id)} — ${cur.title}`);
+    b.add(p(cur.client));
+    if (cur.acceptance) b.add(small(`It will be accepted when: ${cur.acceptance.join('; ')}.`));
+  }
 
   // 10 ────────────────────────────────────────────────────────────
   b.h1('Delivery roadmap');

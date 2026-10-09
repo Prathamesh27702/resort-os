@@ -279,42 +279,114 @@ sprints:
 - id: 3
   title: Guests
   phase: 2
-  status: in-progress
+  status: in-review
   size: M
   module: Guests
   feature: guests
+  progress:
+    now: "Built and tested; waiting for the owner's review. Script: [REVIEWING.md → Sprint 03](REVIEWING.md#sprint-03--guests-id-documents-privacy)."
+    done:
+      - "Migration V005: 5 tables with a data classification on every column; pg_trgm indexes for contains-search on name, email, company and phone digits; database guards (never delete guests, anonymised rows empty, Aadhaar never in full, consent history append-only)"
+      - "Field-level encryption (AES-256-GCM, HKDF-derived keys, key id per row, row-bound associated data) for ID numbers, document details and scans; key rotation design and steps in SECURITY.md"
+      - "File storage abstraction (IFileStore) with a local-disk implementation; scans checked by their bytes (JPEG/PNG/PDF), ≤ 5 MB, stored encrypted"
+      - "Guest APIs: search by any part of a phone number typed any way, or name/email/company; duplicate warning on create (phone, email, full name, same ID document); edit with optimistic concurrency; consent history; merge with reason; anonymise with reason; retention dry-run report"
+      - "Phone numbers normalised to E.164 (Indian numbers typed locally, international with + or 00)"
+      - "Audit trail names changed guest fields but never stores personal values; opening an ID number or scan is a SENSITIVE_READ audit row"
+      - "Dev seed S002: 20 invented guests (14 Indian, 6 international) with addresses, preferences and consents"
+      - "Angular screens: Guests list with search-as-you-type, add/edit guest with duplicate warning, GST state and preferences, guest profile with consent, stays and ID documents (only with guest_document.read), add-document dialog, merge dialog, anonymise"
+    files:
+      - "database/migrations/V005__guests.sql; database/seed/dev/S002__guests.sql; database/queries/check-sprint-03.sql"
+      - "backend/Resort.Domain/Guests/Guests.cs"
+      - "backend/Resort.Contracts/GuestContracts.cs"
+      - "backend/Resort.Application/ — Guests/GuestService.cs, Guests/GuestDocumentService.cs, Validation/GuestValidators.cs, Common/Protection.cs, Common/Permissions.cs, Common/Errors.cs"
+      - "backend/Resort.Infrastructure/ — Protection/FieldEncryption.cs, Protection/LocalDiskFileStore.cs, Persistence/AppDbContext.cs, Persistence/AuditInterceptor.cs (personal-data masking)"
+      - "backend/Resort.Api/ — Endpoints/GuestEndpoints.cs, Program.cs (key check at start-up), appsettings.json (Guests, FileStore)"
+      - "backend/Resort.Tests/ — Integration/GuestTests.cs, Unit/GuestUnitTests.cs, Support/ResortApiFactory.cs"
+      - "frontend/src/app/ — features/guests/*, core/models.ts, app.routes.ts, layout/shell.ts, features/audit (labels)"
+      - "frontend/e2e/sprint-03.spec.ts, e2e/helpers.ts (optional screenshots); scripts/check-api.mjs (Sprint 03 checks)"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-03.md, docs/SECURITY.md, docs/GETTING_STARTED.md, docs/sprints/REVIEWING.md, docs/testing/VERIFYING.md, sprint-03-screens/"
+    results:
+      - "Backend: 102 passed, 0 failed on real PostgreSQL 16 (44 new: 13 integration, 31 unit including phone and encryption cases)"
+      - "Frontend: 20 of 20 unit tests passed; ESLint clean; production build OK"
+      - "Browser tests: 39 of 39 passed (Sprint 01 + 02 + the 13 new Sprint 03 review steps)"
+      - "API checks: 46 of 46 passed on a fresh database (45 on later runs); SQL checks: all 14 Sprint 03 queries as expected"
+    outcome: "Pending owner acceptance. On acceptance: merge to main, tag sprint-03, Sprint 04 (rate plans and packages) starts."
   depends: [1]
   goal: Guest profiles with only the data that is needed, encrypted sensitive fields, de-duplication and retention.
   client: "Reception keeps one clean record per guest, finds returning guests by phone in one search, and stores ID documents encrypted and visible only to permitted staff."
+  handbook:
+    highlights:
+      - "One profile per guest, shared by every property; returning guests found by phone in one search"
+      - "A warning before creating a second profile for the same person, and a merge for duplicates that slip through"
+      - "ID documents (passport, Aadhaar, visa…) stored encrypted; only reception, managers and owners can open them, and every view is recorded"
+      - "Aadhaar: only the last 4 digits are ever kept"
+      - "Consent for WhatsApp and email offers recorded with time and staff member"
+      - "Anonymise on request: personal data and documents removed, accounts still add up"
+    design:
+      ui: "Guests (menu) lists profiles with search-as-you-type: any part of a phone number in any format, or name, email or company. Add/edit guest checks for duplicates as soon as the phone or email is entered and shows matches with their reasons; saving again creates the profile anyway. The form covers contact details, nationality (Form-C hint for foreign nationals), address with the GST state for Indian addresses, company and GSTIN, preferences as chips, and team notes. The profile page shows contact, address, preferences, consent (Yes/No per purpose with who and when), stays (empty until Sprint 05) and, only for users with guest_document.read, ID documents with masked numbers, Show number, View scan and an Add document dialog (camera capture on phones). More → Merge folds a duplicate in; More → Anonymise (owner/GM) asks for a reason."
+      api: "Endpoints under /api/v1/guests. Guests belong to the organisation, so a grant for any property is enough; anonymise and the retention report need guest.delete organisation-wide. Create returns 409 POSSIBLE_DUPLICATE with the matches until ignoreDuplicates is set. Documents are uploaded as multipart/form-data; the API sniffs the file type from its bytes, encrypts the number, details and scan, and returns only a masked number. Opening a document (number or scan) is a separate call that is audited as SENSITIVE_READ. Edits and merges carry the version the user saw (409 on a stale edit)."
+      database: "Migration V005 adds guests, guest_addresses, guest_documents, guest_preferences and guest_consents, with a data classification comment on every column. Generated search_text and phone_digits columns with pg_trgm GIN indexes keep contains-search fast. Document numbers and details are bytea ciphertext with a key_id for rotation and an HMAC lookup hash; Aadhaar rows may not hold an encrypted number. Constraints guarantee anonymised rows hold no personal data and purged documents keep nothing identifying; triggers forbid deleting guests and rewriting consent history."
+    diagrams:
+      - {file: tools/handbooks/assets/er-guests.png, caption: "Guest tables and how they relate"}
+    screenshots:
+      - {file: docs/sprints/sprint-03-screens/02-search-by-phone.png, caption: "A returning guest found by phone in one search"}
+      - {file: docs/sprints/sprint-03-screens/03-duplicate-warning.png, caption: "Warning before creating a second profile for the same person"}
+      - {file: docs/sprints/sprint-03-screens/08-guest-profile.png, caption: "Guest profile: contact, address, preferences and consent"}
+      - {file: docs/sprints/sprint-03-screens/06-documents-number-shown.png, caption: "ID documents: masked until opened; every view is recorded"}
+      - {file: docs/sprints/sprint-03-screens/09-waiter-no-documents.png, caption: "A waiter sees the guest but no ID documents"}
+      - {file: docs/sprints/sprint-03-screens/11-anonymised.png, caption: "After anonymising: personal data and documents removed"}
+      - {file: docs/sprints/sprint-03-screens/12-phone-profile.png, caption: "Guest profile at phone width", width: 2.4}
   scope:
     tables: [guests, guest_addresses, guest_documents, guest_preferences, guest_consents]
+    migrations: [V005__guests]
     api:
       - GET|POST /api/v1/guests
+      - GET /api/v1/guests/possible-duplicates
       - GET|PUT /api/v1/guests/{id}
       - GET /api/v1/guests/{id}/stays
-      - POST /api/v1/guests/{id}/documents
-      - GET /api/v1/guests/{id}/documents/{docId}  (guest_document.read only)
-      - POST /api/v1/guests/{id}/anonymise
+      - POST /api/v1/guests/{id}/consents
       - POST /api/v1/guests/merge
-    screens: [/guests, /guests/:id]
+      - POST /api/v1/guests/{id}/anonymise
+      - GET /api/v1/guests/retention/dry-run
+      - GET|POST /api/v1/guests/{id}/documents
+      - GET /api/v1/guests/{id}/documents/{docId}
+      - GET /api/v1/guests/{id}/documents/{docId}/file
+    screens: [/guests, /guests/new, "/guests/:id", "/guests/:id/edit"]
+    other:
+      - "Development seed: 20 demo guests (database/seed/dev/S002__guests.sql)"
+      - "Screenshots of the built screens: docs/sprints/sprint-03-screens/"
   tasks:
-    - "DB: new migration — guest tables; data-classification comment on every column (public/internal/confidential/sensitive, brief §59)"
-    - "Infra: field-level encryption (AES-GCM, key from configuration) for ID numbers and document metadata; key rotation design documented"
-    - "Infra: blob storage abstraction (IFileStore) with local-disk dev implementation for ID scans"
-    - "API: search by name/phone/email (trigram index), de-duplication hint on create, merge with audit"
-    - "API: anonymise (guest.delete) replaces PII, keeps stay history for accounting"
-    - "Job: retention dry-run report (what would be purged) — actual purge enabled only after owner approval"
-    - "Seed: 20 realistic guests (Indian + international)"
-    - "UI: guest list/search, profile, documents tab hidden without guest_document.read"
+    - "[done] DB: new migration — guest tables; data-classification comment on every column (public/internal/confidential/sensitive, brief §59)"
+    - "[done] Infra: field-level encryption (AES-GCM, key from configuration) for ID numbers and document metadata; key rotation design documented"
+    - "[done] Infra: blob storage abstraction (IFileStore) with local-disk dev implementation for ID scans"
+    - "[done] API: search by name/phone/email (trigram index), de-duplication hint on create, merge with audit"
+    - "[done] API: anonymise (guest.delete) replaces PII, keeps stay history for accounting"
+    - "[done] Job: retention dry-run report (what would be purged) — actual purge enabled only after owner approval"
+    - "[done] Seed: 20 realistic guests (Indian + international)"
+    - "[done] UI: guest list/search, profile, documents tab hidden without guest_document.read"
+    - Review and sign-off by owner (open issues for any change requests)
   tests:
     - Integration — WAITER and HOUSEKEEPER cannot read guest documents (403) — brief §59
     - Integration — ID number stored encrypted (raw column is not plaintext)
     - Integration — anonymise keeps stays, removes PII, audited with reason
     - Unit — phone normalisation (+91 and international)
+    - "Integration — returning guest found by any part of the phone, typed any way"
+    - "Integration — duplicate warning (409 POSSIBLE_DUPLICATE) until confirmed"
+    - "Integration — Aadhaar keeps only the last 4 digits"
+    - "Integration — scans: file type from the bytes, ≤ 5 MB, stored encrypted, every view audited"
+    - "Integration — merge moves documents, consents, preferences; duplicate hidden"
+    - "Integration — personal data never written to the audit trail; stale edit → 409; tenant isolation (404)"
+    - "Integration — retention dry run deletes nothing; database refuses deleting guests and rewriting consents"
+    - "Unit — AES-256-GCM: tampering and wrong row detected, rotation keeps old data readable, missing key fails fast"
   acceptance:
     - Reception finds a returning guest by phone in one search
   debug:
     - "Lost the encryption key = lost ID data. Dev key lives in .env (Encryption__Key); never reuse across environments."
+    - "API won't start: 'Encryption:Key (Encryption__Key) is not set' or 'must be 32 bytes' → run scripts/setup-dev, or set a base64 32-byte key."
+    - "CryptographicException when opening a document: the key changed since it was saved. Put the old key back (or add it as Encryption__PreviousKeys__k1)."
+    - "409 POSSIBLE_DUPLICATE is expected the first time; the UI's 'Create a new profile anyway' resends with ignoreDuplicates."
+    - "No demo guests? The seed only fills an organisation with no guests. Reset the database and restart the API."
+    - "Scans live in backend/Resort.Api/App_Data/files (encrypted). A database reset doesn't delete them."
   demo:
     - Create guest → duplicate warning → upload ID → view as receptionist vs waiter
 

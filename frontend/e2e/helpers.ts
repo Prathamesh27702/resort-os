@@ -46,6 +46,18 @@ export async function snack(page: Page) {
   return (await s.textContent())?.trim() ?? '';
 }
 
+/**
+ * Saves a screenshot for the sprint's review guide when E2E_SCREENSHOTS names a folder, e.g.
+ *   E2E_SCREENSHOTS=../docs/sprints/sprint-03-screens npm run e2e -- e2e/sprint-03.spec.ts
+ * Does nothing otherwise, so normal runs are unaffected.
+ */
+export async function shot(page: Page, name: string) {
+  const dir = process.env['E2E_SCREENSHOTS'];
+  if (!dir) return;
+  await page.waitForTimeout(400);   // let snack bars and menus settle
+  await page.screenshot({ path: `${dir}/${name}.png` });
+}
+
 /** Picks an option in an Angular Material select. */
 export async function choose(page: Page, select: string, option: string | RegExp) {
   await page.locator(select).click();

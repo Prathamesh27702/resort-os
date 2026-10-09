@@ -44,7 +44,44 @@ get past, keep attacks visible, and test the controls.
 
 - Collect only what the law and operations need (ID details only where Form-C / local police rules require).
 - Retention: guest ID scans deleted N days after checkout (owner to confirm N, default 365); anonymisation instead of deletion where accounting needs the stay. The retention job runs as a dry-run report first (Sprint 3).
-- Restaurant and housekeeping roles have no access to guest documents (tested).
+- Restaurant and housekeeping roles have no access to guest documents (tested). Waiters may look a guest up to charge
+  a meal to the room; housekeeping sees no guests at all *(built, Sprint 3)*.
+- **Aadhaar:** only the last 4 digits are stored (masked Aadhaar), enforced by a database constraint *(built)*.
+- **Audit without personal data:** guest audit rows name the fields that changed but store `***` instead of personal
+  values (`[PersonalData]` properties and all ciphertext), so anonymising a guest leaves nothing behind in the
+  append-only audit log *(built)*. Opening an ID number or scan writes a `SENSITIVE_READ` audit row *(built)*.
+- **Anonymise, don't delete:** `POST /guests/{id}/anonymise` (owner/GM) removes personal data, purges documents and
+  deletes scans; the row stays so stays and invoices still add up *(built)*.
+- **Retention:** `GET /guests/retention/dry-run` lists the ID documents older than `Guests:DocumentRetentionDays`
+  (default 365). The real purge job is switched on only after the owner approves the period (issue #54).
+
+## Field encryption and key rotation *(built, Sprint 3)*
+
+Guest ID numbers, document details and ID scans are encrypted by the API before they reach the database or file
+storage, so a database dump or a copied file folder reveals nothing.
+
+| Item | Design |
+|---|---|
+| Algorithm | AES-256-GCM (authenticated): tampering is detected, not just hidden |
+| Key | `Encryption__Key`: 32 random bytes, base64. Locally in `.env` (written by `scripts/setup-dev`); in production from the host's secret store. Never in Git, never the same on two environments |
+| Derived keys | HKDF-SHA256 derives a separate data key and lookup-hash key, so one purpose never reuses another's key |
+| Envelope | `[version][key id][12-byte random nonce][ciphertext][16-byte tag]`; the key id travels with the data |
+| Binding | Associated data = `guest_document:{id}:{field}`; a ciphertext copied to another row or field won't decrypt |
+| Lookups | `number_hash` = HMAC-SHA256 (type + normalised number) finds the same passport on two profiles without decrypting |
+| Files | Scans are encrypted with the same scheme, checked by their bytes (JPEG/PNG/PDF only), ≤ 5 MB, stored under API-generated keys outside any web folder |
+| Fail fast | The API refuses to start if the key is missing or not 32 bytes |
+
+**Rotating the key** (yearly, and at once if it may have leaked or someone with access leaves):
+
+1. Generate a new key: `openssl rand -base64 32`.
+2. Move the current key to `Encryption__PreviousKeys__k1` (its id) and put the new one in `Encryption__Key` with
+   `Encryption__ActiveKeyId=k2`. Restart. New data uses k2; old data still decrypts with k1.
+3. Run the re-encryption job (added with the background worker in Sprint 24): it re-encrypts every row and file whose
+   `key_id` is k1 and recomputes `number_hash`. Until then, keep k1 configured.
+4. When no row has `key_id = k1` (`SELECT count(*) FROM guest_documents WHERE key_id = 'k1'`), remove the old key.
+
+**Losing the key loses the data.** Keep production keys in the secret store with its own backup; development keys
+are throwaway (reset the database if you lose one).
 
 ## Transport, headers and infrastructure
 
@@ -68,7 +105,7 @@ change, manual attendance, leave approval, inventory adjustment, expense approva
 | # | Risk | Controls | Test |
 |---|---|---|---|
 | A01 | Broken access control | Permission policies, property scoping, tenant filters, escalation guard | *built:* `AccessControlTests` (403/404 matrix, tenant isolation, escalation) |
-| A02 | Cryptographic failures | PBKDF2, SHA-256 token hashes, AES-GCM for sensitive fields, TLS everywhere | *built:* refresh cookie flags, masked audit values · Sprint 3: encrypted column test |
+| A02 | Cryptographic failures | PBKDF2, SHA-256 token hashes, AES-GCM for sensitive fields, TLS everywhere | *built:* refresh cookie flags, masked audit values, `ID_number_and_scan_are_stored_encrypted…`, `FieldEncryptionTests` (tamper, wrong row, rotation) |
 | A03 | Injection | EF Core parameterised queries; `FromSql` with interpolation only (parameterised); no string-built SQL; Angular escaping | Sprint 28: injection payload suite on every string input |
 | A04 | Insecure design | Threat-model notes per sprint; exclusion constraints + idempotency for bookings/money | Sprint 5 concurrency tests, Sprint 11 webhook tests |
 | A05 | Security misconfiguration | Secure headers, Swagger only in Development, no secrets in config, least-privilege DB role | *built:* `Security_headers_are_present` |

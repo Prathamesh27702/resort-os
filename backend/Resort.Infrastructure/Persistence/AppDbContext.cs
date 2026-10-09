@@ -6,6 +6,7 @@ using Resort.Application.Common;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
+using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 
@@ -41,6 +42,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<Bed> Beds => Set<Bed>();
     public DbSet<UnitImage> UnitImages => Set<UnitImage>();
     public DbSet<UnitBlock> UnitBlocks => Set<UnitBlock>();
+    public DbSet<Guest> Guests => Set<Guest>();
+    public DbSet<GuestAddress> GuestAddresses => Set<GuestAddress>();
+    public DbSet<GuestDocument> GuestDocuments => Set<GuestDocument>();
+    public DbSet<GuestPreference> GuestPreferences => Set<GuestPreference>();
+    public DbSet<GuestConsent> GuestConsents => Set<GuestConsent>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -127,6 +133,34 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             // "period" is a generated column used only by the database's EXCLUDE constraint; not mapped.
             e.Ignore(x => x.IsActive);
         });
+
+        // ---- Sprint 3: guests (database/migrations/V005__guests.sql)
+        b.Entity<Guest>(e =>
+        {
+            e.ToTable("guests");
+            // Generated (STORED) columns used for search; never written by the app.
+            e.Property(x => x.SearchText).HasComputedColumnSql("search_text", stored: true);
+            e.Property(x => x.PhoneDigits).HasComputedColumnSql("phone_digits", stored: true);
+            e.Property(x => x.Nationality).HasColumnType("char(2)");
+            e.HasMany(x => x.Addresses).WithOne().HasForeignKey(x => x.GuestId);
+            e.HasMany(x => x.Preferences).WithOne().HasForeignKey(x => x.GuestId);
+            e.Ignore(x => x.IsActive);
+            e.Ignore(x => x.FullName);
+        });
+        b.Entity<GuestAddress>(e =>
+        {
+            e.ToTable("guest_addresses");
+            e.Property(x => x.StateCode).HasColumnType("char(2)");
+            e.Property(x => x.CountryCode).HasColumnType("char(2)");
+            e.Ignore(x => x.IsEmpty);
+        });
+        b.Entity<GuestDocument>(e =>
+        {
+            e.ToTable("guest_documents");
+            e.Property(x => x.IssuingCountry).HasColumnType("char(2)");
+        });
+        b.Entity<GuestPreference>().ToTable("guest_preferences");
+        b.Entity<GuestConsent>().ToTable("guest_consents");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

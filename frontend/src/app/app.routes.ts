@@ -33,6 +33,12 @@ export const routes: Routes = [
       { path: 'rooms/status', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/room-status.page').then(m => m.RoomStatusPage) },
       { path: 'rooms/:id', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/room-edit.page').then(m => m.RoomEditPage) },
 
+      // /guests (Sprint 3)
+      { path: 'guests', canActivate: [permissionGuard('guest.read')], loadComponent: () => import('./features/guests/guests.page').then(m => m.GuestsPage) },
+      { path: 'guests/new', canActivate: [permissionGuard('guest.create')], loadComponent: () => import('./features/guests/guest-edit.page').then(m => m.GuestEditPage) },
+      { path: 'guests/:id/edit', canActivate: [permissionGuard('guest.update')], loadComponent: () => import('./features/guests/guest-edit.page').then(m => m.GuestEditPage) },
+      { path: 'guests/:id', canActivate: [permissionGuard('guest.read')], loadComponent: () => import('./features/guests/guest.page').then(m => m.GuestPage) },
+
       // /users, /roles, /audit
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

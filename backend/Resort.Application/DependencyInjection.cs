@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Resort.Application.Accommodation;
 using Resort.Application.Audit;
 using Resort.Application.Common;
+using Resort.Application.Guests;
 using Resort.Application.Identity;
 using Resort.Application.Properties;
 
@@ -24,6 +25,8 @@ public static class DependencyInjection
         services.AddScoped<OrganizationService>();
         services.AddScoped<PropertyService>();
         services.AddScoped<AuditQueryService>();
+        services.AddScoped<GuestService>();
+        services.AddScoped<GuestDocumentService>();
         return services;
     }
 }

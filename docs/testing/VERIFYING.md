@@ -58,7 +58,7 @@ Two things to know:
 
 ## 2. UI: browser tests you can watch
 
-These are Sprint 01 + 02's review scripts turned into automatic tests: 26 steps that sign in, fill forms, click
+These are Sprint 01–03's review scripts turned into automatic tests: 39 steps that sign in, fill forms, click
 buttons and check what appears, in a real Chrome. They live in `frontend/e2e/`, and each test is named after its
 REVIEWING.md step (`S02-03 block Room 103 for 2 nights…`).
 
@@ -87,7 +87,7 @@ limit to reset. That pause means the limit works.
 If a test fails, open `npm run e2e:report`, click the red test, then **Trace** to see the screen, the click and
 the API call at the moment it failed.
 
-CI runs the same tests on every pull request (*Browser tests — Sprint 01–02 screens*). The report with
+CI runs the same tests on every pull request (*Browser tests — sprint review scripts*). The report with
 screenshots is attached to each run: GitHub → **Actions** → the run → **Artifacts → browser-test-report**.
 
 ## 3. API: checking the server directly
@@ -160,7 +160,8 @@ database; a manager resets it instead.
 ## 5. Feature by feature: UI → API → database
 
 *REVIEWING step* = the hands-on step in [REVIEWING.md](../sprints/REVIEWING.md) (S01-n / S02-n is also the browser
-test's name). *API check* = the line in `check-api.mjs`'s output. *DB query* = the number in `check-sprint-01-02.sql`.
+test's name). *API check* = the line in `check-api.mjs`'s output. *DB query* = the number in `check-sprint-01-02.sql`
+(Sprint 03: `check-sprint-03.sql`).
 
 ### Sprint 01 — sign-in, staff, roles, audit
 
@@ -196,6 +197,27 @@ test's name). *API check* = the line in `check-api.mjs`'s output. *DB query* = t
 | Phone layout | S02-14: 390 px, no sideways scroll | — | — |
 
 `…` = `/api/v1/properties/{propertyId}`.
+
+### Sprint 03 — guests, ID documents, privacy
+
+DB query numbers here are from `database/queries/check-sprint-03.sql`. API checks are in the *Sprint 03* block of
+`check-api.mjs`.
+
+| Feature | 1. UI (REVIEWING step → what you see) | 2. API (request → expected) | 3. Database (query → what you see) |
+|---|---|---|---|
+| Demo guests | S03-1: 20 guests, 3 VIP | `GET /api/v1/guests` → `total` 20 | Q2: 20 ACTIVE; Q3: the names, phones as `+91…` |
+| Find by phone | S03-2: *90000 00104* → only Ananya Iyer | `GET /api/v1/guests?q=090000%2000104` → 1 item | Q4: 0 rows (every phone is E.164) |
+| Duplicate warning | S03-3: yellow box *Same phone, Same name* | `POST /api/v1/guests` same phone → 409 `POSSIBLE_DUPLICATE` with the matches in `details`; with `ignoreDuplicates: true` → 201 | — |
+| Profile, address, preferences | S03-4: phone *+91 98765 43210*, *Panaji, Goa*, *Jain food* | `PUT /api/v1/guests/{id}` needs `version`; stale → 409 `CONCURRENCY_CONFLICT` | Q3: the row; `guest_addresses` / `guest_preferences` |
+| Encrypted ID number | S03-5: **•••• 4567**; Show number → *Z1234567* | `POST /api/v1/guests/{id}/documents` (multipart) → 201 `maskedNumber`; `GET …/documents/{docId}` → `number` | Q5: `number_bytes` > 0, `first_bytes_hex` is not the number, `key_id` k1 |
+| Opening is audited | S03-6: *Opened (sensitive) · ID document* | `GET /api/v1/audit-logs?entityType=GuestDocument` → `SENSITIVE_READ` | Q10: who, what (number / file), when |
+| Aadhaar masked | S03-7: **•••• 0123**, no Show number | upload `AADHAAR` → `number` null in the detail | Q6: 0 rows |
+| Consent | S03-8: *Yes* with date and name | `POST /api/v1/guests/{id}/consents` → the latest per purpose | Q9: the history; updating it in SQL is refused |
+| Who sees documents | S03-9/10/11: receptionist yes, waiter no section, housekeeper no Guests | as waiter `GET …/documents` → 403; as housekeeper `GET /api/v1/guests` → 403 | — |
+| Merge | S03-12: duplicate folded in, hidden from search | `POST /api/v1/guests/merge` → 200 survivor | Q8: merged → survivor; Q12: the reason |
+| Anonymise | S03-13: *Anonymised guest*, documents *Purged* | `POST /api/v1/guests/{id}/anonymise` → 200; receptionist → 403 | Q7: 0 rows; Q11: 0 rows (no personal data in the audit trail) |
+| Retention (dry run) | — | `GET /api/v1/guests/retention/dry-run` → what would be purged; nothing is deleted | Q14: same list |
+| Classification | — | — | Q13: 0 rows (every guest column is classified) |
 
 ## 6. When something doesn't match
 

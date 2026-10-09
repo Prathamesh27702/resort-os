@@ -7,7 +7,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
 - Every planned table and the sprint that creates it: [database/tables-by-sprint.md](database/tables-by-sprint.md)
 - Column-level definitions of built tables, one file per sprint:
   [Sprint 1 — foundation](database/schema-sprint-01.md) ·
-  [Sprint 2 — accommodation](database/schema-sprint-02.md) (rooms, dorm beds, blocks, dev seed data)
+  [Sprint 2 — accommodation](database/schema-sprint-02.md) (rooms, dorm beds, blocks, dev seed data) ·
+  [Sprint 3 — guests](database/schema-sprint-03.md) (profiles, encrypted ID documents, consents, demo guests)
 
 ## Conventions (every table)
 
@@ -33,9 +34,11 @@ database/migrations/
   V002__seed_permissions_roles.sql
   V003__audit_request_context.sql
   V004__accommodation.sql
-  V005__<next>.sql   ← you add this
+  V005__guests.sql
+  V006__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
+  S002__guests.sql          ← 20 demo guests; Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.

@@ -155,7 +155,7 @@ jobs:
 
   e2e:
     # Clicks through the staff app like a person: docs/sprints/REVIEWING.md scripts, automated (frontend/e2e).
-    name: Browser tests — Sprint 01–02 screens
+    name: Browser tests — sprint review scripts
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:

@@ -111,6 +111,7 @@ export class Shell {
 
   private all: NavItem[] = [
     { label: 'Today', icon: 'wb_sunny', link: '/dashboard' },
+    { label: 'Guests', icon: 'group', link: '/guests', perm: 'guest.read' },
     { label: 'Rooms', icon: 'bed', link: '/rooms', perm: 'accommodation.read', exact: true },
     { label: 'Room status', icon: 'grid_view', link: '/rooms/status', perm: 'accommodation.read' },
     { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },

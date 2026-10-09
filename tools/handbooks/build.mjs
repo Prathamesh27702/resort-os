@@ -30,7 +30,7 @@ function controlPage(title, audience, distribution) {
     table(null, [
       ['Document', title],
       ['Audience', audience],
-      ['Status', `Living document, rebuilt at the end of every accepted sprint. This edition reflects Sprint ${two(r.lastDone?.id ?? 0)} accepted and Sprint ${two(r.current.id)} in progress.`],
+      ['Status', `Living document, rebuilt at the end of every sprint. This edition reflects Sprint ${two(r.lastDone?.id ?? 0)} accepted and Sprint ${two(r.current.id)} ${r.current.status === 'in-review' ? 'built and in review' : 'in progress'}.`],
       ['Owner', 'Prathamesh, product owner'],
       ['Distribution', distribution],
     ], [2200, TEXT_W - 2200], { fills: (ri, ci) => (ci === 0 ? C.light : undefined), boldFirst: true }),
@@ -48,7 +48,7 @@ function build({ file, title, subtitle, kicker, audience, distribution, body, no
           details: [
             ['Edition', `Version ${edition.version}`],
             ['Date', longDate],
-            ['Covers', `Sprints ${r.done.map(s => two(s.id)).join(', ')} accepted · Sprint ${two(r.current.id)} ${r.current.title} in progress`],
+            ['Covers', `Sprints ${r.done.map(s => two(s.id)).join(', ')} accepted · Sprint ${two(r.current.id)} ${r.current.title} ${r.current.status === 'in-review' ? 'in review' : 'in progress'}`],
             ['Prepared by', 'Prathamesh, product owner, Resort OS'],
             ['Classification', 'Confidential'],
           ],

@@ -1351,6 +1351,509 @@
                     }
                 }
             }
+        },
+        "/api/v1/guests": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "includeInactive",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "pattern": "^-?(?:0|[1-9]\\d*)$",
+                            "type": [
+                                "integer",
+                                "string"
+                            ],
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": {
+                            "pattern": "^-?(?:0|[1-9]\\d*)$",
+                            "type": [
+                                "integer",
+                                "string"
+                            ],
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResultOfGuestListItemDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Guests"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateGuestRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/possible-duplicates": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "firstName",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "lastName",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "excludeId",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PossibleDuplicateDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/merge": {
+            "post": {
+                "tags": [
+                    "Guests"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MergeGuestsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GuestDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/retention/dry-run": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RetentionReportDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GuestDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateGuestRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GuestDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}/stays": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GuestStayDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}/consents": {
+            "post": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RecordConsentRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GuestDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}/anonymise": {
+            "post": {
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AnonymiseGuestRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GuestDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}/documents": {
+            "get": {
+                "tags": [
+                    "Guest documents"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GuestDocumentDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Guest documents"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IFormFile"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}/documents/{docId}": {
+            "get": {
+                "tags": [
+                    "Guest documents"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "docId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GuestDocumentDetailDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guests/{id}/documents/{docId}/file": {
+            "get": {
+                "tags": [
+                    "Guest documents"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "docId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1520,6 +2023,17 @@
                         "type": "string"
                     },
                     "category": {
+                        "type": "string"
+                    }
+                }
+            },
+            "AnonymiseGuestRequest": {
+                "required": [
+                    "reason"
+                ],
+                "type": "object",
+                "properties": {
+                    "reason": {
                         "type": "string"
                     }
                 }
@@ -1871,6 +2385,103 @@
                     }
                 }
             },
+            "CreateGuestRequest": {
+                "required": [
+                    "firstName",
+                    "lastName",
+                    "phone",
+                    "email",
+                    "dateOfBirth",
+                    "nationality",
+                    "companyName",
+                    "gstin",
+                    "notes",
+                    "isVip",
+                    "address",
+                    "preferences"
+                ],
+                "type": "object",
+                "properties": {
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "dateOfBirth": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date"
+                    },
+                    "nationality": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "companyName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "gstin": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "isVip": {
+                        "type": "boolean"
+                    },
+                    "address": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "$ref": "#/components/schemas/GuestAddressDto"
+                            }
+                        ]
+                    },
+                    "preferences": {
+                        "type": [
+                            "null",
+                            "array"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/GuestPreferenceDto"
+                        }
+                    },
+                    "ignoreDuplicates": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                }
+            },
             "CreatePropertyRequest": {
                 "required": [
                     "code",
@@ -2078,6 +2689,544 @@
                     }
                 }
             },
+            "GuestAddressDto": {
+                "required": [
+                    "line1",
+                    "line2",
+                    "city",
+                    "state",
+                    "stateCode",
+                    "postalCode",
+                    "countryCode"
+                ],
+                "type": "object",
+                "properties": {
+                    "line1": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "line2": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "city": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "state": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "stateCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "postalCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "countryCode": {
+                        "type": "string"
+                    }
+                }
+            },
+            "GuestConsentDto": {
+                "required": [
+                    "purpose",
+                    "granted",
+                    "source",
+                    "recordedAt",
+                    "recordedByName"
+                ],
+                "type": "object",
+                "properties": {
+                    "purpose": {
+                        "type": "string"
+                    },
+                    "granted": {
+                        "type": "boolean"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "recordedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "recordedByName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "GuestDocumentDetailDto": {
+                "required": [
+                    "id",
+                    "documentType",
+                    "number",
+                    "maskedNumber",
+                    "issuingCountry",
+                    "expiresOn",
+                    "details",
+                    "hasFile",
+                    "fileName",
+                    "contentType",
+                    "sizeBytes",
+                    "status",
+                    "createdAt",
+                    "createdByName"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "documentType": {
+                        "type": "string"
+                    },
+                    "number": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "maskedNumber": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "issuingCountry": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "expiresOn": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date"
+                    },
+                    "details": {
+                        "type": [
+                            "null",
+                            "object"
+                        ],
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "hasFile": {
+                        "type": "boolean"
+                    },
+                    "fileName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "contentType": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "sizeBytes": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "null",
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "createdByName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "GuestDocumentDto": {
+                "required": [
+                    "id",
+                    "documentType",
+                    "maskedNumber",
+                    "issuingCountry",
+                    "expiresOn",
+                    "hasFile",
+                    "fileName",
+                    "contentType",
+                    "sizeBytes",
+                    "status",
+                    "createdAt",
+                    "createdByName"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "documentType": {
+                        "type": "string"
+                    },
+                    "maskedNumber": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "issuingCountry": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "expiresOn": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date"
+                    },
+                    "hasFile": {
+                        "type": "boolean"
+                    },
+                    "fileName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "contentType": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "sizeBytes": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "null",
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "createdByName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "GuestDto": {
+                "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "fullName",
+                    "phone",
+                    "email",
+                    "dateOfBirth",
+                    "nationality",
+                    "companyName",
+                    "gstin",
+                    "notes",
+                    "isVip",
+                    "status",
+                    "mergedIntoId",
+                    "anonymisedAt",
+                    "address",
+                    "preferences",
+                    "consents",
+                    "documentCount",
+                    "createdAt",
+                    "updatedAt",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "dateOfBirth": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date"
+                    },
+                    "nationality": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "companyName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "gstin": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "isVip": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "mergedIntoId": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "uuid"
+                    },
+                    "anonymisedAt": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    },
+                    "address": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "$ref": "#/components/schemas/GuestAddressDto"
+                            }
+                        ]
+                    },
+                    "preferences": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GuestPreferenceDto"
+                        }
+                    },
+                    "consents": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GuestConsentDto"
+                        }
+                    },
+                    "documentCount": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "null",
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
+            "GuestListItemDto": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "phone",
+                    "email",
+                    "nationality",
+                    "city",
+                    "companyName",
+                    "isVip",
+                    "status",
+                    "createdAt"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "nationality": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "city": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "companyName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "isVip": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "GuestPreferenceDto": {
+                "required": [
+                    "category",
+                    "value"
+                ],
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "GuestStayDto": {
+                "required": [
+                    "reservationId",
+                    "propertyId",
+                    "propertyName",
+                    "checkIn",
+                    "checkOut",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "reservationId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "propertyId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "propertyName": {
+                        "type": "string"
+                    },
+                    "checkIn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "checkOut": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "IFormFile": {
+                "type": "string",
+                "format": "binary"
+            },
             "JsonElement": {},
             "LoginRequest": {
                 "required": [
@@ -2126,6 +3275,45 @@
                         "items": {
                             "$ref": "#/components/schemas/AccessGrantDto"
                         }
+                    }
+                }
+            },
+            "MergeGuestsRequest": {
+                "required": [
+                    "survivorId",
+                    "survivorVersion",
+                    "duplicateId",
+                    "duplicateVersion",
+                    "reason"
+                ],
+                "type": "object",
+                "properties": {
+                    "survivorId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "survivorVersion": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    },
+                    "duplicateId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "duplicateVersion": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    },
+                    "reason": {
+                        "type": "string"
                     }
                 }
             },
@@ -2234,6 +3422,47 @@
                     }
                 }
             },
+            "PagedResultOfGuestListItemDto": {
+                "required": [
+                    "items",
+                    "page",
+                    "pageSize",
+                    "total"
+                ],
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GuestListItemDto"
+                        }
+                    },
+                    "page": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "total": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int64"
+                    }
+                }
+            },
             "PermissionDto": {
                 "required": [
                     "code",
@@ -2254,6 +3483,50 @@
                     },
                     "isSensitive": {
                         "type": "boolean"
+                    }
+                }
+            },
+            "PossibleDuplicateDto": {
+                "required": [
+                    "id",
+                    "fullName",
+                    "phone",
+                    "email",
+                    "nationality",
+                    "reasons"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "nationality": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "reasons": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -2442,6 +3715,25 @@
                     }
                 }
             },
+            "RecordConsentRequest": {
+                "required": [
+                    "purpose",
+                    "granted",
+                    "source"
+                ],
+                "type": "object",
+                "properties": {
+                    "purpose": {
+                        "type": "string"
+                    },
+                    "granted": {
+                        "type": "boolean"
+                    },
+                    "source": {
+                        "type": "string"
+                    }
+                }
+            },
             "ReleaseBlockRequest": {
                 "required": [
                     "reason"
@@ -2461,6 +3753,82 @@
                 "properties": {
                     "temporaryPassword": {
                         "type": "string"
+                    }
+                }
+            },
+            "RetentionItemDto": {
+                "required": [
+                    "guestId",
+                    "guestName",
+                    "documentId",
+                    "documentType",
+                    "hasFile",
+                    "uploadedAt",
+                    "eligibleSince"
+                ],
+                "type": "object",
+                "properties": {
+                    "guestId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "guestName": {
+                        "type": "string"
+                    },
+                    "documentId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "documentType": {
+                        "type": "string"
+                    },
+                    "hasFile": {
+                        "type": "boolean"
+                    },
+                    "uploadedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "eligibleSince": {
+                        "type": "string",
+                        "format": "date"
+                    }
+                }
+            },
+            "RetentionReportDto": {
+                "required": [
+                    "retentionDays",
+                    "generatedAt",
+                    "documentCount",
+                    "items"
+                ],
+                "type": "object",
+                "properties": {
+                    "retentionDays": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "generatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "documentCount": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "int32"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RetentionItemDto"
+                        }
                     }
                 }
             },
@@ -2920,6 +4288,108 @@
                     }
                 }
             },
+            "UpdateGuestRequest": {
+                "required": [
+                    "firstName",
+                    "lastName",
+                    "phone",
+                    "email",
+                    "dateOfBirth",
+                    "nationality",
+                    "companyName",
+                    "gstin",
+                    "notes",
+                    "isVip",
+                    "address",
+                    "preferences",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "phone": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "dateOfBirth": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date"
+                    },
+                    "nationality": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "companyName": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "gstin": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "isVip": {
+                        "type": "boolean"
+                    },
+                    "address": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "$ref": "#/components/schemas/GuestAddressDto"
+                            }
+                        ]
+                    },
+                    "preferences": {
+                        "type": [
+                            "null",
+                            "array"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/GuestPreferenceDto"
+                        }
+                    },
+                    "version": {
+                        "pattern": "^-?(?:0|[1-9]\\d*)$",
+                        "type": [
+                            "integer",
+                            "string"
+                        ],
+                        "format": "uint32"
+                    }
+                }
+            },
             "UpdateOrganizationRequest": {
                 "required": [
                     "name",
@@ -3267,6 +4737,12 @@
         },
         {
             "name": "Blocks"
+        },
+        {
+            "name": "Guests"
+        },
+        {
+            "name": "Guest documents"
         }
     ]
 }

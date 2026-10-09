@@ -87,3 +87,37 @@ export interface RoomStatus {
   block: UnitBlock | null; activeBeds: number; blockedBeds: number; beds: BedStatus[];
 }
 export interface RoomStatusBoard { date: string; rooms: RoomStatus[]; }
+
+// ---------------------------------------------------------------- guests (Sprint 3)
+export const DOCUMENT_TYPES = ['PASSPORT', 'AADHAAR', 'DRIVING_LICENCE', 'VOTER_ID', 'PAN', 'VISA', 'OTHER'] as const;
+export const PREFERENCE_CATEGORIES = ['ROOM', 'FOOD', 'DIETARY', 'ACTIVITY', 'OTHER'] as const;
+export const CONSENT_PURPOSES = ['MARKETING_WHATSAPP', 'MARKETING_EMAIL', 'DATA_PROCESSING'] as const;
+export const CONSENT_SOURCES = ['FRONT_DESK', 'PHONE', 'WEBSITE', 'OTA', 'EMAIL'] as const;
+export type GuestStatus = 'ACTIVE' | 'MERGED' | 'ANONYMISED';
+
+export interface GuestAddress {
+  line1: string | null; line2: string | null; city: string | null; state: string | null; stateCode: string | null;
+  postalCode: string | null; countryCode: string;
+}
+export interface GuestPreference { category: string; value: string; }
+export interface GuestConsent { purpose: string; granted: boolean; source: string; recordedAt: string; recordedByName: string | null; }
+export interface GuestListItem {
+  id: string; fullName: string; phone: string | null; email: string | null; nationality: string | null; city: string | null;
+  companyName: string | null; isVip: boolean; status: GuestStatus; createdAt: string;
+}
+export interface Guest {
+  id: string; firstName: string; lastName: string | null; fullName: string; phone: string | null; email: string | null;
+  dateOfBirth: string | null; nationality: string | null; companyName: string | null; gstin: string | null; notes: string | null;
+  isVip: boolean; status: GuestStatus; mergedIntoId: string | null; anonymisedAt: string | null;
+  address: GuestAddress | null; preferences: GuestPreference[]; consents: GuestConsent[];
+  /** null when the signed-in user can't see ID documents. */
+  documentCount: number | null; createdAt: string; updatedAt: string; version: number;
+}
+export interface PossibleDuplicate { id: string; fullName: string; phone: string | null; email: string | null; nationality: string | null; reasons: string[]; }
+export interface GuestStay { reservationId: string; propertyId: string; propertyName: string; checkIn: string; checkOut: string; status: string; }
+export interface GuestDocument {
+  id: string; documentType: string; maskedNumber: string | null; issuingCountry: string | null; expiresOn: string | null;
+  hasFile: boolean; fileName: string | null; contentType: string | null; sizeBytes: number | null; status: 'ACTIVE' | 'PURGED';
+  createdAt: string; createdByName: string | null;
+}
+export interface GuestDocumentDetail extends GuestDocument { number: string | null; details: Record<string, string> | null; }
