@@ -6,31 +6,31 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
 | Table | Sprint | Status |
 |---|---|---|
-| `organizations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `properties` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `property_settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `system_settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `users` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `role_permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `user_roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `refresh_tokens` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `login_events` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `audit_logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `schema_migrations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `accommodation_types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `accommodation_units` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `accommodation_type_amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `unit_images` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `unit_blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `guests` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `guest_addresses` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `guest_documents` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `guest_preferences` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `guest_consents` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `organizations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `properties` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `property_settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `system_settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `users` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `role_permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `user_roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `refresh_tokens` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `login_events` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `audit_logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `schema_migrations` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `accommodation_types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `accommodation_units` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `accommodation_type_amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `unit_images` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `unit_blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `guests` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `guest_addresses` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `guest_documents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `guest_preferences` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `guest_consents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
 | `rate_plans` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
 | `rate_plan_prices` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
 | `packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |

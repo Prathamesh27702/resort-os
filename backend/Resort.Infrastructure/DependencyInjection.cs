@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.Configure<AuthOptions>(config.GetSection(AuthOptions.Section));
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.Section));
         services.Configure<BootstrapOptions>(config.GetSection(BootstrapOptions.Section));
+        services.Configure<DevSeedOptions>(config.GetSection(DevSeedOptions.Section));
 
         services.AddSingleton<ITokenService, TokenService>();
         services.AddSingleton<IPasswordHasherService, PasswordHasherService>();
@@ -35,6 +36,7 @@ public static class DependencyInjection
 
         services.AddSingleton<DatabaseMigrator>();
         services.AddScoped<Bootstrapper>();
+        services.AddSingleton<DevSeeder>();
         return services;
     }
 

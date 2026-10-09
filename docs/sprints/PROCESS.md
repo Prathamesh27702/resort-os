@@ -27,7 +27,7 @@
 
 ## Issue lifecycle
 
-`open` (in the milestone) → assigned + branch pushed → PR opened (linked with `Closes #123`) → review → merged to `develop` → issue closes automatically.
+`open` (in the milestone) → assigned + branch pushed → PR opened (linked with `Closes #123`) → review → merged to `develop` → issue closes automatically (needs the repo's default branch set to `develop`; otherwise close it by hand).
 
 Labels: `type:*` (feature/bug/chore/docs/test/security), `area:*` (db/api/web/infra/integration), `priority:high`, `status:blocked`,
 `needs:owner-decision`, `good first issue`.

@@ -1,0 +1,87 @@
+# Proves the developer onboarding in docs/GETTING_STARTED.md works on a clean machine:
+#  - Linux: run scripts/setup-dev.sh for real (Docker PostgreSQL, restore, npm ci), start the API from the generated
+#    .env, check health and sign in as the generated dev owner.
+#  - Windows: run scripts/setup-dev.ps1 -EnvOnly (GitHub's Windows runners can't run Linux containers) and check the
+#    .env it writes, including that a second run changes nothing.
+# Runs when the scripts or the configuration they depend on change, and on demand.
+name: Onboarding
+
+on:
+  pull_request:
+    paths:
+      - "scripts/**"
+      - ".env.example"
+      - "infra/docker/**"
+      - "backend/Resort.Api/appsettings*.json"
+      - "backend/Resort.Api/Program.cs"
+      - "backend/Resort.Api/Infrastructure/DotEnv.cs"
+      - ".github/workflows/onboarding.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux — full setup, run API, sign in
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: scripts/setup-dev.sh
+        run: bash scripts/setup-dev.sh
+      - name: Second run changes nothing
+        run: |
+          cp .env /tmp/env.first
+          bash scripts/setup-dev.sh --env-only
+          diff /tmp/env.first .env
+      - name: Start the API from .env and sign in
+        run: |
+          cd backend/Resort.Api
+          ASPNETCORE_ENVIRONMENT=Development nohup dotnet run --urls http://localhost:5180 > /tmp/api.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf http://localhost:5180/health/ready >/dev/null && break; sleep 2; done
+          curl -sf http://localhost:5180/health/ready || { cat /tmp/api.log; exit 1; }
+          EMAIL=$(grep -E '^Bootstrap__OwnerEmail=' ../../.env | cut -d= -f2-)
+          PW=$(grep -E '^Bootstrap__OwnerPassword=' ../../.env | cut -d= -f2-)
+          code=$(curl -s -o /tmp/login.json -w '%{http_code}' -X POST http://localhost:5180/api/v1/auth/login \
+                   -H 'content-type: application/json' -d "{\"email\":\"$EMAIL\",\"password\":\"$PW\"}")
+          echo "login HTTP $code"
+          [ "$code" = 200 ] || { cat /tmp/login.json; cat /tmp/api.log; exit 1; }
+          grep -q '"OWNER"' /tmp/login.json
+          echo "::notice title=Onboarding::Fresh Linux machine: setup-dev.sh → API up → owner signed in"
+
+  windows:
+    name: Windows — setup-dev.ps1 writes a valid .env
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: scripts/setup-dev.ps1 -EnvOnly
+        run: ./scripts/setup-dev.ps1 -EnvOnly
+      - name: Check the generated values
+        run: |
+          function Get-Val($k) { $l = Get-Content .env | Where-Object { $_ -match "^$k=" } | Select-Object -First 1; $l.Substring($k.Length + 1) }
+          $jwt = [Convert]::FromBase64String((Get-Val 'Jwt__SigningKey'))
+          $enc = [Convert]::FromBase64String((Get-Val 'Encryption__Key'))
+          if ($jwt.Length -ne 48) { throw "Jwt__SigningKey decodes to $($jwt.Length) bytes, expected 48" }
+          if ($enc.Length -ne 32) { throw "Encryption__Key decodes to $($enc.Length) bytes, expected 32" }
+          if ((Get-Val 'POSTGRES_PASSWORD') -notmatch '^[0-9a-f]{32}$') { throw 'POSTGRES_PASSWORD not 32 hex chars' }
+          if ((Get-Val 'Bootstrap__OwnerPassword') -notmatch '^Dev-[0-9a-f]{12}$') { throw 'Owner password malformed' }
+          $db = Get-Val 'DATABASE_URL'
+          if ($db -notmatch "Password=$(Get-Val 'POSTGRES_PASSWORD')$") { throw "DATABASE_URL doesn't use the generated password" }
+          Write-Host "All generated values valid."
+      - name: Second run changes nothing
+        run: |
+          $before = Get-Content .env -Raw
+          ./scripts/setup-dev.ps1 -EnvOnly
+          if ((Get-Content .env -Raw) -ne $before) { throw '.env changed on the second run' }
+          Write-Host "::notice title=Onboarding::Windows: setup-dev.ps1 generated a valid .env and is idempotent"

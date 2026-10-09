@@ -82,7 +82,7 @@ Example: *"GET a room"* in Sprint 2.
 10. **Docs.** Add the endpoint to the spec table below and regenerate `api/openapi-v1.json` (see the end of this file).
 11. **Frontend.** Add a typed method or service in `frontend/src/app/features/<module>/`; never call `HttpClient` from templates.
 
-## Built endpoints (Sprint 1)
+## Built endpoints (Sprint 1 — foundation)
 
 Auth column: **anon** = no token, **auth** = any signed-in user, otherwise the permission code. *Scope*: **org** =
 needs an org-wide grant; **prop** = org-wide or for `{propertyId}`; **any** = at least one grant, results filtered.
@@ -145,6 +145,61 @@ Escalation guard: the caller must hold every permission of each role they grant 
 | `GET /api/v1/roles` | Roles with permission codes | `role.read` (any) | `RoleDto[] {id, code, name, description, isSystem, permissions[]}` |
 | `GET /api/v1/permissions` | Permission catalogue | `role.read` (any) | `PermissionDto[] {code, module, description, isSensitive}` |
 | `GET /api/v1/audit-logs?entityType&entityId&userId&from&to&page&pageSize` | Audit trail (newest first) | `audit.read` (org) | `Paged<AuditLogDto {id, occurredAt, userId, userName, propertyId, action, entityType, entityId, changes, reason, device, ipAddress, correlationId, requestId}>` |
+
+## Built endpoints (Sprint 2 — accommodation)
+
+All under `/api/v1/properties/{propertyId}`, scope **prop**. A property in another organisation is 404.
+Dates are the property's local dates (`YYYY-MM-DD`). Ranges are `[startDate, endDate)`: the end date is not included,
+like a check-out date. Who holds which permission by default: `accommodation.read` — Owner, GM, Manager, Receptionist,
+housekeeping and maintenance roles; `accommodation.manage` — Owner, GM; `unit_block.manage` — Owner, GM, Manager.
+
+### Room types — `/accommodation-types`
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /amenities` | Built-in + organisation amenities | `accommodation.read` | — | `AmenityDto[] {id, code, name, category}` | 403, 404 | — |
+| `GET /accommodation-types` | Types with capacity | `accommodation.read` | — | `AccommodationTypeDto[]` | 403, 404 | — |
+| `GET /accommodation-types/{id}` | One type | `accommodation.read` | — | `AccommodationTypeDto` | 403, 404 | — |
+| `POST /accommodation-types` | Create | `accommodation.manage` | `{ code, name, description?, inventoryMode: UNIT\|BED, baseOccupancy, maxOccupancy, sizeSqm?, sortOrder, amenityIds? }` | `201 AccommodationTypeDto` | 400, 403, 409 `TYPE_CODE_TAKEN`, 422 `UNKNOWN_AMENITY` | INSERT type + amenity links |
+| `PUT /accommodation-types/{id}` | Update (code is fixed) | `accommodation.manage` | as create without `code`, plus `isActive, version` | `AccommodationTypeDto` | 400, 403, 404, 409 `CONCURRENCY_CONFLICT`, 422 `TYPE_HAS_BEDS` (mode change while beds exist), `TYPE_HAS_ACTIVE_UNITS` (deactivate with active rooms), `UNKNOWN_AMENITY` | UPDATE (old/new) |
+
+`AccommodationTypeDto = { id, code, name, description, inventoryMode, baseOccupancy, maxOccupancy, sizeSqm, sortOrder, isActive,
+amenityIds[], unitCount, sellableItems, maxGuests, version }`. `sellableItems` = active rooms (UNIT) or active beds in
+active rooms (BED); `maxGuests` = what the whole type can sleep.
+Validation: code `^[A-Za-z0-9_]{2,30}$` (stored upper-case); name ≤ 100; 1 ≤ base ≤ max ≤ 50; **BED types must have
+base = max = 1**; size > 0.
+
+### Rooms and beds
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /rooms` | All rooms with their beds | `accommodation.read` | — | `RoomDto[]` | 403, 404 | — |
+| `GET /rooms/{id}` | One room | `accommodation.read` | — | `RoomDto` | 403, 404 | — |
+| `POST /rooms` | Create | `accommodation.manage` | `{ code, name, accommodationTypeId, floor?, notes?, sortOrder }` | `201 RoomDto` | 400, 403, 409 `ROOM_CODE_TAKEN`, 422 `UNKNOWN_TYPE`/`TYPE_INACTIVE` | INSERT |
+| `PUT /rooms/{id}` | Update; deactivate with `isActive=false` (rooms are never deleted) | `accommodation.manage` | `{ name, accommodationTypeId, floor?, notes?, sortOrder, isActive, version }` | `RoomDto` | 400, 403, 404, 409, 422 `UNIT_HAS_BEDS` (moving a dorm with beds to a per-room type), `UNKNOWN_TYPE`, `TYPE_INACTIVE` | UPDATE |
+| `GET /rooms/{id}/beds` | Beds of a dormitory | `accommodation.read` | — | `BedDto[]` | 403, 404 | — |
+| `POST /rooms/{id}/beds` | Add a bed | `accommodation.manage` | `{ code, name, bedType: SINGLE\|BUNK_LOWER\|BUNK_UPPER\|DOUBLE, sortOrder }` | `201 BedDto` | 400, 403, 404, 409 `BED_CODE_TAKEN`, 422 `BEDS_NOT_ALLOWED` (room is sold per room) | INSERT |
+| `PUT /beds/{id}` | Update; deactivate a broken bed | `accommodation.manage` | `{ name, bedType, sortOrder, isActive, version }` | `BedDto` | 400, 403, 404, 409 | UPDATE |
+| `GET /rooms/status?date=` | Status board for one night (default: property's today) | `accommodation.read` | — | `RoomStatusBoardDto { date, rooms: [{ unitId, code, name, typeName, inventoryMode, status, activeBeds, blockedBeds, block?, beds[] }] }` | 403, 404 | — |
+
+Room `status`: `AVAILABLE`, `BLOCKED` (whole room or dorm), `PARTLY_BLOCKED` (some dorm beds), `INACTIVE`.
+Occupancy is added in Sprint 5 and housekeeping states in Sprint 13.
+
+### Blocks — `/blocks`
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /blocks?from&to&unitId&includeReleased` | Active blocks (default: ending after today) | `accommodation.read` | — | `UnitBlockDto[]` | 403, 404 | — |
+| `POST /blocks` | Take a room, a whole dorm or one dorm bed out of sale | `unit_block.manage` | `{ unitId, bedId?, blockType: MAINTENANCE\|OUT_OF_ORDER\|OWNER_USE\|HOLD\|OTHER, startDate, endDate, reason }` | `201 UnitBlockDto` | 400, 403, 404, **409 `BLOCK_OVERLAP`** (or `OVERLAP` from the database guard), 422 `BLOCK_IN_PAST`, `UNKNOWN_ROOM`, `ROOM_INACTIVE`, `UNKNOWN_BED`, `BED_INACTIVE`, `BEDS_NOT_ALLOWED` | INSERT with the reason |
+| `POST /blocks/{id}/release` | End a block early | `unit_block.manage` | `{ reason }` | `UnitBlockDto` | 400, 403, 404, 422 `BLOCK_NOT_ACTIVE` | UPDATE with the reason |
+
+`UnitBlockDto = { id, unitId, unitCode, unitName, bedId, bedCode, blockType, startDate, endDate, nights, reason, status,
+createdAt, createdByName, releasedAt, releaseReason }`. Validation: end > start; ≤ 366 nights; end after the property's
+today; reason ≥ 3 characters (trimmed) and ≤ 500. Blocks are never deleted (a trigger refuses DELETE).
+
+Overlap rules: two active blocks on the same room can't overlap; two on the same bed can't overlap; a whole-dorm block
+can't overlap any bed block in that dorm. The API checks first under a row lock and returns `BLOCK_OVERLAP` with the
+existing block's dates and reason. PostgreSQL `EXCLUDE` constraints and a trigger are the final guard.
 
 ### Health (no auth, not rate-limited)
 

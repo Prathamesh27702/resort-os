@@ -17,7 +17,7 @@ namespace Resort.Infrastructure.Persistence;
 ///  * turns DELETE of soft-deletable entities into deleted_at = now
 ///  * writes one audit_logs row per changed [IAudited] entity with old/new values (secrets masked)
 /// </summary>
-public sealed class AuditInterceptor(ICurrentUser currentUser, TimeProvider clock) : SaveChangesInterceptor
+public sealed class AuditInterceptor(ICurrentUser currentUser, AuditContext auditContext, TimeProvider clock) : SaveChangesInterceptor
 {
     private static readonly HashSet<string> Masked =
         [nameof(User.PasswordHash), nameof(User.SecurityStamp), nameof(RefreshToken.TokenHash)];
@@ -136,7 +136,8 @@ public sealed class AuditInterceptor(ICurrentUser currentUser, TimeProvider cloc
             CorrelationId = currentUser.CorrelationId,
             RequestId = currentUser.RequestId,
             UserAgent = Truncate(currentUser.UserAgent, 500),
-            Reason = Truncate(currentUser.ChangeReason, 500),
+            // A reason set by the service (e.g. the block reason) wins over the optional X-Change-Reason header.
+            Reason = Truncate(auditContext.Reason ?? currentUser.ChangeReason, 500),
             IpAddress = currentUser.IpAddress,
             OccurredAt = now,
         };

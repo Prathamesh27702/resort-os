@@ -9,7 +9,12 @@
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadlessCI --code-coverage",
     "build:prod": "ng build --configuration production",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed",
+    "e2e:report": "playwright show-report e2e-report",
+    "e2e:install": "playwright install chromium"
   },
   "prettier": {
     "printWidth": 100,
@@ -43,6 +48,7 @@
     "@angular/build": "^20.3.38",
     "@angular/cli": "^20.3.38",
     "@angular/compiler-cli": "^20.3.0",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/jasmine": "~5.1.0",
     "angular-eslint": "20.7.0",
@@ -53,6 +59,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "pg": "^8.23.1",
     "postcss": "^8.5.29",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.2",

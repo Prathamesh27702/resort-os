@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 1
+current: 3
 
 sprints:
 
@@ -14,6 +14,25 @@ sprints:
   phase: 0
   status: in-review
   size: M
+  progress:
+    now: "Waiting for the owner's architecture approval and answers to the 16 decision issues (#48–#63)."
+    done:
+      - "Architecture, module map, request pipeline and cross-cutting rules (ARCHITECTURE.md)"
+      - "Whole-system ER diagram, conventions, migration rules, 148 planned tables (DATABASE.md, tables-by-sprint.md)"
+      - "API conventions, error format, how to add an endpoint, external APIs per module (API.md)"
+      - "Security architecture and OWASP Top 10 mapping; permission matrix (117 permissions × 17 roles)"
+      - "Lifecycles: booking, guest, employee, attendance, leave, restaurant, inventory, activity/transport"
+      - "Integration designs: GST, Razorpay, Zoho Books, OTA, WhatsApp; deployment and operations"
+      - "30-sprint plan with a guide per sprint; GitHub milestones, labels, epics and decision issues"
+    files:
+      - "docs/ARCHITECTURE.md, DATABASE.md, API.md, SECURITY.md, TESTING.md, DEPLOYMENT.md, OPERATIONS.md"
+      - "docs/INTEGRATIONS.md, GST.md, RAZORPAY.md, ZOHO_BOOKS.md, OTA.md, WHATSAPP.md"
+      - "docs/architecture/ (lifecycles, frontend, decisions, risks-and-open-questions)"
+      - "docs/database/, docs/api/, docs/security/permission-matrix.md"
+      - "docs/sprints/ (sprints.yml, PROCESS.md, REVIEWING.md, 30 guides); docs/GETTING_STARTED.md, docs/COSTS.md"
+    results:
+      - "All 16 Mermaid diagrams render; 0 broken links between docs (checked when the repository was created)"
+    outcome: "Pending: owner approval recorded as ADR-0000 in docs/architecture/decisions.md."
   depends: []
   goal: Agree the architecture, data model, permission model, API conventions and delivery plan before more code is written.
   scope:
@@ -35,8 +54,35 @@ sprints:
 - id: 1
   title: Foundation — identity, RBAC, organisation, properties, audit
   phase: 1
-  status: in-review
+  status: done
   size: L
+  progress:
+    now: "Accepted by the owner on 10 Oct 2026 together with Sprint 02 (pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74)). Merged to main and tagged `sprint-01`."
+    done:
+      - "Solution: Resort.Api / Application / Domain / Infrastructure / Contracts / Tests on .NET 10"
+      - "Migrations V001 (13 tables, append-only triggers), V002 (117 permissions, 17 roles, default matrix), V003 (audit device/reason/request id)"
+      - "Sign-in, rotating refresh cookie with theft detection, lockout, forced password change, sign-out everywhere on deactivation"
+      - "Organisation, properties, property settings; staff accounts with property-scoped roles; escalation and last-owner guards"
+      - "Audit trail written in the same transaction; reason via X-Change-Reason; correlation and request ids"
+      - "/api/v1 routes, standard error body, security headers, rate limits, health checks, OpenAPI/Swagger"
+      - "Angular 20 staff app: sign-in, Today checklist, properties, staff accounts, roles matrix, audit trail, change password"
+      - "CI on GitHub (build, lint, tests on PostgreSQL 16, secret and dependency scans); onboarding scripts for Windows/macOS/Linux"
+    files:
+      - "database/migrations/V001__foundation.sql, V002__seed_permissions_roles.sql, V003__audit_request_context.sql"
+      - "backend/Resort.Domain/ — Common/Entity.cs, Identity/Identity.cs, Organizations/Organization.cs, Audit/AuditLog.cs"
+      - "backend/Resort.Contracts/Contracts.cs"
+      - "backend/Resort.Application/ — Identity/AuthService.cs, Identity/UserService.cs, Properties/PropertyService.cs, Audit/AuditQueryService.cs, Common/*, Validation/Validators.cs"
+      - "backend/Resort.Infrastructure/ — Persistence/AppDbContext.cs, AuditInterceptor.cs, DatabaseMigrator.cs, Bootstrapper.cs; Identity/Security.cs"
+      - "backend/Resort.Api/ — Program.cs, Endpoints/AuthEndpoints.cs, Endpoints/AdminEndpoints.cs, Infrastructure/* (auth, errors, request context, .env loader)"
+      - "backend/Resort.Tests/ — Integration/AuthTests.cs, Integration/AccessControlTests.cs, Unit/UnitTests.cs, Support/ResortApiFactory.cs"
+      - "frontend/src/app/ — core/*, shared/can.directive.ts, layout/shell.ts, features/{auth,dashboard,settings/properties,users,audit}"
+      - "scripts/*, .github/workflows/*, .vscode/*, .env.example"
+    results:
+      - "Backend: 30 passed, 0 failed (GitHub CI, real PostgreSQL 16)"
+      - "Frontend: 6 of 6 passed; ESLint clean; production build OK"
+      - "Build warnings: 0; dotnet format clean; gitleaks: no secrets in history"
+      - "Manual walkthrough as owner and receptionist on desktop and 390 px phone width ([screenshots](sprint-01-screens/); step-by-step script in [REVIEWING.md](REVIEWING.md#part-b--try-it-yourself-2030-minutes))"
+    outcome: "Accepted 10 Oct 2026. On main as tag sprint-01."
   depends: [0]
   goal: A secure, multi-tenant base that every later module plugs into.
   scope:
@@ -73,7 +119,7 @@ sprints:
     - "[done] Standard error shape, correlation/request IDs, /api/v1 prefix"
     - "[done] Angular shell, login, properties, users, roles matrix, audit screens"
     - "[done] 30 backend + 6 frontend tests"
-    - Review and sign-off by owner (open issues for any change requests)
+    - "[done] Review and sign-off by owner (accepted 10 Oct 2026)"
   tests:
     - Login, lockout, same error for unknown email vs wrong password
     - Refresh rotation and reuse detection revoking the family
@@ -97,16 +143,47 @@ sprints:
 - id: 2
   title: Accommodation — room types, rooms, dormitory beds, blocks
   phase: 1
-  status: planned
+  status: done
   size: M
+  module: Accommodation
+  feature: rooms
+  progress:
+    now: "Accepted by the owner on 10 Oct 2026 together with Sprint 01 (pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74)). Merged to main and tagged `sprint-02`."
+    done:
+      - "Migration V004: 7 tables, 22 built-in amenities, btree_gist EXCLUDE constraints for overlapping blocks, triggers that keep beds under bed-based rooms only"
+      - "Room-based (UNIT) and bed-based (BED) inventory with a capacity calculation the availability engine (Sprint 05) will reuse"
+      - "APIs: room types with amenities, rooms, dorm beds, room status board, blocks with reason and release — all permission-checked, validated and audited"
+      - "Blocks: property-local dates, end date not included, row lock + database guard so 10 simultaneous requests give exactly one block"
+      - "Rooms are deactivated, never deleted; blocks are released, never deleted"
+      - "Development seed runner (database/seed/dev) + demo data: 2 deluxe, 4 standard, a 10-bed dormitory"
+      - "Angular screens: Rooms (grouped by type, today's status, blocks list), room editor with dorm bed editor and bulk-add, block dialog, release with reason, Room status board, Room types list and editor with amenities"
+      - "Today checklist gains a *Set up rooms* step; menu gains Rooms, Room status, Room types"
+    files:
+      - "database/migrations/V004__accommodation.sql; database/seed/dev/S001__accommodation.sql"
+      - "backend/Resort.Domain/Accommodation/Accommodation.cs"
+      - "backend/Resort.Contracts/AccommodationContracts.cs"
+      - "backend/Resort.Application/ — Accommodation/AccommodationService.cs, Accommodation/BlockService.cs, Validation/AccommodationValidators.cs, Common/AuditContext.cs, Common/Permissions.cs"
+      - "backend/Resort.Infrastructure/ — Persistence/AppDbContext.cs, AuditInterceptor.cs (reason from the request body), DevSeeder.cs"
+      - "backend/Resort.Api/ — Endpoints/AccommodationEndpoints.cs, Program.cs, appsettings.Development.json (DevSeed)"
+      - "backend/Resort.Tests/ — Integration/AccommodationTests.cs, Integration/DevSeedTests.cs, Unit/AccommodationUnitTests.cs"
+      - "frontend/src/app/ — features/rooms/*, features/settings/room-types/*, core/models.ts, app.routes.ts, layout/shell.ts, features/dashboard"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-02.md, docs/GETTING_STARTED.md, docs/sprints/REVIEWING.md, sprint-02-screens/"
+    results:
+      - "Backend: 58 passed, 0 failed, real PostgreSQL 16, on Linux and Windows (incl. the IST time-zone fix found in review)"
+      - "Concurrency: 10 simultaneous block requests on one room → exactly 1 created, 9 × 409; repeated 20 times, no flakes"
+      - "Frontend: 14 of 14 unit tests passed; 26 of 26 browser tests (Sprint 01 + 02 review scripts, automated); ESLint clean; production build OK"
+      - "All 14 steps of the REVIEWING.md Sprint 02 script run in Chromium as owner and receptionist, desktop and 390 px phone width, no page errors ([screenshots](sprint-02-screens/))"
+    outcome: "Accepted 10 Oct 2026. On main as tag sprint-02. Sprint 03 (guests) started."
   depends: [1]
   goal: Model the 6 rooms and the dormitory correctly (room-based vs bed-based inventory) and let managers block units.
   scope:
     tables: [accommodation_types, accommodation_units, beds, amenities, accommodation_type_amenities, unit_images, unit_blocks]
+    migrations: [V004__accommodation]
     api:
       - GET|POST /api/v1/properties/{propertyId}/accommodation-types
       - GET|PUT /api/v1/properties/{propertyId}/accommodation-types/{id}
       - GET|POST /api/v1/properties/{propertyId}/rooms
+      - GET /api/v1/properties/{propertyId}/rooms/status
       - GET|PUT /api/v1/properties/{propertyId}/rooms/{id}
       - GET|POST /api/v1/properties/{propertyId}/rooms/{id}/beds
       - PUT /api/v1/properties/{propertyId}/beds/{id}
@@ -115,18 +192,22 @@ sprints:
       - GET /api/v1/properties/{propertyId}/amenities
     screens:
       - "/rooms"
+      - "/rooms/new, /rooms/{id}"
       - "/rooms/status (read-only for now)"
-      - "/settings/room-types"
+      - "/settings/room-types, /settings/room-types/new, /settings/room-types/{id}"
     other:
       - "Development seed-data runner (database/seed/dev) — brief §71"
+      - "unit_images table only; the photo upload API comes with file storage in Sprint 03"
+      - "Screenshots of the built screens: docs/sprints/sprint-02-screens/"
   tasks:
-    - "DB: new migration — accommodation tables. accommodation_types.inventory_mode CHECK IN ('UNIT','BED'); beds only allowed under BED-mode units (trigger or app rule + test)"
-    - "DB: unit_blocks with tstzrange/daterange + EXCLUDE constraint preventing overlapping active blocks on the same unit/bed"
-    - "API: accommodation types CRUD (accommodation.manage), rooms CRUD, beds CRUD, blocks create/release (unit_block.manage) — all audited, reason required on block"
-    - "API: deactivate rather than delete units that have history"
-    - "Seed: dev seed runner (Development only, idempotent) + seed 1 property, 6 rooms (2 deluxe, 4 standard), 1 dormitory with 10 beds"
-    - "UI: /rooms list grouped by type with bed counts; room editor; dorm bed editor; block dialog with date range + reason"
-    - "Docs: update DATABASE.md table list, API.md catalogue, sprint-02 guide status"
+    - "[done] DB: new migration — accommodation tables. accommodation_types.inventory_mode CHECK IN ('UNIT','BED'); beds only allowed under BED-mode units (trigger or app rule + test)"
+    - "[done] DB: unit_blocks with tstzrange/daterange + EXCLUDE constraint preventing overlapping active blocks on the same unit/bed"
+    - "[done] API: accommodation types CRUD (accommodation.manage), rooms CRUD, beds CRUD, blocks create/release (unit_block.manage) — all audited, reason required on block"
+    - "[done] API: deactivate rather than delete units that have history"
+    - "[done] Seed: dev seed runner (Development only, idempotent) + seed 1 property, 6 rooms (2 deluxe, 4 standard), 1 dormitory with 10 beds"
+    - "[done] UI: /rooms list grouped by type with bed counts; room editor; dorm bed editor; block dialog with date range + reason"
+    - "[done] Docs: update DATABASE.md table list, API.md catalogue, sprint-02 guide status"
+    - "[done] Review and sign-off by owner (accepted 10 Oct 2026)"
   tests:
     - Integration — cannot add beds to a UNIT-mode room (422)
     - Integration — overlapping blocks on the same unit rejected by the DB (409 OVERLAP)
@@ -134,20 +215,30 @@ sprints:
     - Integration — block create/release audited with reason
     - Unit — inventory capacity calculation (room = 1 sellable unit, dorm = N beds)
     - Frontend — room editor form validation
+    - "Integration — 10 concurrent blocks on one room: exactly one wins"
+    - "Integration — whole-dorm block vs single-bed block conflict, both directions"
+    - "Integration — tenant isolation (404) and stale version (409)"
+    - "Integration — dev seed creates the demo rooms once and skips on restart"
+    - "Unit — overlap message names the blocked nights, not the day the room is free again"
   acceptance:
     - A manager configures 6 rooms and a 10-bed dorm from the UI in under 10 minutes
     - Blocking Room 103 for 2 nights shows it as blocked; a second overlapping block is refused
   debug:
     - "EXCLUDE constraints need the btree_gist extension: the migration must CREATE EXTENSION IF NOT EXISTS btree_gist."
     - "Date ranges are [check-in, check-out) in the property's local dates — never convert to UTC for availability."
+    - "No demo rooms after pulling? The seed only fills a property that has no room types. Reset the database and restart the API."
+    - "409 OVERLAP (not BLOCK_OVERLAP) means two requests raced and the database guard caught the second one. That's correct behaviour."
+    - "Configuring rooms needs accommodation.manage (Owner, GM). A Manager can block rooms but not edit them; a Receptionist can only view."
   demo:
     - Create types → rooms → dorm with beds → block a room → try an overlapping block
 
 - id: 3
   title: Guests
   phase: 2
-  status: planned
+  status: in-progress
   size: M
+  module: Guests
+  feature: guests
   depends: [1]
   goal: Guest profiles with only the data that is needed, encrypted sensitive fields, de-duplication and retention.
   scope:
@@ -187,6 +278,8 @@ sprints:
   phase: 2
   status: planned
   size: M
+  module: Rates
+  feature: settings/rates
   depends: [2]
   goal: Configurable prices per type/date and packages whose revenue is split into room/food/transport/activity.
   scope:
@@ -221,6 +314,8 @@ sprints:
   phase: 2
   status: planned
   size: L
+  module: Reservations
+  feature: reservations
   depends: [2, 3, 4]
   goal: Race-free booking of rooms and dorm beds with idempotent create and full status history (brief §14–16).
   scope:
@@ -261,6 +356,8 @@ sprints:
   phase: 2
   status: planned
   size: M
+  module: Reservations
+  feature: reservations
   depends: [5]
   goal: Day/week/month calendar showing room, guest, dates, status, source and payment status; safe drag-and-drop reassignment.
   scope:
@@ -288,6 +385,8 @@ sprints:
   phase: 2
   status: planned
   size: M
+  module: FrontDesk
+  feature: front-desk
   depends: [5]
   goal: Reception completes check-in and check-out in very few clicks.
   scope:
@@ -320,6 +419,8 @@ sprints:
   phase: 3
   status: planned
   size: M
+  module: Folio
+  feature: folios
   depends: [7]
   goal: The folio is the central financial object for a stay (brief §20).
   scope:
@@ -350,6 +451,8 @@ sprints:
   phase: 3
   status: planned
   size: M
+  module: Tax
+  feature: settings/gst
   depends: [8]
   goal: GST as a first-class, versioned, configurable domain (brief §23, §86).
   scope:
@@ -382,6 +485,8 @@ sprints:
   phase: 3
   status: planned
   size: M
+  module: Payments
+  feature: payments
   depends: [8]
   goal: Record cash/UPI/card/bank payments, allocate them to folios, refund safely, reconcile the cash drawer (brief §21, §39).
   scope:
@@ -413,6 +518,8 @@ sprints:
   phase: 3
   status: planned
   size: M
+  module: Payments
+  feature: payments
   depends: [10]
   goal: Online payments where the server-verified webhook is authoritative (brief §22).
   scope:
@@ -442,6 +549,8 @@ sprints:
   phase: 3
   status: planned
   size: L
+  module: Invoicing
+  feature: invoices
   depends: [9, 10]
   goal: Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
   scope:
@@ -474,6 +583,8 @@ sprints:
   phase: 4
   status: planned
   size: M
+  module: Housekeeping
+  feature: housekeeping
   depends: [7]
   goal: Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
   scope:
@@ -503,6 +614,8 @@ sprints:
   phase: 5
   status: planned
   size: L
+  module: Restaurant
+  feature: restaurant
   depends: [8, 9]
   goal: Orders, kitchen tickets, and charging to a room folio (brief §35, §55).
   scope:
@@ -532,6 +645,8 @@ sprints:
   phase: 5
   status: planned
   size: M
+  module: Inventory
+  feature: inventory
   depends: [14]
   goal: Stock ledger, consumption from recipes, wastage, and food-cost reporting (brief §36, §37).
   scope:
@@ -557,6 +672,8 @@ sprints:
   phase: 5
   status: planned
   size: M
+  module: Purchasing
+  feature: inventory
   depends: [15]
   goal: Purchase request → PO → goods received → supplier invoice → payment (brief §38).
   scope:
@@ -580,6 +697,8 @@ sprints:
   phase: 6
   status: planned
   size: M
+  module: Employees
+  feature: employees
   depends: [1]
   goal: Employee records (salary restricted) and shift rosters with clash detection (brief §42, §46).
   scope:
@@ -604,6 +723,8 @@ sprints:
   phase: 6
   status: planned
   size: L
+  module: Attendance
+  feature: attendance
   depends: [17]
   goal: Mobile clock-in/out with geofence, breaks, timesheets with approval and locked corrections (brief §43, §44, §74).
   scope:
@@ -629,6 +750,8 @@ sprints:
   phase: 6
   status: planned
   size: M
+  module: Leave
+  feature: leave
   depends: [18]
   goal: Leave requests with balance/overlap/coverage checks feeding roster and payroll (brief §45).
   scope:
@@ -652,6 +775,8 @@ sprints:
   phase: 7
   status: planned
   size: M
+  module: Activities
+  feature: activities
   depends: [8]
   goal: Capacity-safe activity bookings and equipment issue/return (brief §48, §49).
   scope:
@@ -675,6 +800,8 @@ sprints:
   phase: 7
   status: planned
   size: S
+  module: Transport
+  feature: transport
   depends: [20]
   goal: Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
   scope:
@@ -698,6 +825,8 @@ sprints:
   phase: 8
   status: planned
   size: M
+  module: Finance
+  feature: expenses
   depends: [10]
   goal: Expense capture with approval and budget vs actual (brief §40, §41).
   scope:
@@ -719,6 +848,8 @@ sprints:
   phase: 8
   status: planned
   size: L
+  module: Reports
+  feature: reports
   depends: [12, 15, 19, 22]
   goal: Owner and role dashboards plus the report list in brief §50–55, Power-BI-ready.
   scope:
@@ -743,6 +874,8 @@ sprints:
   phase: 9
   status: planned
   size: L
+  module: Notifications
+  feature: integrations
   depends: [5]
   goal: Configurable templates, delivery tracking and idempotent scheduled jobs (brief §32, §69, §70).
   scope:
@@ -770,6 +903,8 @@ sprints:
   phase: 9
   status: planned
   size: L
+  module: Accounting
+  feature: integrations
   depends: [12, 24]
   goal: Sync accounting without duplicates on retry (brief §26, §27, §25).
   scope:
@@ -794,6 +929,8 @@ sprints:
   phase: 9
   status: planned
   size: L
+  module: Ota
+  feature: integrations
   depends: [5, 24]
   goal: One channel manager integration with idempotent import/modify/cancel (brief §28, §29, §75).
   scope:

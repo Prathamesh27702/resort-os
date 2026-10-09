@@ -13,8 +13,15 @@ internal static class Rules
           .Must(p => p.Any(char.IsLetter) && p.Any(char.IsDigit))
           .WithMessage("Password must contain letters and numbers.");
 
+    /// <summary>
+    /// A real IANA zone such as <c>Asia/Kolkata</c>, or <c>UTC</c>. Abbreviations like IST, EST or PST are refused:
+    /// they are ambiguous (IST is India, Israel and Ireland), and whether the OS accepts them differs (Windows' ICU
+    /// treats IST as an alias of Asia/Kolkata; Linux has no IST zone file but does have EST).
+    /// </summary>
     public static bool IsIanaTimezone(string? tz) =>
-        !string.IsNullOrWhiteSpace(tz) && TimeZoneInfo.TryFindSystemTimeZoneById(tz, out var info) && info.HasIanaId;
+        !string.IsNullOrWhiteSpace(tz)
+        && (tz == "UTC" || tz.Contains('/'))
+        && TimeZoneInfo.TryFindSystemTimeZoneById(tz, out var info) && info.HasIanaId;
 
     public static IRuleBuilderOptions<T, string?> OptionalEmail<T>(this IRuleBuilder<T, string?> rb) =>
         rb.Must(e => string.IsNullOrEmpty(e) || (e.Length <= 320 && System.Net.Mail.MailAddress.TryCreate(e, out _)))

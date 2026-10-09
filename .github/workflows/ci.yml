@@ -52,6 +52,22 @@ jobs:
         run: dotnet format ResortOS.sln --verify-no-changes --no-restore
       - name: Test (unit + integration on PostgreSQL 16)
         run: dotnet test ResortOS.sln -c Release --no-build --logger "trx;LogFileName=results.trx" --results-directory TestResults
+      - name: Test summary (fail if no tests ran)
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, sys, xml.etree.ElementTree as ET
+          ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          files = glob.glob("TestResults/*.trx")
+          if not files:
+              print("::error::No test results produced"); sys.exit(1)
+          c = ET.parse(files[0]).getroot().find("t:ResultSummary/t:Counters", ns).attrib
+          total, passed, failed = int(c["total"]), int(c["passed"]), int(c["failed"])
+          print(f"::notice title=Backend tests::{passed} passed, {failed} failed, {total} total")
+          with open(__import__("os").environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"### Backend tests\n{passed} passed · {failed} failed · {total} total\n")
+          sys.exit(1 if total == 0 or failed else 0)
+          PY
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,6 +112,95 @@ jobs:
           path: frontend/dist/resort-web/browser
           retention-days: 14
 
+  backend-windows:
+    # The owner and developers work on Windows. Some .NET behaviour differs there (e.g. time-zone names come from
+    # ICU, so "IST" was accepted on Windows but not on Linux). Same tests, Windows runner, PostgreSQL preinstalled.
+    name: Backend — tests on Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      # The runner image's built-in PostgreSQL account (documented by GitHub), not a secret.
+      RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=postgres;Password=root
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Start PostgreSQL
+        shell: pwsh
+        run: |
+          $svc = Get-Service -Name 'postgresql*' | Select-Object -First 1
+          Set-Service -InputObject $svc -StartupType Automatic
+          Start-Service -InputObject $svc
+          & "$env:PGBIN\pg_isready.exe" -h localhost -p 5432
+      - name: Test (unit + integration)
+        run: dotnet test ResortOS.sln -c Release --logger "trx;LogFileName=results.trx" --results-directory TestResults
+      - name: Test summary (fail if no tests ran)
+        if: always()
+        shell: pwsh
+        run: |
+          $trx = Get-ChildItem TestResults/*.trx | Select-Object -First 1
+          if (-not $trx) { Write-Output "::error::No test results produced"; exit 1 }
+          $c = ([xml](Get-Content $trx.FullName)).TestRun.ResultSummary.Counters
+          Write-Output "::notice title=Windows backend tests::$($c.passed) passed, $($c.failed) failed, $($c.total) total"
+          if ([int]$c.total -eq 0 -or [int]$c.failed -gt 0) { exit 1 }
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-windows-test-results
+          path: TestResults
+
+  e2e:
+    # Clicks through the staff app like a person: docs/sprints/REVIEWING.md scripts, automated (frontend/e2e).
+    name: Browser tests — Sprint 01–02 screens
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-throwaway   # ephemeral CI container, not a secret
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=ci;Password=ci-only-throwaway
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: One-off keys for this run (what scripts/setup-dev writes to .env on a PC)
+        run: |
+          echo "Jwt__SigningKey=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+          echo "Encryption__Key=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+      - name: Browser tests
+        run: npm run e2e
+      - name: Upload report (screenshots of every step; traces for failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-report
+          path: frontend/e2e-report
+          retention-days: 14
+
   migrations:
     name: Migrations — immutable and ordered
     runs-on: ubuntu-latest
@@ -126,10 +231,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+      # gitleaks CLI over the whole git history (the gitleaks GitHub Action needs extra token permissions on
+      # pull requests and failed on every PR). Same result on pushes and PRs, no token needed.
+      - name: Secret scan (gitleaks, full history)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.24.2
+        run: |
+          curl -sSL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar xzf gitleaks.tgz gitleaks
+          ./gitleaks git . --config .gitleaks.toml --redact --no-banner --verbose --exit-code 1
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json

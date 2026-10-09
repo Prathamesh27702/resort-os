@@ -1,18 +1,20 @@
 # Sprints
 
-> **Current sprint: [Sprint 01 — Foundation — identity, RBAC, organisation, properties, audit](sprint-01-foundation.md)** · status: 🟡 In review
+> **Current sprint: [Sprint 03 — Guests](sprint-03-guests.md)** · status: 🔵 In progress
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
 
-How we work: [PROCESS.md](PROCESS.md) (cadence, ceremonies, branching, Definition of Ready/Done).
+How we work: [PROCESS.md](PROCESS.md) (cadence, ceremonies, branching, Definition of Ready/Done) · how the owner reviews and accepts a sprint: [REVIEWING.md](REVIEWING.md).
+
+Each guide starts with **Where this sprint stands**: what is happening now, what is done, the files added or changed (expected files for sprints not started), test results and the outcome. Then scope, tasks, how to run, debug and test, acceptance criteria and the review demo.
 
 | # | Sprint | Phase | Size | Status |
 |---|---|---|---|---|
 | 00 | [Architecture and requirements](sprint-00-architecture-and-requirements.md) | Phase 0 | M | 🟡 In review |
-| 01 | [Foundation — identity, RBAC, organisation, properties, audit](sprint-01-foundation.md) | Phase 1 | L | 🟡 In review |
-| 02 | [Accommodation — room types, rooms, dormitory beds, blocks](sprint-02-accommodation.md) | Phase 1 | M | ⚪ Planned |
-| 03 | [Guests](sprint-03-guests.md) | Phase 2 | M | ⚪ Planned |
+| 01 | [Foundation — identity, RBAC, organisation, properties, audit](sprint-01-foundation.md) | Phase 1 | L | 🟢 Done |
+| 02 | [Accommodation — room types, rooms, dormitory beds, blocks](sprint-02-accommodation.md) | Phase 1 | M | 🟢 Done |
+| 03 | [Guests](sprint-03-guests.md) | Phase 2 | M | 🔵 In progress |
 | 04 | [Rate plans and packages](sprint-04-rate-plans-and-packages.md) | Phase 2 | M | ⚪ Planned |
 | 05 | [Availability engine and reservations core](sprint-05-availability-engine-and-reservations.md) | Phase 2 | L | ⚪ Planned |
 | 06 | [Reservation calendar](sprint-06-reservation-calendar.md) | Phase 2 | M | ⚪ Planned |

@@ -6,39 +6,40 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 
 | Endpoint | Sprint | Status |
 |---|---|---|
-| `POST /api/v1/auth/login` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `POST /api/v1/auth/refresh` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `POST /api/v1/auth/logout` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET /api/v1/auth/me` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `POST /api/v1/auth/change-password` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|PUT /api/v1/organization` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|POST /api/v1/properties` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|PUT /api/v1/properties/{propertyId}` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET /api/v1/properties/{propertyId}/settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `PUT /api/v1/properties/{propertyId}/settings/{key}` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|POST /api/v1/users` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|PUT /api/v1/users/{id}` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `PUT /api/v1/users/{id}/roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `POST /api/v1/users/{id}/deactivate | activate | reset-password` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET /api/v1/roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET /api/v1/permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET /api/v1/audit-logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟡 In review |
-| `GET|POST /api/v1/properties/{propertyId}/accommodation-types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|PUT /api/v1/properties/{propertyId}/accommodation-types/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/rooms` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|PUT /api/v1/properties/{propertyId}/rooms/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/rooms/{id}/beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `PUT /api/v1/properties/{propertyId}/beds/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `POST /api/v1/properties/{propertyId}/blocks/{id}/release` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET /api/v1/properties/{propertyId}/amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | ⚪ Planned |
-| `GET|POST /api/v1/guests` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `GET|PUT /api/v1/guests/{id}` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `GET /api/v1/guests/{id}/stays` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `POST /api/v1/guests/{id}/documents` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `GET /api/v1/guests/{id}/documents/{docId}  (guest_document.read only)` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `POST /api/v1/guests/{id}/anonymise` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
-| `POST /api/v1/guests/merge` | [Sprint 03](../sprints/sprint-03-guests.md) | ⚪ Planned |
+| `POST /api/v1/auth/login` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `POST /api/v1/auth/refresh` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `POST /api/v1/auth/logout` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET /api/v1/auth/me` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `POST /api/v1/auth/change-password` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET|PUT /api/v1/organization` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET|POST /api/v1/properties` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET|PUT /api/v1/properties/{propertyId}` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/settings` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `PUT /api/v1/properties/{propertyId}/settings/{key}` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET|POST /api/v1/users` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET|PUT /api/v1/users/{id}` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `PUT /api/v1/users/{id}/roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `POST /api/v1/users/{id}/deactivate | activate | reset-password` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET /api/v1/roles` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET /api/v1/permissions` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET /api/v1/audit-logs` | [Sprint 01](../sprints/sprint-01-foundation.md) | 🟢 Done |
+| `GET|POST /api/v1/properties/{propertyId}/accommodation-types` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET|PUT /api/v1/properties/{propertyId}/accommodation-types/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET|POST /api/v1/properties/{propertyId}/rooms` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/rooms/status` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET|PUT /api/v1/properties/{propertyId}/rooms/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET|POST /api/v1/properties/{propertyId}/rooms/{id}/beds` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `PUT /api/v1/properties/{propertyId}/beds/{id}` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET|POST /api/v1/properties/{propertyId}/blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/blocks/{id}/release` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
+| `GET|POST /api/v1/guests` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `GET|PUT /api/v1/guests/{id}` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `GET /api/v1/guests/{id}/stays` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `POST /api/v1/guests/{id}/documents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `GET /api/v1/guests/{id}/documents/{docId}  (guest_document.read only)` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `POST /api/v1/guests/{id}/anonymise` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
+| `POST /api/v1/guests/merge` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
 | `GET|POST /api/v1/properties/{propertyId}/rate-plans` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
 | `PUT /api/v1/properties/{propertyId}/rate-plans/{id}` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
 | `PUT /api/v1/properties/{propertyId}/rate-plans/{id}/prices  (bulk date range)` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |

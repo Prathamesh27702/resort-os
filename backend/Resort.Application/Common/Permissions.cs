@@ -18,6 +18,10 @@ public static class Perm
     public const string PropertyUpdate = "property.update";
     public const string PropertySettingsUpdate = "property_settings.update";
 
+    public const string AccommodationRead = "accommodation.read";
+    public const string AccommodationManage = "accommodation.manage";
+    public const string UnitBlockManage = "unit_block.manage";
+
     public const string AuditRead = "audit.read";
     public const string SystemSettings = "system.settings";
 
@@ -25,6 +29,7 @@ public static class Perm
     [
         UserRead, UserCreate, UserUpdate, UserDeactivate, RoleRead, RoleManage,
         OrganizationRead, OrganizationUpdate, PropertyRead, PropertyCreate, PropertyUpdate, PropertySettingsUpdate,
+        AccommodationRead, AccommodationManage, UnitBlockManage,
         AuditRead, SystemSettings,
     ];
 }

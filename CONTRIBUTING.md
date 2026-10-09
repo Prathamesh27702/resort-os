@@ -1,6 +1,6 @@
 # Contributing
 
-Read [docs/SETUP.md](docs/SETUP.md) first, then this. Sprint cadence and ceremonies: [docs/sprints/PROCESS.md](docs/sprints/PROCESS.md).
+New to the team? Start with [docs/ONBOARDING.md](docs/ONBOARDING.md). Setup: [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) (reference: [docs/SETUP.md](docs/SETUP.md)). Sprint cadence and ceremonies: [docs/sprints/PROCESS.md](docs/sprints/PROCESS.md).
 
 ## Branches
 
@@ -11,6 +11,7 @@ Read [docs/SETUP.md](docs/SETUP.md) first, then this. Sprint cadence and ceremon
 | `feature/S<NN>-<issue>-<short-name>` | One issue | you, via PR |
 | `fix/S<NN>-<issue>-<short-name>` | Bug in the current sprint | you, via PR |
 | `hotfix/<issue>-<short-name>` | Production incident, from `main` | tech lead |
+| `docs/<short-name>` | Documentation only | you, via PR |
 
 ```bash
 git switch develop && git pull

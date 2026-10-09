@@ -1,11 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../core/auth.service';
 import { PropertyContext, inZone } from '../../core/property-context';
-import { User } from '../../core/models';
+import { Room, User } from '../../core/models';
+import { RoomsApi } from '../rooms/rooms.api';
 
 interface Step { done: boolean; title: string; detail: string; link: string; action: string; }
 
@@ -24,7 +25,7 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
       @if (steps().length) {
         <section class="panel setup">
           <h2>Set up {{ props.current()!.name }}</h2>
-          <p class="sub">{{ doneCount() }} of {{ steps().length }} done. Bookings, rooms and billing open up in the next sprints.</p>
+          <p class="sub">{{ doneCount() }} of {{ steps().length }} done. Bookings and billing open up in the next sprints.</p>
           <ul>
             @for (s of steps(); track s.title) {
               <li [class.done]="s.done">
@@ -60,9 +61,16 @@ export class DashboardPage {
   props = inject(PropertyContext);
   private http = inject(HttpClient);
   private users = signal<User[] | null>(null);
+  private rooms = signal<Room[] | null>(null);
+  private roomsApi = inject(RoomsApi);
 
   constructor() {
     if (this.auth.canAnywhere('user.read')) this.http.get<User[]>('/api/v1/users').subscribe(u => this.users.set(u));
+    effect(() => {
+      const p = this.props.current();
+      this.rooms.set(null);
+      if (p && this.auth.can('accommodation.read', p.id)) this.roomsApi.rooms(p.id).subscribe(r => this.rooms.set(r));
+    });
   }
 
   firstName = computed(() => this.auth.me()?.fullName.split(' ')[0] ?? '');
@@ -87,6 +95,8 @@ export class DashboardPage {
         detail: 'Shown on confirmations and invoices.', link: `/settings/properties/${p.id}`, action: 'Edit property' },
       { done: users.length > 1, title: 'Create staff accounts',
         detail: 'Give each person their own sign-in and only the access their job needs.', link: '/users/new', action: 'Add staff' },
+      { done: (this.rooms() ?? []).some(r => r.isActive), title: 'Set up rooms',
+        detail: 'Add your room types, rooms and dormitory beds so they can be sold.', link: '/rooms', action: 'Set up rooms' },
     ];
   });
   doneCount = computed(() => this.steps().filter(s => s.done).length);

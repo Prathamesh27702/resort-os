@@ -3,7 +3,7 @@
 India-first resort operating system: reservations, rooms and dorm beds, front desk, folio, GST invoicing, payments,
 housekeeping, restaurant, inventory, staff, activities, transport and reporting, in one modular monolith.
 
-> **Current sprint: [Sprint 01 — Foundation](docs/sprints/sprint-01-foundation.md)** (🟡 in review)
+> **Current sprint: [Sprint 03 — Guests](docs/sprints/sprint-03-guests.md)** (🔵 in progress) · Sprints 01–02 accepted 10 Oct 2026 (tags `sprint-01`, `sprint-02`)
 > All sprints and their status: [docs/sprints](docs/sprints/README.md) · GitHub *Milestones* show the same.
 
 | | |
@@ -18,13 +18,15 @@ housekeeping, restaurant, inventory, staff, activities, transport and reporting,
 ```bash
 git clone https://github.com/Prathamesh27702/resort-os.git && cd resort-os
 git switch develop
-scripts/setup-dev.sh                       # Windows: scripts/setup-dev.ps1  — creates .env, starts PostgreSQL
+scripts/setup-dev.sh                       # Windows: pwsh -ExecutionPolicy Bypass -File scripts/setup-dev.ps1
 cd backend/Resort.Api && dotnet watch run  # API  → http://localhost:5180/swagger
 cd frontend && npm start                   # Web  → http://localhost:4300
 scripts/test.sh                            # all tests
 ```
 
-Prerequisites and troubleshooting: **[docs/SETUP.md](docs/SETUP.md)**.
+New here? Follow **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)**: tools to install (with links), VS Code
+extensions, clone, run, test. Reviewing a sprint: **[docs/sprints/REVIEWING.md](docs/sprints/REVIEWING.md)**.
+What it costs (₹0 during development): **[docs/COSTS.md](docs/COSTS.md)**.
 
 Secrets are **not** in this repository. `setup-dev` generates local-only values; integration keys (Razorpay, Zoho,
 WhatsApp, channel manager, email, storage) are issued privately by the project owner. See [.env.example](.env.example).
@@ -51,7 +53,12 @@ docs/                       everything below
 
 | Topic | Doc |
 |---|---|
-| Set up a machine, run, debug | [docs/SETUP.md](docs/SETUP.md) |
+| Joining the team: owner's and developer's checklist, working together | [docs/ONBOARDING.md](docs/ONBOARDING.md) |
+| Checking a sprint yourself: UI, API, database (+ where `.env` is) | [docs/testing/VERIFYING.md](docs/testing/VERIFYING.md) |
+| First-time setup, step by step (Windows/macOS, VS Code) | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) |
+| Reference: database commands, troubleshooting | [docs/SETUP.md](docs/SETUP.md) |
+| Reviewing and accepting a sprint | [docs/sprints/REVIEWING.md](docs/sprints/REVIEWING.md) |
+| Costs: free now, what's paid at go-live | [docs/COSTS.md](docs/COSTS.md) |
 | How we work: branches, PRs, commits | [CONTRIBUTING.md](CONTRIBUTING.md) · [docs/sprints/PROCESS.md](docs/sprints/PROCESS.md) |
 | Sprint plan and per-sprint guides | [docs/sprints](docs/sprints/README.md) |
 | Architecture and module map | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |

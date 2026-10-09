@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // F5: runs the API with the debugger attached (needs C# Dev Kit). Reads secrets from the repo-root .env.
+      "name": "API (Resort.Api)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/backend/Resort.Api/Resort.Api.csproj"
+    },
+    {
+      // Start the web app first (Terminal → Run Task → "web: npm start"), then use this to debug Angular in Chrome.
+      "name": "Web (Chrome on :4300)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4300",
+      "webRoot": "${workspaceFolder}/frontend"
+    }
+  ]
+}

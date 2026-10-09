@@ -10,7 +10,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { AuthService } from '../core/auth.service';
 import { PropertyContext, inZone } from '../core/property-context';
 
-interface NavItem { label: string; icon: string; link: string; perm?: string; }
+interface NavItem { label: string; icon: string; link: string; perm?: string; exact?: boolean; }
 
 @Component({
   selector: 'app-shell',
@@ -22,13 +22,13 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; }
         <div class="org">{{ auth.me()?.organization?.name }}</div>
         <nav>
           @for (item of nav(); track item.link) {
-            <a [routerLink]="item.link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }"
+            <a [routerLink]="item.link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!item.exact }"
                (click)="navOpen.set(false)">
               <mat-icon>{{ item.icon }}</mat-icon><span>{{ item.label }}</span>
             </a>
           }
         </nav>
-        <p class="later">Reservations, rooms, kitchen and staff modules arrive in later sprints.</p>
+        <p class="later">Reservations, billing, kitchen and staff modules arrive in later sprints.</p>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -111,6 +111,9 @@ export class Shell {
 
   private all: NavItem[] = [
     { label: 'Today', icon: 'wb_sunny', link: '/dashboard' },
+    { label: 'Rooms', icon: 'bed', link: '/rooms', perm: 'accommodation.read', exact: true },
+    { label: 'Room status', icon: 'grid_view', link: '/rooms/status', perm: 'accommodation.read' },
+    { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },
     { label: 'Properties', icon: 'holiday_village', link: '/settings/properties', perm: 'property.read' },
     { label: 'Staff accounts', icon: 'badge', link: '/users', perm: 'user.read' },
     { label: 'Roles & permissions', icon: 'shield_person', link: '/roles', perm: 'role.read' },
