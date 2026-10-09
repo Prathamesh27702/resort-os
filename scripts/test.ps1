@@ -9,7 +9,8 @@ if (-not $env:RESORT_TEST_DB -and (Test-Path .env)) {
 }
 if (-not $env:RESORT_TEST_DB) { throw 'Set RESORT_TEST_DB (run scripts/setup-dev.ps1)' }
 
-dotnet test ResortOS.sln --logger "console;verbosity=normal"
+# Release build: a separate bin\Release copy, so this works while `dotnet watch run` (Debug) has the API running.
+dotnet test ResortOS.sln -c Release --logger "console;verbosity=normal"
 if ($LASTEXITCODE -ne 0) { throw "Backend tests failed" }
 Push-Location frontend
 try {
