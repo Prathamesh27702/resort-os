@@ -50,8 +50,13 @@ export function formatPhone(e164: string | null | undefined): string {
   if (!/^\+\d{7,15}$/.test(e164)) return e164;
   const d = e164.slice(1);
   const cc = d[0] === '1' || d[0] === '7' ? d.slice(0, 1) : TWO_DIGIT_CODES.has(d.slice(0, 2)) ? d.slice(0, 2) : d.slice(0, 3);
-  const rest = d.slice(cc.length).replace(/(\d{3,4})(?=\d{3})/g, '$1 ');
-  return `+${cc} ${rest}`;
+  const rest = d.slice(cc.length);
+  // Readable groups by length (North America 3-3-4; most others 4-3-3, 3-3-3, 4-4 …). Display only.
+  const shape: Record<number, number[]> = { 6: [3, 3], 7: [3, 4], 8: [4, 4], 9: [3, 3, 3], 10: cc === '1' ? [3, 3, 4] : [4, 3, 3], 11: [4, 3, 4], 12: [4, 4, 4] };
+  const parts: string[] = [];
+  let i = 0;
+  for (const n of shape[rest.length] ?? [rest.length]) { parts.push(rest.slice(i, i + n)); i += n; }
+  return `+${cc} ${parts.join(' ')}`;
 }
 
 /** Country names for the codes guests most often have at an Indian beach resort. Any ISO code is accepted. */

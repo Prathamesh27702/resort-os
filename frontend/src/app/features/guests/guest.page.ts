@@ -99,7 +99,7 @@ const CONSENT_LABEL: Record<string, string> = {
                   <td>
                     @if (consent(purpose); as c) {
                       <span class="chip" [class.off]="!c.granted">{{ c.granted ? 'Yes' : 'No' }}</span>
-                      <small class="mute">{{ day(c.recordedAt) }}@if (c.recordedByName) { · {{ c.recordedByName }} }</small>
+                      <small class="mute when">{{ day(c.recordedAt) }}@if (c.recordedByName) { · {{ c.recordedByName }} }</small>
                     } @else { <span class="mute">Not asked</span> }
                   </td>
                   <td class="right">
@@ -186,6 +186,7 @@ const CONSENT_LABEL: Record<string, string> = {
     .hint { color: #5b6b6e; font-size: .85rem; margin: 8px 0 0; }
     .plain { width: 100%; border-collapse: collapse; } .plain td { padding: 4px 0; vertical-align: middle; }
     .right { text-align: right; white-space: nowrap; }
+    .when { display: block; font-size: .75rem; }
     .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .row h2 { margin: 0; }
     .err { color: #b3261e; }

@@ -54,7 +54,9 @@ describe('guest form', () => {
   it('formats phone numbers for reading', () => {
     expect(formatPhone('+919820012345')).toBe('+91 98200 12345');
     expect(formatPhone('+442079460958')).toMatch(/^\+44 /);
-    expect(formatPhone('+14155550123')).toMatch(/^\+1 415/);
+    expect(formatPhone('+14155550123')).toBe('+1 415 555 0123');
+    expect(formatPhone('+447700900456')).toBe('+44 7700 900 456');
+    expect(formatPhone('+61491570156')).toBe('+61 491 570 156');
     expect(formatPhone('+9779812345678')).toMatch(/^\+977 /);
     expect(formatPhone(null)).toBe('');
   });
