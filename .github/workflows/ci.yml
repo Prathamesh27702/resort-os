@@ -37,7 +37,7 @@ jobs:
       RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=ci;Password=ci-only-throwaway
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - uses: actions/cache@v4
@@ -125,7 +125,7 @@ jobs:
       RESORT_TEST_DB: Host=localhost;Port=5432;Database=resort_test;Username=postgres;Password=root
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Start PostgreSQL
@@ -177,7 +177,7 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - uses: actions/setup-node@v4
@@ -240,7 +240,7 @@ jobs:
           curl -sSL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           tar xzf gitleaks.tgz gitleaks
           ./gitleaks git . --config .gitleaks.toml --redact --no-banner --verbose --exit-code 1
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Vulnerable NuGet packages
