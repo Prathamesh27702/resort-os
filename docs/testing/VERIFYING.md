@@ -70,9 +70,11 @@ API/web app (5180/4300) are not touched. Docker Desktop (the database) must be r
 cd D:\resort-os\frontend
 npm run e2e:install     # once per PC: downloads the test browser (free, a few minutes)
 
-npm run e2e:ui          # recommended: opens Playwright's window. Press ▶ and watch each step;
-                        # click any step to see the screen at that moment
-npm run e2e:headed      # runs them in a visible Chrome window, start to finish
+npm run e2e:headed      # BEST FOR WATCHING: real Chrome windows open and click through the screens,
+                        # half a second between actions, start to finish
+npm run e2e:ui          # Playwright's control window: ▶ runs tests and ticks them off. The screen
+                        # preview there stays blank for these tests (the browser windows are created
+                        # by the test itself), so use e2e:headed to see the screens
 npm run e2e             # runs them hidden, prints ✓/✘ per step (what CI does)
 npm run e2e:report      # opens the last run's report: every test, a screenshot, and for a failure a
                         # step-by-step replay (trace) and a video

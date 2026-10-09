@@ -27,7 +27,11 @@ export default defineConfig({
     video: 'retain-on-failure',
     ...devices['Desktop Chrome'],
     viewport: { width: 1280, height: 860 },
-    launchOptions: process.env['PW_CHROMIUM_PATH'] ? { executablePath: process.env['PW_CHROMIUM_PATH'] } : {},
+    launchOptions: {
+      ...(process.env['PW_CHROMIUM_PATH'] ? { executablePath: process.env['PW_CHROMIUM_PATH'] } : {}),
+      // `npm run e2e:headed` is for watching: pause half a second between clicks so a person can follow.
+      ...(process.argv.includes('--headed') ? { slowMo: 500 } : {}),
+    },
   },
   webServer: [
     {
