@@ -70,14 +70,14 @@ jobs:
           PY
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: backend-test-results
           path: TestResults
       - name: Publish API artefact
         if: github.event_name == 'push'
         run: dotnet publish backend/Resort.Api -c Release --no-build -o out/api
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: github.event_name == 'push'
         with:
           name: api
@@ -105,7 +105,7 @@ jobs:
         run: npm run test:ci
       - name: Production build
         run: npm run build:prod
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: github.event_name == 'push'
         with:
           name: web
@@ -148,7 +148,7 @@ jobs:
           if ([int]$c.total -eq 0 -or [int]$c.failed -gt 0) { exit 1 }
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: backend-windows-test-results
           path: TestResults
@@ -195,7 +195,7 @@ jobs:
         run: npm run e2e
       - name: Upload report (screenshots of every step; traces for failures)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: browser-test-report
           path: frontend/e2e-report
