@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🟡 In review | Phase 1 — Foundation, property, rooms, beds | L | [Sprint 00](sprint-00-architecture-and-requirements.md) |
+| 🟢 Done | Phase 1 — Foundation, property, rooms, beds | L | [Sprint 00](sprint-00-architecture-and-requirements.md) |
 
 **Goal:** A secure, multi-tenant base that every later module plugs into.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and merged to develop. Being reviewed together with Sprint 02 in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — how to: [REVIEWING.md](REVIEWING.md).
+**Now:** Accepted by the owner on 10 Oct 2026 together with Sprint 02 (pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74)). Merged to main and tagged `sprint-01`.
 
 **Done so far**
 
@@ -44,7 +44,7 @@
 
 **Outcome**
 
-Pending owner acceptance. On acceptance: merge to main, tag sprint-01, Sprint 02 starts.
+Accepted 10 Oct 2026. On main as tag sprint-01.
 
 ## Scope
 
@@ -119,7 +119,7 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - [x] Standard error shape, correlation/request IDs, /api/v1 prefix
 - [x] Angular shell, login, properties, users, roles matrix, audit screens
 - [x] 30 backend + 6 frontend tests
-- [ ] Review and sign-off by owner (open issues for any change requests)
+- [x] Review and sign-off by owner (accepted 10 Oct 2026)
 
 ## How to run this sprint
 

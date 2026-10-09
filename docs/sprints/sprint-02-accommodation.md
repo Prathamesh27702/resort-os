@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🟡 In review — **current sprint** | Phase 1 — Foundation, property, rooms, beds | M | [Sprint 01](sprint-01-foundation.md) |
+| 🟢 Done | Phase 1 — Foundation, property, rooms, beds | M | [Sprint 01](sprint-01-foundation.md) |
 
 **Goal:** Model the 6 rooms and the dormitory correctly (room-based vs bed-based inventory) and let managers block units.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and merged to develop. Being reviewed together with Sprint 01 in pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74) — script: [REVIEWING.md → Sprint 02](REVIEWING.md#sprint-02--rooms-dormitory-and-blocks).
+**Now:** Accepted by the owner on 10 Oct 2026 together with Sprint 01 (pull request [#74](https://github.com/Prathamesh27702/resort-os/pull/74)). Merged to main and tagged `sprint-02`.
 
 **Done so far**
 
@@ -44,7 +44,7 @@
 
 **Outcome**
 
-Pending owner acceptance together with Sprint 01. On acceptance: merge to main, tag sprint-02, Sprint 03 (guests) starts.
+Accepted 10 Oct 2026. On main as tag sprint-02. Sprint 03 (guests) started.
 
 ## Scope
 
@@ -101,7 +101,7 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - [x] Seed: dev seed runner (Development only, idempotent) + seed 1 property, 6 rooms (2 deluxe, 4 standard), 1 dormitory with 10 beds
 - [x] UI: /rooms list grouped by type with bed counts; room editor; dorm bed editor; block dialog with date range + reason
 - [x] Docs: update DATABASE.md table list, API.md catalogue, sprint-02 guide status
-- [ ] Review and sign-off by owner (open issues for any change requests)
+- [x] Review and sign-off by owner (accepted 10 Oct 2026)
 
 ## How to run this sprint
 
