@@ -1,15 +1,18 @@
 # Reviewing a sprint
 
-How the product owner checks a finished sprint and accepts it (or sends it back). **Sprints 01 and 02 are waiting
-for review now, together in one review PR**: do Part A once, then Part B's script for Sprint 01 followed by Sprint 02's. You need the setup from [../GETTING_STARTED.md](../GETTING_STARTED.md).
+How the product owner checks a finished sprint and accepts it (or sends it back). **Sprint 03 is waiting for review
+now (review PR #102).** Before you accept, the second developer does a code review of the same PR:
+[CODE_REVIEW.md](CODE_REVIEW.md). You need the setup from [../GETTING_STARTED.md](../GETTING_STARTED.md).
 
 ## How a sprint reaches you
 
 ```mermaid
 flowchart LR
   A["Developers: one PR per issue<br/>feature/S02-41-… → develop"] --> B["CI green +<br/>code review"] --> C["Merged into develop"]
-  C --> D["Sprint done: Sprint review PR<br/>develop → main"]
-  D --> E{"Owner review<br/>(this guide)"}
+  C --> D["Sprint built: Sprint review PR<br/>develop → main"]
+  D --> P{"Peer code review<br/>(CODE_REVIEW.md)"}
+  P -- findings --> F
+  P -- approved --> E{"Owner review<br/>(this guide)"}
   E -- changes needed --> F["Issues in the sprint milestone<br/>→ fixes merged to develop<br/>(the review PR updates itself)"] --> E
   E -- accepted --> G["Merge to main · tag sprint-NN<br/>status = done · next sprint starts"]
 ```

@@ -144,7 +144,9 @@ only from migrations and the dev seed files in `database/seed/dev`, which come t
 
 ### Every sprint
 
-Planning picks the issues and assigns them. Work happens as above. At the end the owner runs the sprint review in
+Planning picks the issues and assigns them. Work happens as above. At the end the developer who didn't build the
+sprint does the **peer code review** in [sprints/CODE_REVIEW.md](sprints/CODE_REVIEW.md) (run it, read it task by
+task, raise issues, approve the review PR). Then the owner runs the sprint review in
 [sprints/REVIEWING.md](sprints/REVIEWING.md) and accepts or files fixes. Details: [sprints/PROCESS.md](sprints/PROCESS.md).
 
 ## Part 4 — When someone leaves
