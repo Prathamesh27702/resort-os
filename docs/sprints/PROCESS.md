@@ -66,6 +66,9 @@ hotfix/…  ── from main, only for production incidents; merged back to deve
 
 ## Closing a sprint (checklist)
 
+Before this: the second developer has approved the review PR ([CODE_REVIEW.md](CODE_REVIEW.md)) and the owner has
+accepted the sprint ([REVIEWING.md](REVIEWING.md)). The full "done" list is at the end of CODE_REVIEW.md Part 1.
+
 Done in one pull request into `develop` titled `chore(sprints): accept Sprint NN`, then released to `main`.
 
 1. **Plan:** in `docs/sprints/sprints.yml` set the sprint's `status: done`, update `progress` (now, done, files,
