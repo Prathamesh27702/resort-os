@@ -10,10 +10,14 @@ import { PropertyContext, inZone } from '../../core/property-context';
 const ACTIONS: Partial<Record<string, string>> = {
   INSERT: 'Created', UPDATE: 'Changed', DELETE: 'Deleted', SOFT_DELETE: 'Removed',
   REFRESH_TOKEN_REUSE: 'Stolen session blocked', PASSWORD_CHANGED: 'Password changed',
+  SENSITIVE_READ: 'Opened (sensitive)',
 };
 const ENTITIES: Partial<Record<string, string>> = {
   Property: 'Property', PropertySetting: 'Property setting', User: 'Staff account', UserRole: 'Role grant',
   Organization: 'Organisation', Role: 'Role', RefreshToken: 'Session',
+  AccommodationType: 'Room type', AccommodationUnit: 'Room', Bed: 'Bed', UnitBlock: 'Block',
+  Guest: 'Guest', GuestAddress: 'Guest address', GuestPreference: 'Guest preference', GuestConsent: 'Guest consent',
+  GuestDocument: 'ID document',
 };
 
 @Component({

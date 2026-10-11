@@ -1,4 +1,5 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { FormGroup } from '@angular/forms';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
@@ -53,4 +54,17 @@ export function fieldErrors(p: Problem): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(p.errors ?? {})) out[k.charAt(0).toLowerCase() + k.slice(1)] = v[0];
   return out;
+}
+
+/**
+ * Puts the API's field messages on the matching form controls as `{ server: message }`, so each one shows in that
+ * field's <mat-error> (Material only shows an error for a control that is in error). Returns the messages by field.
+ */
+export function showFieldErrors(form: FormGroup, p: Problem): Record<string, string> {
+  const errs = fieldErrors(p);
+  for (const [k, msg] of Object.entries(errs)) {
+    const c = form.get(k);
+    if (c) { c.setErrors({ ...c.errors, server: msg }); c.markAsTouched(); }
+  }
+  return errs;
 }

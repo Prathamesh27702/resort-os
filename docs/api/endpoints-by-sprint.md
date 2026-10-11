@@ -33,18 +33,22 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `GET|POST /api/v1/properties/{propertyId}/blocks` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/blocks/{id}/release` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
 | `GET /api/v1/properties/{propertyId}/amenities` | [Sprint 02](../sprints/sprint-02-accommodation.md) | 🟢 Done |
-| `GET|POST /api/v1/guests` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `GET|PUT /api/v1/guests/{id}` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `GET /api/v1/guests/{id}/stays` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `POST /api/v1/guests/{id}/documents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `GET /api/v1/guests/{id}/documents/{docId}  (guest_document.read only)` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `POST /api/v1/guests/{id}/anonymise` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `POST /api/v1/guests/merge` | [Sprint 03](../sprints/sprint-03-guests.md) | 🔵 In progress |
-| `GET|POST /api/v1/properties/{propertyId}/rate-plans` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
-| `PUT /api/v1/properties/{propertyId}/rate-plans/{id}` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
-| `PUT /api/v1/properties/{propertyId}/rate-plans/{id}/prices  (bulk date range)` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
-| `GET /api/v1/properties/{propertyId}/rates/quote?type&from&to&adults&children` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
-| `GET|POST /api/v1/properties/{propertyId}/packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | ⚪ Planned |
+| `GET|POST /api/v1/guests` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET /api/v1/guests/possible-duplicates` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET|PUT /api/v1/guests/{id}` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET /api/v1/guests/{id}/stays` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `POST /api/v1/guests/{id}/consents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `POST /api/v1/guests/merge` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `POST /api/v1/guests/{id}/anonymise` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET /api/v1/guests/retention/dry-run` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET|POST /api/v1/guests/{id}/documents` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET /api/v1/guests/{id}/documents/{docId}` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET /api/v1/guests/{id}/documents/{docId}/file` | [Sprint 03](../sprints/sprint-03-guests.md) | 🟢 Done |
+| `GET|POST /api/v1/properties/{propertyId}/rate-plans` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🔵 In progress |
+| `PUT /api/v1/properties/{propertyId}/rate-plans/{id}` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🔵 In progress |
+| `PUT /api/v1/properties/{propertyId}/rate-plans/{id}/prices  (bulk date range)` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/rates/quote?type&from&to&adults&children` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🔵 In progress |
+| `GET|POST /api/v1/properties/{propertyId}/packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🔵 In progress |
 | `GET /api/v1/properties/{propertyId}/availability?from&to&adults` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/reservations  (Idempotency-Key header required)` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |
 | `GET /api/v1/properties/{propertyId}/reservations` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | ⚪ Planned |

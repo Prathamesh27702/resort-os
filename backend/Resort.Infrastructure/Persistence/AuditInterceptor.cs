@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Resort.Application.Common;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
+using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 
@@ -105,7 +106,11 @@ public sealed class AuditInterceptor(ICurrentUser currentUser, AuditContext audi
             };
             if (!include) continue;
 
-            object? Val(object? v) => Masked.Contains(name) && v is not null ? "***" : v;
+            // Secrets, personal data ([PersonalData]: anonymising must really remove it) and ciphertext are never
+            // copied into the append-only audit log; the entry still shows which field changed.
+            var hidden = Masked.Contains(name) || p.Metadata.ClrType == typeof(byte[])
+                         || p.Metadata.PropertyInfo?.IsDefined(typeof(PersonalDataAttribute), false) == true;
+            object? Val(object? v) => hidden && v is not null ? "***" : v;
             changes[name] = entry.State switch
             {
                 EntityState.Added => new { @new = Val(p.CurrentValue) },

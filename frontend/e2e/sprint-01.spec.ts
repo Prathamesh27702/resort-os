@@ -74,6 +74,9 @@ test('S01-06 receptionist must choose her own password at first sign-in', async 
   await signIn(p, riya.email, riya.temp, /\/account\/password/);
   await expect(p.getByRole('heading', { name: 'Choose your own password' })).toBeVisible();
   await p.locator('input[formcontrolname=currentPassword]').fill(riya.temp);
+  await p.locator('input[formcontrolname=newPassword]').fill(riya.temp);   // reusing the temporary one says why under the field
+  await p.getByRole('button', { name: 'Change password' }).click();
+  await expect(p.locator('app-password mat-error')).toContainText('different from your current');
   await p.locator('input[formcontrolname=newPassword]').fill(riya.own);
   await p.getByRole('button', { name: 'Change password' }).click();
   await p.waitForURL(/\/login/);

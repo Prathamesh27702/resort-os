@@ -1,0 +1,42 @@
+name: Release tags
+
+# When main changes (a sprint release), tag sprint-NN for every sprint marked `done` in docs/sprints/sprints.yml
+# that doesn't have a tag yet. Can also be started by hand: Actions → Release tags → Run workflow.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Tag accepted sprints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create missing sprint tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python3 - <<'PY'
+          import re, subprocess
+          text = open('docs/sprints/sprints.yml', encoding='utf-8').read()
+          created = []
+          for block in re.split(r'\n- id: ', text)[1:]:
+              sid = int(block.split('\n', 1)[0])
+              status = re.search(r'\n  status: (\S+)', block)
+              if not status or status.group(1) != 'done':
+                  continue
+              tag = f'sprint-{sid:02d}'
+              if subprocess.run(['git', 'rev-parse', '-q', '--verify', f'refs/tags/{tag}'], capture_output=True).returncode == 0:
+                  continue
+              subprocess.run(['git', 'tag', '-a', tag, '-m', f'Sprint {sid:02d} accepted'], check=True)
+              created.append(tag)
+          print('created:', ', '.join(created) or 'none')
+          if created:
+              subprocess.run(['git', 'push', 'origin', *created], check=True)
+          PY

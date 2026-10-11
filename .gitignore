@@ -27,3 +27,4 @@ TestResults/
 # browser test output (frontend/e2e)
 e2e-report/
 e2e-results/
+backend/Resort.Api/App_Data/

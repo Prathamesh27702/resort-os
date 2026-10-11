@@ -33,7 +33,7 @@ Every non-2xx response:
 ```json
 {
   "code": "VALIDATION_FAILED",
-  "message": "Some fields need fixing.",
+  "message": "Email address is not valid.",
   "details": { "Email": ["Email address is not valid."] },
   "correlationId": "f67946a16a98461489607b078275c656"
 }
@@ -41,7 +41,7 @@ Every non-2xx response:
 
 | HTTP | `code` | When |
 |---|---|---|
-| 400 | `VALIDATION_FAILED` | FluentValidation failed (`details` = field → messages) |
+| 400 | `VALIDATION_FAILED` | FluentValidation failed. `message` lists the reasons (up to 3), `details` = field → messages. Never a generic "fix these fields" |
 | 400 | `MISSING_CLIENT_HEADER`, `BAD_REQUEST` | Malformed request |
 | 401 | `UNAUTHORIZED`, `INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `INVALID_REFRESH_TOKEN` | Not signed in / bad credentials |
 | 403 | `FORBIDDEN`, `PASSWORD_CHANGE_REQUIRED` | Missing permission / temporary password |
@@ -200,6 +200,56 @@ today; reason ≥ 3 characters (trimmed) and ≤ 500. Blocks are never deleted (
 Overlap rules: two active blocks on the same room can't overlap; two on the same bed can't overlap; a whole-dorm block
 can't overlap any bed block in that dorm. The API checks first under a row lock and returns `BLOCK_OVERLAP` with the
 existing block's dates and reason. PostgreSQL `EXCLUDE` constraints and a trigger are the final guard.
+
+## Built endpoints (Sprint 3 — guests)
+
+Under `/api/v1/guests`. Guests belong to the **organisation** and are shared by all its properties, so a grant for
+**any** property is enough (scope **any**). Exceptions: anonymise and the retention report need `guest.delete`
+**organisation-wide**. Another organisation's guest is 404. Default holders: `guest.read` — Owner, GM, Manager,
+Receptionist, Restaurant Manager, Waiter, Activity Manager; `guest.create` / `guest.update` — Owner, GM, Manager,
+Receptionist; `guest.delete` — Owner, GM; `guest_document.read` — Owner, GM, Manager, Receptionist.
+
+### Profiles
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /guests?q&includeInactive&page&pageSize` | List / search. `q` that looks like a phone (≥ 4 digits) matches any part of the number, typed in any format; otherwise name, email or company contains `q` | `guest.read` (any) | — | `PagedResult<GuestListItemDto>` | 403 | — |
+| `GET /guests/possible-duplicates?firstName&lastName&phone&email&excludeId` | Profiles that may be the same person, with reasons | `guest.read` (any) | — | `PossibleDuplicateDto[] {id, fullName, phone, email, nationality, reasons[]}` (`Same phone`, `Same email`, `Same name`, `Same ID document`) | 403 | — |
+| `POST /guests` | Create | `guest.create` (any) | `CreateGuestRequest` (below) | `201 GuestDto` | 400, 403, **409 `POSSIBLE_DUPLICATE`** with the matches in `details` (send again with `ignoreDuplicates: true` to create anyway) | INSERT (personal fields masked) |
+| `GET /guests/{id}` | One profile | `guest.read` (any) | — | `GuestDto` (`documentCount` is `null` without `guest_document.read`) | 403, 404 | — |
+| `PUT /guests/{id}` | Update; address and preferences are replaced as a set | `guest.update` (any) | as create, plus `version`, without `ignoreDuplicates` | `GuestDto` | 400, 403, 404, 409 `CONCURRENCY_CONFLICT`, 422 `GUEST_MERGED` / `GUEST_ANONYMISED` | UPDATE (personal fields masked) |
+| `GET /guests/{id}/stays` | Stays of the guest | `guest.read` (any) | — | `GuestStayDto[]` (empty until reservations, Sprint 5) | 403, 404 | — |
+| `POST /guests/{id}/consents` | Record a consent answer (history is kept) | `guest.update` (any) | `{ purpose: MARKETING_WHATSAPP\|MARKETING_EMAIL\|DATA_PROCESSING, granted, source: FRONT_DESK\|PHONE\|WEBSITE\|OTA\|EMAIL }` | `GuestDto` | 400, 403, 404, 422 | INSERT |
+| `POST /guests/merge` | Fold a duplicate into a survivor | `guest.update` (any) | `{ survivorId, survivorVersion, duplicateId, duplicateVersion, reason }` | `GuestDto` (survivor) | 400, 403, 404, 409 `CONCURRENCY_CONFLICT`, 422 `SAME_GUEST`, `GUEST_MERGED`, `GUEST_ANONYMISED` | UPDATEs with the reason |
+| `POST /guests/{id}/anonymise` | Right to be forgotten: remove personal data, purge documents and scans; keep the row | `guest.delete` (org-wide) | `{ reason }` (3–500) | `GuestDto` (`status: ANONYMISED`) | 400, 403, 404, 422 `ALREADY_ANONYMISED`, `GUEST_MERGED` | UPDATE/DELETE rows with the reason |
+| `GET /guests/retention/dry-run` | ID documents the retention job **would** purge (nothing is deleted) | `guest.delete` (org-wide) | — | `RetentionReportDto { retentionDays, generatedAt, documentCount, items[] }` | 403 | — |
+
+`CreateGuestRequest = { firstName, lastName?, phone?, email?, dateOfBirth?, nationality?, companyName?, gstin?, notes?,
+isVip, address?: { line1?, line2?, city?, state?, stateCode?, postalCode?, countryCode }, preferences?: [{ category:
+ROOM|FOOD|DIETARY|ACTIVITY|OTHER, value }], ignoreDuplicates? }`.
+
+`GuestDto = { id, firstName, lastName, fullName, phone, email, dateOfBirth, nationality, companyName, gstin, notes, isVip,
+status: ACTIVE|MERGED|ANONYMISED, mergedIntoId, anonymisedAt, address, preferences[], consents[] (latest per purpose:
+{purpose, granted, source, recordedAt, recordedByName}), documentCount, createdAt, updatedAt, version }`.
+
+Validation: first name 1–100; **phone** is normalised to E.164: Indian numbers may be typed locally (`98200 12345`,
+`098200 12345`, `91 98200 12345`), others need `+` or `00` and the country code; anything else is a 400 with a field
+message. Email valid, stored lower-case. Date of birth 1900–today. Nationality and countries: 2-letter ISO codes.
+GSTIN `^[0-9]{2}[A-Z0-9]{13}$`. Indian PIN 6 digits. Notes ≤ 2000. Up to 30 preferences of 1–500 characters.
+
+### ID documents (sensitive) — `guest_document.read` for every call
+
+| Method & URL | Purpose | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|
+| `GET /guests/{id}/documents` | List, numbers masked | — | `GuestDocumentDto[] { id, documentType, maskedNumber ("•••• 4567"), issuingCountry, expiresOn, hasFile, fileName, contentType, sizeBytes, status, createdAt, createdByName }` | 403, 404 | — |
+| `POST /guests/{id}/documents` | Add a document. **multipart/form-data**: `documentType` (PASSPORT\|AADHAAR\|DRIVING_LICENCE\|VOTER_ID\|PAN\|VISA\|OTHER), `number?`, `issuingCountry?`, `expiresOn?` (YYYY-MM-DD), `details?` (JSON object, e.g. `{"visaNumber":"…"}`), `file?` (JPEG, PNG or PDF ≤ 5 MB) | form | `201 GuestDocumentDto` | 400, 403, 404, 422 `DOCUMENT_EMPTY` (no number and no file), `FILE_TYPE` (checked from the bytes, not the name), `FILE_SIZE`, `GUEST_NOT_ACTIVE` | INSERT (number, ciphertext and file name masked) |
+| `GET /guests/{id}/documents/{docId}` | Open one: decrypted `number` and `details` | — | `GuestDocumentDetailDto` | 403, 404, 422 `DOCUMENT_PURGED` | **`SENSITIVE_READ`** (who, when, IP, device) |
+| `GET /guests/{id}/documents/{docId}/file` | The decrypted scan | — | the file (`Content-Type` image/jpeg, image/png or application/pdf) | 403, 404, 422 `DOCUMENT_PURGED` | **`SENSITIVE_READ`** |
+
+The number and details are encrypted with AES-256-GCM before they reach the database, and the scan before it reaches
+file storage ([SECURITY.md → Field encryption](SECURITY.md#field-encryption-and-key-rotation)). **Aadhaar:** only the last 4
+digits are stored (masked Aadhaar); `number` in the detail is `null`. Every guest audit entry names the changed fields
+but shows `***` instead of personal values, so anonymising really removes the data.
 
 ### Health (no auth, not rate-limited)
 

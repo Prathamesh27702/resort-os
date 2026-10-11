@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 02](sprint-02-accommodation.md) |
+| 🔵 In progress — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 02](sprint-02-accommodation.md) |
 
 **Goal:** Configurable prices per type/date and packages whose revenue is split into room/food/transport/activity.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 02 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

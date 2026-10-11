@@ -2,9 +2,51 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [Unreleased] — Sprint 03 (in progress)
+## [sprint-03] — 2026-10-11 — Guests (accepted)
 
-- Guests module started.
+### Added
+- Migration V005: `guests`, `guest_addresses`, `guest_documents`, `guest_preferences`, `guest_consents`, a data
+  classification on every column, `pg_trgm` search indexes and database guards (guests never deleted, anonymised rows
+  empty, Aadhaar never stored in full, consent history append-only).
+- Field-level encryption (AES-256-GCM, HKDF-derived keys, key id per row, row-bound associated data) for guest ID
+  numbers, document details and scans; key rotation steps in `docs/SECURITY.md`. The API refuses to start without a
+  valid `Encryption__Key`.
+- File storage abstraction (`IFileStore`) with a local-disk implementation (`App_Data/files`, gitignored).
+- Guest APIs under `/api/v1/guests`: search by any part of a phone number or by name/email/company, duplicate warning
+  (`409 POSSIBLE_DUPLICATE`), edit with versions, consent history, merge, anonymise, retention dry run, ID documents
+  (multipart upload, masked list, audited opening of number and scan).
+- Phone numbers normalised to E.164 (Indian numbers can be typed the local way).
+- Audit trail: personal guest fields are named but stored as `***`; `SENSITIVE_READ` rows when a document is opened;
+  labels for room, block and guest entries in the Audit trail screen.
+- Dev seed S002: 20 invented guests (14 Indian, 6 international).
+- Staff app: Guests list and search, add/edit guest with duplicate warning, guest profile with consent, stays and
+  ID documents, add-document, merge and anonymise dialogs.
+- Tests: 44 backend (13 integration, 31 unit), 6 frontend, 13 browser steps (S03-01…S03-13);
+  `check-api.mjs` Sprint 03 block (12 checks); `database/queries/check-sprint-03.sql` (14 queries).
+- `E2E_SCREENSHOTS=<folder>` makes the browser tests save the review screenshots.
+
+### Changed
+- CI job *Browser tests — Sprint 01–02 screens* renamed *Browser tests — sprint review scripts*.
+- `ConflictAppException` can carry details in the error body (used for the duplicate list).
+- Handbooks: `docs/handbooks/Resort-OS-Product-Overview.docx` (for clients) and
+  `Resort-OS-Software-Documentation.docx` (architecture, UI/API/database design per sprint, code, tests), generated
+  from the repository by `tools/handbooks` and rebuilt at every sprint close. Diagrams in `tools/handbooks/diagrams`.
+- `sprints.yml`: a plain-language `client:` line for every sprint and a `handbook:` block for accepted sprints.
+- *Release tags* workflow: tags `sprint-NN` on `main` for every sprint marked done.
+- PROCESS.md: *Closing a sprint* checklist.
+
+### Fixed
+- Add ID document, Aadhaar: a number that isn't 12 digits (or the last 4) was refused with only *Some fields need
+  fixing*, because the field's own message never showed. The dialog now checks the number as it is typed and says why
+  under the field (e.g. "An Aadhaar number has 12 digits; this has 16"); other documents are checked for 4–30 letters
+  or digits. Any message the API sends for the number also shows under the field. Tests: validator unit test (backend),
+  2 frontend tests, browser step S03-06 extended.
+- Choose your own password: reusing the temporary password as the new one was refused with only *Some fields need
+  fixing*. The page now says so under New password before sending, and every API field message on this page and in
+  Add ID document shows under its field (`showFieldErrors` in `core/http.ts`). Browser step S01-06 extended.
+- Errors say why: a validation error's `message` is now the reasons themselves (up to 3, e.g. "New password must
+  differ from the current one."), never "Some fields need fixing". Database rule errors name the rule, and an
+  unreadable request says what couldn't be read.
 
 ## [sprint-02] — 2026-10-10 — Accommodation (accepted)
 

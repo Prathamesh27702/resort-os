@@ -32,4 +32,6 @@ public static class AuditActions
     public const string RefreshTokenReuse = "REFRESH_TOKEN_REUSE";
     public const string PasswordChanged = "PASSWORD_CHANGED";
     public const string SessionsRevoked = "SESSIONS_REVOKED";
+    /// <summary>Someone opened sensitive data (a guest's ID number or scan).</summary>
+    public const string SensitiveRead = "SENSITIVE_READ";
 }

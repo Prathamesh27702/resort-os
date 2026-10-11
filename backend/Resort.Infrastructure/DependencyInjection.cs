@@ -3,9 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Resort.Application.Common;
+using Resort.Application.Guests;
 using Resort.Application.Identity;
 using Resort.Infrastructure.Identity;
 using Resort.Infrastructure.Persistence;
+using Resort.Infrastructure.Protection;
 
 namespace Resort.Infrastructure;
 
@@ -29,6 +31,12 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.Section));
         services.Configure<BootstrapOptions>(config.GetSection(BootstrapOptions.Section));
         services.Configure<DevSeedOptions>(config.GetSection(DevSeedOptions.Section));
+        services.Configure<EncryptionOptions>(config.GetSection(EncryptionOptions.Section));
+        services.Configure<FileStoreOptions>(config.GetSection(FileStoreOptions.Section));
+        services.Configure<GuestOptions>(config.GetSection(GuestOptions.Section));
+
+        services.AddSingleton<IFieldEncryptor, AesGcmFieldEncryptor>();
+        services.AddSingleton<IFileStore, LocalDiskFileStore>();
 
         services.AddSingleton<ITokenService, TokenService>();
         services.AddSingleton<IPasswordHasherService, PasswordHasherService>();

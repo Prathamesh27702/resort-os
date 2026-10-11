@@ -171,8 +171,8 @@ You can leave the API from Step 6 running: the tests build their own Release cop
 
 Expected result:
 
-- Backend: **58 passed, 0 failed**. These include real-database tests; each test class creates and deletes its own temporary database.
-- Frontend: **Executed 14 of 14 SUCCESS.**
+- Backend: **102 passed, 0 failed**. These include real-database tests; each test class creates and deletes its own temporary database.
+- Frontend: **Executed 20 of 20 SUCCESS.**
 
 You can also run backend tests one by one from VS Code's **Testing** panel (beaker icon).
 
@@ -205,6 +205,7 @@ What you have to do on top of Steps 1–8 before you can run or review a sprint.
 |---|---|---|---|
 | 01 — Foundation | Everything in Step 1 | `Jwt__SigningKey`, `Bootstrap__OwnerPassword`, `Encryption__Key` (the setup script fills them) | Step 5 |
 | 02 — Rooms | **None** | **None** | Restart the API (it adds the new tables and demo rooms). Database reset optional |
+| 03 — Guests | **None** | **None** (`Encryption__Key` from Sprint 01 is now used) | Restart the API (new tables, 20 demo guests). Database reset optional |
 
 ### Sprint 02 in detail
 
@@ -232,6 +233,27 @@ Good to know:
 - **Who can do what:** Owner and GM can set up types, rooms and beds. A Manager can block and release rooms. A
   Receptionist, housekeeper or maintenance user can only view.
 - **Costs:** still ₹0. Sprint 02 uses nothing paid (see [COSTS.md](COSTS.md)).
+
+### Sprint 03 in detail
+
+1. **Get the code:** `git switch develop`, `git pull`, then `cd frontend; npm ci; cd ..`.
+2. **Start the API.** Watch for `Applying migration V005__guests` (guest tables; it switches on the PostgreSQL
+   extension `pg_trgm` for fast "contains" search, which ships with PostgreSQL) and
+   `Dev seed S002__guests: 20 demo guests created`.
+3. **Your encryption key is now in use.** `Encryption__Key` in `.env` encrypts guest ID numbers and scans. The API
+   refuses to start if it is missing or not 32 bytes. **Don't change it** once you have documents: data encrypted
+   with the old key can't be read with a new one (key rotation is described in [SECURITY.md](SECURITY.md#field-encryption-and-key-rotation)).
+   Never copy your key to anyone else's PC; each PC has its own.
+4. **ID scans are stored on your PC** in `backend/Resort.Api/App_Data/files` (gitignored), encrypted. A database
+   reset doesn't delete them; delete that folder too if you want a completely clean start.
+5. **Sign in as the owner.** The menu has **Guests**.
+
+Good to know:
+
+- **Who sees what:** reception, managers and owners see guests and their ID documents; waiters, the restaurant and
+  activity staff can look a guest up (to charge a meal to the room) but never see documents; housekeeping sees no
+  guests at all. Only the owner and GM can anonymise a guest.
+- **Costs:** still ₹0.
 
 ## Problems?
 

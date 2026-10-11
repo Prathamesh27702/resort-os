@@ -7,9 +7,11 @@
 | [GETTING_STARTED.md](GETTING_STARTED.md) | Step by step: install tools (links), VS Code extensions, clone, run, test |
 | [SETUP.md](SETUP.md) | Reference: database commands, troubleshooting |
 | [sprints/REVIEWING.md](sprints/REVIEWING.md) | How the owner reviews and accepts a sprint |
+| [sprints/CODE_REVIEW.md](sprints/CODE_REVIEW.md) | How the second developer code-reviews a sprint, raises findings and approves; when a sprint is "done" |
 | [COSTS.md](COSTS.md) | ₹0 during development; what's paid at go-live and when to upgrade |
 | [sprints/README.md](sprints/README.md) | Current sprint, all sprints, per-sprint guides |
-| [sprints/PROCESS.md](sprints/PROCESS.md) | Ceremonies, Definition of Ready/Done, branching, releases |
+| [sprints/PROCESS.md](sprints/PROCESS.md) | Ceremonies, Definition of Ready/Done, branching, releases, closing a sprint |
+| [handbooks/](handbooks/README.md) | **Word documents:** *Product Overview* (for clients) and *Software Documentation* (technical), rebuilt every sprint |
 
 | Reference (brief §80) | |
 |---|---|

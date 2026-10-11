@@ -57,8 +57,10 @@ public class DevSeedDiscoveryTests
     {
         var seeds = DevSeeder.Discover();
         Assert.Contains(seeds, s => s.Name == "S001__accommodation");
+        Assert.Contains(seeds, s => s.Name == "S002__guests");
         Assert.Equal(seeds.Select(s => s.Name).Order(StringComparer.Ordinal), seeds.Select(s => s.Name));
-        Assert.All(seeds, s => Assert.Contains("{{PROPERTY_CODE}}", s.Sql));
+        // every seed targets the bootstrap organisation, never a hard-coded one
+        Assert.All(seeds, s => Assert.Contains("{{ORGANIZATION_CODE}}", s.Sql));
     }
 }
 

@@ -16,6 +16,17 @@ public static class Problems
         return ctx.Response.WriteAsJsonAsync(new ApiError(code, message, details, ctx.TraceIdentifier));
     }
 
+    /// <summary>
+    /// The top-level message for a validation failure: the reasons themselves, never a generic "fix these fields",
+    /// so a screen that only shows the message still says why. Duplicates are dropped; at most 3 are listed.
+    /// </summary>
+    public static string Reasons(IEnumerable<string> messages)
+    {
+        var list = messages.Where(m => !string.IsNullOrWhiteSpace(m)).Select(m => m.Trim().TrimEnd('.') + ".").Distinct().ToList();
+        if (list.Count == 0) return "The request has a value that isn't valid.";
+        return string.Join(" ", list.Take(3)) + (list.Count > 3 ? $" (and {list.Count - 3} more)" : "");
+    }
+
     public static IResult Result(HttpContext ctx, int status, string code, string message) =>
         Results.Json(new ApiError(code, message, null, ctx.TraceIdentifier), statusCode: status);
 }
@@ -30,10 +41,10 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
             case ValidationException v:
                 var errors = v.Errors.GroupBy(e => e.PropertyName)
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-                await Problems.Write(ctx, 400, "VALIDATION_FAILED", "Some fields need fixing.", errors);
+                await Problems.Write(ctx, 400, "VALIDATION_FAILED", Problems.Reasons(v.Errors.Select(e => e.ErrorMessage)), errors);
                 return true;
             case NotFoundAppException e: await Problems.Write(ctx, 404, e.Code, e.Message); return true;
-            case ConflictAppException e: await Problems.Write(ctx, 409, e.Code, e.Message); return true;
+            case ConflictAppException e: await Problems.Write(ctx, 409, e.Code, e.Message, e.Details); return true;
             case ConcurrencyAppException e: await Problems.Write(ctx, 409, e.Code, e.Message); return true;
             case ForbiddenAppException e: await Problems.Write(ctx, 403, e.Code, e.Message); return true;
             case UnauthorizedAppException e: await Problems.Write(ctx, 401, e.Code, e.Message); return true;
@@ -44,17 +55,17 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
             case DbUpdateException { InnerException: PostgresException pg }:
                 var (status, code, msg) = pg.SqlState switch
                 {
-                    PostgresErrorCodes.UniqueViolation => (409, "DUPLICATE", "A record with the same unique value already exists."),
-                    PostgresErrorCodes.ExclusionViolation => (409, "OVERLAP", "This overlaps an existing record."),
-                    PostgresErrorCodes.ForeignKeyViolation => (409, "REFERENCE_CONFLICT", "A referenced record is missing or still in use."),
-                    PostgresErrorCodes.CheckViolation => (422, "CONSTRAINT_VIOLATION", "A value broke a data rule."),
-                    _ => (500, "DATABASE_ERROR", "The request could not be completed."),
+                    PostgresErrorCodes.UniqueViolation => (409, "DUPLICATE", $"A record with the same value already exists (rule {pg.ConstraintName})."),
+                    PostgresErrorCodes.ExclusionViolation => (409, "OVERLAP", $"This overlaps an existing record (rule {pg.ConstraintName})."),
+                    PostgresErrorCodes.ForeignKeyViolation => (409, "REFERENCE_CONFLICT", $"A referenced record is missing or still in use (rule {pg.ConstraintName})."),
+                    PostgresErrorCodes.CheckViolation => (422, "CONSTRAINT_VIOLATION", $"A value broke the database rule {pg.ConstraintName}."),
+                    _ => (500, "DATABASE_ERROR", $"The database refused the request (code {pg.SqlState}). Quote the trace id when reporting it."),
                 };
                 log.LogWarning(ex, "Database constraint {Constraint} ({SqlState})", pg.ConstraintName, pg.SqlState);
                 await Problems.Write(ctx, status, code, msg);
                 return true;
             case BadHttpRequestException b:
-                await Problems.Write(ctx, b.StatusCode, "BAD_REQUEST", "The request was malformed.");
+                await Problems.Write(ctx, b.StatusCode, "BAD_REQUEST", $"The request could not be read: {b.Message}");
                 return true;
             case OperationCanceledException when ctx.RequestAborted.IsCancellationRequested:
                 ctx.Response.StatusCode = 499;

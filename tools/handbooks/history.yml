@@ -1,0 +1,11 @@
+# One entry per published edition of the handbooks. Add a line when a sprint is accepted (see README.md).
+# version = 1.<last accepted sprint>; bump the part after a second dot for corrections, e.g. 1.2.1
+- version: "1.2"
+  date: 2026-10-10
+  change: "First edition. Sprints 01 (Foundation) and 02 (Accommodation) accepted; Sprint 03 (Guests) started."
+- version: "1.2.1"
+  date: 2026-10-10
+  change: "Sprint 03 (Guests) built and in review: guest profiles, encrypted ID documents, duplicates, merge, anonymise, consent."
+- version: "1.3"
+  date: 2026-10-11
+  change: "Sprint 03 (Guests) accepted, with review fixes: Aadhaar number check and error messages that say why. Sprint 04 (Rate plans and packages) started."
