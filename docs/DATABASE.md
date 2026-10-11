@@ -8,7 +8,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
 - Column-level definitions of built tables, one file per sprint:
   [Sprint 1 — foundation](database/schema-sprint-01.md) ·
   [Sprint 2 — accommodation](database/schema-sprint-02.md) (rooms, dorm beds, blocks, dev seed data) ·
-  [Sprint 3 — guests](database/schema-sprint-03.md) (profiles, encrypted ID documents, consents, demo guests)
+  [Sprint 3 — guests](database/schema-sprint-03.md) (profiles, encrypted ID documents, consents, demo guests) ·
+  [Sprint 4 — rates and packages](database/schema-sprint-04.md) (rate plans, nightly rate grid, packages and their revenue split, reservation sources, demo rates)
 
 ## Conventions (every table)
 
@@ -35,10 +36,12 @@ database/migrations/
   V003__audit_request_context.sql
   V004__accommodation.sql
   V005__guests.sql
-  V006__<next>.sql   ← you add this
+  V006__rates.sql
+  V007__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
   S002__guests.sql          ← 20 demo guests; Development only
+  S003__rates.sql           ← BAR with weekend uplift, 2 packages; Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.
@@ -57,6 +60,19 @@ database/seed/dev/
 
 The API applies pending migrations at start-up (`Database__MigrateOnStartup=true`, the default). In production the
 pipeline runs them as a separate step before deploying the new API version (Sprint 29).
+
+## Money and rounding
+
+Amounts are `numeric(12,2)` in SQL and `decimal` in C# — never `float`/`double`. Two rules keep totals exact:
+
+- **Quotes** multiply a 2-decimal price by whole numbers (rooms, beds, extra guests, nights), so no rounding happens.
+- **Splitting an amount** (a package price into revenue categories; later a package price per night) uses the
+  **largest-remainder rule**, implemented once in `Resort.Domain/Rates/QuoteEngine.cs → MoneySplit` (and mirrored in the
+  web form for the live preview): work in paise; give each part the whole paise of its exact share, rounded down; hand
+  the paise left over, one each, to the parts whose discarded fractions were largest — ties go to the earlier part.
+  The parts add up to exactly the total and none is more than one paisa from its exact share.
+  Example: ₹999.99 split 33.33 % / 33.33 % / 33.34 % → ₹333.30 + ₹333.30 + ₹333.39.
+  A deferred trigger on `package_components` refuses any package whose amounts don't add up to its price.
 
 ## C. Entity-relationship diagram (whole system)
 
@@ -79,6 +95,8 @@ erDiagram
   properties ||--o{ rate_plans : prices
   rate_plans ||--o{ rate_plan_prices : per_date
   properties ||--o{ packages : sells
+  packages ||--o{ package_components : split_into
+  accommodation_types ||--o{ rate_plan_prices : priced
 
   organizations ||--o{ guests : knows
   guests ||--o{ guest_documents : has

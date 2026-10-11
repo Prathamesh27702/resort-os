@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–03: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–04: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -10,6 +10,7 @@
 //   - one block on Room 103, about 60 nights from today, which it then releases (released blocks stay as history)
 //   - a guest "API Check Guest" (+91 90000 00999, created once) with one more passport document per run, and one
 //     throwaway guest per run that it anonymises straight away
+//   - the BAR price of the Standard room for one night about 90 days ahead: raised by ₹1, then put back (both audited)
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -209,6 +210,50 @@ if (forgetMe?.json?.id) {
 }
 await expectCall('Retention dry run lists what would be purged, deletes nothing', 'GET', '/api/v1/guests/retention/dry-run', 200,
   { token: T }, b => (typeof b.retentionDays === 'number' && Array.isArray(b.items)) || 'unexpected body');
+
+// ---------------------------------------------------------------- Sprint 04 — rates and packages
+title('Sprint 04 — rate plans, rate grid, quotes, packages');
+const plans = await expectCall('Rate plans (demo: BAR is the default)', 'GET', `${P}/rate-plans`, 200, { token: R },
+  b => b.some(x => x.code === 'BAR' && x.isDefault) || `plans: ${b.map(x => x.code).join(', ')}`);
+const bar = plans?.json?.find(x => x.isDefault);
+const types = (await call('GET', `${P}/accommodation-types`, { token: T })).json ?? [];
+const standard = types.find(t => t.code === 'STANDARD_ROOM');
+const dow = new Date(today + 'T00:00:00Z').getUTCDay();
+const thu = (4 - dow + 7) % 7 + 7;                  // next week's Thursday: the stay crosses into the weekend
+if (bar && standard) {
+  const grid = await expectCall('Grid for Thu–Sat next week', 'GET', `${P}/rate-plans/${bar.id}/prices?from=${plus(thu)}&to=${plus(thu + 3)}`, 200,
+    { token: R }, b => b.filter(x => x.accommodationTypeId === standard.id).length === 3 || 'Standard room has no prices for those nights');
+  const nights = (grid?.json ?? []).filter(x => x.accommodationTypeId === standard.id);
+  await expectCall('Quote Room 103, 2 adults, 3 nights = the grid (acceptance)', 'GET',
+    `${P}/rates/quote?room=103&from=${plus(thu)}&to=${plus(thu + 3)}&adults=2`, 200, { token: R },
+    b => (b.breakdown.map(n => n.total).join() === nights.map(n => n.price).join() && b.total === nights.reduce((s, n) => s + n.price, 0))
+      || `quote ${b.breakdown.map(n => n.total).join(' + ')} vs grid ${nights.map(n => n.price).join(' + ')}`);
+  await expectCall('3 adults in a Standard room → 422 TOO_MANY_GUESTS with the reason', 'GET',
+    `${P}/rates/quote?room=103&from=${plus(thu)}&to=${plus(thu + 1)}&adults=3`, 422, { token: R },
+    b => (b.code === 'TOO_MANY_GUESTS' && /sleeps at most 2/.test(b.message)) || b.message);
+  await expectCall('Receptionist can\'t change prices (403)', 'PUT', `${P}/rate-plans/${bar.id}/prices`, 403,
+    { token: R, body: { accommodationTypeIds: [standard.id], from: plus(90), to: plus(91), daysOfWeek: [], price: 1, extraAdult: 0, extraChild: 0, minStay: 1 } });
+  const cell = ((await call('GET', `${P}/rate-plans/${bar.id}/prices?from=${plus(90)}&to=${plus(91)}`, { token: T })).json ?? [])
+    .find(x => x.accommodationTypeId === standard.id);
+  if (cell) {
+    const set = price => ({ accommodationTypeIds: [standard.id], from: plus(90), to: plus(91), daysOfWeek: [], price,
+      extraAdult: cell.extraAdult, extraChild: cell.extraChild, minStay: cell.minStay });
+    await expectCall('Owner raises one night by ₹1', 'PUT', `${P}/rate-plans/${bar.id}/prices`, 200,
+      { token: T, body: set(cell.price + 1) }, b => b.changed === 1 || JSON.stringify(b));
+    await expectCall('The change is audited with old and new price', 'GET', '/api/v1/audit-logs?entityType=RatePlanPrice', 200,
+      { token: T }, b => b.items.some(a => a.changes?.Price?.old === cell.price && a.changes?.Price?.new === cell.price + 1) || 'no audit row with old/new price');
+    await expectCall('Put the price back', 'PUT', `${P}/rate-plans/${bar.id}/prices`, 200, { token: T, body: set(cell.price) });
+  }
+  await expectCall('Negative price → 400 with the reason under Price', 'PUT', `${P}/rate-plans/${bar.id}/prices`, 400,
+    { token: T, body: { accommodationTypeIds: [standard.id], from: plus(90), to: plus(91), daysOfWeek: [], price: -5, extraAdult: 0, extraChild: 0, minStay: 1 } },
+    b => b.details?.Price?.[0] === "Price can't be negative." || JSON.stringify(b.details));
+}
+await expectCall('Packages: every split adds up to the price', 'GET', `${P}/packages`, 200, { token: R },
+  b => (b.length > 0 && b.every(k => Math.round(k.components.reduce((s, c) => s + c.amount * 100, 0)) === Math.round(k.price * 100))) || 'a split does not add up');
+await expectCall('Shares that don\'t add up to 100 → 400 with the total', 'POST', `${P}/packages`, 400,
+  { token: T, body: { code: 'API_CHECK', name: 'API check', accommodationTypeId: standard?.id, nights: 1, adults: 2, children: 0, price: 1000, sortOrder: 0,
+    components: [{ category: 'ROOM', description: 'Room', sharePercent: 80 }, { category: 'FOOD', description: 'Breakfast', sharePercent: 15.5 }] } },
+  b => b.details?.Components?.[0] === 'The shares add up to 95.5%; they must add up to exactly 100%.' || JSON.stringify(b.details));
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

@@ -27,6 +27,12 @@ export const routes: Routes = [
       { path: 'settings/room-types/new', canActivate: [permissionGuard('accommodation.manage')], loadComponent: () => import('./features/settings/room-types/room-type-edit.page').then(m => m.RoomTypeEditPage) },
       { path: 'settings/room-types/:id', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/settings/room-types/room-type-edit.page').then(m => m.RoomTypeEditPage) },
 
+      // /settings/rates, /settings/packages (Sprint 4)
+      { path: 'settings/rates', canActivate: [permissionGuard('rate.read')], loadComponent: () => import('./features/settings/rates/rates.page').then(m => m.RatesPage) },
+      { path: 'settings/packages', canActivate: [permissionGuard('rate.read')], loadComponent: () => import('./features/settings/packages/packages.page').then(m => m.PackagesPage) },
+      { path: 'settings/packages/new', canActivate: [permissionGuard('rate.manage')], loadComponent: () => import('./features/settings/packages/package-edit.page').then(m => m.PackageEditPage) },
+      { path: 'settings/packages/:id', canActivate: [permissionGuard('rate.read')], loadComponent: () => import('./features/settings/packages/package-edit.page').then(m => m.PackageEditPage) },
+
       // /rooms (Sprint 2)
       { path: 'rooms', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/rooms.page').then(m => m.RoomsPage) },
       { path: 'rooms/new', canActivate: [permissionGuard('accommodation.manage')], loadComponent: () => import('./features/rooms/room-edit.page').then(m => m.RoomEditPage) },

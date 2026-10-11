@@ -130,6 +130,8 @@ public class MoneySplitTests
     {
         Assert.Equal([0.01m, 0m, 0m], MoneySplit.Evenly(0.01m, 3));
         Assert.Equal([333.34m, 333.33m, 333.33m], MoneySplit.Evenly(1000m, 3));
+        // unequal shares: the largest share has the largest remainder (the web form shows the same)
+        Assert.Equal([0m, 0m, 0.01m], MoneySplit.ByPercent(0.01m, [33.33m, 33.33m, 33.34m]));
     }
 
     [Fact]

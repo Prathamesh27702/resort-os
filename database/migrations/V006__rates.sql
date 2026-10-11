@@ -232,3 +232,11 @@ CREATE TRIGGER trg_packages_no_delete BEFORE DELETE ON packages
     FOR EACH ROW EXECUTE FUNCTION fn_reject_delete();
 CREATE TRIGGER trg_rate_plans_no_delete BEFORE DELETE ON rate_plans
     FOR EACH ROW EXECUTE FUNCTION fn_reject_delete();
+
+-- Data classification (brief §59). No personal data in these tables; prices and package splits are commercially
+-- confidential (not to be shown to guests or OTAs except as published rates).
+COMMENT ON TABLE reservation_sources IS 'class: internal. Booking channels; organization_id NULL = built-in.';
+COMMENT ON TABLE rate_plans          IS 'class: internal. Rate plans; one is_default per property.';
+COMMENT ON TABLE rate_plan_prices    IS 'class: confidential. Rate grid: price per room (or bed) per night per plan. Changes audited old/new.';
+COMMENT ON TABLE packages            IS 'class: internal. Fixed-price bundles; deactivated, never deleted.';
+COMMENT ON TABLE package_components  IS 'class: confidential. Revenue split of a package; amounts add up to the price (deferred trigger).';

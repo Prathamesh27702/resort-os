@@ -251,6 +251,84 @@ file storage ([SECURITY.md → Field encryption](SECURITY.md#field-encryption-an
 digits are stored (masked Aadhaar); `number` in the detail is `null`. Every guest audit entry names the changed fields
 but shows `***` instead of personal values, so anonymising really removes the data.
 
+## Built endpoints (Sprint 4 — rate plans and packages)
+
+All under `/api/v1/properties/{propertyId}`, scope **prop**. A property in another organisation is 404. Default holders:
+`rate.read` — Owner, GM, Manager, Receptionist; `rate.manage` — Owner, GM. Money is a JSON number with at most 2
+decimals (rupees and paise), never a float in storage (`numeric(12,2)`). Prices are **before tax** (GST: Sprint 9/12).
+Dates are the property's local dates; a range `[from, to)` excludes `to`, like a check-out date.
+
+### Rate plans — `/rate-plans`
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /rate-plans` | All plans | `rate.read` | — | `RatePlanDto[]` | 403, 404 | — |
+| `GET /rate-plans/{id}` | One plan | `rate.read` | — | `RatePlanDto` | 403, 404 | — |
+| `POST /rate-plans` | Create. The property's first plan becomes the default; `isDefault: true` moves the default here | `rate.manage` | `{ code, name, description?, mealPlan: EP\|CP\|MAP\|AP, isDefault, sortOrder }` | `201 RatePlanDto` | 400, 403, 409 `RATE_PLAN_CODE_TAKEN` | INSERT (+ UPDATE of the old default) |
+| `PUT /rate-plans/{id}` | Update (code is fixed); deactivate with `isActive=false` | `rate.manage` | as create without `code`, plus `isActive, version` | `RatePlanDto` | 400 (`IsDefault`: the default can't be switched off — make another plan the default; `IsActive`: the default must stay active), 403, 404, 409 `CONCURRENCY_CONFLICT` | UPDATE (old/new) |
+
+`RatePlanDto = { id, code, name, description, mealPlan, isDefault, sortOrder, isActive, version }`. Meal plans: EP room
+only, CP + breakfast, MAP + breakfast and one meal, AP all meals. Plans are never deleted (a trigger refuses DELETE).
+
+### Rate grid — `/rate-plans/{id}/prices`
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /rate-plans/{id}/prices?from&to` | The plan's prices for nights in `[from, to)` (≤ 366 nights), every room type | `rate.read` | — | `RatePriceDto[] { accommodationTypeId, date, price, extraAdult, extraChild, minStay, updatedAt }` | 400 (missing/reversed dates), 403, 404 | — |
+| `PUT /rate-plans/{id}/prices` | **Bulk edit**: the same values on every chosen night for every chosen room type. Creates missing cells, changes different ones, leaves equal ones alone | `rate.manage` | `{ accommodationTypeIds[], from, to, daysOfWeek?: ["Friday","Saturday"…] (empty = every night), price, extraAdult, extraChild, minStay }` | `{ created, changed, unchanged }` | 400 with the reason under the field (below), 403, 404, 409 `DUPLICATE` if two people set the same new nights at the same moment | **one row per changed night, old and new values** |
+
+`price` is per room per night for per-room types, and **per bed per night** for dormitory (BED) types.
+`extraAdult` / `extraChild` are per guest per night above the type's standard occupancy (rooms only). `minStay` applies to
+stays **arriving** on that night. Validation (each reason is returned under its field): at least one room type, ≤ 50;
+`to` > `from`, ≤ 366 nights; money 0 … ₹1,00,00,000 in whole paise; min stay 1–30; extra prices must be 0 for a dormitory
+type ("… is sold per bed, so extra adult and child prices don't apply to it"); the chosen days of the week must occur in
+the range ("None of the nights from … to … falls on Sunday.").
+
+### Quote — `/rates/quote`
+
+| Method & URL | Purpose | Permission | Response | Errors |
+|---|---|---|---|---|
+| `GET /rates/quote?type\|room&ratePlan&from&to&adults&children` | Price one room (or the beds for a group in a dormitory) for every night of a stay | `rate.read` | `RateQuoteDto` | 400 under the field (`From`, `To`, `Adults`, `Room`, `Type`, `RatePlan`: missing, reversed, > 30 nights, unknown room/type/plan), 403, 404, **422** `RATE_NOT_SET` (`details.dates` lists every night without a price), `TOO_MANY_GUESTS`, `MIN_STAY_NOT_MET`, `NO_DEFAULT_RATE_PLAN`, `RATE_PLAN_INACTIVE`, `TYPE_INACTIVE`, `ROOM_INACTIVE` |
+
+`type`, `room` and `ratePlan` take an id or a code (`room=103`). Without `ratePlan` the property's default plan is used.
+`RateQuoteDto = { ratePlanId, ratePlanCode, ratePlanName, mealPlan, accommodationTypeId, accommodationTypeName,
+inventoryMode, roomCode, from, to, nights, adults, children, units, breakdown: [{ date, units, unitPrice, baseAmount,
+extraAdults, extraAdultRate, extraAdultAmount, extraChildren, extraChildRate, extraChildAmount, total }], total, currency }`.
+
+Pricing rules (pure code in `Resort.Domain/Rates/QuoteEngine.cs`, unit-tested): rooms — the night's price covers the
+standard guests; each adult above them pays the extra-adult rate; children first fill standard places the adults leave
+free, then each pays the extra-child rate; adults + children may not exceed the type's maximum. Dormitories — every
+guest takes a bed at the per-bed price, no extras. Messages name the plan, type and nights, e.g. *"Best available rate has
+no price for Standard room on Fri 16 Oct 2026. Set the price in Settings → Rates."*
+
+### Packages — `/packages`
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /packages` | All packages with their split | `rate.read` | — | `PackageDto[]` | 403, 404 | — |
+| `GET /packages/{id}` | One package | `rate.read` | — | `PackageDto` | 403, 404 | — |
+| `POST /packages` | Create | `rate.manage` | `{ code, name, description?, accommodationTypeId, nights, adults, children, price, sortOrder, components: [{ category: ROOM\|FOOD\|TRANSPORT\|ACTIVITY, description, sharePercent }] }` | `201 PackageDto` | 400 under the field (below), 403, 409 `PACKAGE_CODE_TAKEN` | INSERT package + components |
+| `PUT /packages/{id}` | Update (code is fixed); components are replaced as a set; deactivate with `isActive=false` | `rate.manage` | as create without `code`, plus `isActive, version` | `PackageDto` | 400, 403, 404, 409 `CONCURRENCY_CONFLICT` | UPDATE (old/new), DELETE/INSERT of components |
+
+`PackageDto = { id, code, name, description, accommodationTypeId, accommodationTypeName, nights, adults, children, price,
+sortOrder, isActive, components: [{ id, category, description, sharePercent, amount, sortOrder }], revenueByCategory:
+{ ROOM: …, FOOD: … }, version }`.
+
+**Revenue split.** The manager gives each component a share in percent; the API computes each `amount` with the
+largest-remainder rule ([DATABASE.md → Money](DATABASE.md#money-and-rounding)), so the amounts **always add up to exactly
+the price**. Validation: 1–20 components; shares > 0, ≤ 100, 2 decimals, **adding up to exactly 100** ("The shares add up
+to 95.5%; they must add up to exactly 100%." under `Components`); **a ROOM component is required**; each component's
+reason under `Components[i].Description` etc.; price > 0; 1–30 nights; adults + children within the room type's maximum
+("Standard room sleeps at most 2 guests; this package includes 3." under `Adults`).
+
+### Reservation sources
+
+| Method & URL | Purpose | Permission | Response |
+|---|---|---|---|
+| `GET /reservation-sources` | Where bookings come from (walk-in, phone, WhatsApp, website, OTAs, travel agent, corporate) | `rate.read` | `ReservationSourceDto[] { id, code, name, channel: DIRECT\|OTA\|TRAVEL_AGENT\|CORPORATE\|OTHER, commissionPercent }` |
+
+Built-in sources are shared by every organisation; reservations use them from Sprint 5.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
