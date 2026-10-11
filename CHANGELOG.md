@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [Unreleased] — Sprint 03 — Guests (in review)
+## [sprint-03] — 2026-10-11 — Guests (accepted)
 
 ### Added
 - Migration V005: `guests`, `guest_addresses`, `guest_documents`, `guest_preferences`, `guest_consents`, a data

@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🟡 In review — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 01](sprint-01-foundation.md) |
+| 🟢 Done | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 01](sprint-01-foundation.md) |
 
 **Goal:** Guest profiles with only the data that is needed, encrypted sensitive fields, de-duplication and retention.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and tested; waiting for the owner's review. Script: [REVIEWING.md → Sprint 03](REVIEWING.md#sprint-03--guests-id-documents-privacy).
+**Now:** Accepted by the owner on 11 Oct 2026 after the review fixes in pull request [#105](https://github.com/Prathamesh27702/resort-os/pull/105) (Aadhaar number check, errors that say why). Merged to main and tagged `sprint-03`.
 
 **Done so far**
 
@@ -41,11 +41,12 @@
 - Backend: 102 passed, 0 failed on real PostgreSQL 16 (44 new: 13 integration, 31 unit including phone and encryption cases)
 - Frontend: 20 of 20 unit tests passed; ESLint clean; production build OK
 - Browser tests: 39 of 39 passed (Sprint 01 + 02 + the 13 new Sprint 03 review steps)
+- Review fixes (#105): Aadhaar takes 12 digits or the last 4 with the reason under the field; first sign-in password page shows why a password is refused; API validation messages list the reasons instead of a generic line
 - API checks: 46 of 46 passed on a fresh database (45 on later runs); SQL checks: all 14 Sprint 03 queries as expected
 
 **Outcome**
 
-Pending owner acceptance. On acceptance: merge to main, tag sprint-03, Sprint 04 (rate plans and packages) starts.
+Accepted 11 Oct 2026. On main as tag sprint-03. Sprint 04 (rate plans and packages) started.
 
 ## Scope
 
