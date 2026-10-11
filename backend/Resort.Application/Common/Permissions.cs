@@ -21,6 +21,8 @@ public static class Perm
     public const string AccommodationRead = "accommodation.read";
     public const string AccommodationManage = "accommodation.manage";
     public const string UnitBlockManage = "unit_block.manage";
+    public const string RateRead = "rate.read";
+    public const string RateManage = "rate.manage";
 
     public const string GuestRead = "guest.read";
     public const string GuestCreate = "guest.create";
@@ -35,7 +37,7 @@ public static class Perm
     [
         UserRead, UserCreate, UserUpdate, UserDeactivate, RoleRead, RoleManage,
         OrganizationRead, OrganizationUpdate, PropertyRead, PropertyCreate, PropertyUpdate, PropertySettingsUpdate,
-        AccommodationRead, AccommodationManage, UnitBlockManage,
+        AccommodationRead, AccommodationManage, UnitBlockManage, RateRead, RateManage,
         GuestRead, GuestCreate, GuestUpdate, GuestDelete, GuestDocumentRead,
         AuditRead, SystemSettings,
     ];
