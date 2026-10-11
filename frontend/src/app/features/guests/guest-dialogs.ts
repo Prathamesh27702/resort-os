@@ -9,10 +9,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { DOCUMENT_TYPES, Guest, GuestDocument, GuestListItem } from '../../core/models';
-import { fieldErrors, toProblem } from '../../core/http';
+import { showFieldErrors, toProblem } from '../../core/http';
 import { label } from '../rooms/rooms.api';
 import { minTrimmed } from '../rooms/rooms.forms';
 import { COUNTRIES, GuestsApi, formatPhone } from './guests.api';
+import { aadhaarNumber, idNumber } from './guests.forms';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -33,9 +34,9 @@ export interface DocumentDialogData { guest: Guest; }
         </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>{{ isAadhaar() ? 'Aadhaar number (only the last 4 digits are kept)' : 'Document number' }}</mat-label>
-        <input matInput formControlName="number" autocomplete="off" />
-        @if (err()['number']) { <mat-error>{{ err()['number'] }}</mat-error> }
+        <mat-label>{{ isAadhaar() ? 'Aadhaar number (12 digits; only the last 4 are kept)' : 'Document number' }}</mat-label>
+        <input matInput formControlName="number" autocomplete="off" [attr.inputmode]="isAadhaar() ? 'numeric' : null" />
+        <mat-error>{{ numberError() }}</mat-error>
         @if (isAadhaar()) { <mat-hint>Keep a masked Aadhaar copy only: the first 8 digits hidden</mat-hint> }
       </mat-form-field>
       <div class="two">
@@ -88,17 +89,34 @@ export class DocumentDialog {
   busy = signal(false);
   error = signal('');
   fileError = signal('');
-  err = signal<Record<string, string>>({});
   private file: File | null = null;
 
   form = inject(FormBuilder).nonNullable.group({
     documentType: [this.data.guest.nationality && this.data.guest.nationality !== 'IN' ? 'PASSPORT' : 'AADHAAR', Validators.required],
-    number: [''],
+    number: ['', this.data.guest.nationality && this.data.guest.nationality !== 'IN' ? idNumber : aadhaarNumber],
     issuingCountry: [this.data.guest.nationality ?? ''],
     expiresOn: [''],
     visaNumber: [''],
   });
   isAadhaar = () => this.form.controls.documentType.value === 'AADHAAR';
+
+  constructor() {
+    // Aadhaar has its own rule (12 digits or the last 4); every other document takes 4–30 letters or digits.
+    this.form.controls.documentType.valueChanges.pipe(takeUntilDestroyed()).subscribe(t => {
+      const number = this.form.controls.number;
+      number.setValidators(t === 'AADHAAR' ? aadhaarNumber : idNumber);
+      number.updateValueAndValidity();
+    });
+  }
+
+  /** Message under the number field: the API's own message first, then the client-side rule. */
+  numberError() {
+    const e = this.form.controls.number.errors;
+    if (!e) return '';
+    if (e['server']) return e['server'];
+    if (e['aadhaar']) return e['aadhaar'];
+    return 'Document number: 4–30 letters or digits.';
+  }
 
   pick(e: Event) {
     const f = (e.target as HTMLInputElement).files?.[0] ?? null;
@@ -110,6 +128,7 @@ export class DocumentDialog {
 
   save() {
     const v = this.form.getRawValue();
+    if (this.form.invalid) { this.form.markAllAsTouched(); this.error.set(''); return; }
     if (!v.number.trim() && !this.file) { this.error.set('Enter the number, attach a scan, or both.'); return; }
     const fd = new FormData();
     fd.set('documentType', v.documentType);
@@ -118,10 +137,15 @@ export class DocumentDialog {
     if (v.expiresOn) fd.set('expiresOn', v.expiresOn);
     if (v.visaNumber.trim()) fd.set('details', JSON.stringify({ visaNumber: v.visaNumber.trim() }));
     if (this.file) fd.set('file', this.file, this.file.name);
-    this.busy.set(true); this.error.set(''); this.err.set({});
+    this.busy.set(true); this.error.set('');
     this.api.uploadDocument(this.data.guest.id, fd).subscribe({
       next: d => this.ref.close(d),
-      error: e => { const p = toProblem(e); this.err.set(fieldErrors(p)); this.error.set(p.detail); this.busy.set(false); },
+      error: e => {
+        const p = toProblem(e);
+        showFieldErrors(this.form, p);
+        this.error.set(p.detail);
+        this.busy.set(false);
+      },
     });
   }
 }

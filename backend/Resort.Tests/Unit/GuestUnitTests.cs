@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Resort.Application.Common;
 using Resort.Application.Guests;
+using Resort.Application.Validation;
 using Resort.Domain.Guests;
 using Resort.Infrastructure.Protection;
 
@@ -67,6 +68,20 @@ public class GuestRuleTests
     {
         Assert.Equal("passport.pdf", GuestDocumentService.SafeFileName("../../etc/passport.exe", "application/pdf"));
         Assert.Equal("document.png", GuestDocumentService.SafeFileName("<>|", "image/png"));
+    }
+
+    [Theory]
+    [InlineData("2345 6789 0123", true)]          // full 12 digits, typed with spaces
+    [InlineData("2345-6789-0123", true)]
+    [InlineData("0123", true)]                    // last 4 only
+    [InlineData("8574 4587 4565 8745", false)]    // 16 digits: an Aadhaar has 12
+    [InlineData("2345 6789 012", false)]          // 11 digits
+    [InlineData("2345 6789 O123", false)]         // letter O, not zero
+    public void Aadhaar_takes_the_12_digits_or_the_last_4(string number, bool valid)
+    {
+        var result = new UploadGuestDocumentValidator().Validate(new UploadGuestDocumentCommand("AADHAAR", number, "IN", null, null, null));
+        Assert.Equal(valid, result.IsValid);
+        if (!valid) Assert.Contains(result.Errors, e => e.PropertyName == "Number" && e.ErrorMessage.Contains("12 digits"));
     }
 }
 

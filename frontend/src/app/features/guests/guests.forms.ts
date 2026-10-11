@@ -12,6 +12,23 @@ export const phoneLike: ValidatorFn = (c: AbstractControl): ValidationErrors | n
   return /^[+\d\s().-]+$/.test(v) && digits.length >= 7 && digits.length <= 15 ? null : { phone: true };
 };
 
+/** Any ID number: 4–30 letters or digits once spaces and punctuation are dropped (UploadGuestDocumentValidator). */
+export const idNumber: ValidatorFn = (c: AbstractControl): ValidationErrors | null => {
+  const v = (c.value ?? '').toString().trim();
+  if (!v) return null;
+  const n = v.replace(/[^A-Za-z0-9]/g, '').length;
+  return n >= 4 && n <= 30 ? null : { idNumber: true };
+};
+
+/** Aadhaar: the full 12 digits or only the last 4. Spaces and hyphens are fine (2345 6789 0123). */
+export const aadhaarNumber: ValidatorFn = (c: AbstractControl): ValidationErrors | null => {
+  const v = (c.value ?? '').toString().trim();
+  if (!v) return null;
+  if (!/^[\d\s-]+$/.test(v)) return { aadhaar: 'An Aadhaar number has digits only.' };
+  const n = v.replace(/\D/g, '').length;
+  return n === 12 || n === 4 ? null : { aadhaar: `An Aadhaar number has 12 digits; this has ${n}. Enter all 12 or only the last 4.` };
+};
+
 export const GSTIN = /^[0-9]{2}[A-Za-z0-9]{13}$/;
 export const PIN_CODE = /^[1-9][0-9]{5}$/;
 

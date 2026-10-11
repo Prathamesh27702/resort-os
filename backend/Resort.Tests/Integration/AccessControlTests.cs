@@ -248,7 +248,9 @@ public class DataIntegrityTests(ResortApiFactory app) : IClassFixture<ResortApiF
         Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
         var body = await res.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
         Assert.False(string.IsNullOrEmpty(body.GetProperty("correlationId").GetString()));
-        Assert.Equal("Some fields need fixing.", body.GetProperty("message").GetString());
+        var message = body.GetProperty("message").GetString()!;   // the reasons themselves, not "some fields need fixing"
+        Assert.DoesNotContain("need fixing", message);
+        Assert.Contains("Password must be at least 10 characters.", message);
         var errors = body.GetProperty("details");
         Assert.True(errors.TryGetProperty("Email", out _));
         Assert.True(errors.TryGetProperty("FullName", out _));

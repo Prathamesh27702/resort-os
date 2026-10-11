@@ -35,6 +35,19 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - *Release tags* workflow: tags `sprint-NN` on `main` for every sprint marked done.
 - PROCESS.md: *Closing a sprint* checklist.
 
+### Fixed
+- Add ID document, Aadhaar: a number that isn't 12 digits (or the last 4) was refused with only *Some fields need
+  fixing*, because the field's own message never showed. The dialog now checks the number as it is typed and says why
+  under the field (e.g. "An Aadhaar number has 12 digits; this has 16"); other documents are checked for 4–30 letters
+  or digits. Any message the API sends for the number also shows under the field. Tests: validator unit test (backend),
+  2 frontend tests, browser step S03-06 extended.
+- Choose your own password: reusing the temporary password as the new one was refused with only *Some fields need
+  fixing*. The page now says so under New password before sending, and every API field message on this page and in
+  Add ID document shows under its field (`showFieldErrors` in `core/http.ts`). Browser step S01-06 extended.
+- Errors say why: a validation error's `message` is now the reasons themselves (up to 3, e.g. "New password must
+  differ from the current one."), never "Some fields need fixing". Database rule errors name the rule, and an
+  unreadable request says what couldn't be read.
+
 ## [sprint-02] — 2026-10-10 — Accommodation (accepted)
 
 ### Added
