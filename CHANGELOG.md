@@ -44,6 +44,9 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - Choose your own password: reusing the temporary password as the new one was refused with only *Some fields need
   fixing*. The page now says so under New password before sending, and every API field message on this page and in
   Add ID document shows under its field (`showFieldErrors` in `core/http.ts`). Browser step S01-06 extended.
+- Errors say why: a validation error's `message` is now the reasons themselves (up to 3, e.g. "New password must
+  differ from the current one."), never "Some fields need fixing". Database rule errors name the rule, and an
+  unreadable request says what couldn't be read.
 
 ## [sprint-02] — 2026-10-10 — Accommodation (accepted)
 

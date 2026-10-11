@@ -33,7 +33,7 @@ Every non-2xx response:
 ```json
 {
   "code": "VALIDATION_FAILED",
-  "message": "Some fields need fixing.",
+  "message": "Email address is not valid.",
   "details": { "Email": ["Email address is not valid."] },
   "correlationId": "f67946a16a98461489607b078275c656"
 }
@@ -41,7 +41,7 @@ Every non-2xx response:
 
 | HTTP | `code` | When |
 |---|---|---|
-| 400 | `VALIDATION_FAILED` | FluentValidation failed (`details` = field → messages) |
+| 400 | `VALIDATION_FAILED` | FluentValidation failed. `message` lists the reasons (up to 3), `details` = field → messages. Never a generic "fix these fields" |
 | 400 | `MISSING_CLIENT_HEADER`, `BAD_REQUEST` | Malformed request |
 | 401 | `UNAUTHORIZED`, `INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `INVALID_REFRESH_TOKEN` | Not signed in / bad credentials |
 | 403 | `FORBIDDEN`, `PASSWORD_CHANGE_REQUIRED` | Missing permission / temporary password |

@@ -50,3 +50,14 @@ public class MigrationTests
         Assert.Equal("ip_address", AppDbContext.ToSnake("IpAddress"));
     }
 }
+
+public class ErrorMessageTests
+{
+    [Fact]
+    public void Validation_message_says_the_reasons_not_a_generic_line()
+    {
+        Assert.Equal("New password must differ from the current one.",
+            Resort.Api.Infrastructure.Problems.Reasons(["New password must differ from the current one."]));
+        Assert.Equal("A. B. C. (and 1 more)", Resort.Api.Infrastructure.Problems.Reasons(["A", "B.", "B", "C", "D"]));
+    }
+}
