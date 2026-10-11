@@ -35,6 +35,13 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - *Release tags* workflow: tags `sprint-NN` on `main` for every sprint marked done.
 - PROCESS.md: *Closing a sprint* checklist.
 
+### Fixed
+- Add ID document, Aadhaar: a number that isn't 12 digits (or the last 4) was refused with only *Some fields need
+  fixing*, because the field's own message never showed. The dialog now checks the number as it is typed and says why
+  under the field (e.g. "An Aadhaar number has 12 digits; this has 16"); other documents are checked for 4–30 letters
+  or digits. Any message the API sends for the number also shows under the field. Tests: validator unit test (backend),
+  2 frontend tests, browser step S03-06 extended.
+
 ## [sprint-02] — 2026-10-10 — Accommodation (accepted)
 
 ### Added

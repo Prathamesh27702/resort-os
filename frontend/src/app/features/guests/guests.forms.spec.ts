@@ -1,6 +1,7 @@
 import { FormBuilder } from '@angular/forms';
 import { formatPhone } from './guests.api';
-import { guestForm, toGuestRequest } from './guests.forms';
+import { FormControl } from '@angular/forms';
+import { aadhaarNumber, guestForm, idNumber, toGuestRequest } from './guests.forms';
 
 describe('guest form', () => {
   const fb = new FormBuilder();
@@ -59,5 +60,22 @@ describe('guest form', () => {
     expect(formatPhone('+61491570156')).toBe('+61 491 570 156');
     expect(formatPhone('+9779812345678')).toMatch(/^\+977 /);
     expect(formatPhone(null)).toBe('');
+  });
+});
+
+describe('ID document number', () => {
+  it('takes an Aadhaar as the full 12 digits or the last 4, and says why anything else is wrong', () => {
+    for (const ok of ['', '2345 6789 0123', '2345-6789-0123', '234567890123', '0123']) {
+      expect(aadhaarNumber(new FormControl(ok))).withContext(ok).toBeNull();
+    }
+    expect(aadhaarNumber(new FormControl('8574458745658745'))).toEqual({ aadhaar: 'An Aadhaar number has 12 digits; this has 16. Enter all 12 or only the last 4.' });
+    expect(aadhaarNumber(new FormControl('2345 6789 012'))?.['aadhaar']).toContain('this has 11');
+    expect(aadhaarNumber(new FormControl('2345 6789 O123'))).toEqual({ aadhaar: 'An Aadhaar number has digits only.' });
+  });
+
+  it('takes other documents as 4–30 letters or digits', () => {
+    expect(idNumber(new FormControl('C01X 00T47'))).toBeNull();
+    expect(idNumber(new FormControl('P1'))).toEqual({ idNumber: true });
+    expect(idNumber(new FormControl('X'.repeat(31)))).toEqual({ idNumber: true });
   });
 });

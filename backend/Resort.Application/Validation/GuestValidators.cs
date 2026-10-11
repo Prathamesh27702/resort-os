@@ -126,7 +126,7 @@ public sealed class UploadGuestDocumentValidator : AbstractValidator<Guests.Uplo
             .WithMessage("Document number: 4–30 letters or digits.");
         RuleFor(x => x.Number).Must(n => GuestRules.NormalizeIdNumber(n!) is { Length: 4 or 12 } s && s.All(char.IsAsciiDigit))
             .When(x => !string.IsNullOrWhiteSpace(x.Number) && x.DocumentType?.Trim().ToUpperInvariant() == DocumentTypes.Aadhaar)
-            .WithMessage("Aadhaar: enter the 12 digits or the last 4. Only the last 4 are kept.");
+            .WithMessage("An Aadhaar number has 12 digits. Enter all 12 (spaces are fine) or only the last 4; only the last 4 are kept.");
         RuleFor(x => x.IssuingCountry).Matches("^[A-Za-z]{2}$").When(x => !string.IsNullOrWhiteSpace(x.IssuingCountry))
             .WithMessage("Issuing country is a 2-letter code, e.g. IN.");
         RuleFor(x => x.Details).Must(d => d is null || (d.Count <= 10 && d.All(kv => kv.Key.Length is >= 1 and <= 40 && kv.Value.Length <= 200)))

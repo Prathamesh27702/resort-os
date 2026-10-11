@@ -113,7 +113,11 @@ test('S03-06 an Aadhaar keeps only its last four digits', async () => {
   await p.goto(newGuestUrl);
   await p.getByRole('button', { name: 'Add document' }).click();
   await choose(p, 'app-document-dialog mat-select[formcontrolname=documentType]', 'Aadhaar');
-  await p.locator('app-document-dialog input[formcontrolname=number]').fill('2345 6789 0123');
+  const number = p.locator('app-document-dialog input[formcontrolname=number]');
+  await number.fill('8574 4587 4565 8745');   // 16 digits: says why under the field instead of saving
+  await p.getByRole('button', { name: 'Save document' }).click();
+  await expect(p.locator('app-document-dialog mat-error')).toContainText('An Aadhaar number has 12 digits; this has 16');
+  await number.fill('2345 6789 0123');
   await p.getByRole('button', { name: 'Save document' }).click();
   expect(await snack(p)).toBe('Document saved');
   const row = p.locator('tr', { hasText: 'Aadhaar' });
