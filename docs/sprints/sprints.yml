@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 3
+current: 4
 
 sprints:
 
@@ -279,12 +279,12 @@ sprints:
 - id: 3
   title: Guests
   phase: 2
-  status: in-review
+  status: done
   size: M
   module: Guests
   feature: guests
   progress:
-    now: "Built and tested; waiting for the owner's review. Script: [REVIEWING.md → Sprint 03](REVIEWING.md#sprint-03--guests-id-documents-privacy)."
+    now: "Accepted by the owner on 11 Oct 2026 after the review fixes in pull request [#105](https://github.com/Prathamesh27702/resort-os/pull/105) (Aadhaar number check, errors that say why). Merged to main and tagged `sprint-03`."
     done:
       - "Migration V005: 5 tables with a data classification on every column; pg_trgm indexes for contains-search on name, email, company and phone digits; database guards (never delete guests, anonymised rows empty, Aadhaar never in full, consent history append-only)"
       - "Field-level encryption (AES-256-GCM, HKDF-derived keys, key id per row, row-bound associated data) for ID numbers, document details and scans; key rotation design and steps in SECURITY.md"
@@ -309,8 +309,9 @@ sprints:
       - "Backend: 102 passed, 0 failed on real PostgreSQL 16 (44 new: 13 integration, 31 unit including phone and encryption cases)"
       - "Frontend: 20 of 20 unit tests passed; ESLint clean; production build OK"
       - "Browser tests: 39 of 39 passed (Sprint 01 + 02 + the 13 new Sprint 03 review steps)"
+      - "Review fixes (#105): Aadhaar takes 12 digits or the last 4 with the reason under the field; first sign-in password page shows why a password is refused; API validation messages list the reasons instead of a generic line"
       - "API checks: 46 of 46 passed on a fresh database (45 on later runs); SQL checks: all 14 Sprint 03 queries as expected"
-    outcome: "Pending owner acceptance. On acceptance: merge to main, tag sprint-03, Sprint 04 (rate plans and packages) starts."
+    outcome: "Accepted 11 Oct 2026. On main as tag sprint-03. Sprint 04 (rate plans and packages) started."
   depends: [1]
   goal: Guest profiles with only the data that is needed, encrypted sensitive fields, de-duplication and retention.
   client: "Reception keeps one clean record per guest, finds returning guests by phone in one search, and stores ID documents encrypted and visible only to permitted staff."
@@ -393,7 +394,7 @@ sprints:
 - id: 4
   title: Rate plans and packages
   phase: 2
-  status: planned
+  status: in-progress
   size: M
   module: Rates
   feature: settings/rates
