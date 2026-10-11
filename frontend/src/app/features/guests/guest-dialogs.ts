@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { DOCUMENT_TYPES, Guest, GuestDocument, GuestListItem } from '../../core/models';
-import { fieldErrors, toProblem } from '../../core/http';
+import { showFieldErrors, toProblem } from '../../core/http';
 import { label } from '../rooms/rooms.api';
 import { minTrimmed } from '../rooms/rooms.forms';
 import { COUNTRIES, GuestsApi, formatPhone } from './guests.api';
@@ -142,9 +142,7 @@ export class DocumentDialog {
       next: d => this.ref.close(d),
       error: e => {
         const p = toProblem(e);
-        const errs = fieldErrors(p);
-        // A field message only shows under its field when the control is in error, so hand the API's message to it.
-        if (errs['number']) { this.form.controls.number.setErrors({ server: errs['number'] }); this.form.controls.number.markAsTouched(); }
+        showFieldErrors(this.form, p);
         this.error.set(p.detail);
         this.busy.set(false);
       },

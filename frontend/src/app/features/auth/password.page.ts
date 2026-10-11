@@ -3,11 +3,16 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth.service';
-import { fieldErrors, toProblem } from '../../core/http';
+import { showFieldErrors, toProblem } from '../../core/http';
 
 const strong = (c: AbstractControl): ValidationErrors | null =>
   /[A-Za-z]/.test(c.value ?? '') && /\d/.test(c.value ?? '') ? null : { weak: true };
+
+/** The API refuses a new password equal to the current one (ChangePasswordRequestValidator). */
+const differs = (c: AbstractControl): ValidationErrors | null =>
+  c.value && c.value === c.parent?.get('currentPassword')?.value ? { same: true } : null;
 
 @Component({
   selector: 'app-password',
@@ -24,12 +29,13 @@ const strong = (c: AbstractControl): ValidationErrors | null =>
         <mat-form-field appearance="outline">
           <mat-label>Current password</mat-label>
           <input matInput type="password" formControlName="currentPassword" autocomplete="current-password" />
-          @if (serverErr()['currentPassword']) { <mat-error>{{ serverErr()['currentPassword'] }}</mat-error> }
+          <mat-error>{{ form.controls.currentPassword.errors?.['server'] ?? 'Enter your current password.' }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>New password</mat-label>
           <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
           <mat-hint>At least 10 characters, with letters and numbers.</mat-hint>
+          <mat-error>{{ newPasswordError() }}</mat-error>
         </mat-form-field>
         @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
         <button mat-flat-button type="submit" [disabled]="busy()">Change password</button>
@@ -43,20 +49,34 @@ export class PasswordPage {
   forced = computed(() => !!this.auth.me()?.mustChangePassword);
   busy = signal(false);
   error = signal('');
-  serverErr = signal<Record<string, string>>({});
   form = inject(FormBuilder).nonNullable.group({
     currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(10), strong]],
+    newPassword: ['', [Validators.required, Validators.minLength(10), strong, differs]],
   });
 
+  /** Message under New password: the API's own message first, then the client-side rule that failed. */
+  newPasswordError() {
+    const e = this.form.controls.newPassword.errors;
+    if (!e) return '';
+    if (e['server']) return e['server'];
+    if (e['same']) return 'Choose a password different from your current (temporary) one.';
+    return 'Use at least 10 characters, with letters and numbers.';
+  }
+
+  constructor() {
+    // "Different from the current one" depends on both fields, so re-check New password when Current changes.
+    this.form.controls.currentPassword.valueChanges.pipe(takeUntilDestroyed())
+      .subscribe(() => this.form.controls.newPassword.updateValueAndValidity({ emitEvent: false }));
+  }
+
   save() {
-    if (this.form.invalid) { this.form.markAllAsTouched(); this.error.set('Use at least 10 characters, with letters and numbers.'); return; }
+    if (this.form.invalid) { this.form.markAllAsTouched(); this.error.set(''); return; }
     this.busy.set(true); this.error.set('');
     const v = this.form.getRawValue();
     this.auth.changePassword(v.currentPassword, v.newPassword).subscribe({
       // Password change revokes every session (including this one), so sign in again.
       next: () => { this.auth.clear(); location.assign('/login'); },
-      error: e => { const p = toProblem(e); this.serverErr.set(fieldErrors(p)); this.error.set(p.detail); this.busy.set(false); },
+      error: e => { const p = toProblem(e); showFieldErrors(this.form, p); this.error.set(p.detail); this.busy.set(false); },
     });
   }
 }
