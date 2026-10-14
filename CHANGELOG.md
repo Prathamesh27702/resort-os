@@ -16,6 +16,8 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - Staff app: Rates (grid, bulk edit, quote) and Packages (list, editor with live revenue split).
 - Tests: 29 backend (11 integration, 18 unit), 11 frontend, 6 browser steps (S04-01…S04-06); `check-api.mjs` Sprint 04
   block; `database/queries/check-sprint-04.sql` (9 queries).
+- `docs/RUN_AND_TEST.md`: one handbook with every command to run the app and test it, sprint by sprint (backend
+  filter, browser test file, API and database checks) and all sprints together.
 
 ### Changed
 - `BusinessRuleAppException` can carry details (the quote lists the nights that have no price).
