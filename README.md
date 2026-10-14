@@ -56,6 +56,7 @@ docs/                       everything below
 | Joining the team: owner's and developer's checklist, working together | [docs/ONBOARDING.md](docs/ONBOARDING.md) |
 | Checking a sprint yourself: UI, API, database (+ where `.env` is) | [docs/testing/VERIFYING.md](docs/testing/VERIFYING.md) |
 | First-time setup, step by step (Windows/macOS, VS Code) | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) |
+| Run the app and test it, sprint by sprint (every command) | [docs/RUN_AND_TEST.md](docs/RUN_AND_TEST.md) |
 | Reference: database commands, troubleshooting | [docs/SETUP.md](docs/SETUP.md) |
 | Reviewing and accepting a sprint | [docs/sprints/REVIEWING.md](docs/sprints/REVIEWING.md) |
 | Costs: free now, what's paid at go-live | [docs/COSTS.md](docs/COSTS.md) |

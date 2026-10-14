@@ -34,6 +34,16 @@ public static class Problems
 /// <summary>Maps exceptions to problem responses. Unexpected errors return a generic 500 (details only in logs).</summary>
 public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExceptionHandler
 {
+    /// <summary>Plain-words reasons for constraints a user can hit when two people save at the same moment
+    /// (the services check these first, so only a race reaches the database).</summary>
+    private static readonly Dictionary<string, string> KnownConstraints = new(StringComparer.Ordinal)
+    {
+        ["ux_rate_plan_prices_cell"] = "Someone else set prices for the same nights at the same moment. Reload the rate grid and try again.",
+        ["ux_rate_plans_default"] = "Another rate plan was made the default at the same moment. Reload and try again.",
+        ["ux_rate_plans_code"] = "A rate plan with this code already exists at this property.",
+        ["ux_packages_code"] = "A package with this code already exists at this property.",
+    };
+
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
     {
         switch (ex)
@@ -48,7 +58,7 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
             case ConcurrencyAppException e: await Problems.Write(ctx, 409, e.Code, e.Message); return true;
             case ForbiddenAppException e: await Problems.Write(ctx, 403, e.Code, e.Message); return true;
             case UnauthorizedAppException e: await Problems.Write(ctx, 401, e.Code, e.Message); return true;
-            case BusinessRuleAppException e: await Problems.Write(ctx, 422, e.Code, e.Message); return true;
+            case BusinessRuleAppException e: await Problems.Write(ctx, 422, e.Code, e.Message, e.Details); return true;
             case DbUpdateConcurrencyException:
                 await Problems.Write(ctx, 409, "CONCURRENCY_CONFLICT", "The record was changed by someone else. Reload and try again.");
                 return true;
@@ -61,6 +71,7 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
                     PostgresErrorCodes.CheckViolation => (422, "CONSTRAINT_VIOLATION", $"A value broke the database rule {pg.ConstraintName}."),
                     _ => (500, "DATABASE_ERROR", $"The database refused the request (code {pg.SqlState}). Quote the trace id when reporting it."),
                 };
+                if (pg.ConstraintName is { } name && KnownConstraints.TryGetValue(name, out var known)) msg = known;
                 log.LogWarning(ex, "Database constraint {Constraint} ({SqlState})", pg.ConstraintName, pg.SqlState);
                 await Problems.Write(ctx, status, code, msg);
                 return true;

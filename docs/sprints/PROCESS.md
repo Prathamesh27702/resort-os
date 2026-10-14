@@ -75,7 +75,8 @@ Done in one pull request into `develop` titled `chore(sprints): accept Sprint NN
    results, outcome) and fill its `handbook:` block — `highlights` (plain words, for clients), `design.ui`,
    `design.api`, `design.database` (how each part is designed), `screenshots` and any `diagrams`. Set `current:` to
    the next sprint and its `status: in-progress`.
-2. **Guides:** `python3 scripts/github/sync-sprints.py docs`.
+2. **Guides:** `python3 scripts/github/sync-sprints.py docs`. Check that [RUN_AND_TEST.md](../RUN_AND_TEST.md) has the
+   sprint's block (its backend filter, browser test file and database checks) and the new expected totals.
 3. **Changelog:** date the sprint's entry in `CHANGELOG.md` (`## [sprint-NN] — YYYY-MM-DD — Title (accepted)`).
 4. **Handbooks:** add a line to `tools/handbooks/history.yml` (version `1.NN`), update any diagram whose status
    changed (`tools/handbooks/diagrams/diagrams.html`, then `npm run diagrams`), and rebuild both Word documents:

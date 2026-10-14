@@ -121,3 +121,37 @@ export interface GuestDocument {
   createdAt: string; createdByName: string | null;
 }
 export interface GuestDocumentDetail extends GuestDocument { number: string | null; details: Record<string, string> | null; }
+
+// ---- Sprint 4: rates and packages
+export const MEAL_PLANS = ['EP', 'CP', 'MAP', 'AP'] as const;
+export const MEAL_PLAN_LABELS: Record<string, string> = {
+  EP: 'EP — room only', CP: 'CP — with breakfast', MAP: 'MAP — breakfast + one meal', AP: 'AP — all meals',
+};
+export const REVENUE_CATEGORIES = ['ROOM', 'FOOD', 'TRANSPORT', 'ACTIVITY'] as const;
+
+export interface RatePlan {
+  id: string; code: string; name: string; description: string | null; mealPlan: string; isDefault: boolean;
+  sortOrder: number; isActive: boolean; version: number;
+}
+/** One cell of the rate grid; price is per room (or per bed for a dormitory) per night. */
+export interface RatePrice {
+  accommodationTypeId: string; date: string; price: number; extraAdult: number; extraChild: number; minStay: number; updatedAt: string;
+}
+export interface SetRatePricesResult { created: number; changed: number; unchanged: number; }
+export interface RateQuoteNight {
+  date: string; units: number; unitPrice: number; baseAmount: number;
+  extraAdults: number; extraAdultRate: number; extraAdultAmount: number;
+  extraChildren: number; extraChildRate: number; extraChildAmount: number; total: number;
+}
+export interface RateQuote {
+  ratePlanId: string; ratePlanCode: string; ratePlanName: string; mealPlan: string;
+  accommodationTypeId: string; accommodationTypeName: string; inventoryMode: InventoryMode; roomCode: string | null;
+  from: string; to: string; nights: number; adults: number; children: number; units: number;
+  breakdown: RateQuoteNight[]; total: number; currency: string;
+}
+export interface PackageComponent { id: string; category: string; description: string; sharePercent: number; amount: number; sortOrder: number; }
+export interface Package {
+  id: string; code: string; name: string; description: string | null; accommodationTypeId: string; accommodationTypeName: string;
+  nights: number; adults: number; children: number; price: number; sortOrder: number; isActive: boolean;
+  components: PackageComponent[]; revenueByCategory: Record<string, number>; version: number;
+}

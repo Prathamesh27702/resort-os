@@ -18,6 +18,7 @@ const ENTITIES: Partial<Record<string, string>> = {
   AccommodationType: 'Room type', AccommodationUnit: 'Room', Bed: 'Bed', UnitBlock: 'Block',
   Guest: 'Guest', GuestAddress: 'Guest address', GuestPreference: 'Guest preference', GuestConsent: 'Guest consent',
   GuestDocument: 'ID document',
+  RatePlan: 'Rate plan', RatePlanPrice: 'Rate price', Package: 'Package', PackageComponent: 'Package part',
 };
 
 @Component({

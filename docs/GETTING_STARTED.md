@@ -171,8 +171,10 @@ You can leave the API from Step 6 running: the tests build their own Release cop
 
 Expected result:
 
-- Backend: **102 passed, 0 failed**. These include real-database tests; each test class creates and deletes its own temporary database.
-- Frontend: **Executed 20 of 20 SUCCESS.**
+- Backend: **138 passed, 0 failed** (Sprints 01–04). These include real-database tests; each test class creates and deletes its own temporary database.
+- Frontend: **Executed 31 of 31 SUCCESS.**
+
+Testing one sprint at a time, browser tests, API and database checks: [RUN_AND_TEST.md](RUN_AND_TEST.md).
 
 You can also run backend tests one by one from VS Code's **Testing** panel (beaker icon).
 
@@ -206,6 +208,7 @@ What you have to do on top of Steps 1–8 before you can run or review a sprint.
 | 01 — Foundation | Everything in Step 1 | `Jwt__SigningKey`, `Bootstrap__OwnerPassword`, `Encryption__Key` (the setup script fills them) | Step 5 |
 | 02 — Rooms | **None** | **None** | Restart the API (it adds the new tables and demo rooms). Database reset optional |
 | 03 — Guests | **None** | **None** (`Encryption__Key` from Sprint 01 is now used) | Restart the API (new tables, 20 demo guests). Database reset optional |
+| 04 — Rates and packages | **None** | **None** | `cd frontend; npm ci`, then restart the API (new tables, demo rate plan BAR and two packages). Database reset recommended before the review |
 
 ### Sprint 02 in detail
 

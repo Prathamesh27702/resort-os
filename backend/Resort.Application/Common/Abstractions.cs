@@ -6,6 +6,7 @@ using Resort.Domain.Audit;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
+using Resort.Domain.Rates;
 
 namespace Resort.Application.Common;
 
@@ -37,6 +38,11 @@ public interface IAppDbContext
     DbSet<GuestDocument> GuestDocuments { get; }
     DbSet<GuestPreference> GuestPreferences { get; }
     DbSet<GuestConsent> GuestConsents { get; }
+    DbSet<ReservationSource> ReservationSources { get; }
+    DbSet<RatePlan> RatePlans { get; }
+    DbSet<RatePlanPrice> RatePlanPrices { get; }
+    DbSet<Package> Packages { get; }
+    DbSet<PackageComponent> PackageComponents { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

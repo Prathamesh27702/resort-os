@@ -10,33 +10,38 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built and in review: one pull request into develop with the database, API, screens, tests and docs. Waiting for the owner's review (REVIEWING.md → Sprint 04).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V006: rate_plans, rate_plan_prices (one row per plan × room type × night, numeric(12,2), per-bed prices for dormitories), packages, package_components, reservation_sources (14 built-in channels); one default plan per property; a deferred trigger refuses any package whose split doesn't add up to its price
+- Quote engine (pure, unit-tested): nightly breakdown, extra adults and children above standard occupancy, per-bed dormitory pricing, minimum stay on the arrival night, maximum occupancy; every refusal says exactly why (which nights have no price, how many guests the room sleeps)
+- Package revenue split by percent with the largest-remainder rule: amounts always add up to exactly the price, to the paisa (rule in DATABASE.md → Money and rounding)
+- Rate APIs: plans, grid read, bulk edit by date range and days of the week, quote by room or type (id or code), packages, reservation sources. Every price change audited with old and new values
+- Dev seed S003: BAR with Friday/Saturday uplift for a year, Couple getaway and Room + breakfast packages
+- Screens: Rates (plan picker, room type × 14-night grid, click a cell to edit, bulk edit with weekend shortcut, quote panel) and Packages (list with revenue chips, editor with live split preview). Every error is shown under its field with the reason
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__rates.sql — new tables (next free number)
-- backend/Resort.Domain/Rates/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Rates/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/RatesEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/RatesTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/settings/rates/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-04.md, this guide, CHANGELOG.md
+- database/migrations/V006__rates.sql; database/seed/dev/S003__rates.sql; database/queries/check-sprint-04.sql
+- backend/Resort.Domain/Rates/Rates.cs, Rates/QuoteEngine.cs (QuoteEngine, MoneySplit)
+- backend/Resort.Contracts/RateContracts.cs
+- backend/Resort.Application/ — Rates/RateService.cs, Rates/PackageService.cs, Validation/RateValidators.cs, Common/Permissions.cs, Common/Errors.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/RateEndpoints.cs, Program.cs, Infrastructure/Problems.cs
+- backend/Resort.Tests/ — Integration/RateTests.cs, Integration/DevSeedTests.cs, Unit/RateUnitTests.cs
+- frontend/src/app/ — features/settings/rates/*, features/settings/packages/*, core/models.ts, core/http.ts (nested field errors), app.routes.ts, layout/shell.ts, features/audit (labels)
+- frontend/e2e/sprint-04.spec.ts; scripts/check-api.mjs (Sprint 04 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-04.md, docs/sprints/REVIEWING.md, sprint-04-screens/
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 138 passed, 0 failed on real PostgreSQL 16 (29 new: 11 integration, 18 unit including the weekend-boundary quote and 5,000 random package splits)
+- Frontend: 31 of 31 unit tests passed; ESLint clean; production build OK
+- Browser tests: 45 of 45 passed (Sprint 01–03 steps plus the 6 new Sprint 04 review steps); screenshots in docs/sprints/sprint-04-screens
 
 **Outcome**
 
-Expected when accepted:
-
-- A quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid
+Expected when accepted: a quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid (checked by DevSeedTests, check-api.mjs and browser step S04-03).
 
 ## Scope
 
