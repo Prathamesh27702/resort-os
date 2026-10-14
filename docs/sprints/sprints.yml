@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 4
+current: 5
 
 sprints:
 
@@ -394,7 +394,7 @@ sprints:
 - id: 4
   title: Rate plans and packages
   phase: 2
-  status: in-progress
+  status: done
   size: M
   module: Rates
   feature: settings/rates
@@ -402,7 +402,7 @@ sprints:
   goal: Configurable prices per type/date and packages whose revenue is split into room/food/transport/activity.
   client: "Managers set room and bed prices by date, weekend rates and packages (for example room + breakfast), and get an instant price quote for any stay."
   progress:
-    now: "Built and in review: one pull request into develop with the database, API, screens, tests and docs. Waiting for the owner's review (REVIEWING.md → Sprint 04)."
+    now: "Accepted by the owner on 14 Oct 2026 after reviewing the screens and running the browser tests for Sprints 01–04. Built in pull request [#107](https://github.com/Prathamesh27702/resort-os/pull/107), including the review fix that lines the rate grid's prices up under their dates. Merged to main and tagged `sprint-04`."
     done:
       - "Migration V006: rate_plans, rate_plan_prices (one row per plan × room type × night, numeric(12,2), per-bed prices for dormitories), packages, package_components, reservation_sources (14 built-in channels); one default plan per property; a deferred trigger refuses any package whose split doesn't add up to its price"
       - "Quote engine (pure, unit-tested): nightly breakdown, extra adults and children above standard occupancy, per-bed dormitory pricing, minimum stay on the arrival night, maximum occupancy; every refusal says exactly why (which nights have no price, how many guests the room sleeps)"
@@ -424,7 +424,30 @@ sprints:
       - "Backend: 138 passed, 0 failed on real PostgreSQL 16 (29 new: 11 integration, 18 unit including the weekend-boundary quote and 5,000 random package splits)"
       - "Frontend: 31 of 31 unit tests passed; ESLint clean; production build OK"
       - "Browser tests: 45 of 45 passed (Sprint 01–03 steps plus the 6 new Sprint 04 review steps); screenshots in docs/sprints/sprint-04-screens"
-    outcome: "Expected when accepted: a quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid (checked by DevSeedTests, check-api.mjs and browser step S04-03)."
+      - "Review fix: the rate grid's prices sat one column right of their dates (the table's style name clashed with a layout style). Fixed, and browser step S04-01 now checks every price sits under its date"
+      - "Run-and-test handbook docs/RUN_AND_TEST.md: every command to run the app and test it, sprint by sprint and all sprints together"
+    outcome: "Accepted 14 Oct 2026. A quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid (checked by DevSeedTests, check-api.mjs and browser step S04-03). On main as tag sprint-04. Sprint 05 (availability engine and reservations) started."
+  handbook:
+    highlights:
+      - "Prices for every room type and every night, set by date range in a few clicks, with weekend rates"
+      - "Rate plans such as Best available rate, room only or with meals; one is the default"
+      - "Dormitories priced per bed; extra adults and children priced above the room's standard occupancy"
+      - "An instant quote for any room or room type, night by night, matching the price grid"
+      - "Packages such as a Couple getaway at one price, split into room, food, transport and activity to the paisa, ready for accounting"
+      - "Every price change recorded with the old and new price, and every error explains exactly what to fix"
+    design:
+      ui: "Rates (menu) shows the chosen rate plan as a grid of room types × 14 nights, with weekend columns shaded and nights without a price marked; arrows move a week and a date picks the first night. Clicking a cell edits that night. Set prices applies a price, extra adult and child rates and a minimum stay to chosen room types over a date range, on all nights or only chosen weekdays (a Weekend button picks Friday and Saturday), and reports how many nights changed. Quote a stay takes a room or room type, arrival, nights and guests and shows each night with extras and the total before tax. Packages lists packages with their revenue split as chips; the editor shows each part's amount live as shares are typed and refuses a split that doesn't add up to 100 %, with the reason under the parts. Receptionists see rates and can quote but can't change anything."
+      api: "Endpoints under /api/v1/properties/{propertyId}: rate-plans (list, create, edit; the first plan becomes the default and only one plan is default), rate-plans/{id}/prices (read a date range; PUT applies a bulk edit and returns created, changed and unchanged counts), rates/quote (by room or room type, id or code; 422 with the reason and, for missing prices, the nights concerned), packages (list, create, edit) and reservation-sources. rate.read lets staff view and quote, rate.manage lets managers change. Edits carry the version the user saw (409 on a stale edit). Validation errors name the field and the reason."
+      database: "Migration V006 adds rate_plans, rate_plan_prices (one row per plan × room type × night, numeric(12,2), unique per cell), packages, package_components and reservation_sources (14 built-in channels). A partial unique index allows one default plan per property. Deferred constraint triggers check at commit that a package's shares add up to 100 %, its amounts add up to its price exactly and it has a ROOM part. Plans and packages are never deleted (deactivated instead). Amounts are split with the largest-remainder rule so no paisa is lost or gained."
+    diagrams:
+      - {file: tools/handbooks/assets/er-rates.png, caption: "Rate and package tables and how they relate"}
+    screenshots:
+      - {file: docs/sprints/sprint-04-screens/01-rate-grid.png, caption: "The rate grid: room types × nights, weekends shaded"}
+      - {file: docs/sprints/sprint-04-screens/02-set-weekend-prices.png, caption: "Setting weekend prices for a date range"}
+      - {file: docs/sprints/sprint-04-screens/03-quote-room-103.png, caption: "A quote for Room 103, night by night, matching the grid"}
+      - {file: docs/sprints/sprint-04-screens/04-error-says-why.png, caption: "Errors say why, under the field they concern"}
+      - {file: docs/sprints/sprint-04-screens/05-packages.png, caption: "Packages with their revenue split"}
+      - {file: docs/sprints/sprint-04-screens/06-package-split.png, caption: "Package editor: each part's amount, adding up to the price exactly"}
   scope:
     tables: [rate_plans, rate_plan_prices, packages, package_components, reservation_sources]
     api:
@@ -434,13 +457,17 @@ sprints:
       - GET /api/v1/properties/{propertyId}/rates/quote?type&from&to&adults&children
       - GET|POST /api/v1/properties/{propertyId}/packages
     screens: [/settings/rates, /settings/packages]
+    other:
+      - "Development seed: BAR with weekend uplift and two packages (database/seed/dev/S003__rates.sql)"
+      - "Screenshots of the built screens: docs/sprints/sprint-04-screens/"
   tasks:
-    - "DB: new migration — rate tables; prices stored per date (numeric(12,2)); per-bed prices for BED mode"
-    - "Domain: quote engine — nightly breakdown, extra adult/child, min stay; pure functions, fully unit-tested"
-    - "Domain: package revenue split must sum exactly to package price (rounding rule documented)"
-    - "API: price changes audited with old/new (brief §87)"
-    - "Seed: BAR (best available rate), weekend uplift, Couple and Room + breakfast packages"
-    - "UI: rate grid (type × date) with bulk edit"
+    - "[done] DB: new migration — rate tables; prices stored per date (numeric(12,2)); per-bed prices for BED mode"
+    - "[done] Domain: quote engine — nightly breakdown, extra adult/child, min stay; pure functions, fully unit-tested"
+    - "[done] Domain: package revenue split must sum exactly to package price (rounding rule documented)"
+    - "[done] API: price changes audited with old/new (brief §87)"
+    - "[done] Seed: BAR (best available rate), weekend uplift, Couple and Room + breakfast packages"
+    - "[done] UI: rate grid (type × date) with bulk edit"
+    - "[done] Review and sign-off by owner"
   tests:
     - Unit — quote for 3 nights across a weekend boundary
     - Unit — package split rounding never loses or gains a paisa
@@ -455,7 +482,7 @@ sprints:
 - id: 5
   title: Availability engine and reservations core
   phase: 2
-  status: planned
+  status: in-progress
   size: L
   module: Reservations
   feature: reservations

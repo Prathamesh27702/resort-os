@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 02](sprint-02-accommodation.md) |
+| 🟢 Done | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 02](sprint-02-accommodation.md) |
 
 **Goal:** Configurable prices per type/date and packages whose revenue is split into room/food/transport/activity.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review: one pull request into develop with the database, API, screens, tests and docs. Waiting for the owner's review (REVIEWING.md → Sprint 04).
+**Now:** Accepted by the owner on 14 Oct 2026 after reviewing the screens and running the browser tests for Sprints 01–04. Built in pull request [#107](https://github.com/Prathamesh27702/resort-os/pull/107), including the review fix that lines the rate grid's prices up under their dates. Merged to main and tagged `sprint-04`.
 
 **Done so far**
 
@@ -38,10 +38,12 @@
 - Backend: 138 passed, 0 failed on real PostgreSQL 16 (29 new: 11 integration, 18 unit including the weekend-boundary quote and 5,000 random package splits)
 - Frontend: 31 of 31 unit tests passed; ESLint clean; production build OK
 - Browser tests: 45 of 45 passed (Sprint 01–03 steps plus the 6 new Sprint 04 review steps); screenshots in docs/sprints/sprint-04-screens
+- Review fix: the rate grid's prices sat one column right of their dates (the table's style name clashed with a layout style). Fixed, and browser step S04-01 now checks every price sits under its date
+- Run-and-test handbook docs/RUN_AND_TEST.md: every command to run the app and test it, sprint by sprint and all sprints together
 
 **Outcome**
 
-Expected when accepted: a quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid (checked by DevSeedTests, check-api.mjs and browser step S04-03).
+Accepted 14 Oct 2026. A quote for Room 103, 2 adults, 3 nights returns a nightly breakdown matching the rate grid (checked by DevSeedTests, check-api.mjs and browser step S04-03). On main as tag sprint-04. Sprint 05 (availability engine and reservations) started.
 
 ## Scope
 
@@ -66,18 +68,24 @@ Expected when accepted: a quote for Room 103, 2 adults, 3 nights returns a night
 - `/settings/rates`
 - `/settings/packages`
 
+**Other**
+
+- Development seed: BAR with weekend uplift and two packages (database/seed/dev/S003__rates.sql)
+- Screenshots of the built screens: docs/sprints/sprint-04-screens/
+
 Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABASE.md). Update both in this sprint.
 
 ## Tasks
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] DB: new migration — rate tables; prices stored per date (numeric(12,2)); per-bed prices for BED mode
-- [ ] Domain: quote engine — nightly breakdown, extra adult/child, min stay; pure functions, fully unit-tested
-- [ ] Domain: package revenue split must sum exactly to package price (rounding rule documented)
-- [ ] API: price changes audited with old/new (brief §87)
-- [ ] Seed: BAR (best available rate), weekend uplift, Couple and Room + breakfast packages
-- [ ] UI: rate grid (type × date) with bulk edit
+- [x] DB: new migration — rate tables; prices stored per date (numeric(12,2)); per-bed prices for BED mode
+- [x] Domain: quote engine — nightly breakdown, extra adult/child, min stay; pure functions, fully unit-tested
+- [x] Domain: package revenue split must sum exactly to package price (rounding rule documented)
+- [x] API: price changes audited with old/new (brief §87)
+- [x] Seed: BAR (best available rate), weekend uplift, Couple and Room + breakfast packages
+- [x] UI: rate grid (type × date) with bulk edit
+- [x] Review and sign-off by owner
 
 ## How to run this sprint
 

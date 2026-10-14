@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 2 — Guests, reservations, availability, calendar, front desk | L | [Sprint 02](sprint-02-accommodation.md), [Sprint 03](sprint-03-guests.md), [Sprint 04](sprint-04-rate-plans-and-packages.md) |
+| 🔵 In progress — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | L | [Sprint 02](sprint-02-accommodation.md), [Sprint 03](sprint-03-guests.md), [Sprint 04](sprint-04-rate-plans-and-packages.md) |
 
 **Goal:** Race-free booking of rooms and dorm beds with idempotent create and full status history (brief §14–16).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 02, Sprint 03, Sprint 04 are accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

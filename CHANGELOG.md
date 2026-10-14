@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-04] — not yet accepted — Rate plans and packages (in review)
+## [sprint-04] — 2026-10-14 — Rate plans and packages (accepted)
 
 ### Added
 - Migration V006: `rate_plans`, `rate_plan_prices`, `packages`, `package_components`, `reservation_sources` (14 built-in
@@ -23,6 +23,10 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - `BusinessRuleAppException` can carry details (the quote lists the nights that have no price).
 - Clear reasons for unique-constraint races on rate tables instead of the rule name.
 - `showFieldErrors` also reaches fields inside lists (`Components[0].Description`).
+
+### Fixed
+- Rate grid: prices sat one column right of their dates because the table's style name clashed with a layout style.
+  Browser step S04-01 now checks each price sits under its date.
 
 ## [sprint-03] — 2026-10-11 — Guests (accepted)
 
