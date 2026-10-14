@@ -28,6 +28,7 @@
 | Architecture detail | |
 |---|---|
 | [architecture/lifecycles.md](architecture/lifecycles.md) | Booking, guest, employee, attendance, leave, restaurant, inventory, activity/transport |
+| [architecture/booking-algorithm.md](architecture/booking-algorithm.md) | How a booking is made without double-selling a room or dorm bed: locks, exclusion constraints, idempotency, status graph (Sprint 5) |
 | [architecture/frontend.md](architecture/frontend.md) | Route/screen map, folder structure, UI conventions |
 | [architecture/decisions.md](architecture/decisions.md) | Architecture decision record |
 | [architecture/risks-and-open-questions.md](architecture/risks-and-open-questions.md) | Owner decisions needed, risks, estimate |

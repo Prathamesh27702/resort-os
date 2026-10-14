@@ -10,27 +10,35 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built and in review: one pull request into develop with the database, booking engine, API, screens, tests and docs. Waiting for the owner's review (REVIEWING.md → Sprint 05).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V007: reservations, reservation_units (rooms and dorm beds held, EXCLUDE USING gist on room and on bed over the stay), reservation_guests, reservation_rate_breakdowns, reservation_notes, reservation_status_history, reservation_status_transitions (status graph enforced by a trigger), idempotency_keys, property_counters (references R00001 …). Nothing is ever deleted; blocks and bookings can't cover the same room and night
+- Availability engine (pure, unit-tested): free rooms and beds for every night, allocation of rooms and one bed per dorm guest, and the exact reason when something doesn't fit (which room, which nights, which booking or block holds it)
+- Booking algorithm in one transaction: claim the Idempotency-Key, lock the rooms of the requested types in id order, allocate, price every night from the rate grid, store the response. The exclusion constraints are the final guard (23P01 → 409 ROOM_UNAVAILABLE). Written up in docs/architecture/booking-algorithm.md
+- APIs: availability; reservations list, get, create (Idempotency-Key, replay header), change dates or guests (re-checks and re-prices), confirm, cancel and no-show with a reason, notes. Permissions reservation.read/create/update/cancel
+- Dev seed S004: six demo bookings from today; Room 102 is the last Deluxe room tonight for the two-browser demo
+- Screens: Reservations list (search, Booked / Enquiries / All), New booking wizard (dates → room → guest → rate → confirm, quick-add of a walk-in guest), booking page (rooms, nightly prices, guests, notes, history, confirm, change, cancel, no-show). Guest profiles list stays with their reference. Every error is shown under its field or next to its button with the reason
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__reservations.sql — new tables (next free number)
-- backend/Resort.Domain/Reservations/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Reservations/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/ReservationsEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/ReservationsTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/reservations/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-05.md, this guide, CHANGELOG.md
+- database/migrations/V007__reservations.sql; database/seed/dev/S004__reservations.sql; database/queries/check-sprint-05.sql
+- backend/Resort.Domain/Reservations/Reservations.cs, Reservations/Availability.cs
+- backend/Resort.Contracts/ReservationContracts.cs
+- backend/Resort.Application/ — Reservations/ReservationService.cs, AvailabilityService.cs, InventoryLoader.cs, Common/Idempotency.cs, Validation/ReservationValidators.cs, Common/Permissions.cs; Accommodation/BlockService.cs and Guests/GuestService.cs (bookings vs blocks, stays, merge)
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/ReservationEndpoints.cs, Program.cs, Infrastructure/Problems.cs
+- backend/Resort.Tests/ — Integration/ReservationTests.cs, Integration/DevSeedTests.cs, Unit/ReservationUnitTests.cs
+- frontend/src/app/ — features/reservations/*, features/guests/guest.page.ts, features/audit (labels), core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-05.spec.ts; scripts/check-api.mjs (Sprint 05 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-05.md, docs/architecture/booking-algorithm.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-05-screens/
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 173 passed, 0 failed on real PostgreSQL 16 (35 new: 34 for Sprint 05 including the last room raced 50 times, the last dorm bed with 5 parallel requests, the database guard and idempotency, plus the demo-booking seed check)
+- Frontend: 40 of 40 unit tests passed; ESLint clean; production build OK
+- Browser tests: 52 of 52 passed (Sprints 01–04 plus the 7 new Sprint 05 steps, including the last room booked from two browsers); screenshots in docs/sprints/sprint-05-screens
+- API checks: 0 failed (12 new Sprint 05 checks: idempotent replay, key reuse, room taken, cancel with reason, status graph); database checks: no room or bed held twice
 
 **Outcome**
 
@@ -72,13 +80,13 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] DB: reservation_units.stay daterange + EXCLUDE USING gist (unit_id WITH =, stay WITH &&) WHERE status is active; same for bed_id
-- [ ] Algorithm: transaction → SELECT ... FOR UPDATE on the unit rows → availability check → insert; exclusion constraint is the final guarantee; map 23P01 to ROOM_UNAVAILABLE
-- [ ] Idempotency: idempotency_keys(key, request_hash, response) — same key + same body returns the stored response; same key + different body = 422
-- [ ] Status machine INQUIRY→PENDING→CONFIRMED→CHECKED_IN→CHECKED_OUT, CANCELLED, NO_SHOW, REFUNDED; transitions table-driven and audited
-- [ ] Never delete reservations (brief §87); enquiry-stage delete is a status
-- [ ] Docs: write docs/architecture/booking-algorithm.md with the exact PostgreSQL behaviour
-- [ ] UI: new reservation wizard (dates → availability → guest → rate → confirm) in ≤ 5 clicks for a walk-in
+- [x] DB: reservation_units.stay daterange + EXCLUDE USING gist (unit_id WITH =, stay WITH &&) WHERE status is active; same for bed_id
+- [x] Algorithm: transaction → SELECT ... FOR UPDATE on the unit rows → availability check → insert; exclusion constraint is the final guarantee; map 23P01 to ROOM_UNAVAILABLE
+- [x] Idempotency: idempotency_keys(key, request_hash, response) — same key + same body returns the stored response; same key + different body = 422
+- [x] Status machine INQUIRY→PENDING→CONFIRMED→CHECKED_IN→CHECKED_OUT, CANCELLED, NO_SHOW, REFUNDED; transitions table-driven and audited
+- [x] Never delete reservations (brief §87); enquiry-stage delete is a status
+- [x] Docs: write docs/architecture/booking-algorithm.md with the exact PostgreSQL behaviour
+- [x] UI: new reservation wizard (dates → availability → guest → rate → confirm) in ≤ 5 clicks for a walk-in
 
 ## How to run this sprint
 

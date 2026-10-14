@@ -36,12 +36,19 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
 {
     /// <summary>Plain-words reasons for constraints a user can hit when two people save at the same moment
     /// (the services check these first, so only a race reaches the database).</summary>
-    private static readonly Dictionary<string, string> KnownConstraints = new(StringComparer.Ordinal)
+    private static readonly Dictionary<string, (string? Code, string Message)> KnownConstraints = new(StringComparer.Ordinal)
     {
-        ["ux_rate_plan_prices_cell"] = "Someone else set prices for the same nights at the same moment. Reload the rate grid and try again.",
-        ["ux_rate_plans_default"] = "Another rate plan was made the default at the same moment. Reload and try again.",
-        ["ux_rate_plans_code"] = "A rate plan with this code already exists at this property.",
-        ["ux_packages_code"] = "A package with this code already exists at this property.",
+        ["ux_rate_plan_prices_cell"] = (null, "Someone else set prices for the same nights at the same moment. Reload the rate grid and try again."),
+        ["ux_rate_plans_default"] = (null, "Another rate plan was made the default at the same moment. Reload and try again."),
+        ["ux_rate_plans_code"] = (null, "A rate plan with this code already exists at this property."),
+        ["ux_packages_code"] = (null, "A package with this code already exists at this property."),
+        // The final guards against double booking (V007). The service checks first under row locks, so these only
+        // fire if something bypasses it.
+        ["ex_reservation_units_unit"] = ("ROOM_UNAVAILABLE", "This room was booked by someone else for some of these nights. Check availability again and choose another."),
+        ["ex_reservation_units_bed"] = ("ROOM_UNAVAILABLE", "This bed was booked by someone else for some of these nights. Check availability again and choose another."),
+        ["ex_reservation_units_blocked"] = ("ROOM_UNAVAILABLE", "This room is blocked for some of these nights. Check availability again and choose another."),
+        ["ex_unit_blocks_reserved"] = ("BLOCK_OVERLAPS_RESERVATION", "This room is booked for some of these nights, so it can't be blocked. Move or cancel the booking first."),
+        ["ck_reservations_status_transition"] = ("INVALID_STATUS_TRANSITION", "That status change isn't allowed for this reservation. Reload it to see its current status."),
     };
 
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
@@ -71,7 +78,8 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
                     PostgresErrorCodes.CheckViolation => (422, "CONSTRAINT_VIOLATION", $"A value broke the database rule {pg.ConstraintName}."),
                     _ => (500, "DATABASE_ERROR", $"The database refused the request (code {pg.SqlState}). Quote the trace id when reporting it."),
                 };
-                if (pg.ConstraintName is { } name && KnownConstraints.TryGetValue(name, out var known)) msg = known;
+                if (pg.ConstraintName is { } name && KnownConstraints.TryGetValue(name, out var known))
+                    (code, msg) = (known.Code ?? code, known.Message);
                 log.LogWarning(ex, "Database constraint {Constraint} ({SqlState})", pg.ConstraintName, pg.SqlState);
                 await Problems.Write(ctx, status, code, msg);
                 return true;

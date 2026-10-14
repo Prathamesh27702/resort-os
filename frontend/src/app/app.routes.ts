@@ -45,6 +45,11 @@ export const routes: Routes = [
       { path: 'guests/:id/edit', canActivate: [permissionGuard('guest.update')], loadComponent: () => import('./features/guests/guest-edit.page').then(m => m.GuestEditPage) },
       { path: 'guests/:id', canActivate: [permissionGuard('guest.read')], loadComponent: () => import('./features/guests/guest.page').then(m => m.GuestPage) },
 
+      // /reservations (Sprint 5)
+      { path: 'reservations', canActivate: [permissionGuard('reservation.read')], loadComponent: () => import('./features/reservations/reservations.page').then(m => m.ReservationsPage) },
+      { path: 'reservations/new', canActivate: [permissionGuard('reservation.create')], loadComponent: () => import('./features/reservations/reservation-new.page').then(m => m.ReservationNewPage) },
+      { path: 'reservations/:id', canActivate: [permissionGuard('reservation.read')], loadComponent: () => import('./features/reservations/reservation.page').then(m => m.ReservationPage) },
+
       // /users, /roles, /audit
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

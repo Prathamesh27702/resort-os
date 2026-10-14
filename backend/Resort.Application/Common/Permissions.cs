@@ -30,6 +30,11 @@ public static class Perm
     public const string GuestDelete = "guest.delete";
     public const string GuestDocumentRead = "guest_document.read";
 
+    public const string ReservationRead = "reservation.read";
+    public const string ReservationCreate = "reservation.create";
+    public const string ReservationUpdate = "reservation.update";
+    public const string ReservationCancel = "reservation.cancel";
+
     public const string AuditRead = "audit.read";
     public const string SystemSettings = "system.settings";
 
@@ -39,6 +44,7 @@ public static class Perm
         OrganizationRead, OrganizationUpdate, PropertyRead, PropertyCreate, PropertyUpdate, PropertySettingsUpdate,
         AccommodationRead, AccommodationManage, UnitBlockManage, RateRead, RateManage,
         GuestRead, GuestCreate, GuestUpdate, GuestDelete, GuestDocumentRead,
+        ReservationRead, ReservationCreate, ReservationUpdate, ReservationCancel,
         AuditRead, SystemSettings,
     ];
 }

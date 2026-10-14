@@ -7,6 +7,7 @@ using Resort.Application.Guests;
 using Resort.Application.Identity;
 using Resort.Application.Properties;
 using Resort.Application.Rates;
+using Resort.Application.Reservations;
 
 namespace Resort.Application;
 
@@ -30,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<GuestDocumentService>();
         services.AddScoped<RateService>();
         services.AddScoped<PackageService>();
+        services.AddScoped<AvailabilityService>();
+        services.AddScoped<ReservationService>();
         return services;
     }
 }

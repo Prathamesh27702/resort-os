@@ -44,8 +44,9 @@ public sealed record AnonymiseGuestRequest(string Reason);
 /// <summary>Folds <c>DuplicateId</c> into <c>SurvivorId</c>. Both versions must match what the user saw.</summary>
 public sealed record MergeGuestsRequest(Guid SurvivorId, uint SurvivorVersion, Guid DuplicateId, uint DuplicateVersion, string Reason);
 
-/// <summary>A stay of this guest (reservations arrive in Sprint 5; until then the list is empty).</summary>
-public sealed record GuestStayDto(Guid ReservationId, Guid PropertyId, string PropertyName, DateOnly CheckIn, DateOnly CheckOut, string Status);
+/// <summary>A reservation this guest is on (as the booker or staying), newest first.</summary>
+public sealed record GuestStayDto(
+    Guid ReservationId, Guid PropertyId, string PropertyName, DateOnly CheckIn, DateOnly CheckOut, string Status, string Reference);
 
 // ---------------------------------------------------------------- ID documents (guest_document.read)
 

@@ -70,4 +70,30 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(["COUPLE", "ROOM_BREAKFAST"], packages.Select(p => p.Code));
         Assert.All(packages, p => Assert.Equal(p.Price, p.Components.Sum(c => c.Amount)));
     }
+    /// <summary>Sprint 5: six demo bookings; Deluxe has one room (102) left tonight for the two-browser demo.</summary>
+    [Fact]
+    public async Task Dev_seed_reservations_leave_one_deluxe_room_tonight()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+        var ist = TimeZoneInfo.FindSystemTimeZoneById("Asia/Kolkata");
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ist).DateTime);
+
+        var list = await owner.GetJsonAsync<PagedResult<ReservationListItemDto>>($"/api/v1/properties/{pid}/reservations?from={today.AddDays(-1):yyyy-MM-dd}");
+        Assert.Equal(["R00001", "R00002", "R00003", "R00004", "R00005", "R00006"], list.Items.Select(r => r.Reference).Order());
+        Assert.Equal("Dormitory · 2 beds", list.Items.Single(r => r.Reference == "R00004").Rooms);
+
+        var av = await owner.GetJsonAsync<AvailabilityDto>(
+            $"/api/v1/properties/{pid}/availability?from={today:yyyy-MM-dd}&to={today.AddDays(2):yyyy-MM-dd}&adults=2");
+        var deluxe = av.Types.Single(t => t.Code == "DELUXE_ROOM");
+        Assert.Equal("102", Assert.Single(deluxe.FreeRooms).Code);
+        Assert.Equal(8, av.Types.Single(t => t.Code == "DORMITORY").Free);
+
+        // the seeded prices match what the API would charge
+        var r1 = await owner.GetJsonAsync<ReservationDto>($"/api/v1/properties/{pid}/reservations/{list.Items.Single(r => r.Reference == "R00001").Id}");
+        Assert.Equal(r1.Breakdown.Sum(n => n.Total), r1.TotalAmount);
+        Assert.Equal(2, r1.Breakdown.Count);
+    }
 }
