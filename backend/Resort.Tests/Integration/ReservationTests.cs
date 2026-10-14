@@ -335,7 +335,8 @@ public class ReservationTests(ResortApiFactory app) : IClassFixture<ResortApiFac
         var r = await CreatedAsync(await BookAsync(owner, pid,
             NewBooking(stay, (await CreateGuestAsync(owner)).Id, await WalkInAsync(owner, pid), Today.AddDays(6), Today.AddDays(7)) with
             {
-                Status = "PENDING", Note = "Arriving by the late bus",
+                Status = "PENDING",
+                Note = "Arriving by the late bus",
             }));
         await PostAsync(owner, $"/api/v1/properties/{pid}/reservations/{r.Id}/confirm", new ReservationStatusRequest(null));
         var done = await PostAsync(owner, $"/api/v1/properties/{pid}/reservations/{r.Id}/cancel", new ReservationStatusRequest("Flight cancelled"));

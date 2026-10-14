@@ -157,7 +157,10 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         foreach (var g in guests)
             db.ReservationGuests.Add(new ReservationGuest
             {
-                OrganizationId = orgId, PropertyId = propertyId, ReservationId = reservation.Id, GuestId = g.Id,
+                OrganizationId = orgId,
+                PropertyId = propertyId,
+                ReservationId = reservation.Id,
+                GuestId = g.Id,
             });
         AddHistory(reservation, null, status, null);
         if (Clean(r.Note) is { } note) AddNote(reservation, note);
