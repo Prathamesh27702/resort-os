@@ -2,6 +2,32 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-04] — 2026-10-14 — Rate plans and packages (accepted)
+
+### Added
+- Migration V006: `rate_plans`, `rate_plan_prices`, `packages`, `package_components`, `reservation_sources` (14 built-in
+  booking channels). One default plan per property; a deferred trigger refuses a package whose split doesn't add up.
+- Quote engine (`Resort.Domain/Rates/QuoteEngine.cs`): nightly breakdown, extra adult/child above standard occupancy,
+  per-bed dormitory prices, minimum stay on the arrival night; `MoneySplit` with the largest-remainder rounding rule.
+- Rate APIs under `/api/v1/properties/{id}`: `rate-plans`, `rate-plans/{id}/prices` (read and bulk edit by date range
+  and days of the week), `rates/quote` (by room or type, id or code), `packages`, `reservation-sources`. Every price
+  change is audited with old and new values.
+- Dev seed S003: BAR with Friday/Saturday uplift for a year; Couple getaway and Room + breakfast packages.
+- Staff app: Rates (grid, bulk edit, quote) and Packages (list, editor with live revenue split).
+- Tests: 29 backend (11 integration, 18 unit), 11 frontend, 6 browser steps (S04-01…S04-06); `check-api.mjs` Sprint 04
+  block; `database/queries/check-sprint-04.sql` (9 queries).
+- `docs/RUN_AND_TEST.md`: one handbook with every command to run the app and test it, sprint by sprint (backend
+  filter, browser test file, API and database checks) and all sprints together.
+
+### Changed
+- `BusinessRuleAppException` can carry details (the quote lists the nights that have no price).
+- Clear reasons for unique-constraint races on rate tables instead of the rule name.
+- `showFieldErrors` also reaches fields inside lists (`Components[0].Description`).
+
+### Fixed
+- Rate grid: prices sat one column right of their dates because the table's style name clashed with a layout style.
+  Browser step S04-01 now checks each price sits under its date.
+
 ## [sprint-03] — 2026-10-11 — Guests (accepted)
 
 ### Added

@@ -9,6 +9,7 @@ using Resort.Domain.Common;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
+using Resort.Domain.Rates;
 
 namespace Resort.Infrastructure.Persistence;
 
@@ -47,6 +48,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<GuestDocument> GuestDocuments => Set<GuestDocument>();
     public DbSet<GuestPreference> GuestPreferences => Set<GuestPreference>();
     public DbSet<GuestConsent> GuestConsents => Set<GuestConsent>();
+    public DbSet<ReservationSource> ReservationSources => Set<ReservationSource>();
+    public DbSet<RatePlan> RatePlans => Set<RatePlan>();
+    public DbSet<RatePlanPrice> RatePlanPrices => Set<RatePlanPrice>();
+    public DbSet<Package> Packages => Set<Package>();
+    public DbSet<PackageComponent> PackageComponents => Set<PackageComponent>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -161,6 +167,34 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         });
         b.Entity<GuestPreference>().ToTable("guest_preferences");
         b.Entity<GuestConsent>().ToTable("guest_consents");
+
+        // ---- Sprint 4: rates and packages (database/migrations/V006__rates.sql)
+        b.Entity<ReservationSource>(e =>
+        {
+            e.ToTable("reservation_sources");
+            e.Property(x => x.CommissionPercent).HasColumnType("numeric(5,2)");
+        });
+        b.Entity<RatePlan>().ToTable("rate_plans");
+        b.Entity<RatePlanPrice>(e =>
+        {
+            e.ToTable("rate_plan_prices");
+            e.Property(x => x.Price).HasColumnType("numeric(12,2)");
+            e.Property(x => x.ExtraAdult).HasColumnType("numeric(12,2)");
+            e.Property(x => x.ExtraChild).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<Package>(e =>
+        {
+            e.ToTable("packages");
+            e.Property(x => x.Price).HasColumnType("numeric(12,2)");
+            e.HasOne(x => x.Type).WithMany().HasForeignKey(x => x.AccommodationTypeId);
+            e.HasMany(x => x.Components).WithOne().HasForeignKey(x => x.PackageId);
+        });
+        b.Entity<PackageComponent>(e =>
+        {
+            e.ToTable("package_components");
+            e.Property(x => x.SharePercent).HasColumnType("numeric(5,2)");
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

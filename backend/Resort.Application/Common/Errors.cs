@@ -23,4 +23,4 @@ public sealed class ForbiddenAppException(string message = "You do not have perm
 public sealed class UnauthorizedAppException(string code = "UNAUTHORIZED", string message = "Authentication required.")
     : AppException(code, message);
 
-public sealed class BusinessRuleAppException(string code, string message) : AppException(code, message);
+public sealed class BusinessRuleAppException(string code, string message, object? details = null) : AppException(code, message, details);

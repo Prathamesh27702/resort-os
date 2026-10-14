@@ -156,6 +156,7 @@ app.MapAuthEndpoints();
 app.MapAdminEndpoints();
 app.MapAccommodationEndpoints();
 app.MapGuestEndpoints();
+app.MapRateEndpoints();
 
 app.Run();
 

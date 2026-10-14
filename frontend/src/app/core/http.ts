@@ -56,14 +56,21 @@ export function fieldErrors(p: Problem): Record<string, string> {
   return out;
 }
 
+/** The form path for an API field name: "Components[0].SharePercent" → "components.0.sharePercent". */
+export function controlPath(apiField: string): string {
+  return apiField.replace(/\[(\d+)\]/g, '.$1').split('.')
+    .map(s => s.charAt(0).toLowerCase() + s.slice(1)).join('.');
+}
+
 /**
  * Puts the API's field messages on the matching form controls as `{ server: message }`, so each one shows in that
- * field's <mat-error> (Material only shows an error for a control that is in error). Returns the messages by field.
+ * field's <mat-error> (Material only shows an error for a control that is in error). Nested names such as
+ * "Components[0].Description" reach controls inside form arrays. Returns the messages by field.
  */
 export function showFieldErrors(form: FormGroup, p: Problem): Record<string, string> {
   const errs = fieldErrors(p);
   for (const [k, msg] of Object.entries(errs)) {
-    const c = form.get(k);
+    const c = form.get(k) ?? form.get(controlPath(k));
     if (c) { c.setErrors({ ...c.errors, server: msg }); c.markAsTouched(); }
   }
   return errs;

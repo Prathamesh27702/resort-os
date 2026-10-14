@@ -5,6 +5,7 @@
 | [testing/VERIFYING.md](testing/VERIFYING.md) | Checking a sprint: browser tests, API checks, database queries; what's in `.env` |
 | [ONBOARDING.md](ONBOARDING.md) | Adding a developer: owner's checklist, developer's checklist, daily collaboration, leaving |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | Step by step: install tools (links), VS Code extensions, clone, run, test |
+| [RUN_AND_TEST.md](RUN_AND_TEST.md) | Handbook: every command to run the app and test it, sprint by sprint and all sprints together |
 | [SETUP.md](SETUP.md) | Reference: database commands, troubleshooting |
 | [sprints/REVIEWING.md](sprints/REVIEWING.md) | How the owner reviews and accepts a sprint |
 | [sprints/CODE_REVIEW.md](sprints/CODE_REVIEW.md) | How the second developer code-reviews a sprint, raises findings and approves; when a sprint is "done" |
