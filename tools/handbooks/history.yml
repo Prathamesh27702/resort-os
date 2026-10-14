@@ -9,3 +9,6 @@
 - version: "1.3"
   date: 2026-10-11
   change: "Sprint 03 (Guests) accepted, with review fixes: Aadhaar number check and error messages that say why. Sprint 04 (Rate plans and packages) started."
+- version: "1.4"
+  date: 2026-10-14
+  change: "Sprint 04 (Rate plans and packages) accepted: nightly price grid, quotes, packages with revenue split. Sprint 05 (Availability engine and reservations) started."
