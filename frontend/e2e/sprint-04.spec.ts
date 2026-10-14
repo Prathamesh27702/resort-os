@@ -49,6 +49,16 @@ test('S04-01 Rates shows the BAR grid with the weekend uplift', async () => {
   await expect(cell('STANDARD_ROOM', addDays(thursday, 1))).toContainText('₹4,200');
   await expect(cell('DELUXE_ROOM', addDays(thursday, 2))).toContainText('₹6,000');
   await expect(cell('DORMITORY', thursday)).toContainText('₹800');
+  // Every price sits exactly under its night's header (the grid is one table, so columns line up)
+  const headers = p.locator('table.rate-grid thead th');
+  for (const [i, date] of [thursday, addDays(thursday, 1), addDays(thursday, 6)].entries()) {
+    const head = await headers.nth([1, 2, 7][i]).boundingBox();
+    for (const type of ['DELUXE_ROOM', 'STANDARD_ROOM', 'DORMITORY']) {
+      const box = await cell(type, date).boundingBox();
+      expect(Math.abs(box!.x - head!.x), `${type} ${date} under its header`).toBeLessThan(1);
+      expect(Math.abs(box!.width - head!.width), `${type} ${date} as wide as its header`).toBeLessThan(1);
+    }
+  }
   await shot(p, '01-rate-grid');
 });
 
@@ -137,7 +147,7 @@ test('S04-06 a receptionist sees rates and can quote, but not change prices', as
   const r = await (await browserRef.newContext()).newPage();
   await signIn(r, reception.email, staffPassword);
   await r.goto('/settings/rates');
-  await expect(r.locator('table.grid')).toBeVisible();
+  await expect(r.locator('table.rate-grid')).toBeVisible();
   await expect(r.locator('form[aria-label="Set prices"]')).toHaveCount(0);
   await expect(r.getByRole('button', { name: 'Add rate plan' })).toHaveCount(0);
   await expect(r.locator('form[aria-label="Quote"]')).toBeVisible();

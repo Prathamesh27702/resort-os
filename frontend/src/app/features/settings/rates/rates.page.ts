@@ -121,7 +121,7 @@ const DAYS = [
           }
 
           <div class="grid-wrap">
-            <table class="grid" aria-label="Rate grid">
+            <table class="rate-grid" aria-label="Rate grid">
               <thead>
                 <tr>
                   <th scope="col" class="type-col">Room type</th>
@@ -302,15 +302,15 @@ const DAYS = [
     .plan-pick { min-width: 280px; }
     .start { height: 36px; border: 1px solid #c5cfcc; border-radius: 6px; padding: 0 8px; font: inherit; }
     .grid-wrap { overflow-x: auto; margin: 8px 0; }
-    table.grid { border-collapse: collapse; min-width: 100%; font-variant-numeric: tabular-nums; }
-    table.grid th, table.grid td { border: 1px solid #edf1f0; padding: 8px 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
-    table.grid thead th { color: #5b6b6e; font-weight: 500; font-size: .8rem; }
-    table.grid .type-col { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; }
-    table.grid .weekend { background: #fbf4e6; }
-    table.grid .today { color: #8a2449; font-weight: 600; }
-    table.grid td.missing { background: #fbeaea; }
-    table.grid td.clickable { cursor: pointer; }
-    table.grid td.clickable:hover { outline: 2px solid #0e3b43; outline-offset: -2px; }
+    table.rate-grid { border-collapse: collapse; min-width: 100%; font-variant-numeric: tabular-nums; }
+    table.rate-grid th, table.rate-grid td { border: 1px solid #edf1f0; padding: 8px 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
+    table.rate-grid thead th { color: #5b6b6e; font-weight: 500; font-size: .8rem; }
+    table.rate-grid .type-col { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; }
+    table.rate-grid .weekend { background: #fbf4e6; }
+    table.rate-grid .today { color: #8a2449; font-weight: 600; }
+    table.rate-grid td.missing { background: #fbeaea; }
+    table.rate-grid td.clickable { cursor: pointer; }
+    table.rate-grid td.clickable:hover { outline: 2px solid #0e3b43; outline-offset: -2px; }
     .min { display: block; font-size: .7rem; color: #8a5a00; }
     .days { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
     .form-grid.four { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
