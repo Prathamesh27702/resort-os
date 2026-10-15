@@ -63,8 +63,20 @@ public sealed class CalendarService(IAppDbContext db, TimeProvider clock)
             .Where(x => Shown.Contains(x.r.Status))
             .Select(x => new
             {
-                x.u.Id, x.u.ReservationId, x.r.Reference, x.r.Status, x.u.UnitId, x.u.BedId, x.u.StartDate, x.u.EndDate,
-                x.r.PrimaryGuestId, x.u.Adults, x.u.Children, x.r.SourceId, x.r.TotalAmount, x.r.Version,
+                x.u.Id,
+                x.u.ReservationId,
+                x.r.Reference,
+                x.r.Status,
+                x.u.UnitId,
+                x.u.BedId,
+                x.u.StartDate,
+                x.u.EndDate,
+                x.r.PrimaryGuestId,
+                x.u.Adults,
+                x.u.Children,
+                x.r.SourceId,
+                x.r.TotalAmount,
+                x.r.Version,
             })
             .ToListAsync(ct);
 
