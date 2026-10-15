@@ -77,6 +77,9 @@ Done in one pull request into `develop` titled `chore(sprints): accept Sprint NN
    the next sprint and its `status: in-progress`.
 2. **Guides:** `python3 scripts/github/sync-sprints.py docs`. Check that [RUN_AND_TEST.md](../RUN_AND_TEST.md) has the
    sprint's block (its backend filter, browser test file and database checks) and the new expected totals.
+   Update [architecture/system-design.md](../architecture/system-design.md): add the sprint to section 3 (what it
+   adds, tables, main classes, screens, its diagram), explain any hard problem it solved in section 4, and add a row
+   to "How this guide stays current". Mark built modules in [ARCHITECTURE.md](../ARCHITECTURE.md) → Module map.
 3. **Changelog:** date the sprint's entry in `CHANGELOG.md` (`## [sprint-NN] — YYYY-MM-DD — Title (accepted)`).
 4. **Handbooks:** add a line to `tools/handbooks/history.yml` (version `1.NN`), update any diagram whose status
    changed (`tools/handbooks/diagrams/diagrams.html`, then `npm run diagrams`), and rebuild both Word documents:

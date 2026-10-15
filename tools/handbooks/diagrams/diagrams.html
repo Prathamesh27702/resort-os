@@ -447,7 +447,7 @@
   <!-- row 1 -->
   <g transform="translate(20,20)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Rooms and reservations</text>
     <text class="s" x="18" y="58">Room types, rooms and dormitory beds, blocks,</text><text class="s" x="18" y="76">prices and packages, race-free booking,</text><text class="s" x="18" y="94">calendar with drag-and-drop</text>
-    <rect class="chip-part" x="18" y="114" width="300" height="24" rx="12"/><text class="xs" x="30" y="131" style="fill:#8A5A00">Rooms and prices built · bookings Sprints 5–6</text></g>
+    <rect class="chip-part" x="18" y="114" width="300" height="24" rx="12"/><text class="xs" x="30" y="131" style="fill:#8A5A00">Rooms, prices and bookings built · calendar Sprint 6</text></g>
   <g transform="translate(415,20)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Front desk and guests</text>
     <text class="s" x="18" y="58">Guest profiles found by phone, duplicate</text><text class="s" x="18" y="76">merge, encrypted ID documents, arrivals,</text><text class="s" x="18" y="94">departures, in-house list, check-in/out</text>
     <rect class="chip-part" x="18" y="114" width="240" height="24" rx="12"/><text class="xs" x="30" y="131" style="fill:#8A5A00">Guests built · front desk Sprint 7</text></g>
@@ -684,6 +684,142 @@
   <text class="xs" x="30" y="570">Every table also has organization_id, property_id and created/updated at and by. Money is numeric(12,2) in the database and decimal in C#, never floating point.</text>
   <text class="xs" x="30" y="590">A quote adds up the prices of each night of the stay, plus extra adults and children above the room type's standard occupancy. Dormitories are priced per bed.</text>
   <text class="xs" x="30" y="610">Audit trail: every price, plan and package change is recorded with the old and new values.</text>
+</svg>
+
+<!-- ============ 10. Reservations ER (Sprint 5) ============ -->
+<svg id="er-reservations" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>
+    .tbl5 { fill: #fff; stroke: #2F6F7B; stroke-width: 1.6; }
+    .th5 { fill: #2F6F7B; }
+    .old5 { fill: #7A888B; }
+    .c5 { fill: #1B2A2E; font-size: 12.5px; }
+    .t5 { fill: #7A888B; font-size: 11.5px; }
+    .k5 { fill: #8A2449; font-size: 11.5px; }
+    .rel5 { stroke: #4A5A5E; stroke-width: 1.5; fill: none; }
+    .card5 { fill: #8A2449; font-size: 11.5px; font-weight: 600; }
+  </style>
+  <!-- earlier sprints -->
+  <g transform="translate(30,30)">
+    <rect class="tbl5" width="230" height="150" rx="6"/><rect class="old5" width="230" height="30" rx="6"/><rect class="old5" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">from earlier sprints</text>
+    <text class="c5" x="12" y="52">guests</text><text class="t5" x="130" y="52">(Sprint 03)</text>
+    <text class="c5" x="12" y="74">accommodation_units</text><text class="t5" x="160" y="74">(02)</text>
+    <text class="c5" x="12" y="96">beds, unit_blocks</text><text class="t5" x="160" y="96">(02)</text>
+    <text class="c5" x="12" y="118">rate_plans</text><text class="t5" x="160" y="118">(04)</text>
+    <text class="c5" x="12" y="140">reservation_sources</text><text class="t5" x="160" y="140">(04)</text>
+  </g>
+  <!-- reservations -->
+  <g transform="translate(330,30)">
+    <rect class="tbl5" width="320" height="258" rx="6"/><rect class="th5" width="320" height="30" rx="6"/><rect class="th5" y="20" width="320" height="10"/>
+    <text class="t w b" x="12" y="21">reservations  ·  one booking</text>
+    <text class="c5" x="12" y="52">reference</text><text class="t5" x="160" y="52">R00001 … per property</text>
+    <text class="c5" x="12" y="72">status</text><text class="t5" x="160" y="72">INQUIRY … REFUNDED</text>
+    <text class="c5" x="12" y="92">primary_guest_id</text><text class="t5" x="160" y="92">uuid FK guests</text>
+    <text class="c5" x="12" y="112">source_id, rate_plan_id</text><text class="t5" x="160" y="112">uuid FKs</text>
+    <text class="c5" x="12" y="132">check_in, check_out</text><text class="t5" x="160" y="132">date, at most 180 nights</text>
+    <text class="c5" x="12" y="152">adults, children</text>
+    <text class="c5" x="12" y="172">total_amount</text><text class="k5" x="160" y="172">numeric(12,2)</text>
+    <text class="c5" x="12" y="192">special_requests</text>
+    <text class="c5" x="12" y="212">version (xmin)</text><text class="t5" x="160" y="212">stale change → 409</text>
+    <text class="k5" x="12" y="240">never deleted · status moves checked by a trigger</text>
+  </g>
+  <!-- reservation units -->
+  <g transform="translate(720,30)">
+    <rect class="tbl5" width="450" height="258" rx="6"/><rect class="th5" width="450" height="30" rx="6"/><rect class="th5" y="20" width="450" height="10"/>
+    <text class="t w b" x="12" y="21">reservation_units  ·  each room or dorm bed held</text>
+    <text class="c5" x="12" y="52">reservation_id</text><text class="t5" x="190" y="52">uuid FK</text>
+    <text class="c5" x="12" y="72">unit_id, bed_id</text><text class="t5" x="190" y="72">room; bed only for dormitories</text>
+    <text class="c5" x="12" y="92">start_date, end_date</text><text class="t5" x="190" y="92">date</text>
+    <text class="c5" x="12" y="112">stay</text><text class="t5" x="190" y="112">daterange [start, end) generated</text>
+    <text class="c5" x="12" y="132">adults, children</text><text class="t5" x="190" y="132">one guest per bed</text>
+    <text class="c5" x="12" y="152">holds_inventory</text><text class="t5" x="190" y="152">PENDING, CONFIRMED, CHECKED_IN</text>
+    <text class="c5" x="12" y="172">superseded_at</text><text class="t5" x="190" y="172">set when dates change</text>
+    <text class="k5" x="12" y="200">EXCLUDE USING gist (unit_id =, stay &amp;&amp;) where held, room</text>
+    <text class="k5" x="12" y="220">EXCLUDE USING gist (bed_id =, stay &amp;&amp;) where held, bed</text>
+    <text class="c5" x="12" y="242" style="fill:#7A888B">triggers: room not blocked; the type books by room or by bed</text>
+  </g>
+  <!-- breakdown -->
+  <g transform="translate(720,330)">
+    <rect class="tbl5" width="450" height="158" rx="6"/><rect class="th5" width="450" height="30" rx="6"/><rect class="th5" y="20" width="450" height="10"/>
+    <text class="t w b" x="12" y="21">reservation_rate_breakdowns  ·  one row per room per night</text>
+    <text class="c5" x="12" y="52">reservation_unit_id</text><text class="t5" x="190" y="52">uuid FK</text>
+    <text class="c5" x="12" y="72">stay_date</text><text class="t5" x="190" y="72">the night</text>
+    <text class="c5" x="12" y="92">units × unit_price</text><text class="k5" x="190" y="92">numeric(12,2)</text>
+    <text class="c5" x="12" y="112">extra adults / children</text><text class="t5" x="190" y="112">count × rate</text>
+    <text class="c5" x="12" y="136" style="fill:#7A888B">CHECK: total = base + extras, kept for invoicing</text>
+  </g>
+  <!-- guests, notes, history -->
+  <g transform="translate(330,330)">
+    <rect class="tbl5" width="320" height="78" rx="6"/><rect class="th5" width="320" height="30" rx="6"/><rect class="th5" y="20" width="320" height="10"/>
+    <text class="t w b" x="12" y="21">reservation_guests</text>
+    <text class="c5" x="12" y="54">reservation_id, guest_id</text><text class="t5" x="190" y="54">who is staying</text>
+  </g>
+  <g transform="translate(330,428)">
+    <rect class="tbl5" width="320" height="78" rx="6"/><rect class="th5" width="320" height="30" rx="6"/><rect class="th5" y="20" width="320" height="10"/>
+    <text class="t w b" x="12" y="21">reservation_notes</text>
+    <text class="c5" x="12" y="54">body, created_by, created_at</text><text class="t5" x="230" y="54">append-only</text>
+  </g>
+  <g transform="translate(330,526)">
+    <rect class="tbl5" width="320" height="98" rx="6"/><rect class="th5" width="320" height="30" rx="6"/><rect class="th5" y="20" width="320" height="10"/>
+    <text class="t w b" x="12" y="21">reservation_status_history</text>
+    <text class="c5" x="12" y="54">from_status → to_status</text>
+    <text class="c5" x="12" y="76">reason, changed_by, changed_at</text>
+  </g>
+  <!-- system tables -->
+  <g transform="translate(30,330)">
+    <rect class="tbl5" width="230" height="98" rx="6"/><rect class="th5" width="230" height="30" rx="6"/><rect class="th5" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">reservation_status_transitions</text>
+    <text class="c5" x="12" y="54">from_status, to_status</text>
+    <text class="c5" x="12" y="76" style="fill:#7A888B">14 allowed moves</text>
+  </g>
+  <g transform="translate(30,448)">
+    <rect class="tbl5" width="230" height="98" rx="6"/><rect class="th5" width="230" height="30" rx="6"/><rect class="th5" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">idempotency_keys</text>
+    <text class="c5" x="12" y="54">key, request_hash</text>
+    <text class="c5" x="12" y="76">status_code, response</text>
+  </g>
+  <g transform="translate(30,566)">
+    <rect class="tbl5" width="230" height="58" rx="6"/><rect class="th5" width="230" height="30" rx="6"/><rect class="th5" y="20" width="230" height="10"/>
+    <text class="t w b" x="12" y="21">property_counters</text>
+    <text class="c5" x="12" y="48">last_value → next R number</text>
+  </g>
+  <!-- relations -->
+  <path class="rel5" d="M650,120 L718,120"/><text class="card5" x="656" y="114">1</text><text class="card5" x="706" y="114">*</text>
+  <path class="rel5" d="M945,288 L945,328"/><text class="card5" x="952" y="302">1</text><text class="card5" x="952" y="322">*</text>
+  <path class="rel5" d="M490,288 L490,328"/><text class="card5" x="497" y="302">1</text><text class="card5" x="497" y="322">*</text>
+  <path class="rel5" d="M310,288 L310,467 L328,467"/><path class="rel5" d="M310,467 L310,575 L328,575"/><path class="rel5" d="M330,268 L310,268 L310,288"/>
+  <path class="rel5" d="M260,90 L328,90"/><text class="card5" x="266" y="84">1</text><text class="card5" x="316" y="84">*</text>
+  <text class="xs" x="30" y="660">Every table also has organization_id, property_id and created/updated at and by. Nothing here is ever deleted: a cancelled booking stops holding its rooms, a change of dates supersedes the old rows.</text>
+  <text class="xs" x="30" y="680">The two EXCLUDE constraints make it impossible for the database to store the same room or bed twice on one night, whatever code writes the rows.</text>
+</svg>
+
+<!-- ============ 11. Booking flow (Sprint 5) ============ -->
+<svg id="booking-flow" width="1200" height="470" viewBox="0 0 1200 470">
+  <rect width="1200" height="470" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Two receptionists book the last Deluxe room at the same moment</text>
+  <rect class="lane" x="30" y="56" width="1140" height="170" rx="10"/>
+  <text class="t b" x="46" y="82">Booking A</text>
+  <rect class="step" x="46" y="98" width="200" height="64" rx="8"/><text class="s" x="58" y="122">1. Claim the Idempotency-Key</text><text class="xs" x="58" y="144">INSERT … ON CONFLICT</text>
+  <rect class="step" x="266" y="98" width="230" height="64" rx="8"/><text class="s" x="278" y="122">2. Lock the Deluxe rooms</text><text class="xs" x="278" y="144">SELECT … ORDER BY id FOR UPDATE</text>
+  <rect class="step" x="516" y="98" width="200" height="64" rx="8"/><text class="s" x="528" y="122">3. Find a free room</text><text class="xs" x="528" y="144">Room 102 is free → take it</text>
+  <rect class="step" x="736" y="98" width="190" height="64" rx="8"/><text class="s" x="748" y="122">4. Price every night</text><text class="xs" x="748" y="144">rate grid → breakdown rows</text>
+  <rect class="win" x="946" y="98" width="210" height="64" rx="8"/><text class="s b" x="958" y="122">5. Insert and COMMIT</text><text class="xs" x="958" y="144">201 Created · R00007</text>
+  <path class="arrow" d="M246,130 L264,130"/><path class="arrow" d="M496,130 L514,130"/><path class="arrow" d="M716,130 L734,130"/><path class="arrow" d="M926,130 L944,130"/>
+  <text class="xs" x="46" y="190">Holds the lock on every Deluxe room row until COMMIT.</text>
+  <text class="xs" x="46" y="208">Bookings for other room types never wait for it.</text>
+  <rect class="lane" x="30" y="246" width="1140" height="140" rx="10"/>
+  <text class="t b" x="46" y="272">Booking B</text>
+  <rect class="step" x="46" y="288" width="200" height="64" rx="8"/><text class="s" x="58" y="312">1. Claim its own key</text><text class="xs" x="58" y="334">different key, no wait</text>
+  <rect class="step" x="266" y="288" width="230" height="64" rx="8"/><text class="s" x="278" y="312">2. Lock the Deluxe rooms</text><text class="xs" x="278" y="334">WAITS until A commits</text>
+  <rect class="step" x="516" y="288" width="200" height="64" rx="8"/><text class="s" x="528" y="312">3. Find a free room</text><text class="xs" x="528" y="334">sees R00007 on Room 102</text>
+  <rect class="lose" x="736" y="288" width="420" height="82" rx="8"/><text class="s b" x="748" y="312">409 ROOM_UNAVAILABLE, nothing written</text><text class="xs" x="748" y="334">"No Deluxe room is free for the night of 14 Oct 2026.</text><text class="xs" x="748" y="352">Choose another room type or other dates."</text>
+  <path class="arrow" d="M246,320 L264,320"/><path class="arrow" d="M496,320 L514,320"/><path class="arrow" d="M716,320 L734,320"/>
+  <path class="arrowp" d="M1050,162 C1050,230 400,220 390,286"/><text class="xs" x="560" y="214" style="fill:#4A5A5E">A's COMMIT releases the lock</text>
+  <rect class="zone" x="30" y="404" width="1140" height="50" rx="8"/>
+  <text class="s" x="46" y="426"><tspan class="b">Final guard:</tspan> even if some code skipped the lock, the EXCLUDE constraint on reservation_units refuses the second row (SQLSTATE 23P01 → 409).</text>
+  <text class="s" x="46" y="444"><tspan class="b">Retry safe:</tspan> if A's browser retries with the same key, it gets the stored 201 back (Idempotent-Replayed: true), never a second booking.</text>
 </svg>
 </body>
 </html>
