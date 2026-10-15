@@ -36,13 +36,13 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🟢 Done |
 | `package_components` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🟢 Done |
 | `reservation_sources` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🟢 Done |
-| `reservations` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `reservation_units` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `reservation_guests` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `reservation_rate_breakdowns` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `reservation_notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `reservation_status_history` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `idempotency_keys` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
+| `reservations` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `reservation_units` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `reservation_guests` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `reservation_rate_breakdowns` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `reservation_notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `reservation_status_history` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `idempotency_keys` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
 | `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
 | `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |

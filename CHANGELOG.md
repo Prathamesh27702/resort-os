@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [Unreleased] — Sprint 05 — Availability engine and reservations (in review)
+## [sprint-05] — 2026-10-15 — Availability engine and reservations (accepted)
 
 ### Added
 - Migration V007: `reservations`, `reservation_units` (rooms and dorm beds held, with `EXCLUDE USING gist` on
@@ -35,6 +35,12 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
   (`core/dates.ts`, from owner review).
 - Field labels on the first row of dialogs and wizard steps are no longer cut off; the change-booking dialog lines up
   rooms under the dates; finished wizard steps show a tick; Back sits next to the step's main button.
+
+### Documentation
+- `docs/architecture/system-design.md`: how the code base works for new joiners, sprint by sprint with diagrams, and
+  the system design of passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency,
+  money, time and errors. Closing a sprint now updates it (PROCESS.md step 2).
+- Handbooks 1.5 with the reservation tables and booking-flow diagrams.
 
 ## [sprint-04] — 2026-10-14 — Rate plans and packages (accepted)
 
