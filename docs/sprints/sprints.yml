@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 5
+current: 6
 
 sprints:
 
@@ -482,7 +482,7 @@ sprints:
 - id: 5
   title: Availability engine and reservations core
   phase: 2
-  status: in-progress
+  status: done
   size: L
   module: Reservations
   feature: reservations
@@ -490,13 +490,15 @@ sprints:
   goal: Race-free booking of rooms and dorm beds with idempotent create and full status history (brief §14–16).
   client: "Bookings for rooms and dorm beds are taken without double-booking, even when two people book the last room at the same moment."
   progress:
-    now: "Built and in review: one pull request into develop with the database, booking engine, API, screens, tests and docs. Waiting for the owner's review (REVIEWING.md → Sprint 05)."
+    now: "Accepted by the owner on 15 Oct 2026 and released to main (tag sprint-05). Review fixes: every date field shows 15 Oct 2026 with a calendar, field labels no longer cut off, finished wizard steps show a tick, Back beside Continue. New guide for joiners: docs/architecture/system-design.md."
     done:
       - "Migration V007: reservations, reservation_units (rooms and dorm beds held, EXCLUDE USING gist on room and on bed over the stay), reservation_guests, reservation_rate_breakdowns, reservation_notes, reservation_status_history, reservation_status_transitions (status graph enforced by a trigger), idempotency_keys, property_counters (references R00001 …). Nothing is ever deleted; blocks and bookings can't cover the same room and night"
       - "Availability engine (pure, unit-tested): free rooms and beds for every night, allocation of rooms and one bed per dorm guest, and the exact reason when something doesn't fit (which room, which nights, which booking or block holds it)"
       - "Booking algorithm in one transaction: claim the Idempotency-Key, lock the rooms of the requested types in id order, allocate, price every night from the rate grid, store the response. The exclusion constraints are the final guard (23P01 → 409 ROOM_UNAVAILABLE). Written up in docs/architecture/booking-algorithm.md"
       - "APIs: availability; reservations list, get, create (Idempotency-Key, replay header), change dates or guests (re-checks and re-prices), confirm, cancel and no-show with a reason, notes. Permissions reservation.read/create/update/cancel"
       - "Dev seed S004: six demo bookings from today; Room 102 is the last Deluxe room tonight for the two-browser demo"
+      - "Owner review fixes (15 Oct 2026): date fields across the app show 15 Oct 2026 with a calendar and accept typed dates; first-row field labels in dialogs and wizard steps no longer clipped; change-booking dialog lines rooms up under the dates; finished steps show a tick; Back sits next to each step's main button"
+      - "Architecture and system design guide for new joiners (docs/architecture/system-design.md) with diagrams per sprint; updating it is now a step of closing every sprint"
       - "Screens: Reservations list (search, Booked / Enquiries / All), New booking wizard (dates → room → guest → rate → confirm, quick-add of a walk-in guest), booking page (rooms, nightly prices, guests, notes, history, confirm, change, cancel, no-show). Guest profiles list stays with their reference. Every error is shown under its field or next to its button with the reason"
     files:
       - "database/migrations/V007__reservations.sql; database/seed/dev/S004__reservations.sql; database/queries/check-sprint-05.sql"
@@ -508,6 +510,7 @@ sprints:
       - "frontend/src/app/ — features/reservations/*, features/guests/guest.page.ts, features/audit (labels), core/models.ts, app.routes.ts, layout/shell.ts"
       - "frontend/e2e/sprint-05.spec.ts; scripts/check-api.mjs (Sprint 05 checks)"
       - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-05.md, docs/architecture/booking-algorithm.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-05-screens/"
+      - "frontend/src/app/core/dates.ts (date fields); docs/architecture/system-design.md; tools/handbooks/diagrams (er-reservations, booking-flow)"
     results:
       - "Backend: 173 passed, 0 failed on real PostgreSQL 16 (35 new: 34 for Sprint 05 including the last room raced 50 times, the last dorm bed with 5 parallel requests, the database guard and idempotency, plus the demo-booking seed check)"
       - "Frontend: 44 of 44 unit tests passed; ESLint clean; production build OK"
@@ -556,6 +559,9 @@ sprints:
       ui: "Reservations (menu) lists stays that haven't ended, soonest arrival first, with search by guest, phone or booking reference and Booked / Enquiries / All. New booking is a five-step wizard: dates and guests; free room types with prices and the free rooms; find a returning guest or add a new one (with a duplicate check); rate plan, source, status, requests and the nightly price; confirm and book. A booking page shows rooms, the price night by night, guests, notes and history, with Confirm, Change dates or guests, No-show and Cancel (a reason is required). Every error appears under its field or next to its button with the reason."
       api: "Endpoints under /api/v1/properties/{propertyId}: availability (free rooms and beds per type for a stay, with the default price), reservations (list, get, create with an Idempotency-Key header, change dates or guests, confirm, cancel and no-show with a reason, notes). reservation.read, .create, .update and .cancel decide who may do what. A retried create with the same key returns the same booking; a taken room is 409 ROOM_UNAVAILABLE naming what holds it."
       database: "Migration V007 adds reservations, reservation_units (rooms and dorm beds held, with exclusion constraints so the same room or bed can't be held twice on a night), reservation_guests, reservation_rate_breakdowns, reservation_notes, reservation_status_history, reservation_status_transitions (the allowed status graph, enforced by a trigger), idempotency_keys and property_counters. Nothing is deleted; changes of dates supersede old rows. Triggers stop a block and a booking covering the same room and night."
+    diagrams:
+      - {file: tools/handbooks/assets/er-reservations.png, caption: "Reservation tables and how they relate"}
+      - {file: tools/handbooks/assets/booking-flow.png, caption: "Two people book the last room at once: one gets it, the other is told why"}
     screenshots:
       - {file: docs/sprints/sprint-05-screens/01-reservations.png, caption: "Reservations: stays that haven't ended, soonest first"}
       - {file: docs/sprints/sprint-05-screens/03-availability.png, caption: "Availability: free rooms and beds per type, with the price"}
@@ -567,7 +573,7 @@ sprints:
 - id: 6
   title: Reservation calendar
   phase: 2
-  status: planned
+  status: in-progress
   size: M
   module: Reservations
   feature: reservations

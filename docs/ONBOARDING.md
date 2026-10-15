@@ -69,14 +69,17 @@ You're set up when all of these are true:
 Stuck? See [GETTING_STARTED → Problems?](GETTING_STARTED.md#problems). If it's still broken, open an issue with the
 **Bug** template and paste the error **without** anything from `.env`.
 
-### 2d. Read (about an hour)
+### 2d. Read (about two hours)
 
 1. [README.md](../README.md): what the system is, and the current sprint.
-2. [ARCHITECTURE.md](ARCHITECTURE.md): the modules, how a request flows, the rules every module follows.
-3. [CONTRIBUTING.md](../CONTRIBUTING.md): branches, commit messages, PR rules, code rules, secrets.
-4. [sprints/PROCESS.md](sprints/PROCESS.md): how sprints run.
-5. The **current sprint guide** in [sprints/](sprints/README.md): what's being built now.
-6. One finished module end to end, e.g. rooms: `database/migrations/V004__accommodation.sql` →
+2. [architecture/system-design.md](architecture/system-design.md): **start here for the code.** How the whole code
+   base works, sprint by sprint, and how the hard parts are designed (passwords, sign-in, permissions, encryption,
+   no double booking, idempotency, money).
+3. [ARCHITECTURE.md](ARCHITECTURE.md): the modules, how a request flows, the rules every module follows.
+4. [CONTRIBUTING.md](../CONTRIBUTING.md): branches, commit messages, PR rules, code rules, secrets.
+5. [sprints/PROCESS.md](sprints/PROCESS.md): how sprints run.
+6. The **current sprint guide** in [sprints/](sprints/README.md): what's being built now.
+7. One finished module end to end, e.g. rooms: `database/migrations/V004__accommodation.sql` →
    `backend/Resort.Api/Endpoints/AccommodationEndpoints.cs` → `backend/Resort.Application/Accommodation/` →
    `backend/Resort.Tests/Integration/AccommodationTests.cs` → `frontend/src/app/features/rooms/`.
 

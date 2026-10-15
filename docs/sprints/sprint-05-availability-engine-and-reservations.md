@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | L | [Sprint 02](sprint-02-accommodation.md), [Sprint 03](sprint-03-guests.md), [Sprint 04](sprint-04-rate-plans-and-packages.md) |
+| 🟢 Done | Phase 2 — Guests, reservations, availability, calendar, front desk | L | [Sprint 02](sprint-02-accommodation.md), [Sprint 03](sprint-03-guests.md), [Sprint 04](sprint-04-rate-plans-and-packages.md) |
 
 **Goal:** Race-free booking of rooms and dorm beds with idempotent create and full status history (brief §14–16).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review: one pull request into develop with the database, booking engine, API, screens, tests and docs. Waiting for the owner's review (REVIEWING.md → Sprint 05).
+**Now:** Accepted by the owner on 15 Oct 2026 and released to main (tag sprint-05). Review fixes: every date field shows 15 Oct 2026 with a calendar, field labels no longer cut off, finished wizard steps show a tick, Back beside Continue. New guide for joiners: docs/architecture/system-design.md.
 
 **Done so far**
 
@@ -19,6 +19,8 @@
 - Booking algorithm in one transaction: claim the Idempotency-Key, lock the rooms of the requested types in id order, allocate, price every night from the rate grid, store the response. The exclusion constraints are the final guard (23P01 → 409 ROOM_UNAVAILABLE). Written up in docs/architecture/booking-algorithm.md
 - APIs: availability; reservations list, get, create (Idempotency-Key, replay header), change dates or guests (re-checks and re-prices), confirm, cancel and no-show with a reason, notes. Permissions reservation.read/create/update/cancel
 - Dev seed S004: six demo bookings from today; Room 102 is the last Deluxe room tonight for the two-browser demo
+- Owner review fixes (15 Oct 2026): date fields across the app show 15 Oct 2026 with a calendar and accept typed dates; first-row field labels in dialogs and wizard steps no longer clipped; change-booking dialog lines rooms up under the dates; finished steps show a tick; Back sits next to each step's main button
+- Architecture and system design guide for new joiners (docs/architecture/system-design.md) with diagrams per sprint; updating it is now a step of closing every sprint
 - Screens: Reservations list (search, Booked / Enquiries / All), New booking wizard (dates → room → guest → rate → confirm, quick-add of a walk-in guest), booking page (rooms, nightly prices, guests, notes, history, confirm, change, cancel, no-show). Guest profiles list stays with their reference. Every error is shown under its field or next to its button with the reason
 
 **Files added / changed**
@@ -32,6 +34,7 @@
 - frontend/src/app/ — features/reservations/*, features/guests/guest.page.ts, features/audit (labels), core/models.ts, app.routes.ts, layout/shell.ts
 - frontend/e2e/sprint-05.spec.ts; scripts/check-api.mjs (Sprint 05 checks)
 - docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-05.md, docs/architecture/booking-algorithm.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-05-screens/
+- frontend/src/app/core/dates.ts (date fields); docs/architecture/system-design.md; tools/handbooks/diagrams (er-reservations, booking-flow)
 
 **Test results**
 
