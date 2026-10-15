@@ -35,7 +35,9 @@
 
 **Test results**
 
-- RESULTS_PLACEHOLDER
+- Backend: 181 passed, 0 failed on real PostgreSQL 16 (8 new: CalendarTests with two moves into the same room raced 20 times, the audit trail's who and why, blocked and booked rooms, field errors, the window, permissions and the calendar index; plus the calendar dev seed check)
+- Frontend: 54 of 54 unit tests passed (10 new, including 7 rooms × 31 days drawn in under 200 ms); ESLint clean; production build OK
+- Browser tests: 60 of 60 passed (Sprints 01–05 plus the 8 new Sprint 06 steps, including a move by drag and reason and a drop on a blocked room refused); screenshots in docs/sprints/sprint-06-screens
 
 **Outcome**
 
