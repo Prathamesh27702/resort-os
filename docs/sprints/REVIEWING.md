@@ -1,7 +1,7 @@
 # Reviewing a sprint
 
-How the product owner checks a finished sprint and accepts it (or sends it back). **Sprint 03 is waiting for review
-now (review PR #102).** Before you accept, the second developer does a code review of the same PR:
+How the product owner checks a finished sprint and accepts it (or sends it back). **Sprint 05 is being built now; its
+pull request into `develop` is the place to review it.** Before you accept, the second developer does a code review of the same PR:
 [CODE_REVIEW.md](CODE_REVIEW.md). You need the setup from [../GETTING_STARTED.md](../GETTING_STARTED.md).
 
 ## How a sprint reaches you
@@ -152,6 +152,30 @@ BAR with Standard rooms at ₹3,500 a night and ₹4,200 on Friday and Saturday 
 
 Write down anything that's wrong or confusing, with the step number. A screenshot helps; never include passwords
 or real guest data.
+
+### Sprint 05 — availability, bookings and the last room
+
+Continue as the owner, on a **freshly reset database** (`bash scripts/db-reset.sh` or `pwsh -File scripts/db-reset.ps1`,
+then restart the API): the six demo bookings start from today. R00001 has **Room 101** tonight, so **Room 102** is the
+last Deluxe room tonight. Screenshots: [sprint-05-screens/](sprint-05-screens/). The browser tests do all of this for you:
+`cd frontend; npm run e2e:headed -- e2e/sprint-05.spec.ts` (names S05-01 … S05-07). Database checks:
+`database/queries/check-sprint-05.sql`. How booking stays race-free: [booking-algorithm.md](../architecture/booking-algorithm.md).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Reservations** (new in the menu) | R00001 … R00004 with guest, dates, rooms (*Dormitory · 2 beds* for R00004), source and total. **Enquiries** shows R00005; **All** adds the cancelled R00006 |
+| 2 | **New booking** → check-in **yesterday** → **Check availability** | Under the check-in field: *Check-in can't be before today (… at the property).* |
+| 3 | Check-in today, check-out tomorrow, 2 adults → **Check availability** | Step 2 *Room*: Deluxe room *1 of 2 rooms free* with the price, Standard room *4 of 4*, Dormitory bed *8 of 10 beds free* |
+| 4 | **The acceptance test.** Open a second browser (or a private window) signed in as a **receptionist**. In **both**: same dates → **Choose** on *Deluxe room* → find a guest (e.g. *Diya* in one, *Ishita* in the other) → **Continue** → stop at **Confirm** | Both show *Deluxe room · Room 102* and the price |
+| 5 | Click **Book** in the first browser, then in the second | First: *Booked: R00007* and its booking page. Second, next to the Book button: *No Deluxe room is free for the night of 14 Oct 2026. Choose another room type or other dates.* (with your date), and *See what's free now* shows *0 of 2 rooms free*. Never two bookings for Room 102 |
+| 6 | In the second browser: **Choose Dormitory bed** for 2 nights, 2 adults → add a **new guest** (first name, phone) → **Continue** → **Book** | A booking with two free beds of the dormitory (e.g. *bed B01* and *bed B02*), each night priced as *2 beds ×* the per-bed price |
+| 7 | On R00007: **Add a note** *Advance received by UPI* | The note with your name and the time |
+| 8 | **Change dates or guests** → check-out = check-in → **Save and re-price** | Under check-out: *The check-out date must be after check-in.* |
+| 9 | Check-out = day after tomorrow → **Save and re-price** | *R00007 updated · new total …*: 2 nights, still Room 102, two rows in *Price night by night* |
+| 10 | **Cancel booking** → reason *Guest changed plans* | Status *Cancelled*; History shows *Confirmed → Cancelled “Guest changed plans”*; New booking for tonight shows Deluxe *1 of 2* again |
+| 11 | **Guests** → Diya Patel | *Stays* lists R00007 (a link) with *Cancelled* |
+| 12 | **Rooms** → Room 105 → block it for tomorrow | Refused with the reason: *Room 105 is booked on R00002 … Move that booking to another room or cancel it first.* |
+| 13 | Phone width (390 px) → New booking | The steps stack vertically; every field is full width |
 
 ## Part C — Decide
 

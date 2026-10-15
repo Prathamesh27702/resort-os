@@ -45,7 +45,7 @@ async function call(method, path, { token, body, headers } = {}) {
     let json; try { json = text ? JSON.parse(text) : undefined; } catch { json = text; }
     // Sign-in is limited to 10 a minute per computer. Waiting is the limit working, not a failure.
     if (res.status === 429 && attempt < 2) { console.log('   (sign-in rate limit reached — waiting 61 s)'); await sleep(61_000); continue; }
-    return { status: res.status, json };
+    return { status: res.status, json, headers: res.headers };
   }
 }
 
@@ -60,6 +60,11 @@ async function expectCall(name, method, path, expected, opts = {}, check = () =>
   results.push({ section, name, ok });
   console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}\n       ${method} ${short(path)} → expected ${expected}${note ? ' · ' + note : ''}`);
   return r;
+}
+/** Records a check that isn't a single expectCall (several requests, or headers). */
+function record(name, ok, note) {
+  results.push({ section, name, ok });
+  console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${ok ? '' : `\n       ${note}`}`);
 }
 /** Shows ids as {propertyId} / {id} so the printed URLs read like the API docs. */
 const short = path => path.replace(/\/properties\/[0-9a-f-]{36}/, '/properties/{propertyId}').replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, '{id}');
@@ -254,6 +259,49 @@ await expectCall('Shares that don\'t add up to 100 → 400 with the total', 'POS
   { token: T, body: { code: 'API_CHECK', name: 'API check', accommodationTypeId: standard?.id, nights: 1, adults: 2, children: 0, price: 1000, sortOrder: 0,
     components: [{ category: 'ROOM', description: 'Room', sharePercent: 80 }, { category: 'FOOD', description: 'Breakfast', sharePercent: 15.5 }] } },
   b => b.details?.Components?.[0] === 'The shares add up to 95.5%; they must add up to exactly 100%.' || JSON.stringify(b.details));
+
+// ---------------------------------------------------------------- Sprint 05 — availability and reservations
+title('Sprint 05 — availability, reservations, idempotency');
+// Books one Standard room 120 nights from now for the check guest, then cancels it, so re-running leaves nothing held.
+const far = plus(120), farEnd = plus(121);
+const avail = await expectCall('Availability 120 nights ahead lists every room type', 'GET',
+  `${P}/availability?from=${far}&to=${farEnd}&adults=2`, 200, { token: R },
+  b => (b.types.some(t => t.code === 'STANDARD_ROOM') && b.nights === 1) || JSON.stringify(b.types?.map(t => t.code)));
+const std = avail?.json?.types?.find(t => t.code === 'STANDARD_ROOM');
+await expectCall('Check-in in the past → 400 under From', 'GET', `${P}/availability?from=${plus(-1)}&to=${plus(1)}&adults=2`, 400,
+  { token: R }, b => /can't be before today/.test(b.details?.From?.[0] ?? '') || JSON.stringify(b.details));
+const walkIn = ((await call('GET', `${P}/reservation-sources`, { token: R })).json ?? []).find(x => x.code === 'WALK_IN');
+if (std && std.freeRooms.length > 0 && walkIn && checkGuest) {
+  const room = std.freeRooms[0];
+  const body = { checkIn: far, checkOut: farEnd, rooms: [{ accommodationTypeId: std.accommodationTypeId, unitId: room.id, adults: 2, children: 0 }],
+    guestIds: [checkGuest.id], sourceId: walkIn.id, ratePlanId: null, status: 'CONFIRMED', specialRequests: null, note: 'API check' };
+  const key = `api-check-${Date.now()}`;
+  await expectCall('Booking without an Idempotency-Key → 400 under Idempotency-Key', 'POST', `${P}/reservations`, 400,
+    { token: R, body }, b => !!b.details?.['Idempotency-Key'] || JSON.stringify(b.details));
+  const made = await expectCall(`Receptionist books ${room.name} (201, reference R…)`, 'POST', `${P}/reservations`, 201,
+    { token: R, body, headers: { 'Idempotency-Key': key } }, b => /^R\d{5,}$/.test(b.reference) || b.reference);
+  const again = await call('POST', `${P}/reservations`, { token: R, body, headers: { 'Idempotency-Key': key } });
+  record('Same key and body again → the same booking, marked as replayed',
+    again.status === 201 && again.json?.id === made?.json?.id && again.headers.get('idempotent-replayed') === 'true',
+    `status ${again.status}, id ${again.json?.id}, replayed ${again.headers.get('idempotent-replayed')}`);
+  await expectCall('Same key, different body → 422 IDEMPOTENCY_KEY_REUSED', 'POST', `${P}/reservations`, 422,
+    { token: R, body: { ...body, specialRequests: 'different' }, headers: { 'Idempotency-Key': key } }, b => b.code === 'IDEMPOTENCY_KEY_REUSED' || b.code);
+  await expectCall(`${room.name} again for the same night → 409 ROOM_UNAVAILABLE naming the booking`, 'POST', `${P}/reservations`, 409,
+    { token: R, body, headers: { 'Idempotency-Key': `${key}-2` } },
+    b => (b.code === 'ROOM_UNAVAILABLE' && b.message.includes(made?.json?.reference ?? '?')) || b.message);
+  if (made?.json) {
+    await expectCall('Cancel without a reason → 400 under Reason', 'POST', `${P}/reservations/${made.json.id}/cancel`, 400,
+      { token: R, body: {} }, b => !!b.details?.Reason || JSON.stringify(b.details));
+    await expectCall('Cancel with a reason → CANCELLED, the room is free again', 'POST', `${P}/reservations/${made.json.id}/cancel`, 200,
+      { token: R, body: { reason: 'API check' } }, b => (b.status === 'CANCELLED' && b.units.every(u => !u.holdsInventory)) || b.status);
+    await expectCall('Confirm a cancelled booking → 422 INVALID_STATUS_TRANSITION with the reason', 'POST', `${P}/reservations/${made.json.id}/confirm`, 422,
+      { token: R, body: {} }, b => (b.code === 'INVALID_STATUS_TRANSITION' && /cancelled/.test(b.message)) || b.message);
+    await expectCall('History: created CONFIRMED, then CANCELLED with the reason', 'GET', `${P}/reservations/${made.json.id}`, 200,
+      { token: R }, b => (b.history.length === 2 && b.history[1].reason === 'API check') || JSON.stringify(b.history));
+  }
+} else record('Book a Standard room 120 nights ahead', false, 'no free Standard room, walk-in source or check guest');
+await expectCall('Reservations list (default: stays not ended yet)', 'GET', `${P}/reservations`, 200, { token: R },
+  b => Array.isArray(b.items) || 'no items');
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

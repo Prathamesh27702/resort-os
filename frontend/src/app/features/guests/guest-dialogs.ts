@@ -5,10 +5,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { DOCUMENT_TYPES, Guest, GuestDocument, GuestListItem } from '../../core/models';
+import { pickerError } from '../../core/dates';
 import { showFieldErrors, toProblem } from '../../core/http';
 import { label } from '../rooms/rooms.api';
 import { minTrimmed } from '../rooms/rooms.forms';
@@ -22,7 +24,7 @@ export interface DocumentDialogData { guest: Guest; }
 /** Add an ID document: type, number and/or a scan (JPEG, PNG or PDF up to 5 MB). Returns the created document. */
 @Component({
   selector: 'app-document-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatDatepickerModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Add ID document</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="doc-form">
@@ -49,7 +51,10 @@ export interface DocumentDialogData { guest: Guest; }
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Expires on</mat-label>
-          <input matInput type="date" formControlName="expiresOn" />
+          <input matInput [matDatepicker]="dpExpiresOn" formControlName="expiresOn" />
+          <mat-datepicker-toggle matIconSuffix [for]="dpExpiresOn" />
+          <mat-datepicker #dpExpiresOn />
+          <mat-error>{{ pickerError(form.controls.expiresOn.errors) }}</mat-error>
         </mat-form-field>
       </div>
       @if (form.value.documentType === 'VISA' || form.value.documentType === 'PASSPORT') {
@@ -86,6 +91,7 @@ export class DocumentDialog {
   types = DOCUMENT_TYPES;
   countries = COUNTRIES;
   label = label;
+  pickerError = pickerError;
   busy = signal(false);
   error = signal('');
   fileError = signal('');

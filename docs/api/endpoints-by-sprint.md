@@ -49,15 +49,15 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `PUT /api/v1/properties/{propertyId}/rate-plans/{id}/prices  (bulk date range)` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🟢 Done |
 | `GET /api/v1/properties/{propertyId}/rates/quote?type&from&to&adults&children` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🟢 Done |
 | `GET|POST /api/v1/properties/{propertyId}/packages` | [Sprint 04](../sprints/sprint-04-rate-plans-and-packages.md) | 🟢 Done |
-| `GET /api/v1/properties/{propertyId}/availability?from&to&adults` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/reservations  (Idempotency-Key header required)` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `GET /api/v1/properties/{propertyId}/reservations` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `GET /api/v1/properties/{propertyId}/reservations/{id}` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/reservations/{id}/confirm | cancel | no-show` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `PUT /api/v1/properties/{propertyId}/reservations/{id}  (dates/guests; re-checks availability)` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/reservations/{id}/notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🔵 In progress |
-| `GET /api/v1/properties/{propertyId}/calendar?from&to` | [Sprint 06](../sprints/sprint-06-reservation-calendar.md) | ⚪ Planned |
-| `POST /api/v1/properties/{propertyId}/reservations/{id}/reassign  (reason required)` | [Sprint 06](../sprints/sprint-06-reservation-calendar.md) | ⚪ Planned |
+| `GET /api/v1/properties/{propertyId}/availability?from&to&adults` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/reservations  (Idempotency-Key header required)` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/reservations` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/reservations/{id}` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/reservations/{id}/confirm | cancel | no-show` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `PUT /api/v1/properties/{propertyId}/reservations/{id}  (dates/guests; re-checks availability)` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/reservations/{id}/notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/calendar?from&to` | [Sprint 06](../sprints/sprint-06-reservation-calendar.md) | 🔵 In progress |
+| `POST /api/v1/properties/{propertyId}/reservations/{id}/reassign  (reason required)` | [Sprint 06](../sprints/sprint-06-reservation-calendar.md) | 🔵 In progress |
 | `GET /api/v1/properties/{propertyId}/front-desk/arrivals?date` | [Sprint 07](../sprints/sprint-07-front-desk.md) | ⚪ Planned |
 | `GET /api/v1/properties/{propertyId}/front-desk/departures?date` | [Sprint 07](../sprints/sprint-07-front-desk.md) | ⚪ Planned |
 | `GET /api/v1/properties/{propertyId}/front-desk/in-house` | [Sprint 07](../sprints/sprint-07-front-desk.md) | ⚪ Planned |

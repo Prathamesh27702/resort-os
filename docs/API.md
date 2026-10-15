@@ -327,7 +327,67 @@ reason under `Components[i].Description` etc.; price > 0; 1–30 nights; adults 
 |---|---|---|---|
 | `GET /reservation-sources` | Where bookings come from (walk-in, phone, WhatsApp, website, OTAs, travel agent, corporate) | `rate.read` | `ReservationSourceDto[] { id, code, name, channel: DIRECT\|OTA\|TRAVEL_AGENT\|CORPORATE\|OTHER, commissionPercent }` |
 
-Built-in sources are shared by every organisation; reservations use them from Sprint 5.
+Built-in sources are shared by every organisation; every reservation names one.
+
+## Built endpoints (Sprint 5 — availability and reservations)
+
+All under `/api/v1/properties/{propertyId}`, scope **prop**. A property in another organisation is 404. Default holders:
+`reservation.read` — Owner, GM, Manager, Receptionist, Housekeeping supervisor, Restaurant and Activity managers;
+`reservation.create`, `.update`, `.cancel` — Owner, GM, Manager, Receptionist. Dates are property-local; a stay is
+`[checkIn, checkOut)` (the guest leaves on `checkOut`), 1–180 nights. Money as in Sprint 4 (before tax, 2 decimals).
+How booking stays race-free: [architecture/booking-algorithm.md](architecture/booking-algorithm.md).
+
+### Availability — `/availability`
+
+| Method & URL | Purpose | Permission | Response | Errors |
+|---|---|---|---|---|
+| `GET /availability?from&to&adults&children` | Per active room type: rooms (or dorm beds) free for **every** night, whether the guests fit, the default plan's price, and the free rooms | `reservation.read` | `AvailabilityDto` | 400 under the field: `From` (missing, before today), `To` (missing, not after `from`, > 180 nights), `Adults` (< 1), `Children` |
+
+`AvailabilityDto = { from, to, nights, adults, children, currency, types: [{ accommodationTypeId, code, name, inventoryMode,
+baseOccupancy, maxOccupancy, total, free, fits, fitProblem, ratePlanId, ratePlanName, price, priceProblem, freeRooms: [{ id,
+code, name, floor }] }] }`. A snapshot without locks: booking checks again. `fitProblem` says why the guests can't be booked
+here ("Fully booked or blocked for these nights.", "Only 2 beds are free; 3 guests need 3."); `priceProblem` why there is
+no price (nights without a price, minimum stay).
+
+### Reservations — `/reservations`
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /reservations?q&status&from&to&page&pageSize` | List, soonest arrival first. Default: stays that haven't ended (`checkOut ≥ today`). `q` = reference, guest name, phone (≥ 4 digits) or email; `status` = comma list | `reservation.read` | — | `PagedResult<ReservationListItemDto>` | 400 `Status` (unknown status), 403, 404 | — |
+| `GET /reservations/{id}` | One booking with rooms, nights, guests, notes, history | `reservation.read` | — | `ReservationDto` | 403, 404 | — |
+| `POST /reservations` | **Create.** Header **`Idempotency-Key`** (8–100 chars) required | `reservation.create` | `CreateReservationRequest` | `201 ReservationDto` (replay: same body + header `Idempotent-Replayed: true`) | 400 under the field (below), 403, 404, **409 `ROOM_UNAVAILABLE`** (says which room/type and what holds it), 409 `IDEMPOTENCY_IN_PROGRESS`, 422 `IDEMPOTENCY_KEY_REUSED`, `RATE_NOT_SET`, `MIN_STAY_NOT_MET`, `RATE_PLAN_INACTIVE` | INSERT reservation, rooms, guests, nights, history |
+| `PUT /reservations/{id}` | Change dates, rooms or guest counts, requests. Re-checks availability (own rooms kept when free) and re-prices | `reservation.update` | `UpdateReservationRequest` | `ReservationDto` | 400 under the field, 403, 404, 409 `ROOM_UNAVAILABLE`, 409 `CONCURRENCY_CONFLICT`, 422 `RESERVATION_NOT_CHANGEABLE` (checked-in or finished), `RATE_PLAN_INACTIVE` | UPDATE; old rooms superseded, new ones inserted |
+| `POST /reservations/{id}/confirm` | INQUIRY/PENDING → CONFIRMED (an enquiry's rooms are checked again) | `reservation.update` | `{ reason? }` | `ReservationDto` | 403, 404, 409 `ROOM_UNAVAILABLE`, 422 `INVALID_STATUS_TRANSITION` | UPDATE + history |
+| `POST /reservations/{id}/cancel` | → CANCELLED; frees the rooms at once | `reservation.cancel` | `{ reason }` (≥ 3 chars) | `ReservationDto` | 400 `Reason`, 403, 404, 422 `INVALID_STATUS_TRANSITION` | UPDATE + history with reason |
+| `POST /reservations/{id}/no-show` | CONFIRMED → NO_SHOW, from the arrival day | `reservation.cancel` | `{ reason }` | `ReservationDto` | 400 `Reason`, 403, 404, 422 `INVALID_STATUS_TRANSITION`, `NO_SHOW_TOO_EARLY` | UPDATE + history with reason |
+| `POST /reservations/{id}/notes` | Add a note | `reservation.update` | `{ note }` (1–2000) | `201 ReservationDto` | 400 `Note`, 403, 404 | INSERT |
+
+`CreateReservationRequest = { checkIn, checkOut, rooms: [{ accommodationTypeId, unitId?, adults, children }], guestIds: [primary,
+…others], sourceId, ratePlanId? (default plan), status?: CONFIRMED (default) | PENDING | INQUIRY, specialRequests?, note? }`.
+A room line books one room of the type (`unitId` picks one, else the first free); a dormitory line books **one bed per
+guest**. `UpdateReservationRequest = { checkIn, checkOut, rooms, specialRequests, version }`.
+
+`ReservationDto = { id, reference (R00001), status, checkIn, checkOut, nights, adults, children, sourceId, sourceName, ratePlanId,
+ratePlanName, mealPlan, totalAmount, currency, specialRequests, guests: [{ guestId, fullName, phone, email, isPrimary }],
+units: [{ id, accommodationTypeId, accommodationTypeName, inventoryMode, unitId, unitCode, unitName, bedId, bedCode, startDate,
+endDate, adults, children, holdsInventory, current, total }], breakdown: [{ reservationUnitId, date, units, unitPrice,
+baseAmount, extraAdults, extraAdultRate, extraAdultAmount, extraChildren, extraChildRate, extraChildAmount, total }], notes:
+[{ id, note, createdAt, createdByName }], history: [{ fromStatus, toStatus, reason, changedAt, changedByName }],
+nextStatuses: [...], createdAt, createdByName, version }`.
+
+**Field errors** (400, each under its field): `Idempotency-Key` (missing, wrong length); `CheckIn` (before today);
+`CheckOut` (not after check-in, > 180 nights); `Rooms` (none, > 20); `Rooms[i].AccommodationTypeId` (unknown, inactive);
+`Rooms[i].UnitId` (unknown, another type); `Rooms[i].Adults` ("Deluxe room sleeps at most 3 guests; this room has 4. Add
+another room for the others."); `GuestIds` (none, unknown, merged or anonymised profile, repeated); `SourceId`;
+`RatePlanId`; `Status` (only CONFIRMED, PENDING or INQUIRY at creation); `SpecialRequests`, `Note` (≤ 2000).
+
+**Statuses.** PENDING, CONFIRMED and CHECKED_IN hold rooms; INQUIRY holds nothing. Allowed moves are in the table
+`reservation_status_transitions`; anything else is 422 `INVALID_STATUS_TRANSITION` with `details: { from, to, allowed }`.
+Check-in/check-out arrive in Sprint 7, refunds in Sprint 10. Reservations are never deleted; an enquiry is cancelled.
+
+**Related changes.** `POST /blocks` returns 409 `BLOCK_OVERLAPS_RESERVATION` ("Room 103 is booked on R00002 …") when a
+booking holds the room. `GET /guests/{id}/stays` lists real reservations with their `reference`; merging guests moves
+their reservations to the surviving profile.
 
 ### Health (no auth, not rate-limited)
 

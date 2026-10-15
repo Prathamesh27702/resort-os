@@ -1,5 +1,5 @@
 import { Browser, Page, expect, test } from '@playwright/test';
-import { addDays, apiAs, choose, createStaff, owner, runId, signIn, snack } from './helpers';
+import { addDays, apiAs, choose, createStaff, isoFromField, owner, runId, signIn, snack } from './helpers';
 
 // Sprint 02 — the same checks as docs/sprints/REVIEWING.md → "Sprint 02", automated.
 // Runs on the throwaway e2e database, which starts with the demo rooms from database/seed/dev.
@@ -22,7 +22,7 @@ async function openBlock(room?: string) {
   else await p.locator('.actions').getByRole('button', { name: 'Block' }).click();
   await expect(p.locator('app-block-dialog')).toBeVisible();
   // The dialog opens on the property's own "today" (IST), which may differ from this computer's date.
-  if (!today) today = await p.locator('input[formcontrolname=startDate]').inputValue();
+  if (!today) today = isoFromField(await p.locator('input[formcontrolname=startDate]').inputValue());
 }
 
 async function fillBlock(start: string, end: string, reason: string) {

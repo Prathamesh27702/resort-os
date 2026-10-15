@@ -100,8 +100,8 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
-| 01–04 | Accepted: on `develop` and `main` | `develop` |
-| 05 | In progress: its pull request will be linked here when it is ready for review | its `feature/S05-…` branch |
+| 01–05 | Accepted: on `develop` and `main` | `develop` |
+| 06 | In progress: its pull request will be linked here when it is ready for review | its `feature/S06-…` branch |
 
 ```powershell
 cd D:\resort-os
@@ -113,7 +113,7 @@ git switch develop
 git pull
 
 # A sprint still in review (use the branch name from its pull request):
-git switch feature/S05-<name>
+git switch feature/S06-<name>
 git pull
 
 # After switching or pulling, every time:
@@ -236,6 +236,38 @@ Quick acceptance check, on a freshly reset database: **Rates → Quote a stay**,
 By hand: [REVIEWING.md → Sprint 04](sprints/REVIEWING.md#sprint-04--rate-plans-rate-grid-quotes-and-packages).
 Screenshots: [sprint-04-screens/](sprints/sprint-04-screens/).
 
+### Sprint 05: Availability and reservations
+
+**New:** **Reservations** (list, search, enquiries), **New booking** (dates → room → guest → rate → confirm) and the
+booking page (rooms, price night by night, notes, history, confirm, change dates or guests, cancel, no-show). Bookings
+can't double-sell a room or dorm bed, even when two people book the last one at the same moment. Demo data: six
+bookings from today (R00001–R00006); Room 102 is the last Deluxe room tonight. Nothing new to install and no new keys;
+reset the database before the review (the demo bookings start from the day of the reset), restart the API and watch
+for `Applying migration V007__reservations` and `Dev seed S004__reservations`.
+
+```powershell
+# Backend (34 tests, including the last room raced 50 times and the last dorm bed with 5 parallel requests)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~ReservationTests|FullyQualifiedName~AvailabilityEngineTests|FullyQualifiedName~ReservationStatusTests"
+
+# Browser (7 steps, S05-01 … S05-07; S05-04 books the last room from two browsers at once)
+cd frontend
+npm run e2e -- e2e/sprint-05.spec.ts
+cd ..
+
+# API checks: the Sprint 05 block must be all PASS
+node scripts/check-api.mjs
+
+# Database checks (block 4 is the double-booking check: it must return no rows)
+Get-Content database/queries/check-sprint-05.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: open **New booking** in two browsers (owner and a receptionist), both choose *Deluxe room*
+for tonight and go to **Confirm**, then press **Book** in both. One gets a booking for Room 102; the other is told
+*No Deluxe room is free … Choose another room type or other dates.* How it works: [booking-algorithm.md](architecture/booking-algorithm.md).
+
+By hand: [REVIEWING.md → Sprint 05](sprints/REVIEWING.md#sprint-05--availability-bookings-and-the-last-room).
+Screenshots: [sprint-05-screens/](sprints/sprint-05-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -248,7 +280,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 138 backend passed, 31 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 173 backend passed, 44 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -256,7 +288,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–04 (expected: 45 passed, about 5 minutes)
+# 3. Every browser test, Sprints 01–05 (expected: 52 passed, about 6 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -271,13 +303,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–04:
+Expected totals for Sprints 01–05:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 138 passed, 0 failed |
-| Frontend unit tests | 31 of 31 SUCCESS |
-| Browser tests | 45 passed (12 + 14 + 13 + 6) |
+| Backend tests | 173 passed, 0 failed |
+| Frontend unit tests | 44 of 44 SUCCESS |
+| Browser tests | 52 passed (12 + 14 + 13 + 6 + 7) |
 | API checks | 0 failed |
 
 Other useful commands:
@@ -286,7 +318,7 @@ Other useful commands:
 dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Unit"      # backend unit tests only, no database
 dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Weekend"   # any test whose name contains a word
 cd frontend; npm test                                                       # frontend unit tests, re-run on every save
-cd frontend; npm run e2e:headed -- e2e/sprint-04.spec.ts                    # watch the browser click, slowly
+cd frontend; npm run e2e:headed -- e2e/sprint-05.spec.ts                    # watch the browser click, slowly
 cd frontend; npm run e2e:ui                                                 # Playwright's window: pick tests and run them
 ```
 
@@ -301,15 +333,15 @@ git fetch origin --tags
 git switch develop
 git pull
 
-# Refresh one sprint's screenshots (here Sprint 04) and check they changed as expected
+# Refresh one sprint's screenshots (here Sprint 05) and check they changed as expected
 cd frontend
-$env:E2E_SCREENSHOTS = "../docs/sprints/sprint-04-screens"
-npm run e2e -- e2e/sprint-04.spec.ts
+$env:E2E_SCREENSHOTS = "../docs/sprints/sprint-05-screens"
+npm run e2e -- e2e/sprint-05.spec.ts
 Remove-Item Env:E2E_SCREENSHOTS
 cd ..
 git status                       # commit changed .png files on a chore/ branch and open a PR to develop
 
-# GitHub milestones and the next sprint's task issues (here: the next sprint is 5)
+# GitHub milestones and the next sprint's task issues (here: the next sprint is 6)
 python scripts/github/sync-sprints.py github Prathamesh27702/resort-os
 python scripts/github/sync-sprints.py tasks  Prathamesh27702/resort-os 5
 ```

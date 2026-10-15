@@ -190,6 +190,10 @@ public sealed class TestClient(HttpClient http)
     public Task<HttpResponseMessage> PostAsync(string url, object? body = null) => SendAsync(HttpMethod.Post, url, body);
     public Task<HttpResponseMessage> PutAsync(string url, object body) => SendAsync(HttpMethod.Put, url, body);
 
+    /// <summary>POST with extra headers (e.g. Idempotency-Key).</summary>
+    public Task<HttpResponseMessage> PostAsync(string url, object? body, IReadOnlyDictionary<string, string> headers) =>
+        SendAsync(HttpMethod.Post, url, body, headers);
+
     /// <summary>Sends any body (e.g. multipart/form-data for document uploads) with the access token.</summary>
     public async Task<HttpResponseMessage> PostContentAsync(string url, HttpContent content)
     {
@@ -205,9 +209,11 @@ public sealed class TestClient(HttpClient http)
         return (await res.Content.ReadFromJsonAsync<T>())!;
     }
 
-    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? body)
+    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? body,
+        IReadOnlyDictionary<string, string>? headers = null)
     {
         using var req = new HttpRequestMessage(method, url);
+        foreach (var (k, v) in headers ?? new Dictionary<string, string>()) req.Headers.Add(k, v);
         if (AccessToken is not null) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
         if (body is not null) req.Content = JsonContent.Create(body);
         return await Http.SendAsync(req);

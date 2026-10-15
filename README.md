@@ -3,7 +3,7 @@
 India-first resort operating system: reservations, rooms and dorm beds, front desk, folio, GST invoicing, payments,
 housekeeping, restaurant, inventory, staff, activities, transport and reporting, in one modular monolith.
 
-> **Current sprint: [Sprint 03 — Guests](docs/sprints/sprint-03-guests.md)** (🟡 in review) · Sprints 01–02 accepted 10 Oct 2026 (tags `sprint-01`, `sprint-02`)
+> **Current sprint: [Sprint 06 — Reservation calendar](docs/sprints/sprint-06-reservation-calendar.md)** (🔵 in progress) · Sprints 01–05 accepted (tags `sprint-01` … `sprint-05`) · New here? Read [how the system works](docs/architecture/system-design.md)
 > All sprints and their status: [docs/sprints](docs/sprints/README.md) · GitHub *Milestones* show the same.
 
 | | |
