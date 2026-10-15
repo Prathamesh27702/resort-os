@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Availability, Paged, Reservation, ReservationListItem, ReservationSource, ReservationStatus } from '../../core/models';
+import { Availability, Calendar, Paged, Reservation, ReservationListItem, ReservationSource, ReservationStatus } from '../../core/models';
 
 /** Typed client for the Sprint 5 availability and reservation endpoints. Every call is for one property. */
 @Injectable({ providedIn: 'root' })
@@ -30,6 +30,14 @@ export class ReservationsApi {
   confirm(pid: string, id: string) { return this.http.post<Reservation>(`${this.base(pid)}/reservations/${id}/confirm`, {}); }
   cancel(pid: string, id: string, reason: string) { return this.http.post<Reservation>(`${this.base(pid)}/reservations/${id}/cancel`, { reason }); }
   noShow(pid: string, id: string, reason: string) { return this.http.post<Reservation>(`${this.base(pid)}/reservations/${id}/no-show`, { reason }); }
+  /** Sprint 6: rooms, bookings and blocks for [from, to) — at most 62 days. */
+  calendar(pid: string, from: string, to: string) {
+    return this.http.get<Calendar>(`${this.base(pid)}/calendar`, { params: new HttpParams({ fromObject: { from, to } }) });
+  }
+  /** Moves one room (or dorm bed) of a booking to another for the same nights. The price stays as booked. */
+  reassign(pid: string, id: string, body: { reservationUnitId: string; unitId: string; bedId: string | null; reason: string; version: number }) {
+    return this.http.post<Reservation>(`${this.base(pid)}/reservations/${id}/reassign`, body);
+  }
   addNote(pid: string, id: string, note: string) { return this.http.post<Reservation>(`${this.base(pid)}/reservations/${id}/notes`, { note }); }
 }
 
