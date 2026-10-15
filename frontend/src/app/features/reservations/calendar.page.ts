@@ -1,9 +1,9 @@
-import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { Subject, map, switchMap, tap } from 'rxjs';
+import { EMPTY, Subject, catchError, map, switchMap, tap } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -156,6 +156,8 @@ export class CalendarPage {
   private auth = inject(AuthService);
   private dialog = inject(MatDialog);
   private snack = inject(MatSnackBar);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   label = label;
   dayLabel = dayLabel;
@@ -164,7 +166,9 @@ export class CalendarPage {
   kindText = { arrives: 'Arrives', stays: 'In house', leaves: 'Leaves', blocked: 'Blocked' } as const;
 
   mobile = toSignal(inject(BreakpointObserver).observe('(max-width: 760px)').pipe(map(r => r.matches)), { initialValue: false });
-  view = signal<CalView>('week');
+  /** ?view=day|week|month&date=YYYY-MM-DD opens a given window (links, bookmarks, the browser tests). */
+  private asked = this.route.snapshot.queryParamMap;
+  view = signal<CalView>((['day', 'week', 'month'] as const).find(v => v === this.asked.get('view')) ?? 'week');
   anchor = signal('');
   cal = signal<Calendar | null>(null);
   loading = signal(false);
@@ -192,22 +196,28 @@ export class CalendarPage {
   constructor() {
     this.load$.pipe(
       tap(() => { this.loading.set(true); this.error.set(''); }),
-      switchMap(() => this.api.calendar(this.pid(), this.window().from, this.window().to)),
+      // a failed load shows its reason and keeps the stream alive for "Try again"
+      switchMap(() => this.api.calendar(this.pid(), this.window().from, this.window().to).pipe(
+        catchError(e => { this.error.set(toProblem(e).detail); this.loading.set(false); return EMPTY; }))),
       takeUntilDestroyed(inject(DestroyRef)),
-    ).subscribe({
-      next: c => { this.cal.set(c); this.loading.set(false); },
-      error: e => { this.error.set(toProblem(e).detail); this.loading.set(false); },
-    });
-    // a new property: start at its today
+    ).subscribe(c => { this.cal.set(c); this.loading.set(false); });
+    // a property chosen (or changed): start at the asked date the first time, else at the property's today
     effect(() => {
       const p = this.props.current();
       if (!p) return;
-      this.anchor.set(todayIn(p.timezone));
-      this.load();
+      untracked(() => {
+        const date = this.asked.get('date');
+        this.anchor.set(date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !this.anchor() ? date : todayIn(p.timezone));
+        this.load();
+      });
     });
   }
 
-  load() { if (this.pid() && this.anchor()) this.load$.next(); }
+  load() {
+    if (!this.pid() || !this.anchor()) return;
+    this.router.navigate([], { queryParams: { view: this.view(), date: this.anchor() }, replaceUrl: true });
+    this.load$.next();
+  }
   setView(v: CalView) { this.view.set(v); this.banner.set(''); this.load(); }
   go(dir: 1 | -1) { this.anchor.set(shift(this.view(), this.anchor(), dir)); this.banner.set(''); this.load(); }
   goToday() { this.anchor.set(this.cal()?.today ?? todayIn(this.props.current()!.timezone)); this.banner.set(''); this.load(); }

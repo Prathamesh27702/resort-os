@@ -303,6 +303,44 @@ if (std && std.freeRooms.length > 0 && walkIn && checkGuest) {
 await expectCall('Reservations list (default: stays not ended yet)', 'GET', `${P}/reservations`, 200, { token: R },
   b => Array.isArray(b.items) || 'no items');
 
+// ---------------------------------------------------------------- Sprint 06 — reservation calendar
+title('Sprint 06 — calendar and moving a guest to another room');
+// Books one Standard room 130 nights from now, moves it to another Standard room, then cancels it: nothing stays held.
+const c0 = plus(130), c1 = plus(132);
+await expectCall('Calendar for 7 days: rooms, bookings, blocks', 'GET', `${P}/calendar?from=${today}&to=${plus(7)}`, 200, { token: R },
+  b => (Array.isArray(b.rooms) && b.rooms.length > 0 && Array.isArray(b.bookings) && Array.isArray(b.blocks)) || 'missing rooms/bookings/blocks');
+await expectCall('Calendar longer than 62 days → 400 under To with the reason', 'GET', `${P}/calendar?from=${today}&to=${plus(63)}`, 400,
+  { token: R }, b => /at most 62 days/.test(b.details?.To?.[0] ?? '') || JSON.stringify(b.details));
+const freeStd = ((await call('GET', `${P}/availability?from=${c0}&to=${c1}&adults=2`, { token: R })).json?.types ?? [])
+  .find(t => t.code === 'STANDARD_ROOM')?.freeRooms ?? [];
+if (freeStd.length >= 2 && walkIn && checkGuest && std) {
+  const [a, b2] = freeStd;
+  const made = await expectCall(`Receptionist books ${a.name} for 2 nights`, 'POST', `${P}/reservations`, 201,
+    { token: R, headers: { 'Idempotency-Key': `api-check-move-${Date.now()}` },
+      body: { checkIn: c0, checkOut: c1, rooms: [{ accommodationTypeId: std.accommodationTypeId, unitId: a.id, adults: 2, children: 0 }],
+              guestIds: [checkGuest.id], sourceId: walkIn.id, ratePlanId: null, status: 'CONFIRMED', specialRequests: null, note: null } });
+  if (made?.json) {
+    const r = made.json;
+    const unit = r.units.find(u => u.current);
+    const url = `${P}/reservations/${r.id}/reassign`;
+    await expectCall('Move without a reason → 400 under Reason', 'POST', url, 400,
+      { token: R, body: { reservationUnitId: unit.id, unitId: b2.id, bedId: null, reason: '', version: r.version } },
+      b => /Say why the guest is moving/.test(b.details?.Reason?.[0] ?? '') || JSON.stringify(b.details));
+    await expectCall('Move with an old version → 409 CONCURRENCY_CONFLICT', 'POST', url, 409,
+      { token: R, body: { reservationUnitId: unit.id, unitId: b2.id, bedId: null, reason: 'API check', version: r.version + 1 } },
+      b => b.code === 'CONCURRENCY_CONFLICT' || b.code);
+    const moved = await expectCall(`Move ${a.name} → ${b2.name}: same total, a note with the reason`, 'POST', url, 200,
+      { token: R, body: { reservationUnitId: unit.id, unitId: b2.id, bedId: null, reason: 'API check', version: r.version } },
+      b => (b.units.find(u => u.current)?.unitId === b2.id && b.totalAmount === r.totalAmount && b.notes.some(n => n.note.includes('Reason: API check')))
+        || JSON.stringify(b.units));
+    await expectCall(`Calendar shows the booking in ${b2.name}`, 'GET', `${P}/calendar?from=${c0}&to=${c1}`, 200, { token: R },
+      b => b.bookings.some(x => x.reservationId === r.id && x.unitId === b2.id) || 'not in the new room');
+    if (moved?.json)
+      await expectCall('Cancel the check booking (frees the room)', 'POST', `${P}/reservations/${r.id}/cancel`, 200,
+        { token: R, body: { reason: 'API check' } }, b => b.status === 'CANCELLED' || b.status);
+  }
+} else record('Move a booking between two free Standard rooms 130 nights ahead', false, 'fewer than 2 free Standard rooms, or no walk-in source / check guest');
+
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);
 console.log(`\n${results.length - failed.length} passed, ${failed.length} failed, ${results.length} checks`);
