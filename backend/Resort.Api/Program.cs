@@ -90,8 +90,9 @@ var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
     .WithOrigins(corsOrigins)
     .WithMethods("GET", "POST", "PUT", "DELETE")
-    .WithHeaders("Authorization", "Content-Type", AuthEndpoints.ClientHeader, RequestContext.CorrelationHeader, RequestContext.ChangeReasonHeader)
-    .WithExposedHeaders(RequestContext.CorrelationHeader, RequestContext.RequestIdHeader)
+    .WithHeaders("Authorization", "Content-Type", AuthEndpoints.ClientHeader, RequestContext.CorrelationHeader, RequestContext.ChangeReasonHeader,
+        Idempotency.Header)
+    .WithExposedHeaders(RequestContext.CorrelationHeader, RequestContext.RequestIdHeader, Idempotency.ReplayedHeader)
     .AllowCredentials()));
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
@@ -157,6 +158,7 @@ app.MapAdminEndpoints();
 app.MapAccommodationEndpoints();
 app.MapGuestEndpoints();
 app.MapRateEndpoints();
+app.MapReservationEndpoints();
 
 app.Run();
 

@@ -81,8 +81,14 @@ public sealed class GuestService(
     public async Task<IReadOnlyList<GuestStayDto>> StaysAsync(Guid id, CancellationToken ct)
     {
         await LoadAsync(id, ct, track: false);
-        // Reservations are built in Sprint 5; until then a guest has no stays.
-        return [];
+        // Every reservation the guest is on (as the booker or staying), newest first, across the organisation's properties.
+        var reservationIds = db.ReservationGuests.Where(g => g.GuestId == id).Select(g => g.ReservationId);
+        return await db.Reservations.AsNoTracking()
+            .Where(r => r.PrimaryGuestId == id || reservationIds.Contains(r.Id))
+            .Join(db.Properties, r => r.PropertyId, p => p.Id, (r, p) => new { r, p.Name })
+            .OrderByDescending(x => x.r.CheckIn)
+            .Select(x => new GuestStayDto(x.r.Id, x.r.PropertyId, x.Name, x.r.CheckIn, x.r.CheckOut, x.r.Status, x.r.Reference))
+            .ToListAsync(ct);
     }
 
     // ------------------------------------------------------------------ duplicates
@@ -336,6 +342,15 @@ public sealed class GuestService(
         foreach (var d in await db.GuestDocuments.Where(d => d.GuestId == dup.Id).ToListAsync(ct)) d.GuestId = survivor.Id;
         foreach (var c in await db.GuestConsents.Where(c => c.GuestId == dup.Id).ToListAsync(ct)) c.GuestId = survivor.Id;
         foreach (var earlier in await db.Guests.Where(x => x.MergedIntoId == dup.Id).ToListAsync(ct)) earlier.MergedIntoId = survivor.Id;
+        // Bookings follow the person: the survivor becomes the booker, and replaces the duplicate on guest lists.
+        foreach (var res in await db.Reservations.Where(x => x.PrimaryGuestId == dup.Id).ToListAsync(ct))
+            res.PrimaryGuestId = survivor.Id;
+        var onBoth = await db.ReservationGuests.Where(x => x.GuestId == survivor.Id).Select(x => x.ReservationId).ToListAsync(ct);
+        foreach (var rg in await db.ReservationGuests.Where(x => x.GuestId == dup.Id).ToListAsync(ct))
+        {
+            if (onBoth.Contains(rg.ReservationId)) db.ReservationGuests.Remove(rg);
+            else rg.GuestId = survivor.Id;
+        }
 
         dup.Status = GuestStatuses.Merged;
         dup.MergedIntoId = survivor.Id;

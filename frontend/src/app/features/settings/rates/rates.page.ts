@@ -4,11 +4,13 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/auth.service';
+import { pickerError } from '../../../core/dates';
 import { showFieldErrors, toProblem } from '../../../core/http';
 import { AccommodationType, MEAL_PLAN_LABELS, MEAL_PLANS, Problem, RatePlan, RatePrice, RateQuote, Room } from '../../../core/models';
 import { PropertyContext } from '../../../core/property-context';
@@ -26,7 +28,7 @@ const DAYS = [
 /** Rate plans, the rate grid (room type × night) with bulk edit, and a quote to check the result. */
 @Component({
   selector: 'app-rates',
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatDatepickerModule, MatInputModule, MatSelectModule,
     MatSlideToggleModule, MatSnackBarModule],
   template: `
     <div class="page">
@@ -169,14 +171,18 @@ const DAYS = [
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>First night</mat-label>
-                <input matInput type="date" formControlName="firstNight" />
-                <mat-error>{{ prices.controls.firstNight.errors?.['server'] ?? 'Enter the first night.' }}</mat-error>
+                <input matInput [matDatepicker]="dpFirstNight" formControlName="firstNight" />
+                <mat-datepicker-toggle matIconSuffix [for]="dpFirstNight" />
+                <mat-datepicker #dpFirstNight />
+                <mat-error>{{ prices.controls.firstNight.errors?.['server'] ?? pickerError(prices.controls.firstNight.errors) ?? 'Enter the first night.' }}</mat-error>
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Last night</mat-label>
-                <input matInput type="date" formControlName="lastNight" />
+                <input matInput [matDatepicker]="dpLastNight" formControlName="lastNight" />
+                <mat-datepicker-toggle matIconSuffix [for]="dpLastNight" />
+                <mat-datepicker #dpLastNight />
                 <mat-hint>{{ nightsHint() }}</mat-hint>
-                <mat-error>{{ prices.controls.lastNight.errors?.['server'] ?? 'Enter the last night.' }}</mat-error>
+                <mat-error>{{ prices.controls.lastNight.errors?.['server'] ?? pickerError(prices.controls.lastNight.errors) ?? 'Enter the last night.' }}</mat-error>
               </mat-form-field>
             </div>
             @if (prices.hasError('lastBeforeFirst')) { <p class="error">The last night can't be before the first night.</p> }
@@ -242,8 +248,10 @@ const DAYS = [
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Arrival</mat-label>
-              <input matInput type="date" formControlName="from" />
-              <mat-error>{{ quoteF.controls.from.errors?.['server'] ?? 'Enter the arrival date.' }}</mat-error>
+              <input matInput [matDatepicker]="dpFrom" formControlName="from" />
+              <mat-datepicker-toggle matIconSuffix [for]="dpFrom" />
+              <mat-datepicker #dpFrom />
+              <mat-error>{{ quoteF.controls.from.errors?.['server'] ?? pickerError(quoteF.controls.from.errors) ?? 'Enter the arrival date.' }}</mat-error>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Nights</mat-label>
@@ -333,6 +341,7 @@ export class RatesPage {
   readonly rupees = rupees;
   readonly dayLabel = dayLabel;
   readonly moneyError = moneyError;
+  readonly pickerError = pickerError;
   readonly mealPlans = MEAL_PLANS;
   readonly mealLabel = MEAL_PLAN_LABELS;
   readonly days = DAYS;

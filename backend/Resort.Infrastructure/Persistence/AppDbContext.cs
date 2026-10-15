@@ -10,6 +10,7 @@ using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 using Resort.Domain.Rates;
+using Resort.Domain.Reservations;
 
 namespace Resort.Infrastructure.Persistence;
 
@@ -53,6 +54,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<RatePlanPrice> RatePlanPrices => Set<RatePlanPrice>();
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<PackageComponent> PackageComponents => Set<PackageComponent>();
+    public DbSet<Reservation> Reservations => Set<Reservation>();
+    public DbSet<ReservationUnit> ReservationUnits => Set<ReservationUnit>();
+    public DbSet<ReservationGuest> ReservationGuests => Set<ReservationGuest>();
+    public DbSet<ReservationRateBreakdown> ReservationRateBreakdowns => Set<ReservationRateBreakdown>();
+    public DbSet<ReservationNote> ReservationNotes => Set<ReservationNote>();
+    public DbSet<ReservationStatusChange> ReservationStatusHistory => Set<ReservationStatusChange>();
+    public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -194,6 +202,51 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.ToTable("package_components");
             e.Property(x => x.SharePercent).HasColumnType("numeric(5,2)");
             e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+
+        // ---- Sprint 5: reservations (database/migrations/V007__reservations.sql)
+        b.Entity<Reservation>(e =>
+        {
+            e.ToTable("reservations");
+            e.Property(x => x.TotalAmount).HasColumnType("numeric(12,2)");
+            e.Property(x => x.Currency).HasColumnType("char(3)");
+            e.HasMany(x => x.Units).WithOne().HasForeignKey(x => x.ReservationId);
+            e.HasMany(x => x.Guests).WithOne().HasForeignKey(x => x.ReservationId);
+            e.Ignore(x => x.Nights);
+        });
+        b.Entity<ReservationUnit>(e =>
+        {
+            e.ToTable("reservation_units");
+            // "stay" is a generated column used only by the database's EXCLUDE constraints; not mapped.
+            e.Ignore(x => x.IsCurrent);
+        });
+        b.Entity<ReservationGuest>().ToTable("reservation_guests");
+        b.Entity<ReservationRateBreakdown>(e =>
+        {
+            e.ToTable("reservation_rate_breakdowns");
+            // Declared so EF inserts the reservation and unit rows before the nights that point to them.
+            e.HasOne<Reservation>().WithMany().HasForeignKey(x => x.ReservationId);
+            e.HasOne<ReservationUnit>().WithMany().HasForeignKey(x => x.ReservationUnitId);
+            foreach (var m in new[] { nameof(ReservationRateBreakdown.UnitPrice), nameof(ReservationRateBreakdown.BaseAmount),
+                         nameof(ReservationRateBreakdown.ExtraAdultRate), nameof(ReservationRateBreakdown.ExtraAdultAmount),
+                         nameof(ReservationRateBreakdown.ExtraChildRate), nameof(ReservationRateBreakdown.ExtraChildAmount),
+                         nameof(ReservationRateBreakdown.Total) })
+                e.Property(m).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<ReservationNote>(e =>
+        {
+            e.ToTable("reservation_notes");
+            e.HasOne<Reservation>().WithMany().HasForeignKey(x => x.ReservationId);
+        });
+        b.Entity<ReservationStatusChange>(e =>
+        {
+            e.ToTable("reservation_status_history");
+            e.HasOne<Reservation>().WithMany().HasForeignKey(x => x.ReservationId);
+        });
+        b.Entity<IdempotencyKey>(e =>
+        {
+            e.ToTable("idempotency_keys");
+            e.Property(x => x.Response).HasColumnType("jsonb");
         });
 
         foreach (var entity in b.Model.GetEntityTypes())

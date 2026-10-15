@@ -4,9 +4,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { BLOCK_TYPES, Room, UnitBlock } from '../../core/models';
+import { pickerError } from '../../core/dates';
 import { fieldErrors, toProblem } from '../../core/http';
 import { RoomsApi, addDays, label, nightsBetween, shortDate } from './rooms.api';
 import { blockForm, minTrimmed } from './rooms.forms';
@@ -16,7 +18,7 @@ export interface BlockDialogData { propertyId: string; today: string; rooms: Roo
 /** Take a room, a whole dorm or one dorm bed out of sale. Returns the created block. */
 @Component({
   selector: 'app-block-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatDatepickerModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Block a room</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="block-form">
@@ -45,12 +47,18 @@ export interface BlockDialogData { propertyId: string; today: string; rooms: Roo
       <div class="dates">
         <mat-form-field appearance="outline">
           <mat-label>First night</mat-label>
-          <input matInput type="date" formControlName="startDate" />
+          <input matInput [matDatepicker]="dpStartDate" formControlName="startDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="dpStartDate" />
+          <mat-datepicker #dpStartDate />
+          <mat-error>{{ pickerError(form.controls.startDate.errors) ?? 'Choose the first night.' }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Available again on</mat-label>
-          <input matInput type="date" formControlName="endDate" />
+          <input matInput [matDatepicker]="dpEndDate" formControlName="endDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="dpEndDate" />
+          <mat-datepicker #dpEndDate />
           <mat-hint>Like a check-out date</mat-hint>
+          <mat-error>{{ pickerError(form.controls.endDate.errors) ?? 'Choose the day the room is available again.' }}</mat-error>
         </mat-form-field>
       </div>
       <p class="nights" aria-live="polite">
@@ -89,6 +97,7 @@ export class BlockDialog {
   types = BLOCK_TYPES;
   label = label;
   shortDate = shortDate;
+  pickerError = pickerError;
   busy = signal(false);
   error = signal('');
   err = signal<Record<string, string>>({});

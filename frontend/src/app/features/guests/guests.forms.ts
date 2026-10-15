@@ -67,7 +67,7 @@ export function toGuestRequest(v: GuestFormValue, preferences: GuestPreference[]
   const hasAddress = [address.line1, address.line2, address.city, address.state, address.stateCode, address.postalCode].some(x => x !== null);
   return {
     firstName: v.firstName.trim(), lastName: blank(v.lastName), phone: blank(v.phone), email: blank(v.email),
-    dateOfBirth: blank(v.dateOfBirth), nationality: blank(v.nationality)?.toUpperCase() ?? null,
+    dateOfBirth: blank(v.dateOfBirth ?? ''), nationality: blank(v.nationality)?.toUpperCase() ?? null,
     companyName: blank(v.companyName), gstin: blank(v.gstin)?.toUpperCase() ?? null, notes: blank(v.notes), isVip: v.isVip,
     address: hasAddress ? address : null,
     preferences,

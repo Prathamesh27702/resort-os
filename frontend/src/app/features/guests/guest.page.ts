@@ -12,7 +12,8 @@ import { CONSENT_PURPOSES, Guest, GuestDocument, GuestDocumentDetail, GuestStay 
 import { PropertyContext, inZone } from '../../core/property-context';
 import { CanDirective } from '../../shared/can.directive';
 import { ReasonDialog } from '../rooms/block-dialog';
-import { label } from '../rooms/rooms.api';
+import { label, shortDate } from '../rooms/rooms.api';
+import { statusLabel } from '../reservations/reservations.api';
 import { DocumentDialog, MergeDialog } from './guest-dialogs';
 import { GuestsApi, countryName, formatPhone } from './guests.api';
 
@@ -120,9 +121,13 @@ const CONSENT_LABEL: Record<string, string> = {
         <section class="panel card wide">
           <h2>Stays</h2>
           @for (s of stays(); track s.reservationId) {
-            <p>{{ s.propertyName }} · {{ s.checkIn }} – {{ s.checkOut }} · {{ label(s.status) }}</p>
+            <p>
+              @if (ctx.current().id === s.propertyId) { <a [routerLink]="'/reservations/' + s.reservationId" class="num">{{ s.reference }}</a> }
+              @else { <span class="num">{{ s.reference }}</span> }
+              · {{ s.propertyName }} · {{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }} · {{ statusLabel(s.status) }}
+            </p>
           } @empty {
-            <p class="mute">No stays yet. Bookings appear here once reservations are built (Sprint 05).</p>
+            <p class="mute">No stays yet.</p>
           }
         </section>
 
@@ -202,11 +207,13 @@ export class GuestPage implements OnInit, OnDestroy {
   id = input.required<string>();
   private api = inject(GuestsApi);
   private auth = inject(AuthService);
-  private ctx = inject(PropertyContext);
+  ctx = inject(PropertyContext);
   private dialog = inject(MatDialog);
   private snack = inject(MatSnackBar);
 
   label = label;
+  shortDate = shortDate;
+  statusLabel = statusLabel;
   phone = formatPhone;
   country = countryName;
   purposes = CONSENT_PURPOSES;

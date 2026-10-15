@@ -80,6 +80,18 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
             throw new ConflictAppException("BLOCK_OVERLAP",
                 $"{unit.Name}{(clash.BedId is null ? "" : " (a bed)")} is already blocked {NightsText(clash.StartDate, clash.EndDate)} ({clash.Reason}).");
 
+        // A block can't take a room (or bed) away from a booking that holds it (V007 trigger enforces the same).
+        var booked = await db.ReservationUnits
+            .Where(u => u.UnitId == unit.Id && u.HoldsInventory && u.StartDate < r.EndDate && r.StartDate < u.EndDate
+                        && (r.BedId == null || u.BedId == r.BedId))
+            .Join(db.Reservations, u => u.ReservationId, res => res.Id, (u, res) => new { res.Reference, u.StartDate, u.EndDate, u.BedId })
+            .OrderBy(x => x.StartDate)
+            .FirstOrDefaultAsync(ct);
+        if (booked is not null)
+            throw new ConflictAppException("BLOCK_OVERLAPS_RESERVATION",
+                $"{unit.Name}{(booked.BedId is null ? "" : " (a bed)")} is booked on {booked.Reference} {NightsText(booked.StartDate, booked.EndDate)}. " +
+                "Move that booking to another room or cancel it first.");
+
         var block = new UnitBlock
         {
             OrganizationId = unit.OrganizationId,

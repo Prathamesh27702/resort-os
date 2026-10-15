@@ -9,7 +9,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 1 — foundation](database/schema-sprint-01.md) ·
   [Sprint 2 — accommodation](database/schema-sprint-02.md) (rooms, dorm beds, blocks, dev seed data) ·
   [Sprint 3 — guests](database/schema-sprint-03.md) (profiles, encrypted ID documents, consents, demo guests) ·
-  [Sprint 4 — rates and packages](database/schema-sprint-04.md) (rate plans, nightly rate grid, packages and their revenue split, reservation sources, demo rates)
+  [Sprint 4 — rates and packages](database/schema-sprint-04.md) (rate plans, nightly rate grid, packages and their revenue split, reservation sources, demo rates) ·
+  [Sprint 5 — reservations](database/schema-sprint-05.md) (reservations, held rooms and beds with the double-booking guard, nightly prices, status history, idempotency keys, demo bookings)
 
 ## Conventions (every table)
 
@@ -37,11 +38,13 @@ database/migrations/
   V004__accommodation.sql
   V005__guests.sql
   V006__rates.sql
-  V007__<next>.sql   ← you add this
+  V007__reservations.sql
+  V008__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
   S002__guests.sql          ← 20 demo guests; Development only
   S003__rates.sql           ← BAR with weekend uplift, 2 packages; Development only
+  S004__reservations.sql    ← 6 demo bookings (R00001–R00006); Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.
@@ -173,7 +176,8 @@ justified (brief §11: "do not create artificial tables").
 | organization → everything | Tenant boundary. No query crosses it; enforced by EF filters and tested. |
 | user ↔ property (user_roles) | `property_id NULL` = all properties. A user may hold different roles at different properties. |
 | accommodation_type → unit → bed | `inventory_mode` UNIT sells the unit; BED sells beds. Beds exist only under BED-mode units. |
-| reservation → reservation_units | One row per unit/bed per stay range. `EXCLUDE USING gist (unit_id WITH =, stay WITH &&)` for active statuses is the final guard against double booking (Sprint 5). |
+| reservation → reservation_units | One row per room, or per dorm bed, per stay range `[start, end)`. `EXCLUDE USING gist (unit_id WITH =, stay WITH &&)` (and the same on `bed_id`) over rows that hold inventory is the final guard against double booking; a change of dates supersedes rows instead of deleting them. Details: [schema-sprint-05.md](database/schema-sprint-05.md), [booking-algorithm.md](architecture/booking-algorithm.md). |
+| reservation → reservation_status_history | Every status change with who, when and why; moves are limited to the rows of `reservation_status_transitions` (trigger). Reservations are never deleted. |
 | reservation → folio | Created on confirmation. A reservation can have several folios (split billing). |
 | folio_item → folio_item_taxes → tax_rules | The rule id and rate used are copied at posting time. Changing a rule never changes history (brief §86). |
 | payment → payment_allocations → folio | A payment can settle several folios; a folio can have several payments. |

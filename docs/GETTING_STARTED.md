@@ -209,6 +209,7 @@ What you have to do on top of Steps 1–8 before you can run or review a sprint.
 | 02 — Rooms | **None** | **None** | Restart the API (it adds the new tables and demo rooms). Database reset optional |
 | 03 — Guests | **None** | **None** (`Encryption__Key` from Sprint 01 is now used) | Restart the API (new tables, 20 demo guests). Database reset optional |
 | 04 — Rates and packages | **None** | **None** | `cd frontend; npm ci`, then restart the API (new tables, demo rate plan BAR and two packages). Database reset recommended before the review |
+| 05 — Reservations | **None** | **None** | Restart the API (new tables, 6 demo bookings R00001–R00006). Database reset recommended before the review, because the demo bookings start from today |
 
 ### Sprint 02 in detail
 

@@ -7,6 +7,7 @@ using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 using Resort.Domain.Rates;
+using Resort.Domain.Reservations;
 
 namespace Resort.Application.Common;
 
@@ -43,6 +44,13 @@ public interface IAppDbContext
     DbSet<RatePlanPrice> RatePlanPrices { get; }
     DbSet<Package> Packages { get; }
     DbSet<PackageComponent> PackageComponents { get; }
+    DbSet<Reservation> Reservations { get; }
+    DbSet<ReservationUnit> ReservationUnits { get; }
+    DbSet<ReservationGuest> ReservationGuests { get; }
+    DbSet<ReservationRateBreakdown> ReservationRateBreakdowns { get; }
+    DbSet<ReservationNote> ReservationNotes { get; }
+    DbSet<ReservationStatusChange> ReservationStatusHistory { get; }
+    DbSet<IdempotencyKey> IdempotencyKeys { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

@@ -114,7 +114,7 @@ export interface Guest {
   documentCount: number | null; createdAt: string; updatedAt: string; version: number;
 }
 export interface PossibleDuplicate { id: string; fullName: string; phone: string | null; email: string | null; nationality: string | null; reasons: string[]; }
-export interface GuestStay { reservationId: string; propertyId: string; propertyName: string; checkIn: string; checkOut: string; status: string; }
+export interface GuestStay { reservationId: string; propertyId: string; propertyName: string; checkIn: string; checkOut: string; status: string; reference: string; }
 export interface GuestDocument {
   id: string; documentType: string; maskedNumber: string | null; issuingCountry: string | null; expiresOn: string | null;
   hasFile: boolean; fileName: string | null; contentType: string | null; sizeBytes: number | null; status: 'ACTIVE' | 'PURGED';
@@ -155,3 +155,43 @@ export interface Package {
   nights: number; adults: number; children: number; price: number; sortOrder: number; isActive: boolean;
   components: PackageComponent[]; revenueByCategory: Record<string, number>; version: number;
 }
+
+// ---------------------------------------------------------------- reservations (Sprint 5)
+export type ReservationStatus = 'INQUIRY' | 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW' | 'REFUNDED';
+export const RESERVATION_STATUSES: ReservationStatus[] = ['INQUIRY', 'PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED', 'NO_SHOW', 'REFUNDED'];
+
+export interface AvailableRoom { id: string; code: string; name: string; floor: string | null; }
+/** free = rooms (or dorm beds) free for every night; fits = the guests can be booked here; price = default plan, or priceProblem. */
+export interface AvailabilityType {
+  accommodationTypeId: string; code: string; name: string; inventoryMode: InventoryMode; baseOccupancy: number; maxOccupancy: number;
+  total: number; free: number; fits: boolean; fitProblem: string | null; ratePlanId: string | null; ratePlanName: string | null;
+  price: number | null; priceProblem: string | null; freeRooms: AvailableRoom[];
+}
+export interface Availability { from: string; to: string; nights: number; adults: number; children: number; currency: string; types: AvailabilityType[]; }
+
+export interface ReservationListItem {
+  id: string; reference: string; status: ReservationStatus; primaryGuestId: string; guestName: string; guestPhone: string | null;
+  checkIn: string; checkOut: string; nights: number; adults: number; children: number; rooms: string; sourceName: string;
+  totalAmount: number; currency: string; createdAt: string;
+}
+export interface ReservationUnit {
+  id: string; accommodationTypeId: string; accommodationTypeName: string; inventoryMode: InventoryMode; unitId: string; unitCode: string;
+  unitName: string; bedId: string | null; bedCode: string | null; startDate: string; endDate: string; adults: number; children: number;
+  holdsInventory: boolean; current: boolean; total: number;
+}
+export interface ReservationNight {
+  reservationUnitId: string; date: string; units: number; unitPrice: number; baseAmount: number; extraAdults: number; extraAdultRate: number;
+  extraAdultAmount: number; extraChildren: number; extraChildRate: number; extraChildAmount: number; total: number;
+}
+export interface ReservationGuest { guestId: string; fullName: string; phone: string | null; email: string | null; isPrimary: boolean; }
+export interface ReservationNote { id: string; note: string; createdAt: string; createdByName: string | null; }
+export interface ReservationStatusChange { fromStatus: ReservationStatus | null; toStatus: ReservationStatus; reason: string | null; changedAt: string; changedByName: string | null; }
+export interface Reservation {
+  id: string; reference: string; status: ReservationStatus; checkIn: string; checkOut: string; nights: number; adults: number; children: number;
+  sourceId: string; sourceName: string; ratePlanId: string; ratePlanName: string; mealPlan: string; totalAmount: number; currency: string;
+  specialRequests: string | null; guests: ReservationGuest[]; units: ReservationUnit[]; breakdown: ReservationNight[];
+  notes: ReservationNote[]; history: ReservationStatusChange[]; nextStatuses: ReservationStatus[];
+  createdAt: string; createdByName: string | null; version: number;
+}
+export interface ReservationRoomRequest { accommodationTypeId: string; unitId: string | null; adults: number; children: number; }
+export interface ReservationSource { id: string; code: string; name: string; channel: string; commissionPercent: number | null; }

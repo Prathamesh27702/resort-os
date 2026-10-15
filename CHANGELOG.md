@@ -2,6 +2,40 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [Unreleased] — Sprint 05 — Availability engine and reservations (in review)
+
+### Added
+- Migration V007: `reservations`, `reservation_units` (rooms and dorm beds held, with `EXCLUDE USING gist` on
+  `(unit_id, stay)` and `(bed_id, stay)` as the final guard against double booking), `reservation_guests`,
+  `reservation_rate_breakdowns`, `reservation_notes`, `reservation_status_history`, `reservation_status_transitions`
+  (the status graph, enforced by a trigger), `idempotency_keys`, `property_counters` (references R00001 …). Reservations,
+  their rooms, prices, notes and history are never deleted. A block and a booking can't cover the same room and night
+  (triggers both ways).
+- Availability engine (`Resort.Domain/Reservations/Availability.cs`, pure and unit-tested): free rooms and beds for every
+  night of a stay, allocation of rooms and one bed per dorm guest, and the reason when something doesn't fit.
+- Booking algorithm (`docs/architecture/booking-algorithm.md`): one transaction that claims the Idempotency-Key, locks the
+  rooms of the requested types in id order, allocates, prices every night from the rate grid and stores the response.
+- APIs under `/api/v1/properties/{id}`: `availability`, `reservations` (list, get, create with `Idempotency-Key`, change
+  dates/guests, confirm, cancel, no-show, notes). Permissions `reservation.read/create/update/cancel`.
+- Dev seed S004: six demo bookings from today (R00001–R00006), leaving Room 102 as the last Deluxe room tonight.
+- Staff app: Reservations (list with search and Booked / Enquiries / All), New booking wizard (dates → room → guest →
+  rate → confirm, with quick-add of a walk-in guest), booking page (rooms, price night by night, guests, notes, history,
+  confirm, change dates or guests, cancel and no-show with a reason). Guest profiles list their stays with references.
+- Tests: backend `ReservationTests` (last room raced 50 times, last dorm bed with 5 parallel requests, database guard,
+  idempotency, transitions, cancel frees the room, blocks vs bookings) and `ReservationUnitTests`; frontend form tests;
+  browser steps S05-01 … S05-07 (including the last room booked from two browsers); `check-api.mjs` Sprint 05 block;
+  `database/queries/check-sprint-05.sql`.
+
+### Changed
+- Creating a block on a booked room is refused with 409 `BLOCK_OVERLAPS_RESERVATION` naming the booking.
+- `GET /guests/{id}/stays` returns real reservations (with `reference`); merging guests moves their reservations.
+- Constraint errors map to their own codes (`ROOM_UNAVAILABLE`, `BLOCK_OVERLAPS_RESERVATION`, `INVALID_STATUS_TRANSITION`).
+- Every date field in the staff app shows "15 Oct 2026" with a calendar button and accepts typed dates (15 Oct 2026,
+  15-10-2026, 2026-10-15); a date it can't read says "Enter a date like 15 Oct 2026." under the field
+  (`core/dates.ts`, from owner review).
+- Field labels on the first row of dialogs and wizard steps are no longer cut off; the change-booking dialog lines up
+  rooms under the dates; finished wizard steps show a tick; Back sits next to the step's main button.
+
 ## [sprint-04] — 2026-10-14 — Rate plans and packages (accepted)
 
 ### Added

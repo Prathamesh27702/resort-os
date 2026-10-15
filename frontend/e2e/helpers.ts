@@ -64,6 +64,19 @@ export async function choose(page: Page, select: string, option: string | RegExp
   await page.getByRole('option', { name: option }).click();
 }
 
+/** A date field's text ("15 Oct 2026") as YYYY-MM-DD. */
+export function isoFromField(text: string) {
+  const [d, mon, y] = text.trim().split(/\s+/);
+  const m = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(mon.slice(0, 3).toLowerCase());
+  return `${y}-${String(m + 1).padStart(2, '0')}-${d.padStart(2, '0')}`;
+}
+
+/** YYYY-MM-DD as a person types it into a date field: "17 Oct 2026". */
+export function fieldDate(iso: string) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`;
+}
+
 /** YYYY-MM-DD plus N days, without time-zone surprises. */
 export function addDays(iso: string, days: number) {
   const [y, m, d] = iso.split('-').map(Number);

@@ -7,9 +7,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { pickerError } from '../../core/dates';
 import { fieldErrors, toProblem } from '../../core/http';
 import { GST_STATES, Guest, GuestPreference, PREFERENCE_CATEGORIES, PossibleDuplicate } from '../../core/models';
 import { label } from '../rooms/rooms.api';
@@ -20,7 +22,7 @@ import { fromGuest, guestForm, toGuestRequest } from './guests.forms';
 @Component({
   selector: 'app-guest-edit',
   imports: [ReactiveFormsModule, FormsModule, RouterLink, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
-    MatInputModule, MatSelectModule, MatSnackBarModule],
+    MatDatepickerModule, MatInputModule, MatSelectModule, MatSnackBarModule],
   template: `
     <div class="page">
       <div class="page-head">
@@ -64,9 +66,11 @@ import { fromGuest, guestForm, toGuestRequest } from './guests.forms';
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Date of birth</mat-label>
-            <input matInput type="date" formControlName="dateOfBirth" [max]="today" />
+            <input matInput [matDatepicker]="dpDateOfBirth" formControlName="dateOfBirth" [max]="today" />
+            <mat-datepicker-toggle matIconSuffix [for]="dpDateOfBirth" />
+            <mat-datepicker #dpDateOfBirth />
             <mat-hint>Only if your local rules ask for it</mat-hint>
-            @if (err()['dateOfBirth']) { <mat-error>{{ err()['dateOfBirth'] }}</mat-error> }
+            <mat-error>{{ err()['dateOfBirth'] || pickerError(form.controls.dateOfBirth.errors) }}</mat-error>
           </mat-form-field>
         </div>
         <mat-checkbox formControlName="isVip">VIP guest</mat-checkbox>
@@ -215,6 +219,7 @@ export class GuestEditPage implements OnInit {
   private snack = inject(MatSnackBar);
 
   label = label;
+  pickerError = pickerError;
   phone = formatPhone;
   countries = COUNTRIES;
   gstStates = GST_STATES;
