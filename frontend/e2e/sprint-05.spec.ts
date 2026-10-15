@@ -1,5 +1,5 @@
 import { Browser, Page, expect, test } from '@playwright/test';
-import { addDays, apiAs, createStaff, owner, runId, shot, signIn } from './helpers';
+import { addDays, apiAs, createStaff, fieldDate, owner, runId, shot, signIn } from './helpers';
 
 // Sprint 05 — the same checks as docs/sprints/REVIEWING.md → "Sprint 05", automated.
 // The throwaway e2e database starts with the demo bookings from database/seed/dev/S004__reservations.sql:
@@ -123,11 +123,12 @@ test('S05-06 The booking page: add a note, change the dates, cancel with a reaso
   // Moving the stay to start yesterday is refused under the field
   await p.getByRole('button', { name: /Change dates or guests/ }).click();
   const dlg = p.locator('mat-dialog-container');
-  await dlg.getByLabel('Check-out').fill(today);
+  await dlg.getByLabel('Check-out').fill(fieldDate(today));
   await dlg.getByRole('button', { name: 'Save and re-price' }).click();
   await expect(dlg.locator('mat-form-field', { hasText: 'Check-out' }).locator('mat-error')).toHaveText('The check-out date must be after check-in.');
   // Two nights instead of one: Room 102 is free tomorrow too
-  await dlg.getByLabel('Check-out').fill(addDays(today, 2));
+  await dlg.getByLabel('Check-out').fill(fieldDate(addDays(today, 2)));
+  await dlg.getByLabel('Check-out').blur();
   await shot(p, '06-change-dates');
   await dlg.getByRole('button', { name: 'Save and re-price' }).click();
   await expect(p.locator('mat-snack-bar-container').last()).toContainText(/updated · new total/);

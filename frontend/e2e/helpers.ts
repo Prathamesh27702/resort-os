@@ -71,6 +71,12 @@ export function isoFromField(text: string) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
+/** YYYY-MM-DD as a person types it into a date field: "17 Oct 2026". */
+export function fieldDate(iso: string) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`;
+}
+
 /** YYYY-MM-DD plus N days, without time-zone surprises. */
 export function addDays(iso: string, days: number) {
   const [y, m, d] = iso.split('-').map(Number);
