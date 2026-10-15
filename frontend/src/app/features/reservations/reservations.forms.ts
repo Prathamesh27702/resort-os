@@ -1,3 +1,4 @@
+import { pickerError } from '../../core/dates';
 import { AbstractControl, FormBuilder, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { addDays, nightsBetween } from '../rooms/rooms.api';
 import { dayLabel } from '../settings/rates/rates.api';
@@ -31,8 +32,9 @@ function setOwn(c: AbstractControl | null | undefined, key: string, on: boolean)
 export function dateError(c: AbstractControl, today: string): string {
   const e = c.errors ?? {};
   if (e['server']) return e['server'];
+  if (e['matDatepickerParse']) return pickerError(e)!;
   if (e['required']) return 'Choose a date.';
-  if (e['past']) return `Check-in can't be before today (${dayLabel(today)} at the property).`;
+  if (e['past'] || e['matDatepickerMin']) return `Check-in can't be before today (${dayLabel(today)} at the property).`;
   if (e['order']) return 'The check-out date must be after check-in.';
   if (e['tooLong']) return `A stay can be at most ${MAX_NIGHTS} nights.`;
   return '';

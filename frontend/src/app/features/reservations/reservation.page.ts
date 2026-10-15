@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth.service';
@@ -278,32 +279,36 @@ export interface ChangeStayData { reservation: Reservation; propertyId: string; 
  */
 @Component({
   selector: 'app-change-stay-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatDatepickerModule, MatInputModule],
   template: `
     <h2 mat-dialog-title>Change {{ data.reservation.reference }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="change-form">
-      <div class="row">
+      <div class="grid">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Check-in</mat-label>
-          <input matInput type="date" formControlName="checkIn" />
+          <input matInput [matDatepicker]="dpCheckIn" formControlName="checkIn" />
+          <mat-datepicker-toggle matIconSuffix [for]="dpCheckIn" />
+          <mat-datepicker #dpCheckIn />
           <mat-error>{{ dateErr('checkIn') }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Check-out</mat-label>
-          <input matInput type="date" formControlName="checkOut" />
+          <input matInput [matDatepicker]="dpCheckOut" formControlName="checkOut" />
+          <mat-datepicker-toggle matIconSuffix [for]="dpCheckOut" />
+          <mat-datepicker #dpCheckOut />
           <mat-error>{{ dateErr('checkOut') }}</mat-error>
         </mat-form-field>
       </div>
       <div formArrayName="rooms">
         @for (line of rooms.controls; track $index; let i = $index) {
-          <div class="row" [formGroupName]="i">
+          <div class="grid" [formGroupName]="i">
             <span class="room">{{ names[i] }}</span>
-            <mat-form-field appearance="outline" class="n">
+            <mat-form-field appearance="outline">
               <mat-label>{{ bedBased[i] ? 'Beds (adults)' : 'Adults' }}</mat-label>
               <input matInput type="number" min="1" formControlName="adults" />
               <mat-error>{{ line.get('adults')?.errors?.['server'] ?? 'At least one adult.' }}</mat-error>
             </mat-form-field>
-            <mat-form-field appearance="outline" class="n">
+            <mat-form-field appearance="outline">
               <mat-label>Children</mat-label>
               <input matInput type="number" min="0" formControlName="children" />
               <mat-error>{{ line.get('children')?.errors?.['server'] ?? 'Zero or more.' }}</mat-error>
@@ -325,9 +330,8 @@ export interface ChangeStayData { reservation: Reservation; propertyId: string; 
   `,
   styles: `
     form { min-width: min(460px, 80vw); display: flex; flex-direction: column; }
-    .row { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
-    .room { min-width: 140px; font-weight: 500; }
-    .n { width: 110px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; align-items: start; }
+    .room { grid-column: 1 / -1; font-weight: 500; margin: 4px 0 8px; }
     .full { width: 100%; }
     .err { color: #b3261e; }
   `,

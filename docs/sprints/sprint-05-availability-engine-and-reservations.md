@@ -36,7 +36,7 @@
 **Test results**
 
 - Backend: 173 passed, 0 failed on real PostgreSQL 16 (35 new: 34 for Sprint 05 including the last room raced 50 times, the last dorm bed with 5 parallel requests, the database guard and idempotency, plus the demo-booking seed check)
-- Frontend: 40 of 40 unit tests passed; ESLint clean; production build OK
+- Frontend: 44 of 44 unit tests passed; ESLint clean; production build OK
 - Browser tests: 52 of 52 passed (Sprints 01–04 plus the 7 new Sprint 05 steps, including the last room booked from two browsers); screenshots in docs/sprints/sprint-05-screens
 - API checks: 0 failed (12 new Sprint 05 checks: idempotent replay, key reuse, room taken, cancel with reason, status graph); database checks: no room or bed held twice
 

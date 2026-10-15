@@ -30,6 +30,11 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - Creating a block on a booked room is refused with 409 `BLOCK_OVERLAPS_RESERVATION` naming the booking.
 - `GET /guests/{id}/stays` returns real reservations (with `reference`); merging guests moves their reservations.
 - Constraint errors map to their own codes (`ROOM_UNAVAILABLE`, `BLOCK_OVERLAPS_RESERVATION`, `INVALID_STATUS_TRANSITION`).
+- Every date field in the staff app shows "15 Oct 2026" with a calendar button and accepts typed dates (15 Oct 2026,
+  15-10-2026, 2026-10-15); a date it can't read says "Enter a date like 15 Oct 2026." under the field
+  (`core/dates.ts`, from owner review).
+- Field labels on the first row of dialogs and wizard steps are no longer cut off; the change-booking dialog lines up
+  rooms under the dates; finished wizard steps show a tick; Back sits next to the step's main button.
 
 ## [sprint-04] — 2026-10-14 — Rate plans and packages (accepted)
 

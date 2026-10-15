@@ -7,6 +7,7 @@ import { Subject, debounceTime, forkJoin, map, of, switchMap } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -31,7 +32,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
  */
 @Component({
   selector: 'app-reservation-new',
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatDatepickerModule, MatInputModule,
     MatSelectModule, MatSnackBarModule, MatStepperModule],
   template: `
     <div class="page">
@@ -41,18 +42,25 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
 
       <mat-stepper #stepper [linear]="true" [orientation]="mobile() ? 'vertical' : 'horizontal'" [selectedIndex]="step()"
                    (selectionChange)="step.set($event.selectedIndex)" class="panel">
+        <!-- A finished step shows a tick, not Material's default pencil. -->
+        <ng-template matStepperIcon="edit"><mat-icon>check</mat-icon></ng-template>
+        <ng-template matStepperIcon="done"><mat-icon>check</mat-icon></ng-template>
 
         <!-- 1. Dates and guests -->
         <mat-step [completed]="!!availability()" label="Dates">
           <form [formGroup]="stay" (ngSubmit)="checkAvailability()" class="dates">
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Check-in</mat-label>
-              <input matInput type="date" formControlName="checkIn" [min]="today" />
+              <input matInput [matDatepicker]="dpCheckIn" formControlName="checkIn" [min]="today" />
+              <mat-datepicker-toggle matIconSuffix [for]="dpCheckIn" />
+              <mat-datepicker #dpCheckIn />
               <mat-error>{{ dateErr(stay.controls.checkIn) }}</mat-error>
             </mat-form-field>
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Check-out</mat-label>
-              <input matInput type="date" formControlName="checkOut" [min]="today" />
+              <input matInput [matDatepicker]="dpCheckOut" formControlName="checkOut" [min]="today" />
+              <mat-datepicker-toggle matIconSuffix [for]="dpCheckOut" />
+              <mat-datepicker #dpCheckOut />
               @if (nights() > 0) { <mat-hint>{{ nights() }} night{{ nights() === 1 ? '' : 's' }}</mat-hint> }
               <mat-error>{{ dateErr(stay.controls.checkOut) }}</mat-error>
             </mat-form-field>
@@ -106,7 +114,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
               } @empty { <p class="mute">This property has no active room types. Add them in Room types.</p> }
             </div>
             @if (stepError(1)) { <p class="err" role="alert">{{ stepError(1) }}</p> }
-            <button mat-button matStepperPrevious>Change dates</button>
+            <div class="actions"><button mat-button matStepperPrevious>Change dates</button></div>
           }
         </mat-step>
 
@@ -159,13 +167,13 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                   </div>
                 }
                 <div class="actions full">
+                  <button mat-button matStepperPrevious>Back to rooms</button>
                   <button mat-flat-button type="submit" [disabled]="busy()">Add guest and continue</button>
                   @if (stepError(2)) { <span class="err" role="alert">{{ stepError(2) }}</span> }
                 </div>
               </form>
             </section>
           </div>
-          <button mat-button matStepperPrevious>Back to rooms</button>
         </mat-step>
 
         <!-- 4. Rate and details -->
@@ -221,10 +229,10 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
               } @else if (stepError(3)) { <p class="err" role="alert">{{ stepError(3) }}</p> }
             </div>
             <div class="actions full">
+              <button mat-button matStepperPrevious>Back to guest</button>
               <button mat-flat-button type="submit" [disabled]="!quote() || quoting()">Continue</button>
             </div>
           </form>
-          <button mat-button matStepperPrevious>Back to guest</button>
         </mat-step>
 
         <!-- 5. Confirm -->
@@ -239,12 +247,12 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
               @if (details.controls.specialRequests.value) { <dt>Requests</dt><dd>{{ details.controls.specialRequests.value }}</dd> }
             </dl>
             <div class="actions">
+              <button mat-button matStepperPrevious>Back</button>
               <button mat-flat-button (click)="book()" [disabled]="busy()">{{ details.controls.status.value === 'INQUIRY' ? 'Save enquiry' : 'Book' }}</button>
               @if (stepError(4)) { <span class="err" role="alert">{{ stepError(4) }}</span> }
             </div>
             @if (roomTaken()) { <button mat-button (click)="backToRooms()">See what's free now</button> }
-          }
-          <button mat-button matStepperPrevious>Back</button>
+          } @else { <button mat-button matStepperPrevious>Back</button> }
         </mat-step>
       </mat-stepper>
     </div>
@@ -252,7 +260,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
   styles: `
     .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
     mat-stepper { padding: 8px 4px; }
-    .dates { display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: 4px 12px; align-items: start; padding-top: 8px; }
+    .dates { display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: 4px 12px; align-items: start; }
     .dates .full { grid-column: 1 / -1; }
     .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 12px; }
     .err { color: #b3261e; }
