@@ -18,7 +18,7 @@ const staffPassword = `Staff-${runId}-2026`;
 const reception = { email: `reception6.${runId}@demo.local`, name: `Rita Reception ${runId}` };
 const refs: Record<string, string> = {};
 
-type Room = { id: string; code: string; accommodationTypeId: string };
+interface Room { id: string; code: string; accommodationTypeId: string }
 
 test.beforeAll(async ({ browser }: { browser: Browser }) => {
   ({ api } = await apiAs(owner.email, owner.password));
