@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-06] — Unreleased — Reservation calendar (in review)
+## [sprint-06] — 2026-10-17 — Reservation calendar (accepted)
 
 ### Added
 - Migration V008: index `ix_reservation_units_calendar` on current reservation rows (property, dates) for the calendar.

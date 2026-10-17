@@ -100,8 +100,8 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
-| 01–05 | Accepted: on `develop` and `main` | `develop` |
-| 06 | In progress: its pull request will be linked here when it is ready for review | its `feature/S06-…` branch |
+| 01–06 | Accepted: on `develop` and `main` | `develop` |
+| 07 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
 
 ```powershell
 cd D:\resort-os
@@ -113,7 +113,7 @@ git switch develop
 git pull
 
 # A sprint still in review (use the branch name from its pull request):
-git switch feature/S06-<name>
+git switch <branch-from-the-pull-request>
 git pull
 
 # After switching or pulling, every time:
