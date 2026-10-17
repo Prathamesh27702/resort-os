@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–06 built and accepted (October 2026); Sprint 07 (front desk) in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–06 built and accepted (October 2026); Sprint 07 (front desk) built and in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -71,7 +71,7 @@ backend/
   Resort.Contracts       Request/response records (what the API accepts and returns)
   Resort.Application     One service per use case group, validators, permission codes, shared helpers
                          Common/ (errors, idempotency, concurrency, protection), Identity/, Properties/,
-                         Accommodation/, Guests/, Rates/, Reservations/, Audit/, Validation/
+                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Audit/, Validation/
   Resort.Infrastructure  AppDbContext (EF Core, snake_case), SQL migrator, audit interceptor,
                          JWT + password hashing (Identity/Security.cs), field encryption, file store, dev seeder
   Resort.Api             Program.cs (pipeline), Endpoints/*.cs (one file per module),
@@ -204,6 +204,27 @@ flowchart LR
   pure logic (windows, rows, placement, "why can't it go there") and is unit-tested, including the 7 rooms × 31 days
   render under 200 ms. `move-dialog.ts` shows a booking's status, source and payment and asks for the reason. Under
   760 px wide the same window is a list by day (arrives, in house, leaves, blocked).
+
+### Sprint 07: Front desk (arrivals, check-in, check-out, walk-ins)
+
+![Check-in and check-out](../../tools/handbooks/assets/check-in-flow.png)
+
+- Migration V009: `reservations.checked_in_at` / `checked_out_at`, `unit_housekeeping_status` (the cleaning state of
+  each room or dorm bed; no row means READY) and `unit_housekeeping_history` (append-only; the check-out rows are the
+  events Sprint 13's housekeeping module will consume). Details: [schema-sprint-07.md](../database/schema-sprint-07.md).
+- `Domain/FrontDesk/FrontDesk.cs`: the housekeeping states and the pure date rules (`FrontDeskRules.CheckInDateProblem`,
+  `DepartureOnCheckOut`), unit-tested.
+- `Application/FrontDesk/FrontDeskService.cs`: the lists (arrivals with late arrivals, departures with overdue guests,
+  in house, the dashboard and rooms board), room options, assign/move, check-in, check-out, walk-in and setting a room's
+  state. It reuses `ReservationService`'s booking and room-move steps (`BookAsync`, `MoveRoomAsync`) instead of
+  copying them. `IFolioBalances` answers "what does this stay still owe"; it returns 0 until folios arrive in Sprint 8.
+- Two property settings: `frontdesk.allow_checkin_when_not_ready` (default on, with a reason) and
+  `frontdesk.allow_checkout_with_balance` (default off).
+- Screens: `/front-desk/arrivals | departures | in-house | rooms` (`features/front-desk/front-desk.page.ts`, tiles and
+  one list per tab, a rooms board with *Mark ready*), `/front-desk/walk-in` (stay, guest and check in on one screen),
+  and Check in / Check out / Assign room on the booking page. `desk-actions.ts` is shared by both: one click when
+  nothing is in the way, otherwise a window that says why and offers *Choose another room* or *Check in anyway*.
+  [4.17](#417-the-front-desk) explains the rules.
 
 ---
 
@@ -373,6 +394,8 @@ Code: `Application/Common/Idempotency.cs`, `ReservationService`, table `idempote
 
 - Instants are stored as UTC `timestamptz`. Business dates (check-in, a night, "today") are `date` in the property's
   own timezone (`properties.timezone`, Asia/Kolkata): `Property.LocalDate(utcNow)`. Never the server's clock zone.
+- Services take the current time from an injected `TimeProvider`, so tests can stand the clock at 23:30 or 00:30 IST
+  (Sprint 07's `FrontDeskClockTests`) instead of waiting for midnight.
 - The header shows the property's local time; the app formats instants with `inZone()` (`core/property-context.ts`).
 - Date fields use `IsoDateAdapter` (`core/dates.ts`): they show "15 Oct 2026", accept typed dates, and keep the
   API's ISO `2026-10-15` as the form value.
@@ -448,8 +471,35 @@ drags a different booking onto Room 103 at the same moment, and the screen never
    row whatever the code does.
 
 Limits, on purpose: a whole room line moves for all its nights (no splitting a stay half-way); checked-in guests move
-with the front desk (Sprint 07). Proved by tests: two moves into the same room raced 20 times, exactly one wins every
+with the front desk from today ([4.17](#417-the-front-desk)). Proved by tests: two moves into the same room raced 20 times, exactly one wins every
 time and the loser's booking is untouched.
+
+### 4.17 The front desk
+
+Code: `Application/FrontDesk/FrontDeskService.cs`, `Domain/FrontDesk/FrontDesk.cs`, `features/front-desk/`. Diagram: the
+check-in flow in section 3 (Sprint 07). Tests: `FrontDeskTests`, `FrontDeskClockTests`, `FrontDeskUnitTests`.
+
+1. **Today is the resort's day.** Every list and rule uses `Property.LocalDate(clock.GetUtcNow())` with an injected
+   `TimeProvider`. At 00:30 IST it is still the previous day in UTC; a server-date bug would show yesterday's
+   arrivals. `FrontDeskClockTests` pin the clock to 23:30 and 00:30 IST and check the lists and check-in follow.
+2. **Check-in is race-free.** Same order as a booking: lock the reservation row, check its status and date, then lock
+   its rooms' rows by id. Two receptionists pressing Check in at once: the second waits on the row lock and then sees
+   `CHECKED_IN` (409 `ALREADY_CHECKED_IN`, naming who and when). Raced 20 times in the tests; one wins every time.
+3. **The room must be empty and ready.** A guest still in the room after their departure day blocks the next check-in
+   (409 `ROOM_OCCUPIED`, naming them; they show as *overdue* on Departures). A room that isn't READY is refused with the
+   state in words; reception can choose another room or, if the property allows it, check in anyway with a reason that
+   goes into the status history and a note.
+4. **PENDING → CHECKED_IN isn't a valid move** in the status table, so a pending booking is confirmed and saved first,
+   then checked in, in the same transaction: the history shows both steps.
+5. **Check-out writes the housekeeping event in the same transaction.** Each room being left becomes DIRTY with a
+   `CHECK_OUT` history row, so the event exists exactly when the check-out does. Leaving early needs a reason and
+   releases the nights left (rows superseded and recreated ending on the departure day, prices re-summed, a note with
+   the amount). A balance above zero blocks check-out unless the property allows it (the balance is real from Sprint 8).
+6. **Moving an in-house guest** splits the stay at today: the nights already slept stay on the first room (history is
+   true), the rest move with their prices, and the old room becomes DIRTY (`ROOM_MOVE`).
+7. **A walk-in is one transaction and one idempotency key:** guest, booking from today (ready rooms preferred) and
+   check-in. If the room turns out not ready or the guest looks like a duplicate, nothing is saved and the screen asks.
+   A retried click returns the same stay.
 
 ## 5. Changing the system safely
 
@@ -500,3 +550,4 @@ request:
 |---|---|
 | 01–05 | First edition (October 2026): foundation, accommodation, guests, rates, reservations; system design 4.1–4.15 |
 | 06 | Reservation calendar (read model, drag-and-drop), room-move diagram; system design 4.16 Moving a guest to another room (accepted 17 Oct 2026) |
+| 07 | Front desk (lists, check-in/out, walk-ins, room readiness), check-in flow diagram; system design 4.17 The front desk (in review) |

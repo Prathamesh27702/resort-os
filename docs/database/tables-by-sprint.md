@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-148 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+149 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -43,6 +43,8 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `reservation_notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `reservation_status_history` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `idempotency_keys` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
+| `unit_housekeeping_status` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `unit_housekeeping_history` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
 | `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
 | `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
 | `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
@@ -68,7 +70,6 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
 | `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
 | `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `unit_housekeeping_status` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |

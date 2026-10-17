@@ -101,7 +101,7 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
 | 01–06 | Accepted: on `develop` and `main` | `develop` |
-| 07 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
+| 07 | In review: pull request into `develop` | `claude/sprint-07-a71b5l` |
 
 ```powershell
 cd D:\resort-os
@@ -304,6 +304,47 @@ repair).* How it works: [system-design.md → 4.16](architecture/system-design.m
 By hand: [REVIEWING.md → Sprint 06](sprints/REVIEWING.md#sprint-06--reservation-calendar).
 Screenshots: [sprint-06-screens/](sprints/sprint-06-screens/).
 
+### Sprint 07: Front desk
+
+**New:** **Front desk** (menu): tiles for today's arrivals, departures, in-house guests and rooms ready, then one tab
+each for **Arrivals**, **Departures**, **In house** and **Rooms** (every room and dorm bed with who is in it and whether it
+is clean). **Check in** is one click when the room is free and ready; otherwise a window says why and offers *Choose
+another room* or *Check in anyway* with a reason. **Check out** shows what is owed, asks a reason when the guest leaves
+early, and marks the room dirty. **Walk-in** books and checks in a guest with no booking on one screen. The booking page
+gets Check in, Check out and Assign room buttons. "Today" is always the resort's date (India time), never the server's.
+Demo data: R00007 (Room 105) leaves today, R00008 (Room 104) is in house for two more nights, Room 101 is dirty. Nothing
+new to install and no new keys; reset the database before the review, restart the API and watch for
+`Applying migration V009__front_desk` and `Dev seed S006__front_desk`.
+
+```powershell
+# Backend (29 tests: FrontDeskTests, FrontDeskClockTests, FrontDeskUnitTests and the front desk dev seed test;
+# includes the same booking checked in by 20 pairs of clicks at once, and arrivals at 23:30 and 00:30 IST)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~FrontDesk|FullyQualifiedName~Dev_seed_front_desk"
+
+# Frontend unit tests (front desk helpers: room names, which button a row shows, leaving early)
+cd frontend
+npm run test:ci
+
+# Browser (9 steps, S07-01 … S07-09; S07-05 is a walk-in from the front desk to checked in on one screen)
+npm run e2e -- e2e/sprint-07.spec.ts
+cd ..
+
+# API checks: the Sprint 07 block must be all PASS
+node scripts/check-api.mjs
+
+# Database checks (blocks 4 and 9 must return no rows)
+Get-Content database/queries/check-sprint-07.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: **Front desk → Walk-in**, leave *Leaving on* as tomorrow, **Find a room**, **Choose** a room
+type, type a first name and phone, **Use this new guest**, **Check in** (three steps on one screen). You land on the
+booking, *Checked in*, source *Walk-in*. Then **Front desk → Arrivals**: R00001 says *Room 101 is dirty, not ready*;
+**Check in** → **Choose another room** → Room 102 → **Assign room** checks the guest in. How it works:
+[system-design.md → 4.17](architecture/system-design.md#417-the-front-desk).
+
+By hand: [REVIEWING.md → Sprint 07](sprints/REVIEWING.md#sprint-07--front-desk).
+Screenshots: [sprint-07-screens/](sprints/sprint-07-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -316,7 +357,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 181 backend passed, 54 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 210 backend passed, 59 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -324,7 +365,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–06 (expected: 60 passed, about 8 minutes)
+# 3. Every browser test, Sprints 01–07 (expected: 69 passed, about 8 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -339,13 +380,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–06:
+Expected totals for Sprints 01–07:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 181 passed, 0 failed |
-| Frontend unit tests | 54 of 54 SUCCESS |
-| Browser tests | 60 passed (12 + 14 + 13 + 6 + 7 + 8) |
+| Backend tests | 210 passed, 0 failed |
+| Frontend unit tests | 59 of 59 SUCCESS |
+| Browser tests | 69 passed (12 + 14 + 13 + 6 + 7 + 8 + 9) |
 | API checks | 0 failed |
 
 Other useful commands:

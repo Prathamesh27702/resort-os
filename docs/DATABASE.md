@@ -11,7 +11,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 3 — guests](database/schema-sprint-03.md) (profiles, encrypted ID documents, consents, demo guests) ·
   [Sprint 4 — rates and packages](database/schema-sprint-04.md) (rate plans, nightly rate grid, packages and their revenue split, reservation sources, demo rates) ·
   [Sprint 5 — reservations](database/schema-sprint-05.md) (reservations, held rooms and beds with the double-booking guard, nightly prices, status history, idempotency keys, demo bookings) ·
-  [Sprint 6 — reservation calendar](database/schema-sprint-06.md) (calendar index, room moves as superseded rows, demo maintenance block)
+  [Sprint 6 — reservation calendar](database/schema-sprint-06.md) (calendar index, room moves as superseded rows, demo maintenance block) ·
+  [Sprint 7 — front desk](database/schema-sprint-07.md) (check-in/out times, room cleaning state and its history, demo in-house guests)
 
 ## Conventions (every table)
 
@@ -41,13 +42,15 @@ database/migrations/
   V006__rates.sql
   V007__reservations.sql
   V008__reservation_calendar.sql
-  V009__<next>.sql   ← you add this
+  V009__front_desk.sql
+  V010__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
   S002__guests.sql          ← 20 demo guests; Development only
   S003__rates.sql           ← BAR with weekend uplift, 2 packages; Development only
   S004__reservations.sql    ← 6 demo bookings (R00001–R00006); Development only
   S005__calendar.sql        ← Room 106 blocked for maintenance from tomorrow (calendar demo); Development only
+  S006__front_desk.sql      ← R00007/R00008 in house, Room 101 dirty (front desk demo); Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.

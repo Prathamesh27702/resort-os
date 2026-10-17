@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
+| 🟡 In review — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
 
 **Goal:** Reception completes check-in and check-out in very few clicks.
 
@@ -10,26 +10,38 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built on 17 Oct 2026 and in review: pull request into develop. Test it on the claude/sprint-07-a71b5l branch until it is merged.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V009: reservations.checked_in_at / checked_out_at; unit_housekeeping_status (one row per room or dorm bed, no row = READY) and unit_housekeeping_history (append-only events CHECK_OUT, ROOM_MOVE, MANUAL; consumed_at for Sprint 13)
+- Business date everywhere: 'today' is the property's local date from its timezone (an injected clock), never the server's; tested at 23:30 and 00:30 IST
+- Front desk lists: arrivals (with late arrivals still due), departures (with overdue guests), in-house, each with rooms, cleaning state, balance and the reason a check-in would be refused; reception dashboard with counts and a rooms board
+- Check-in: reservation row locked, room must be free of the previous guest and READY; a room that isn't ready can be checked into anyway with a reason (setting frontdesk.allow_checkin_when_not_ready, default on); PENDING bookings are confirmed on the way in
+- Assign or move a room: before arrival for the whole stay, in house from today (nights already slept stay on the first room, which is marked dirty)
+- Check-out: blocked while the folio balance is above zero (setting frontdesk.allow_checkout_with_balance, default off; folios arrive in Sprint 8); leaving early needs a reason and releases the nights left; rooms become DIRTY with a CHECK_OUT event
+- Walk-in in one call and one transaction: guest (found or new), booking from today on a ready room, check-in; Idempotency-Key replays the same stay
+- Screens: Front desk (/front-desk/arrivals, departures, in-house, rooms), Walk-in (/front-desk/walk-in: stay, guest, check in on one screen), Check in / Check out / Assign room on the booking page
+- Dev seed S006: R00007 in house leaving today, R00008 in house for two more nights, Room 101 dirty
+- System design guide: Sprint 07 section, part 4.17 The front desk, check-in flow diagram
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- backend/Resort.Domain/FrontDesk/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/FrontDesk/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/FrontDeskEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/FrontDeskTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/front-desk/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-07.md, this guide, CHANGELOG.md
+- database/migrations/V009__front_desk.sql; database/seed/dev/S006__front_desk.sql; database/queries/check-sprint-07.sql
+- backend/Resort.Domain/FrontDesk/FrontDesk.cs; Reservations/Reservations.cs (checked-in/out times)
+- backend/Resort.Contracts/FrontDeskContracts.cs; ReservationContracts.cs
+- backend/Resort.Application/ — FrontDesk/FrontDeskService.cs, FrontDesk/FolioBalances.cs, Reservations/ReservationService.cs (shared booking and room-move steps), Common/Idempotency.cs, Common/Permissions.cs, Validation/FrontDeskValidators.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/Endpoints/FrontDeskEndpoints.cs + Program.cs
+- backend/Resort.Tests/ — Integration/FrontDeskTests.cs, Integration/FrontDeskClockTests.cs, Unit/FrontDeskUnitTests.cs, Support/FrontDeskFactory.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/front-desk/ (front-desk.page.ts, walk-in.page.ts, front-desk-dialogs.ts, desk-actions.ts, front-desk.api.ts, front-desk.spec.ts), features/reservations/reservation.page.ts, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-07.spec.ts; scripts/check-api.mjs (Sprint 07 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-07.md, docs/architecture/system-design.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-07-screens/; tools/handbooks/diagrams (check-in-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 210 passed, 0 failed on real PostgreSQL 16 (29 new: FrontDeskTests with the same booking checked in by 20 pairs of simultaneous clicks, the demo flow, readiness and its override, settings, the check-out event, balance, early departure, walk-in replay and rollback, field errors and permissions; FrontDeskClockTests at 23:30 and 00:30 IST; FrontDeskUnitTests; the front desk dev seed check)
+- Frontend: 59 of 59 unit tests passed (5 new for the front desk helpers); ESLint clean; production build OK
+- Browser tests: 69 of 69 passed (Sprints 01–06 plus the 9 new Sprint 07 steps: not-ready check-in with a reason, check-out and Mark ready, choose another room, walk-in, early departure, check-in from the booking page, permissions, phone); API checks 89 of 89 (12 new); screenshots in docs/sprints/sprint-07-screens
 
 **Outcome**
 
@@ -39,21 +51,31 @@ Expected when accepted:
 
 ## Scope
 
+**Tables**
+
+- `unit_housekeeping_status`
+- `unit_housekeeping_history`
+
 **API endpoints**
 
 - `GET /api/v1/properties/{propertyId}/front-desk/arrivals?date`
 - `GET /api/v1/properties/{propertyId}/front-desk/departures?date`
 - `GET /api/v1/properties/{propertyId}/front-desk/in-house`
+- `GET /api/v1/properties/{propertyId}/front-desk/dashboard`
+- `GET /api/v1/properties/{propertyId}/reservations/{id}/room-options?reservationUnitId`
 - `POST /api/v1/properties/{propertyId}/reservations/{id}/assign-room`
 - `POST /api/v1/properties/{propertyId}/reservations/{id}/check-in`
 - `POST /api/v1/properties/{propertyId}/reservations/{id}/check-out`
 - `POST /api/v1/properties/{propertyId}/walk-ins`
+- `PUT /api/v1/properties/{propertyId}/rooms/{unitId}/housekeeping`
 
 **Screens / routes**
 
 - `/front-desk/arrivals`
 - `/front-desk/departures`
 - `/front-desk/in-house`
+- `/front-desk/rooms`
+- `/front-desk/walk-in`
 
 Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABASE.md). Update both in this sprint.
 
@@ -61,11 +83,11 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Business date from property timezone; 'today' never from the server clock
-- [ ] Check-in requires assigned room/bed with housekeeping READY (configurable override with reason)
-- [ ] Check-out sets housekeeping DIRTY (event consumed in Sprint 13) and is blocked while folio balance > 0 (setting frontdesk.allow_checkout_with_balance)
-- [ ] Walk-in = guest + reservation + check-in in one call (one transaction)
-- [ ] Reception dashboard (brief §54)
+- [x] Business date from property timezone; 'today' never from the server clock
+- [x] Check-in requires assigned room/bed with housekeeping READY (configurable override with reason)
+- [x] Check-out sets housekeeping DIRTY (event consumed in Sprint 13) and is blocked while folio balance > 0 (setting frontdesk.allow_checkout_with_balance)
+- [x] Walk-in = guest + reservation + check-in in one call (one transaction)
+- [x] Reception dashboard (brief §54)
 
 ## How to run this sprint
 
@@ -84,6 +106,11 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- If a list shows yesterday's or tomorrow's guests, something used the server's date: every 'today' must come from Property.LocalDate(clock) (FrontDeskClockTests pin the clock to 23:30 and 00:30 IST).
+- A check-in refused with ROOM_OCCUPIED names the booking still in the room: check that guest out first (or they are overdue on Departures).
 
 ## How to test
 
