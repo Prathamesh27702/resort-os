@@ -82,7 +82,8 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ist).DateTime);
 
         var list = await owner.GetJsonAsync<PagedResult<ReservationListItemDto>>($"/api/v1/properties/{pid}/reservations?from={today.AddDays(-1):yyyy-MM-dd}");
-        Assert.Equal(["R00001", "R00002", "R00003", "R00004", "R00005", "R00006"], list.Items.Select(r => r.Reference).Order());
+        // R00001–R00006 from Sprint 5; R00007 and R00008 (checked in yesterday) from Sprint 7
+        Assert.Equal(["R00001", "R00002", "R00003", "R00004", "R00005", "R00006", "R00007", "R00008"], list.Items.Select(r => r.Reference).Order());
         Assert.Equal("Dormitory · 2 beds", list.Items.Single(r => r.Reference == "R00004").Rooms);
 
         var av = await owner.GetJsonAsync<AvailabilityDto>(
@@ -111,7 +112,32 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var room106 = cal.Rooms.Single(r => r.Code == "106");
         var block = Assert.Single(cal.Blocks, b => b.UnitId == room106.Id);
         Assert.Equal(("MAINTENANCE", "Plumbing repair", today.AddDays(1), today.AddDays(3)), (block.BlockType, block.Reason, block.StartDate, block.EndDate));
-        // R00001–R00004 hold rooms (R00004 two dorm beds); the enquiry and the cancelled booking are not drawn
-        Assert.Equal(["R00001", "R00002", "R00003", "R00004", "R00004"], cal.Bookings.Select(b => b.Reference).Order());
+        // R00001–R00004 hold rooms (R00004 two dorm beds), R00008 is in house (Sprint 7); the enquiry and the cancelled
+        // booking are not drawn, and R00007 left today
+        Assert.Equal(["R00001", "R00002", "R00003", "R00004", "R00004", "R00008"], cal.Bookings.Select(b => b.Reference).Order());
+    }
+
+    /// <summary>Sprint 7: today's arrivals include R00001 in a dirty room; R00007 departs today; R00008 is in house.</summary>
+    [Fact]
+    public async Task Dev_seed_front_desk_has_an_arrival_in_a_dirty_room_a_departure_and_a_guest_in_house()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var arrivals = await owner.GetJsonAsync<FrontDeskListDto>($"/api/v1/properties/{pid}/front-desk/arrivals");
+        Assert.Equal("Room 101 is dirty, not ready.", arrivals.Items.Single(i => i.Reference == "R00001").CheckInProblem);
+        Assert.Null(arrivals.Items.Single(i => i.Reference == "R00004").CheckInProblem);
+        var departures = await owner.GetJsonAsync<FrontDeskListDto>($"/api/v1/properties/{pid}/front-desk/departures");
+        var r7 = departures.Items.Single(i => i.Reference == "R00007");
+        Assert.Equal(("CHECKED_IN", "105"), (r7.Status, r7.Rooms.Single().UnitCode));
+        Assert.Equal(r7.Nights, (await owner.GetJsonAsync<ReservationDto>($"/api/v1/properties/{pid}/reservations/{r7.ReservationId}")).Breakdown.Count);
+        var inHouse = await owner.GetJsonAsync<FrontDeskListDto>($"/api/v1/properties/{pid}/front-desk/in-house");
+        Assert.Equal(["R00007", "R00008"], inHouse.Items.Select(i => i.Reference).Order());
+
+        var dashboard = await owner.GetJsonAsync<FrontDeskDashboardDto>($"/api/v1/properties/{pid}/front-desk/dashboard");
+        Assert.Equal(("ARRIVING", "DIRTY"), dashboard.Rooms.Where(r => r.UnitCode == "101").Select(r => (r.Occupancy, r.Housekeeping)).Single());
+        Assert.Equal("OCCUPIED", dashboard.Rooms.Single(r => r.UnitCode == "104").Occupancy);
     }
 }

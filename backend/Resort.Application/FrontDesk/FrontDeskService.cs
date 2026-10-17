@@ -351,6 +351,9 @@ public sealed class FrontDeskService(
         var departure = FrontDeskRules.DepartureOnCheckOut(reservation.CheckIn, reservation.CheckOut, today);
         var rows = await db.ReservationUnits.Where(u => u.ReservationId == reservation.Id && u.SupersededAt == null).ToListAsync(ct);
         var now = clock.GetUtcNow();
+        // The rooms the guest leaves: the ones they are in now (moved into this morning and leaving today included).
+        var leaving = rows.Where(u => u.EndDate == reservation.CheckOut || (u.StartDate <= today && today < u.EndDate))
+            .Select(u => (u.UnitId, u.BedId)).Distinct().ToList();
         if (departure < reservation.CheckOut)
         {
             if (reason is null || reason.Length < 3)
@@ -386,7 +389,7 @@ public sealed class FrontDeskService(
         reservation.CheckedOutAt = now;
 
         // The rooms the guest leaves need cleaning: this is the event Sprint 13 turns into a housekeeping task.
-        foreach (var (unitId, bedId) in rows.Where(u => u.EndDate == reservation.CheckOut).Select(u => (u.UnitId, u.BedId)).Distinct())
+        foreach (var (unitId, bedId) in leaving)
             await SetHousekeepingCoreAsync(reservation.OrganizationId, propertyId, unitId, bedId, HousekeepingStatuses.Dirty,
                 HousekeepingSources.CheckOut, reservation.Id, $"Checked out of {reservation.Reference}", ct);
         await db.SaveChangesAsync(ct);
