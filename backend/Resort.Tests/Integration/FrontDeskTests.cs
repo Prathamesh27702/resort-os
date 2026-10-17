@@ -258,7 +258,7 @@ public class FrontDeskTests(FrontDeskFactory app) : IClassFixture<FrontDeskFacto
         var current = Assert.Single(left.Units, u => u.Current);
         Assert.Equal((Today, Today.AddDays(1)), (current.StartDate, current.EndDate));
         Assert.Single(left.Breakdown);
-        Assert.Contains(left.Notes, n => n.Note.StartsWith($"Left early on {Day(Today.AddDays(1))} instead of {Day(Today.AddDays(3))}") &&
+        Assert.Contains(left.Notes, n => n.Note.StartsWith($"Left early on {Day(Today.AddDays(1))} instead of {Day(Today.AddDays(3))}", StringComparison.Ordinal) &&
                                          n.Note.Contains("(₹6,000 less). Reason: Family emergency"));
         Assert.Equal(1, (await AvailabilityAsync(owner, pid, Today.AddDays(1), Today.AddDays(3), stay.Type.Id)).Free);
     }
@@ -374,9 +374,9 @@ public class FrontDeskTests(FrontDeskFactory app) : IClassFixture<FrontDeskFacto
         var guest = await CreateGuestAsync(owner, "Dev", "Rao");
         var source = await WalkInAsync(owner, pid);
         var arriving = await CreatedAsync(await BookAsync(owner, pid, NewBooking(stay, guest.Id, source, Today, Today.AddDays(1)) with
-            { Rooms = [new ReservationRoomRequest(stay.Type.Id, stay.Rooms[0].Id, 1, 0)] }));
+        { Rooms = [new ReservationRoomRequest(stay.Type.Id, stay.Rooms[0].Id, 1, 0)] }));
         var staying = await CreatedAsync(await BookAsync(owner, pid, NewBooking(stay, guest.Id, source, Today, Today.AddDays(2)) with
-            { Rooms = [new ReservationRoomRequest(stay.Type.Id, stay.Rooms[1].Id, 2, 0)] }));
+        { Rooms = [new ReservationRoomRequest(stay.Type.Id, stay.Rooms[1].Id, 2, 0)] }));
         await OkAsync(await owner.PostAsync(CheckInUrl(pid, staying), new CheckInRequest(null)));
         await SetHousekeepingAsync(owner, pid, stay.Rooms[2].Id, "DIRTY");
 

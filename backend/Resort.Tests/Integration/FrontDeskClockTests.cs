@@ -64,7 +64,7 @@ public class FrontDeskClockTests(FrontDeskFactory app) : IClassFixture<FrontDesk
             var stay = await SetupAsync(owner, pid, rooms: 2, price: 2000m);
             var guest = await CreateGuestAsync(owner);
             var booked = await CreatedAsync(await BookAsync(owner, pid, NewBooking(stay, guest.Id, await WalkInAsync(owner, pid), day, day.AddDays(3)) with
-                { Rooms = [new ReservationRoomRequest(stay.Type.Id, stay.Rooms[0].Id, 1, 0)] }));
+            { Rooms = [new ReservationRoomRequest(stay.Type.Id, stay.Rooms[0].Id, 1, 0)] }));
             var checkedIn = await OkAsync(await owner.PostAsync(CheckInUrl(pid, booked), new CheckInRequest(null)));
 
             app.Clock.At = At(day.AddDays(1), 10, 0);   // the next morning
@@ -77,7 +77,7 @@ public class FrontDeskClockTests(FrontDeskFactory app) : IClassFixture<FrontDesk
             Assert.Equal((stay.Rooms[1].Id, day.AddDays(1), day.AddDays(3)), (current[1].UnitId, current[1].StartDate, current[1].EndDate));
             Assert.Equal(6000m, moved.TotalAmount);
             Assert.Equal((2000m, 4000m), (current[0].Total, current[1].Total));
-            Assert.Contains(moved.Notes, n => n.Note.StartsWith($"Moved from {stay.Rooms[0].Name} to {stay.Rooms[1].Name} from {Day(day.AddDays(1))}"));
+            Assert.Contains(moved.Notes, n => n.Note.StartsWith($"Moved from {stay.Rooms[0].Name} to {stay.Rooms[1].Name} from {Day(day.AddDays(1))}", StringComparison.Ordinal));
 
             var inHouse = await owner.GetJsonAsync<FrontDeskListDto>($"/api/v1/properties/{pid}/front-desk/in-house");
             Assert.Equal(stay.Rooms[1].Id, Assert.Single(inHouse.Items.Single(i => i.ReservationId == booked.Id).Rooms).UnitId);
