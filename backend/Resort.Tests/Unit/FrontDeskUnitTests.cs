@@ -18,7 +18,7 @@ public class FrontDeskUnitTests
     public void The_business_date_is_the_propertys_local_date_not_the_utc_date(string utc, string expected)
     {
         var p = new Property { Timezone = "Asia/Kolkata" };
-        Assert.Equal(DateOnly.Parse(expected), p.LocalDate(DateTimeOffset.Parse(utc, System.Globalization.CultureInfo.InvariantCulture)));
+        Assert.Equal(DateOnly.Parse(expected, System.Globalization.CultureInfo.InvariantCulture), p.LocalDate(DateTimeOffset.Parse(utc, System.Globalization.CultureInfo.InvariantCulture)));
     }
 
     [Fact]
