@@ -195,3 +195,18 @@ export interface Reservation {
 }
 export interface ReservationRoomRequest { accommodationTypeId: string; unitId: string | null; adults: number; children: number; }
 export interface ReservationSource { id: string; code: string; name: string; channel: string; commissionPercent: number | null; }
+
+// ---------------------------------------------------------------- reservation calendar (Sprint 6)
+export interface CalendarBed { id: string; code: string; name: string; isActive: boolean; }
+export interface CalendarRoom {
+  id: string; code: string; name: string; accommodationTypeId: string; accommodationTypeName: string; inventoryMode: InventoryMode;
+  maxOccupancy: number; floor: string | null; isActive: boolean; beds: CalendarBed[];
+}
+/** One room (or dorm bed) of a booking for [startDate, endDate). paymentStatus: NONE until payments arrive (Sprint 10). */
+export interface CalendarBooking {
+  reservationUnitId: string; reservationId: string; reference: string; status: ReservationStatus; unitId: string; bedId: string | null;
+  startDate: string; endDate: string; guestName: string; adults: number; children: number; sourceName: string;
+  paymentStatus: 'NONE' | 'PARTIAL' | 'PAID'; totalAmount: number; version: number;
+}
+export interface CalendarBlock { id: string; unitId: string; bedId: string | null; blockType: string; startDate: string; endDate: string; reason: string; }
+export interface Calendar { from: string; to: string; today: string; rooms: CalendarRoom[]; bookings: CalendarBooking[]; blocks: CalendarBlock[]; }

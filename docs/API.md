@@ -389,6 +389,30 @@ Check-in/check-out arrive in Sprint 7, refunds in Sprint 10. Reservations are ne
 booking holds the room. `GET /guests/{id}/stays` lists real reservations with their `reference`; merging guests moves
 their reservations to the surviving profile.
 
+## Built endpoints (Sprint 6 — reservation calendar)
+
+Same scope and permissions as Sprint 5 (no new permission): reading the calendar needs `reservation.read`, moving a
+guest needs `reservation.update`. How a move stays race-free: [system-design.md → 4.16](architecture/system-design.md#416-moving-a-guest-to-another-room).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /calendar?from&to` | Rooms (and dorm beds) as rows, the bookings and active blocks in `[from, to)`, at most 62 days. Bookings: current rows of PENDING, CONFIRMED, CHECKED_IN and CHECKED_OUT reservations (enquiries hold nothing and are not drawn). Real dates are returned; the client clips to the window | `reservation.read` | — | `CalendarDto` | 400 `From` (missing), `To` (missing, not after `from`, more than 62 days: "The calendar shows at most 62 days at a time; this window is 63."), 403, 404 | — |
+| `POST /reservations/{id}/reassign` | Move one room (or dorm bed) of a booking to another for the same nights. The price stays as booked; a note "Moved from Room 101 to Room 102 (…). Reason: …" is added | `reservation.update` | `ReassignRoomRequest` | `ReservationDto` (new `version`; the old room row is `current: false`) | 400 under the field (below), 403, 404, **409 `ROOM_UNAVAILABLE`** ("Room 104 isn't free for the nights of 15 Oct – 16 Oct 2026: it is blocked (AC repair). Choose another room."), 409 `CONCURRENCY_CONFLICT` (the booking changed since it was shown), 422 `RESERVATION_NOT_MOVABLE` (checked in, cancelled, finished) | UPDATE old room row + INSERT new one, both with the reason; UPDATE reservation |
+
+`CalendarDto = { from, to, today, rooms: [{ id, code, name, accommodationTypeId, accommodationTypeName, inventoryMode,
+maxOccupancy, floor, isActive, beds: [{ id, code, name, isActive }] }], bookings: [{ reservationUnitId, reservationId,
+reference, status, unitId, bedId, startDate, endDate, guestName, adults, children, sourceName, paymentStatus, totalAmount,
+version }], blocks: [{ id, unitId, bedId, blockType, startDate, endDate, reason }] }`. `paymentStatus` is `NONE` until
+payments are recorded (Sprint 10), then `PARTIAL` or `PAID`.
+
+`ReassignRoomRequest = { reservationUnitId, unitId, bedId?, reason, version }`. **Field errors** (400, each under its
+field): `Reason` (missing: "Say why the guest is moving (at least 3 characters), e.g. AC not working in 102.", < 3, > 500);
+`ReservationUnitId` (missing, or no longer part of the booking); `UnitId` (missing, unknown, inactive, the guest is already
+there, a dormitory for a room booking or a private room for a bed guest, too small: "Room 103 (Standard room) sleeps at
+most 2; this room has 3 guests. Choose a bigger room."); `BedId` (missing for a dormitory, not in that dormitory,
+inactive, given for a private room). A whole room line moves for all its nights; checked-in guests move with the front
+desk (Sprint 7).
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

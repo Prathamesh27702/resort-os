@@ -71,3 +71,36 @@ public sealed record ReservationDto(
     IReadOnlyList<ReservationNightDto> Breakdown, IReadOnlyList<ReservationNoteDto> Notes,
     IReadOnlyList<ReservationStatusChangeDto> History, IReadOnlyList<string> NextStatuses,
     DateTimeOffset CreatedAt, string? CreatedByName, uint Version);
+
+// ---------------------------------------------------------------- reservation calendar (Sprint 6)
+/// <summary>Everything the calendar draws for [From, To): the rooms (and dorm beds) as rows, the bookings and the blocks
+/// on them. Dates are property-local; To is exclusive. Today is the property's local date.</summary>
+public sealed record CalendarDto(
+    DateOnly From, DateOnly To, DateOnly Today, IReadOnlyList<CalendarRoomDto> Rooms, IReadOnlyList<CalendarBookingDto> Bookings,
+    IReadOnlyList<CalendarBlockDto> Blocks);
+
+/// <summary>A row of the calendar: a room, or a dormitory with its beds (InventoryMode BED: one sub-row per bed).
+/// Inactive rooms are listed (their past bookings still show) but can't take new ones.</summary>
+public sealed record CalendarRoomDto(
+    Guid Id, string Code, string Name, Guid AccommodationTypeId, string AccommodationTypeName, string InventoryMode,
+    short MaxOccupancy, string? Floor, bool IsActive, IReadOnlyList<CalendarBedDto> Beds);
+
+public sealed record CalendarBedDto(Guid Id, string Code, string Name, bool IsActive);
+
+/// <summary>One room (or one dorm bed) of a booking, for [StartDate, EndDate). Bookings that hold nothing (enquiries,
+/// cancelled, no-show) are not on the calendar; checked-out stays are, so past weeks still read right.
+/// PaymentStatus: NONE until payments are recorded (Sprint 10), then PARTIAL or PAID.
+/// Version is the reservation's version, sent back when moving it.</summary>
+public sealed record CalendarBookingDto(
+    Guid ReservationUnitId, Guid ReservationId, string Reference, string Status, Guid UnitId, Guid? BedId,
+    DateOnly StartDate, DateOnly EndDate, string GuestName, short Adults, short Children, string SourceName,
+    string PaymentStatus, decimal TotalAmount, uint Version);
+
+/// <summary>An active block (maintenance, out of order, owner use …) on a room (BedId null) or one dorm bed.</summary>
+public sealed record CalendarBlockDto(Guid Id, Guid UnitId, Guid? BedId, string BlockType, DateOnly StartDate, DateOnly EndDate, string Reason);
+
+/// <summary>Moves one room (or one dorm bed) of a booking to another room (or bed) for the same nights.
+/// ReservationUnitId: the calendar entry being moved. BedId: required when moving to a dormitory, empty for a room.
+/// Reason: required (kept in the audit trail and as a note on the booking). Version: the booking's version as seen.
+/// The price stays as booked.</summary>
+public sealed record ReassignRoomRequest(Guid ReservationUnitId, Guid UnitId, Guid? BedId, string? Reason, uint Version);

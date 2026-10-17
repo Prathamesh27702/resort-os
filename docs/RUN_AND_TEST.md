@@ -100,8 +100,8 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
-| 01–05 | Accepted: on `develop` and `main` | `develop` |
-| 06 | In progress: its pull request will be linked here when it is ready for review | its `feature/S06-…` branch |
+| 01–06 | Accepted: on `develop` and `main` | `develop` |
+| 07 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
 
 ```powershell
 cd D:\resort-os
@@ -113,7 +113,7 @@ git switch develop
 git pull
 
 # A sprint still in review (use the branch name from its pull request):
-git switch feature/S06-<name>
+git switch <branch-from-the-pull-request>
 git pull
 
 # After switching or pulling, every time:
@@ -268,6 +268,42 @@ for tonight and go to **Confirm**, then press **Book** in both. One gets a booki
 By hand: [REVIEWING.md → Sprint 05](sprints/REVIEWING.md#sprint-05--availability-bookings-and-the-last-room).
 Screenshots: [sprint-05-screens/](sprints/sprint-05-screens/).
 
+### Sprint 06: Reservation calendar
+
+**New:** **Calendar** (menu, or the Calendar button on Reservations): every room and dorm bed by day, week or month, with
+bookings (guest, status, source, payment) and blocks. Drag a booking up or down to move the guest to another room: a
+reason is asked, the server checks, and the bar moves only when the server says yes. Dropping onto a blocked or booked
+room says why at once. On a phone the calendar is a list by day. Demo data: Room 106 is blocked for maintenance from
+tomorrow for two nights. Nothing new to install and no new keys; reset the database before the review, restart the API
+and watch for `Applying migration V008__reservation_calendar` and `Dev seed S005__calendar`.
+
+```powershell
+# Backend (8 tests: CalendarTests, including two moves into the same room raced 20 times, plus the calendar dev seed test)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~CalendarTests|FullyQualifiedName~Dev_seed_calendar"
+
+# Frontend unit tests (calendar windows, rows, "why can't it go there", 7 rooms × 31 days drawn in under 200 ms)
+cd frontend
+npm run test:ci
+
+# Browser (8 steps, S06-01 … S06-08; S06-04 moves a guest 101 → 102 by drag and reason)
+npm run e2e -- e2e/sprint-06.spec.ts
+cd ..
+
+# API checks: the Sprint 06 block must be all PASS
+node scripts/check-api.mjs
+
+# Database checks (blocks 5 and 6 must return no rows)
+Get-Content database/queries/check-sprint-06.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: open **Calendar** as a receptionist, drag R00001 from Room 101 down to Room 102, type a reason and
+press **Move** (two actions). The booking page shows "Moved from Room 101 to Room 102 … Reason: …" and **Audit trail**
+shows who and why. Then drag R00002 (Room 105) onto Room 106: *Can't move R00002 to Room 106: … it is blocked (Plumbing
+repair).* How it works: [system-design.md → 4.16](architecture/system-design.md#416-moving-a-guest-to-another-room).
+
+By hand: [REVIEWING.md → Sprint 06](sprints/REVIEWING.md#sprint-06--reservation-calendar).
+Screenshots: [sprint-06-screens/](sprints/sprint-06-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -280,7 +316,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 173 backend passed, 44 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 181 backend passed, 54 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -288,7 +324,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–05 (expected: 52 passed, about 6 minutes)
+# 3. Every browser test, Sprints 01–06 (expected: 60 passed, about 8 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -303,13 +339,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–05:
+Expected totals for Sprints 01–06:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 173 passed, 0 failed |
-| Frontend unit tests | 44 of 44 SUCCESS |
-| Browser tests | 52 passed (12 + 14 + 13 + 6 + 7) |
+| Backend tests | 181 passed, 0 failed |
+| Frontend unit tests | 54 of 54 SUCCESS |
+| Browser tests | 60 passed (12 + 14 + 13 + 6 + 7 + 8) |
 | API checks | 0 failed |
 
 Other useful commands:

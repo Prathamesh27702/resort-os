@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–05 built and accepted (October 2026). Anything marked *planned* is design that a later sprint
+Status: Sprints 01–06 built and accepted (October 2026); Sprint 07 (front desk) in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -184,6 +184,26 @@ flowchart LR
   (`frontend/src/app/core/dates.ts`); the form value stays the API's ISO date.
 
 ![Booking flow](../../tools/handbooks/assets/booking-flow.png)
+
+### Sprint 06: Reservation calendar
+
+![Two moves into the same room](../../tools/handbooks/assets/room-move-flow.png)
+
+- Migration V008: one index, `ix_reservation_units_calendar (property_id, start_date, end_date) WHERE superseded_at IS
+  NULL`. No new table: a move reuses Sprint 05's superseded-row history.
+- `Application/Reservations/CalendarService.cs` is the calendar's read model: for a window of up to 62 days it reads
+  the rooms with their beds, every current reservation row that overlaps the window (PENDING, CONFIRMED, CHECKED_IN,
+  CHECKED_OUT; enquiries hold nothing and stay in the list), the guests and sources those rows name, and the active
+  blocks. One indexed query per layer, never one per room or per booking. `paymentStatus` is `NONE` until payments
+  arrive in Sprint 10.
+- `ReservationService.ReassignAsync` moves one room (or dorm bed) of a booking to another for the same nights:
+  [4.16](#416-moving-a-guest-to-another-room) explains the locking.
+- Screens: `/reservations/calendar` (`features/reservations/calendar.page.ts`) with Day, Week and Month views. The grid
+  (`calendar-grid.ts`) is a CSS grid, one row per room or dorm bed, bookings and blocks as bars; Angular CDK drag-drop
+  with the axis locked vertically, so a drag can change the room but never the dates. `calendar.model.ts` holds the
+  pure logic (windows, rows, placement, "why can't it go there") and is unit-tested, including the 7 rooms × 31 days
+  render under 200 ms. `move-dialog.ts` shows a booking's status, source and payment and asks for the reason. Under
+  760 px wide the same window is a list by day (arrives, in house, leaves, blocked).
 
 ---
 
@@ -401,6 +421,36 @@ Code: `DatabaseMigrator` (`Infrastructure/Persistence/DatabaseMigrator.cs`).
 
 ---
 
+### 4.16 Moving a guest to another room
+
+Code: `ReservationService.ReassignAsync`, `Domain/Reservations/Availability.cs`, `calendar.model.ts` (`moveProblem`).
+Diagram: the room-move flow in section 3 (Sprint 06). Tests: `CalendarTests`.
+
+The goal: dragging a booking from Room 101 to Room 103 is as safe as booking Room 103, even when another receptionist
+drags a different booking onto Room 103 at the same moment, and the screen never shows a move the server refused.
+
+1. **The screen checks first, the server decides.** On drop, `moveProblem` checks what the loaded calendar knows
+   (same kind of room, active, big enough, no booking or block on those nights) and shows the reason at once, in
+   the API's words. If it looks fine, the reason is asked and the request goes to the server. The bar is never moved
+   by the browser: the calendar reloads after the server answers, so a refused move cannot leave a wrong picture.
+2. **Same locks as a booking, in the same order.** One transaction: lock the reservation row (`FOR UPDATE`), check
+   its version against what the screen showed (`409 CONCURRENCY_CONFLICT` if someone changed it), then lock the
+   target room row. Booking, changing dates, blocking and moving all lock the room row, so anything touching Room 103
+   queues; locking reservation before room everywhere means no deadlocks.
+3. **Decide with fresh data, with the booking engine's own rules.** Holding the room lock, it loads held bookings and
+   active blocks on that room and asks `AvailabilityEngine.Free`. Not free → `409 ROOM_UNAVAILABLE` naming the booking
+   or the block ("it is blocked (AC repair)").
+4. **History, not edits.** The old `reservation_units` row gets `superseded_at` and stops holding (saved first, so a
+   move inside the same dorm can't collide with itself); a new row is inserted for the same nights with the nightly
+   prices copied, so the price stays as booked. The reservation's version changes, the audit trail stores both rows
+   with the user and the reason, and a note on the booking says "Moved from Room 101 to Room 103 … Reason: …".
+5. **The database still guarantees it.** The EXCLUDE constraints and the block trigger from V007 refuse an overlapping
+   row whatever the code does.
+
+Limits, on purpose: a whole room line moves for all its nights (no splitting a stay half-way); checked-in guests move
+with the front desk (Sprint 07). Proved by tests: two moves into the same room raced 20 times, exactly one wins every
+time and the loser's booking is untouched.
+
 ## 5. Changing the system safely
 
 | You want to | Do this |
@@ -449,3 +499,4 @@ request:
 | Sprint | Added to this guide |
 |---|---|
 | 01–05 | First edition (October 2026): foundation, accommodation, guests, rates, reservations; system design 4.1–4.15 |
+| 06 | Reservation calendar (read model, drag-and-drop), room-move diagram; system design 4.16 Moving a guest to another room (accepted 17 Oct 2026) |

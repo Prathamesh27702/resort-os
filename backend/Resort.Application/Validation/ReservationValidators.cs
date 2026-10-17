@@ -74,3 +74,16 @@ internal static class StayRules
         v.RuleFor(specialRequests).MaximumLength(2000).WithMessage("Special requests can be at most 2000 characters.");
     }
 }
+
+public sealed class ReassignRoomRequestValidator : AbstractValidator<ReassignRoomRequest>
+{
+    public ReassignRoomRequestValidator()
+    {
+        RuleFor(x => x.ReservationUnitId).NotEmpty().WithMessage("Choose which room of the booking to move.");
+        RuleFor(x => x.UnitId).NotEmpty().WithMessage("Choose the room to move the guest to.");
+        RuleFor(x => x.Reason).Cascade(CascadeMode.Stop).Must(r => !string.IsNullOrWhiteSpace(r))
+            .WithMessage("Say why the guest is moving (at least 3 characters), e.g. AC not working in 102.")
+            .Must(r => r!.Trim().Length >= 3).WithMessage("The reason must be at least 3 characters.")
+            .MaximumLength(500).WithMessage("The reason can be at most 500 characters.");
+    }
+}

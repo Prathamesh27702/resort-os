@@ -6,8 +6,8 @@ using Resort.Contracts;
 
 namespace Resort.Api.Endpoints;
 
-/// <summary>Sprint 5 — availability and reservations. All routes are under a property; the permission must be granted
-/// org-wide or for that property. Creating a reservation needs an Idempotency-Key header.</summary>
+/// <summary>Sprint 5 — availability and reservations; Sprint 6 — the calendar and moving a booking to another room.
+/// All routes are under a property; the permission must be granted org-wide or for that property. Creating a reservation needs an Idempotency-Key header.</summary>
 public static class ReservationEndpoints
 {
     public static void MapReservationEndpoints(this IEndpointRouteBuilder app)
@@ -16,6 +16,11 @@ public static class ReservationEndpoints
 
         p.MapGet("/availability", (Guid propertyId, DateOnly? from, DateOnly? to, int? adults, int? children,
                 AvailabilityService s, CancellationToken ct) => s.GetAsync(propertyId, from, to, adults, children, ct))
+            .WithTags("Reservations").RequirePermission(Perm.ReservationRead);
+
+        // Sprint 6 — the reservation calendar
+        p.MapGet("/calendar", (Guid propertyId, DateOnly? from, DateOnly? to, CalendarService s, CancellationToken ct) =>
+                s.GetAsync(propertyId, from, to, ct))
             .WithTags("Reservations").RequirePermission(Perm.ReservationRead);
 
         var r = p.MapGroup("/reservations").WithTags("Reservations");
@@ -52,6 +57,10 @@ public static class ReservationEndpoints
         r.MapPost("/{id:guid}/no-show", (Guid propertyId, Guid id, ReservationStatusRequest body, ReservationService s, CancellationToken ct) =>
                 s.NoShowAsync(propertyId, id, body, ct))
             .Validate<ReservationStatusRequest>().RequirePermission(Perm.ReservationCancel);
+
+        r.MapPost("/{id:guid}/reassign", (Guid propertyId, Guid id, ReassignRoomRequest body, ReservationService s, CancellationToken ct) =>
+                s.ReassignAsync(propertyId, id, body, ct))
+            .Validate<ReassignRoomRequest>().RequirePermission(Perm.ReservationUpdate);
 
         r.MapPost("/{id:guid}/notes", async (Guid propertyId, Guid id, AddReservationNoteRequest body, ReservationService s, CancellationToken ct) =>
             {

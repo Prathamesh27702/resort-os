@@ -15,3 +15,6 @@
 - version: "1.5"
   date: 2026-10-15
   change: "Sprint 05 (Availability engine and reservations) accepted: race-free booking, booking wizard, booking history, date pickers. Diagrams of the reservation tables and the booking flow. Sprint 06 (Reservation calendar) started."
+- version: "1.6"
+  date: 2026-10-17
+  change: "Sprint 06 (Reservation calendar) accepted: day, week and month calendar of rooms and dorm beds, moving a guest by drag-and-drop with a reason, list by day on phones. Room-move flow diagram. Sprint 07 (Front desk) started."

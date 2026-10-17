@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 6
+current: 7
 
 sprints:
 
@@ -573,23 +573,46 @@ sprints:
 - id: 6
   title: Reservation calendar
   phase: 2
-  status: in-progress
+  status: done
   size: M
   module: Reservations
   feature: reservations
   depends: [5]
   goal: Day/week/month calendar showing room, guest, dates, status, source and payment status; safe drag-and-drop reassignment.
   client: "A calendar shows every room and bed with its bookings by day, week or month; bookings can be moved by drag-and-drop with safety checks."
+  progress:
+    now: "Accepted by the owner on 17 Oct 2026 and released to main (tag sprint-06)."
+    done:
+      - "Migration V008: index ix_reservation_units_calendar on current reservation rows (property, dates)"
+      - "Calendar read model (GET /calendar?from&to, up to 62 days): rooms and dorm beds, bookings with guest, status, source, payment status and version, and active blocks (maintenance, out of order …); one indexed query per layer"
+      - "Move a guest to another room or bed (POST /reservations/{id}/reassign, reason required): same locking as booking (reservation row, then room row), the availability engine's rules, the old row superseded and nightly prices copied (price unchanged), a note on the booking and audit entries with who and why; 409 names the booking or block in the way"
+      - "Screen /reservations/calendar: Day / Week / Month, bookings and blocks as bars, drag a booking up or down to another room (dates locked), details window with status, source and payment, move with a reason; the bar moves only after the server agrees; a drop that can't work says why at once"
+      - "Phone view: the same window as a list by day (arrives, in house, leaves, blocked)"
+      - "Dev seed S005: Room 106 blocked for maintenance from tomorrow (calendar demo)"
+      - "System design guide: Sprint 06 section, part 4.16 Moving a guest to another room, room-move flow diagram"
+    files:
+      - "database/migrations/V008__reservation_calendar.sql; database/seed/dev/S005__calendar.sql; database/queries/check-sprint-06.sql"
+      - "backend/Resort.Contracts/ReservationContracts.cs (CalendarDto, ReassignRoomRequest)"
+      - "backend/Resort.Application/ — Reservations/CalendarService.cs, Reservations/ReservationService.cs (ReassignAsync), Validation/ReservationValidators.cs, DependencyInjection.cs"
+      - "backend/Resort.Api/Endpoints/ReservationEndpoints.cs"
+      - "backend/Resort.Tests/ — Integration/CalendarTests.cs, Integration/DevSeedTests.cs, Support/BookingKit.cs"
+      - "frontend/src/app/ — features/reservations/calendar.page.ts, calendar-grid.ts, calendar.model.ts, move-dialog.ts, calendar.spec.ts, reservations.api.ts, reservations.page.ts; core/models.ts; app.routes.ts; layout/shell.ts"
+      - "frontend/e2e/sprint-06.spec.ts; scripts/check-api.mjs (Sprint 06 checks)"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-06.md, docs/architecture/system-design.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-06-screens/; tools/handbooks/diagrams (room-move-flow)"
+    results:
+      - "Backend: 181 passed, 0 failed on real PostgreSQL 16 (8 new: CalendarTests with two moves into the same room raced 20 times, the audit trail's who and why, blocked and booked rooms, field errors, the window, permissions and the calendar index; plus the calendar dev seed check)"
+      - "Frontend: 54 of 54 unit tests passed (10 new, including 7 rooms × 31 days drawn in under 200 ms); ESLint clean; production build OK"
+      - "Browser tests: 60 of 60 passed (Sprints 01–05 plus the 8 new Sprint 06 steps, including a move by drag and reason and a drop on a blocked room refused); screenshots in docs/sprints/sprint-06-screens"
   scope:
     api:
       - GET /api/v1/properties/{propertyId}/calendar?from&to
       - POST /api/v1/properties/{propertyId}/reservations/{id}/reassign  (reason required)
     screens: [/reservations/calendar]
   tasks:
-    - "API: calendar read model (single query, indexed) including blocks and maintenance blocks"
-    - "API: reassign room — same locking as booking; audited with reason (brief §58)"
-    - "UI: calendar component (CDK drag-drop); optimistic UI only after server confirms; conflicts shown inline"
-    - "UI: mobile view = list by day"
+    - "[done] API: calendar read model (single query, indexed) including blocks and maintenance blocks"
+    - "[done] API: reassign room — same locking as booking; audited with reason (brief §58)"
+    - "[done] UI: calendar component (CDK drag-drop); optimistic UI only after server confirms; conflicts shown inline"
+    - "[done] UI: mobile view = list by day"
   tests:
     - Concurrency — two users reassigning into the same room → one wins
     - Frontend — calendar renders 7 rooms × 31 days under 200 ms
@@ -599,11 +622,31 @@ sprints:
     - "If the UI shows a booking the server rejected, the optimistic update wasn't rolled back — check the reassign error handler."
   demo:
     - Drag a booking to another room; drag onto a blocked room is refused
+  handbook:
+    highlights:
+      - "See every room and dorm bed with its bookings and blocks by day, week or month on one calendar"
+      - "Move a guest to another room by dragging the booking and giving a reason: two actions"
+      - "A move onto a blocked or booked room is refused at once, with the reason"
+      - "The price stays the same after a move, and the booking and audit trail show who moved it and why"
+      - "On a phone the calendar becomes a list by day: arrivals, in house, departures and blocked rooms"
+    design:
+      ui: "Calendar (menu, or the Calendar button on Reservations) shows Day, Week or Month with a row per room and per dorm bed, bookings as bars (guest, status, source, payment) and blocks shaded with their reason. Dragging a bar up or down moves the guest to another room; dates never change by drag. A drop that can't work says why at once; otherwise a window asks for the reason and the bar moves only after the server agrees. Clicking a bar opens its details with a Move option for those who prefer not to drag. On a phone the same window is a list by day."
+      api: "GET /api/v1/properties/{propertyId}/calendar?from&to (up to 62 days, reservation.read) returns rooms and beds, bookings and active blocks, one indexed query per layer. POST /reservations/{id}/reassign (reservation.update, reason required, version for optimistic concurrency) moves a stay: it locks the booking and the target room like a new booking does, checks availability with the booking engine, supersedes the old room row, copies the nightly prices and writes a note and audit entries. 409 ROOM_UNAVAILABLE names the booking or block in the way; 409 CONCURRENCY_CONFLICT when someone else changed the booking first."
+      database: "Migration V008 adds one partial index, ix_reservation_units_calendar on reservation_units (property, start and end date) for current rows. Moves reuse Sprint 05's tables: the old reservation_units row is superseded and a new one inserted with copied reservation_rate_breakdowns, so the exclusion constraints still guard against two stays in one room on a night."
+    diagrams:
+      - {file: tools/handbooks/assets/room-move-flow.png, caption: "Moving a guest to another room: locks, checks and what is written"}
+    screenshots:
+      - {file: docs/sprints/sprint-06-screens/01-calendar-week.png, caption: "Calendar, week view: bookings by room and a maintenance block"}
+      - {file: docs/sprints/sprint-06-screens/02-calendar-month.png, caption: "Calendar, month view"}
+      - {file: docs/sprints/sprint-06-screens/03-drop-on-blocked-room.png, caption: "A drop onto a blocked room is refused with the reason"}
+      - {file: docs/sprints/sprint-06-screens/04-move-dialog.png, caption: "Moving a guest: the reason is required"}
+      - {file: docs/sprints/sprint-06-screens/06-audit-who-why.png, caption: "The audit trail shows who moved the guest and why"}
+      - {file: docs/sprints/sprint-06-screens/07-phone-list.png, caption: "On a phone: a list by day"}
 
 - id: 7
   title: Front desk — arrivals, departures, in-house, check-in/out
   phase: 2
-  status: planned
+  status: in-progress
   size: M
   module: FrontDesk
   feature: front-desk

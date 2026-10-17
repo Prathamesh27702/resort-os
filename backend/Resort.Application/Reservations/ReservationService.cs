@@ -287,6 +287,138 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         return await ToDtoAsync(reservation, ct);
     }
 
+    // ------------------------------------------------------------------ move to another room (Sprint 6)
+
+    /// <summary>
+    /// Moves one room (or dorm bed) of a booking to another for the same nights; the price stays as booked.
+    /// Same locking as booking: the reservation row first, then the target room row (the lock a booking, a date change
+    /// and a block on that room all take), then the availability check sees every committed booking and block.
+    /// The old row is superseded (kept as history) and a new one inserted, with the nightly prices copied.
+    /// </summary>
+    public async Task<ReservationDto> ReassignAsync(Guid propertyId, Guid id, ReassignRoomRequest r, CancellationToken ct)
+    {
+        var reason = Clean(r.Reason)!;
+        var orgId = caller.RequireOrganizationId();
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var reservation = await LockAsync(propertyId, id, ct);
+        if (reservation.Status == ReservationStatuses.CheckedIn)
+            throw new BusinessRuleAppException("RESERVATION_NOT_MOVABLE",
+                $"{reservation.Reference} is checked in. Moving an in-house guest mid-stay comes with the front desk (Sprint 7); " +
+                "for now change the room at check-out or with a new booking.");
+        if (!ReservationStatuses.Changeable.Contains(reservation.Status))
+            throw new BusinessRuleAppException("RESERVATION_NOT_MOVABLE",
+                $"{reservation.Reference} is {ReservationStatuses.Words(reservation.Status)}, so its room can't be changed.");
+        ConcurrencyGuard.ExpectVersion(db, reservation, r.Version);
+
+        var row = await db.ReservationUnits.SingleOrDefaultAsync(u => u.Id == r.ReservationUnitId && u.ReservationId == id, ct);
+        if (row is null || !row.IsCurrent)
+            throw Field(nameof(r.ReservationUnitId), $"That room is no longer part of {reservation.Reference}. Reload the calendar and try again.");
+
+        // Lock the target room before reading anything about it (fixed order: reservation, then room).
+        await db.Database.ExecuteSqlAsync(
+            $"SELECT 1 FROM accommodation_units WHERE id = {r.UnitId} AND property_id = {propertyId} AND organization_id = {orgId} FOR UPDATE", ct);
+        var target = await db.AccommodationUnits.Include(u => u.Type).Include(u => u.Beds)
+                         .SingleOrDefaultAsync(u => u.Id == r.UnitId && u.PropertyId == propertyId, ct)
+                     ?? throw Field(nameof(r.UnitId), "That room doesn't exist at this property. Reload the calendar and choose again.");
+        var source = await db.AccommodationUnits.AsNoTracking().Include(u => u.Beds).SingleAsync(u => u.Id == row.UnitId, ct);
+        var sourceName = row.BedId is { } sb ? $"{source.Name} bed {source.Beds.First(b => b.Id == sb).Code}" : source.Name;
+
+        var isBed = row.BedId is not null;
+        if (!target.IsActive || !target.Type.IsActive)
+            throw Field(nameof(r.UnitId), $"{target.Name} is inactive, so guests can't be moved into it.");
+        if (isBed && target.Type.InventoryMode != InventoryModes.Bed)
+            throw Field(nameof(r.UnitId), $"This guest has a dormitory bed; {target.Name} is a private room. Move them to a bed in a dormitory, " +
+                                          "or change the booking's room type on the booking page.");
+        if (!isBed && target.Type.InventoryMode == InventoryModes.Bed)
+            throw Field(nameof(r.UnitId), $"{target.Name} is a dormitory, sold by the bed. Move this room booking to another room, " +
+                                          "or change the booking's room type on the booking page.");
+        Bed? bed = null;
+        if (isBed)
+        {
+            if (r.BedId is null)
+                throw Field(nameof(r.BedId), $"Choose the bed in {target.Name}.");
+            bed = target.Beds.FirstOrDefault(b => b.Id == r.BedId)
+                  ?? throw Field(nameof(r.BedId), $"That bed isn't in {target.Name}. Reload the calendar and choose again.");
+            if (!bed.IsActive)
+                throw Field(nameof(r.BedId), $"Bed {bed.Code} in {target.Name} is inactive, so guests can't be moved into it.");
+        }
+        else if (r.BedId is not null)
+            throw Field(nameof(r.BedId), $"{target.Name} is a private room; it has no beds to choose.");
+        if (row.UnitId == target.Id && row.BedId == bed?.Id)
+            throw Field(nameof(r.UnitId), $"The guest is already in {sourceName}. Choose a different {(isBed ? "bed" : "room")}.");
+        if (!isBed && row.Adults + row.Children > target.Type.MaxOccupancy)
+            throw Field(nameof(r.UnitId),
+                $"{target.Name} ({target.Type.Name}) sleeps at most {target.Type.MaxOccupancy}; this room has {row.Adults + row.Children} guests. " +
+                "Choose a bigger room.");
+
+        // Free for every night? The same rules the booking engine uses (held bookings and active blocks).
+        var inventory = await InventoryLoader.UnitsAsync(db, propertyId, [target.AccommodationTypeId], ct);
+        var unit = inventory.Single(u => u.UnitId == target.Id);
+        var taken = await InventoryLoader.TakenAsync(db, [target.Id], row.StartDate, row.EndDate, null, ct);
+        var free = AvailabilityEngine.Free([unit], taken, row.StartDate, row.EndDate);
+        var isFree = isBed ? free.FreeBeds.Any(b => b.Bed.BedId == bed!.Id) : free.FreeRooms.Any(u => u.UnitId == target.Id);
+        if (!isFree)
+        {
+            var clash = taken.FirstOrDefault(o => o.Overlaps(row.StartDate, row.EndDate) && (o.BedId is null || o.BedId == bed?.Id));
+            var what = isBed ? $"Bed {bed!.Code} in {target.Name}" : target.Name;
+            throw new ConflictAppException("ROOM_UNAVAILABLE",
+                $"{what} isn't free {BlockService.NightsText(row.StartDate, row.EndDate)}: {clash?.Label ?? "it is taken"}. Choose another {(isBed ? "bed" : "room")}.",
+                new { unitId = target.Id, bedId = bed?.Id });
+        }
+
+        // Supersede the old row (it stops holding first), then insert the new one with the same nights and prices.
+        var now = clock.GetUtcNow();
+        audit.Reason = reason;
+        var holds = row.HoldsInventory;
+        row.HoldsInventory = false;
+        row.SupersededAt = now;
+        await db.SaveChangesAsync(ct);
+
+        var moved = new ReservationUnit
+        {
+            OrganizationId = row.OrganizationId,
+            PropertyId = row.PropertyId,
+            ReservationId = row.ReservationId,
+            AccommodationTypeId = target.AccommodationTypeId,
+            UnitId = target.Id,
+            BedId = bed?.Id,
+            StartDate = row.StartDate,
+            EndDate = row.EndDate,
+            Adults = row.Adults,
+            Children = row.Children,
+            HoldsInventory = holds,
+        };
+        db.ReservationUnits.Add(moved);
+        var nights = await db.ReservationRateBreakdowns.AsNoTracking().Where(n => n.ReservationUnitId == row.Id).ToListAsync(ct);
+        foreach (var n in nights)
+            db.ReservationRateBreakdowns.Add(new ReservationRateBreakdown
+            {
+                OrganizationId = n.OrganizationId,
+                PropertyId = n.PropertyId,
+                ReservationId = n.ReservationId,
+                ReservationUnitId = moved.Id,
+                RatePlanId = n.RatePlanId,
+                StayDate = n.StayDate,
+                Units = n.Units,
+                UnitPrice = n.UnitPrice,
+                BaseAmount = n.BaseAmount,
+                ExtraAdults = n.ExtraAdults,
+                ExtraAdultRate = n.ExtraAdultRate,
+                ExtraAdultAmount = n.ExtraAdultAmount,
+                ExtraChildren = n.ExtraChildren,
+                ExtraChildRate = n.ExtraChildRate,
+                ExtraChildAmount = n.ExtraChildAmount,
+                Total = n.Total,
+            });
+
+        var targetName = bed is null ? target.Name : $"{target.Name} bed {bed.Code}";
+        AddNote(reservation, $"Moved from {sourceName} to {targetName} ({BlockService.NightsText(row.StartDate, row.EndDate)}). Reason: {reason}");
+        reservation.UpdatedAt = now;   // a new version, so a screen showing the old rooms can't save over the move
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return await ToDtoAsync(reservation, ct);
+    }
+
     // ------------------------------------------------------------------ notes
 
     public async Task<ReservationDto> AddNoteAsync(Guid propertyId, Guid id, AddReservationNoteRequest r, CancellationToken ct)
