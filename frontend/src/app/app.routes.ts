@@ -47,6 +47,7 @@ export const routes: Routes = [
 
       // /reservations (Sprint 5)
       { path: 'reservations', canActivate: [permissionGuard('reservation.read')], loadComponent: () => import('./features/reservations/reservations.page').then(m => m.ReservationsPage) },
+      { path: 'reservations/calendar', canActivate: [permissionGuard('reservation.read')], loadComponent: () => import('./features/reservations/calendar.page').then(m => m.CalendarPage) },   // Sprint 6
       { path: 'reservations/new', canActivate: [permissionGuard('reservation.create')], loadComponent: () => import('./features/reservations/reservation-new.page').then(m => m.ReservationNewPage) },
       { path: 'reservations/:id', canActivate: [permissionGuard('reservation.read')], loadComponent: () => import('./features/reservations/reservation.page').then(m => m.ReservationPage) },
 

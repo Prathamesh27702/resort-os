@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<PackageService>();
         services.AddScoped<AvailabilityService>();
         services.AddScoped<ReservationService>();
+        services.AddScoped<CalendarService>();
         return services;
     }
 }

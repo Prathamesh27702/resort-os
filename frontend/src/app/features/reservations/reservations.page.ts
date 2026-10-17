@@ -32,7 +32,10 @@ const VIEW_STATUS: Record<View, string | undefined> = {
     <div class="page">
       <div class="page-head">
         <div><h1>Reservations</h1><p>Stays that haven't ended yet, soonest arrival first. Search by guest name, phone or booking reference.</p></div>
-        <a mat-flat-button routerLink="/reservations/new" *appCan="'reservation.create'"><mat-icon>add</mat-icon>New booking</a>
+        <div class="head-actions">
+          <a mat-stroked-button routerLink="/reservations/calendar"><mat-icon>calendar_month</mat-icon>Calendar</a>
+          <a mat-flat-button routerLink="/reservations/new" *appCan="'reservation.create'"><mat-icon>add</mat-icon>New booking</a>
+        </div>
       </div>
 
       <div class="filters">
@@ -86,6 +89,7 @@ const VIEW_STATUS: Record<View, string | undefined> = {
     </div>
   `,
   styles: `
+    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .filters { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
     .q { flex: 1; min-width: 240px; max-width: 460px; }
     .mute { color: #5b6b6e; }

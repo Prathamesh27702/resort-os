@@ -177,6 +177,28 @@ last Deluxe room tonight. Screenshots: [sprint-05-screens/](sprint-05-screens/).
 | 12 | **Rooms** → Room 105 → block it for tomorrow | Refused with the reason: *Room 105 is booked on R00002 … Move that booking to another room or cancel it first.* |
 | 13 | Phone width (390 px) → New booking | The steps stack vertically; every field is full width |
 
+### Sprint 06 — reservation calendar
+
+Continue on a **freshly reset database** (then restart the API): the demo bookings start from today and **Room 106** is
+blocked for maintenance from tomorrow for two nights (*Plumbing repair*). Sign in as a **receptionist** in a second
+browser for steps 4–7. Screenshots: [sprint-06-screens/](sprint-06-screens/). The browser tests do all of this for you:
+`cd frontend; npm run e2e:headed -- e2e/sprint-06.spec.ts` (names S06-01 … S06-08). Database checks:
+`database/queries/check-sprint-06.sql`. How a move stays safe: [system-design.md → 4.16](../architecture/system-design.md#416-moving-a-guest-to-another-room).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Calendar** (new in the menu) | This week, Monday to Sunday, today highlighted. Rows grouped by room type: Room 101 … 106, then *Dormitory · B01* … *B10*. R00001 in Room 101 from today (green, confirmed), R00002 in Room 105 from tomorrow, R00003 in Room 104 (amber dashed, pending), R00004 on two dorm beds. Room 106 has a striped red bar *Maintenance: Plumbing repair*. The enquiry R00005 and the cancelled R00006 are not drawn |
+| 2 | **Month**, then **‹** and **›**, then **Today**; then **Day** | The month's days (bookings that run past the edge are cut square); back to this month; one day, full width |
+| 3 | Click **R00001** | Its details: status, dates, guests, *Source: Walk-in*, *Payment: No payment recorded* (payments come in Sprint 10), the booking total, and **Open booking** |
+| 4 | As the receptionist: **drag R00002** (Room 105) **down onto Room 106** | Nothing moves. A red line above the calendar: *Can't move R00002 to Room 106: Room 106 isn't free for the nights of …: it is blocked (Plumbing repair). Choose another room.* |
+| 5 | **The acceptance test.** Drag **R00001** from Room 101 **down to Room 102** (action 1) | A window with *Move to: Room 102 · Deluxe room* already chosen. Press **Move** with no reason: under the Reason field *Say why the guest is moving (at least 3 characters).* |
+| 6 | Type *AC not working in 101* → **Move** (action 2) | *R00001 moved to Room 102*; the bar is now on Room 102. Open R00001: Rooms shows Room 102, the price is unchanged, and a note *Moved from Room 101 to Room 102 (for the nights of …). Reason: AC not working in 101* with the receptionist's name |
+| 7 | **Audit trail** (as the owner) | Two *Reserved room* entries by the receptionist with *“AC not working in 101”* |
+| 8 | Click **R00003** (Room 104) → **Move to** → open the list | Rooms that aren't free say *not free*; choosing one shows why (e.g. *it is booked on R00002*). Choose **Room 106**, reason *Quieter room* → **Move** |
+| 9 | Drag a **dorm bed** booking (R00004) onto **Room 101** | *This guest has a dormitory bed; Room 101 is a private room …* |
+| 10 | As a **housekeeper** | No **Calendar** in the menu |
+| 11 | Phone width (390 px) → Calendar | A list by day: *Arrives*, *In house*, *Leaves* and *Blocked* lines per room; tap a booking for its details and **Move** |
+
 ## Part C — Decide
 
 ### Accept

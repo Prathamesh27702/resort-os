@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
+| 🟡 In review — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
 
 **Goal:** Day/week/month calendar showing room, guest, dates, status, source and payment status; safe drag-and-drop reassignment.
 
@@ -10,26 +10,34 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built on 15 Oct 2026 and in review: pull request into develop. Test it on the claude/sprint-06-vfny0k branch until it is merged.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V008: index ix_reservation_units_calendar on current reservation rows (property, dates)
+- Calendar read model (GET /calendar?from&to, up to 62 days): rooms and dorm beds, bookings with guest, status, source, payment status and version, and active blocks (maintenance, out of order …); one indexed query per layer
+- Move a guest to another room or bed (POST /reservations/{id}/reassign, reason required): same locking as booking (reservation row, then room row), the availability engine's rules, the old row superseded and nightly prices copied (price unchanged), a note on the booking and audit entries with who and why; 409 names the booking or block in the way
+- Screen /reservations/calendar: Day / Week / Month, bookings and blocks as bars, drag a booking up or down to another room (dates locked), details window with status, source and payment, move with a reason; the bar moves only after the server agrees; a drop that can't work says why at once
+- Phone view: the same window as a list by day (arrives, in house, leaves, blocked)
+- Dev seed S005: Room 106 blocked for maintenance from tomorrow (calendar demo)
+- System design guide: Sprint 06 section, part 4.16 Moving a guest to another room, room-move flow diagram
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- backend/Resort.Domain/Reservations/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Reservations/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/ReservationsEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/ReservationsTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/reservations/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-06.md, this guide, CHANGELOG.md
+- database/migrations/V008__reservation_calendar.sql; database/seed/dev/S005__calendar.sql; database/queries/check-sprint-06.sql
+- backend/Resort.Contracts/ReservationContracts.cs (CalendarDto, ReassignRoomRequest)
+- backend/Resort.Application/ — Reservations/CalendarService.cs, Reservations/ReservationService.cs (ReassignAsync), Validation/ReservationValidators.cs, DependencyInjection.cs
+- backend/Resort.Api/Endpoints/ReservationEndpoints.cs
+- backend/Resort.Tests/ — Integration/CalendarTests.cs, Integration/DevSeedTests.cs, Support/BookingKit.cs
+- frontend/src/app/ — features/reservations/calendar.page.ts, calendar-grid.ts, calendar.model.ts, move-dialog.ts, calendar.spec.ts, reservations.api.ts, reservations.page.ts; core/models.ts; app.routes.ts; layout/shell.ts
+- frontend/e2e/sprint-06.spec.ts; scripts/check-api.mjs (Sprint 06 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-06.md, docs/architecture/system-design.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-06-screens/; tools/handbooks/diagrams (room-move-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 181 passed, 0 failed on real PostgreSQL 16 (8 new: CalendarTests with two moves into the same room raced 20 times, the audit trail's who and why, blocked and booked rooms, field errors, the window, permissions and the calendar index; plus the calendar dev seed check)
+- Frontend: 54 of 54 unit tests passed (10 new, including 7 rooms × 31 days drawn in under 200 ms); ESLint clean; production build OK
+- Browser tests: 60 of 60 passed (Sprints 01–05 plus the 8 new Sprint 06 steps, including a move by drag and reason and a drop on a blocked room refused); screenshots in docs/sprints/sprint-06-screens
 
 **Outcome**
 
@@ -54,10 +62,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] API: calendar read model (single query, indexed) including blocks and maintenance blocks
-- [ ] API: reassign room — same locking as booking; audited with reason (brief §58)
-- [ ] UI: calendar component (CDK drag-drop); optimistic UI only after server confirms; conflicts shown inline
-- [ ] UI: mobile view = list by day
+- [x] API: calendar read model (single query, indexed) including blocks and maintenance blocks
+- [x] API: reassign room — same locking as booking; audited with reason (brief §58)
+- [x] UI: calendar component (CDK drag-drop); optimistic UI only after server confirms; conflicts shown inline
+- [x] UI: mobile view = list by day
 
 ## How to run this sprint
 

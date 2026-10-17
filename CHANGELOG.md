@@ -2,6 +2,35 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-06] — Unreleased — Reservation calendar (in review)
+
+### Added
+- Migration V008: index `ix_reservation_units_calendar` on current reservation rows (property, dates) for the calendar.
+- `GET /api/v1/properties/{id}/calendar?from&to` (up to 62 days): rooms and dorm beds, bookings (guest, status, source,
+  payment status, version) and active blocks, one indexed query per layer (`CalendarService`).
+- `POST /api/v1/properties/{id}/reservations/{rid}/reassign`: moves one room or dorm bed of a booking to another for the
+  same nights, with a required reason. Same locking as booking (reservation row, then room row), the availability
+  engine's rules, the old row superseded and the nightly prices copied (price unchanged), a note on the booking and
+  audit entries with who and why. 409 `ROOM_UNAVAILABLE` names the booking or block in the way; 422
+  `RESERVATION_NOT_MOVABLE` for checked-in or finished bookings.
+- Dev seed S005: Room 106 blocked for maintenance from tomorrow for two nights.
+- Staff app: **Calendar** (`/reservations/calendar`, Day / Week / Month) with bookings and blocks as bars, CDK
+  drag-and-drop between rooms (dates locked), a details and move window (status, source, payment, reason), an inline
+  reason when a drop can't work, and a list by day on phones. Deep links `?view=&date=`.
+- Tests: backend `CalendarTests` (two moves into the same room raced 20 times, audit who/why, blocked and booked rooms,
+  field errors, the window, permissions, the index is used) and a dev seed test; frontend `calendar.spec.ts` (windows,
+  rows, placement, move reasons, phone list, 7 rooms × 31 days rendered in under 200 ms); browser steps S06-01 … S06-08;
+  `check-api.mjs` Sprint 06 block; `database/queries/check-sprint-06.sql`.
+
+### Changed
+- Test helpers that build rooms, plans, guests and bookings moved to `Resort.Tests/Support/BookingKit.cs`, shared by the
+  reservation and calendar tests.
+
+### Documentation
+- `docs/architecture/system-design.md`: Sprint 06 in section 3, new part 4.16 *Moving a guest to another room*, and the
+  room-move flow diagram (`tools/handbooks/assets/room-move-flow.png`). API.md, DATABASE.md, `schema-sprint-06.md`,
+  RUN_AND_TEST.md and REVIEWING.md Sprint 06 sections.
+
 ## [sprint-05] — 2026-10-15 — Availability engine and reservations (accepted)
 
 ### Added

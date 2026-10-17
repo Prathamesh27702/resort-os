@@ -96,4 +96,22 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(r1.Breakdown.Sum(n => n.Total), r1.TotalAmount);
         Assert.Equal(2, r1.Breakdown.Count);
     }
+    /// <summary>Sprint 6: the calendar shows the demo bookings and Room 106's maintenance block from tomorrow.</summary>
+    [Fact]
+    public async Task Dev_seed_calendar_has_bookings_and_a_maintenance_block()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+        var ist = TimeZoneInfo.FindSystemTimeZoneById("Asia/Kolkata");
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, ist).DateTime);
+
+        var cal = await owner.GetJsonAsync<CalendarDto>($"/api/v1/properties/{pid}/calendar?from={today:yyyy-MM-dd}&to={today.AddDays(7):yyyy-MM-dd}");
+        var room106 = cal.Rooms.Single(r => r.Code == "106");
+        var block = Assert.Single(cal.Blocks, b => b.UnitId == room106.Id);
+        Assert.Equal(("MAINTENANCE", "Plumbing repair", today.AddDays(1), today.AddDays(3)), (block.BlockType, block.Reason, block.StartDate, block.EndDate));
+        // R00001–R00004 hold rooms (R00004 two dorm beds); the enquiry and the cancelled booking are not drawn
+        Assert.Equal(["R00001", "R00002", "R00003", "R00004", "R00004"], cal.Bookings.Select(b => b.Reference).Order());
+    }
 }

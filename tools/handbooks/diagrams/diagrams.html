@@ -821,5 +821,32 @@
   <text class="s" x="46" y="426"><tspan class="b">Final guard:</tspan> even if some code skipped the lock, the EXCLUDE constraint on reservation_units refuses the second row (SQLSTATE 23P01 → 409).</text>
   <text class="s" x="46" y="444"><tspan class="b">Retry safe:</tspan> if A's browser retries with the same key, it gets the stored 201 back (Idempotent-Replayed: true), never a second booking.</text>
 </svg>
+<svg id="room-move-flow" width="1200" height="500" viewBox="0 0 1200 500">
+  <rect width="1200" height="500" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 06: two receptionists drag different bookings onto Room 103 at the same moment</text>
+  <rect class="lane" x="30" y="56" width="1140" height="170" rx="10"/>
+  <text class="t b" x="46" y="82">Move A (R00012: 101 → 103)</text>
+  <rect class="step" x="46" y="98" width="200" height="64" rx="8"/><text class="s" x="58" y="122">1. Drop + reason</text><text class="xs" x="58" y="144">browser asks, sends version</text>
+  <rect class="step" x="266" y="98" width="200" height="64" rx="8"/><text class="s" x="278" y="122">2. Lock R00012's row</text><text class="xs" x="278" y="144">version must match (else 409)</text>
+  <rect class="step" x="486" y="98" width="200" height="64" rx="8"/><text class="s" x="498" y="122">3. Lock Room 103's row</text><text class="xs" x="498" y="144">SELECT … FOR UPDATE</text>
+  <rect class="step" x="706" y="98" width="200" height="64" rx="8"/><text class="s" x="718" y="122">4. Is 103 free?</text><text class="xs" x="718" y="144">held bookings + active blocks</text>
+  <rect class="win" x="926" y="98" width="230" height="64" rx="8"/><text class="s b" x="938" y="122">5. Supersede, insert, COMMIT</text><text class="xs" x="938" y="144">same nights, same prices, note</text>
+  <path class="arrow" d="M246,130 L264,130"/><path class="arrow" d="M466,130 L484,130"/><path class="arrow" d="M686,130 L704,130"/><path class="arrow" d="M906,130 L924,130"/>
+  <text class="xs" x="46" y="190">The old row stops holding (superseded_at) and stays as history; the new row copies its nightly prices.</text>
+  <text class="xs" x="46" y="208">The audit trail records both rows with who and the reason; the booking gets a note "Moved from Room 101 to Room 103".</text>
+  <rect class="lane" x="30" y="246" width="1140" height="140" rx="10"/>
+  <text class="t b" x="46" y="272">Move B (R00015: 104 → 103)</text>
+  <rect class="step" x="46" y="288" width="200" height="64" rx="8"/><text class="s" x="58" y="312">1. Drop + reason</text><text class="xs" x="58" y="334">same moment as A</text>
+  <rect class="step" x="266" y="288" width="200" height="64" rx="8"/><text class="s" x="278" y="312">2. Lock R00015's row</text><text class="xs" x="278" y="334">a different booking: no wait</text>
+  <rect class="step" x="486" y="288" width="200" height="64" rx="8"/><text class="s" x="498" y="312">3. Lock Room 103's row</text><text class="xs" x="498" y="334">WAITS until A commits</text>
+  <rect class="lose" x="706" y="288" width="450" height="82" rx="8"/><text class="s b" x="718" y="312">409 ROOM_UNAVAILABLE, nothing written</text><text class="xs" x="718" y="334">"Room 103 isn't free for the nights of 20 Oct – 21 Oct 2026:</text><text class="xs" x="718" y="352">it is booked on R00012. Choose another room."</text>
+  <path class="arrow" d="M246,320 L264,320"/><path class="arrow" d="M466,320 L484,320"/><path class="arrow" d="M686,320 L704,320"/>
+  <path class="arrowp" d="M1040,162 C1040,230 600,220 590,286"/><text class="xs" x="1050" y="240" style="fill:#4A5A5E">A's COMMIT releases the lock</text>
+  <rect class="zone" x="30" y="404" width="1140" height="80" rx="8"/>
+  <text class="s" x="46" y="426"><tspan class="b">Same order as booking:</tspan> reservation row first, then room rows. Booking, date changes, blocks and moves all lock Room 103's row, so they queue.</text>
+  <text class="s" x="46" y="446"><tspan class="b">Final guard:</tspan> the EXCLUDE constraint and the block trigger on reservation_units refuse an overlapping row (23P01 → 409).</text>
+  <text class="s" x="46" y="466"><tspan class="b">The screen never guesses:</tspan> the bar moves only after the server says 200 and the calendar reloads; a 409 shows its reason.</text>
+</svg>
 </body>
 </html>
