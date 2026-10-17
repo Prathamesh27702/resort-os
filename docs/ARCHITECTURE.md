@@ -104,7 +104,7 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 1 | Identity | users, roles, permissions, user_roles, refresh_tokens, login_events | 1 | built |
 | 2 | Property management | organizations, properties, property_settings | 1 | built |
 | 3 | Accommodation | accommodation_types, accommodation_units, beds, unit_blocks | 2 | built |
-| 4 | Reservations | reservations, reservation_units, idempotency_keys, rate_plans, packages | 4–6 | built (4–5); calendar 6 |
+| 4 | Reservations | reservations, reservation_units, idempotency_keys, rate_plans, packages | 4–6 | built |
 | 5 | Guests | guests, guest_documents, guest_preferences | 3 | built |
 | 6 | Front desk | (uses reservations, folios) | 7 | planned |
 | 7 | Folio | folios, folio_items, folio_item_taxes | 8 | planned |
