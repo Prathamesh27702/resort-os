@@ -6,6 +6,7 @@ using Resort.Application.Common;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
+using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
@@ -61,6 +62,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<ReservationNote> ReservationNotes => Set<ReservationNote>();
     public DbSet<ReservationStatusChange> ReservationStatusHistory => Set<ReservationStatusChange>();
     public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
+    public DbSet<UnitHousekeepingStatus> UnitHousekeepingStatus => Set<UnitHousekeepingStatus>();
+    public DbSet<UnitHousekeepingChange> UnitHousekeepingHistory => Set<UnitHousekeepingChange>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -248,6 +251,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.ToTable("idempotency_keys");
             e.Property(x => x.Response).HasColumnType("jsonb");
         });
+        b.Entity<UnitHousekeepingStatus>().ToTable("unit_housekeeping_status");
+        b.Entity<UnitHousekeepingChange>().ToTable("unit_housekeeping_history");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {
