@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–05 built and accepted; Sprint 06 (reservation calendar) built and in review (October 2026). Anything marked *planned* is design that a later sprint
+Status: Sprints 01–06 built and accepted (October 2026); Sprint 07 (front desk) in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -499,4 +499,4 @@ request:
 | Sprint | Added to this guide |
 |---|---|
 | 01–05 | First edition (October 2026): foundation, accommodation, guests, rates, reservations; system design 4.1–4.15 |
-| 06 | Reservation calendar (read model, drag-and-drop), room-move diagram; system design 4.16 Moving a guest to another room |
+| 06 | Reservation calendar (read model, drag-and-drop), room-move diagram; system design 4.16 Moving a guest to another room (accepted 17 Oct 2026) |
