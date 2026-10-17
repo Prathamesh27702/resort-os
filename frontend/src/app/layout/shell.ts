@@ -28,7 +28,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
             </a>
           }
         </nav>
-        <p class="later">Check-in, billing, kitchen and staff modules arrive in later sprints.</p>
+        <p class="later">Billing, kitchen and staff modules arrive in later sprints.</p>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -111,6 +111,7 @@ export class Shell {
 
   private all: NavItem[] = [
     { label: 'Today', icon: 'wb_sunny', link: '/dashboard' },
+    { label: 'Front desk', icon: 'room_service', link: '/front-desk', perm: 'reservation.read' },
     { label: 'Reservations', icon: 'event_available', link: '/reservations', perm: 'reservation.read', exact: true },
     { label: 'Calendar', icon: 'calendar_month', link: '/reservations/calendar', perm: 'reservation.read' },
     { label: 'Guests', icon: 'group', link: '/guests', perm: 'guest.read' },

@@ -51,6 +51,14 @@ export const routes: Routes = [
       { path: 'reservations/new', canActivate: [permissionGuard('reservation.create')], loadComponent: () => import('./features/reservations/reservation-new.page').then(m => m.ReservationNewPage) },
       { path: 'reservations/:id', canActivate: [permissionGuard('reservation.read')], loadComponent: () => import('./features/reservations/reservation.page').then(m => m.ReservationPage) },
 
+      // /front-desk (Sprint 7)
+      { path: 'front-desk', pathMatch: 'full', redirectTo: 'front-desk/arrivals' },
+      { path: 'front-desk/walk-in', canActivate: [permissionGuard('frontdesk.checkin')], loadComponent: () => import('./features/front-desk/walk-in.page').then(m => m.WalkInPage) },
+      ...(['arrivals', 'departures', 'in-house', 'rooms'] as const).map(tab => ({
+        path: `front-desk/${tab}`, data: { tab }, canActivate: [permissionGuard('reservation.read')],
+        loadComponent: () => import('./features/front-desk/front-desk.page').then(m => m.FrontDeskPage),
+      })),
+
       // /users, /roles, /audit
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },
