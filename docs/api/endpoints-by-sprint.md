@@ -68,6 +68,8 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `POST /api/v1/properties/{propertyId}/reservations/{id}/check-out` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/walk-ins` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
 | `PUT /api/v1/properties/{propertyId}/rooms/{unitId}/housekeeping` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/folios?q&show` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/reservations/{reservationId}/folios` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
 | `GET /api/v1/properties/{propertyId}/folios/{id}` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/folios/{id}/charges  (Idempotency-Key)` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/folios/{id}/charges/{itemId}/reverse  (reason required)` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |

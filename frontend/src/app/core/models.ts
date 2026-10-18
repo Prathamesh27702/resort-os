@@ -244,3 +244,27 @@ export interface RoomOption {
   unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null; accommodationTypeId: string;
   typeName: string; housekeeping: Housekeeping; free: boolean; fits: boolean; problem: string | null;
 }
+
+// ---------------------------------------------------------------- folios (Sprint 8)
+export type ChargeCategory = 'ROOM' | 'FOOD' | 'BEVERAGE' | 'ACTIVITY' | 'TRANSPORT' | 'EQUIPMENT' | 'LAUNDRY' | 'OTHER';
+/** One bill line. Lines are never edited or deleted: a correction is a REVERSAL (negative) line. live = a charge that still
+ *  counts; reversedByItemId / reversalReason = what cancelled it; movedFrom / movedTo = folio numbers of a split. */
+export interface FolioItem {
+  id: string; itemType: 'CHARGE' | 'REVERSAL'; category: ChargeCategory; description: string; serviceDate: string; quantity: number;
+  unitPrice: number; amount: number; taxAmount: number; total: number; source: 'MANUAL' | 'ROOM_NIGHT' | 'PACKAGE';
+  packageId: string | null; packageName: string | null; groupId: string | null; reversesItemId: string | null;
+  reversedByItemId: string | null; reason: string | null; reversalReason: string | null; movedFrom: string | null; movedTo: string | null;
+  postedAt: string; postedByName: string | null; live: boolean;
+}
+export interface FolioSummary { id: string; number: string; name: string; isPrimary: boolean; total: number; balance: number; }
+/** A bill: total = sum of lines (tax 0 until Sprint 9); balance = total − payments (payments arrive in Sprint 10). */
+export interface Folio {
+  id: string; number: string; name: string; isPrimary: boolean; reservationId: string; reference: string; reservationStatus: ReservationStatus;
+  guestId: string; guestName: string; billToGuestId: string | null; billToName: string | null; checkIn: string; checkOut: string; rooms: string;
+  currency: string; items: FolioItem[]; categories: { category: ChargeCategory; amount: number }[]; charges: number; reversals: number;
+  tax: number; total: number; payments: number; balance: number; folios: FolioSummary[]; canPost: boolean; cantPostReason: string | null;
+}
+export interface FolioListItem {
+  id: string; number: string; name: string; isPrimary: boolean; reservationId: string; reference: string; reservationStatus: ReservationStatus;
+  guestName: string; checkIn: string; checkOut: string; rooms: string; lines: number; total: number; balance: number; currency: string;
+}

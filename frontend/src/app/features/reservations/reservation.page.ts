@@ -22,6 +22,8 @@ import { dateError, stayDates } from './reservations.forms';
 import { DeskActions } from '../front-desk/desk-actions';
 import { deskStayOf, stayAction } from '../front-desk/front-desk.api';
 import { Observable } from 'rxjs';
+import { FoliosApi } from '../folios/folios.api';
+import { FolioListItem } from '../../core/models';
 
 /** One booking: stay, rooms, the price night by night, guests, notes and every status change. */
 @Component({
@@ -40,6 +42,9 @@ import { Observable } from 'rxjs';
                {{ guestsText(r.adults, r.children) }}</p>
           </div>
           <div class="head-actions">
+            @if (folio(); as fo) {
+              <a mat-stroked-button [routerLink]="['/folios', fo.id]" data-testid="bill"><mat-icon>receipt_long</mat-icon>Bill · {{ rupeesExact(fo.balance) }}</a>
+            }
             @if (deskAction() === 'check-in' && auth.can('frontdesk.checkin', pid)) {
               <button mat-flat-button (click)="checkIn()" [disabled]="busy()"><mat-icon>login</mat-icon>Check in</button>
             }
@@ -194,6 +199,8 @@ export class ReservationPage implements OnInit {
   auth = inject(AuthService);
 
   r = signal<Reservation | null>(null);
+  folio = signal<FolioListItem | null>(null);
+  private folios = inject(FoliosApi);
   error = signal('');
   busy = signal(false);
   noteForm = inject(FormBuilder).nonNullable.group({ note: ['', [Validators.maxLength(2000)]] });
@@ -223,10 +230,16 @@ export class ReservationPage implements OnInit {
 
   private load() {
     this.api.get(this.pid, this.id()).subscribe({
-      next: r => this.r.set(r),
+      next: r => { this.r.set(r); this.loadFolio(); },
       error: e => this.error.set(toProblem(e).status === 404
         ? 'This booking doesn’t exist at this property. Check the property selected at the top.' : toProblem(e).detail),
     });
+  }
+
+  /** Sprint 8: the stay's main bill, for the Bill button (only for staff who can see folios). */
+  private loadFolio() {
+    if (!this.auth.can('folio.read', this.pid)) return;
+    this.folios.forReservation(this.pid, this.id()).subscribe({ next: list => this.folio.set(list.find(f => f.isPrimary) ?? null) });
   }
 
   can(s: ReservationStatus) { return this.r()?.nextStatuses.includes(s) ?? false; }
@@ -237,7 +250,7 @@ export class ReservationPage implements OnInit {
   }
 
   private done(r: Reservation, message: string) {
-    this.r.set(r); this.busy.set(false); this.error.set('');
+    this.r.set(r); this.busy.set(false); this.error.set(''); this.loadFolio();
     this.snack.open(message, undefined, { duration: 2500 });
   }
   private failed(e: unknown) { this.busy.set(false); this.error.set(toProblem(e).detail); }

@@ -2,6 +2,48 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-08] — Unreleased — Folio (in review)
+
+### Added
+- Migration V010: `folios` (one main folio per confirmed booking, numbered F00001 … per property; more to split a bill),
+  `folio_items` (immutable lines: CHARGE or REVERSAL, categories ROOM, FOOD, BEVERAGE, ACTIVITY, TRANSPORT, EQUIPMENT,
+  LAUNDRY, OTHER; source MANUAL, ROOM_NIGHT or PACKAGE) and `folio_item_taxes` (filled from Sprint 9). Triggers refuse
+  UPDATE and DELETE on lines and taxes; CHECKs make amount = quantity × price and total = amount + tax; a trigger makes
+  every reversal the exact negative of a charge on the same folio; a line is reversed or moved at most once; a partial
+  unique index charges each night of a stay once. `fn_open_missing_folios()` opens main folios for existing bookings.
+- Folio API under `/api/v1/properties/{id}`: `GET folios?q&show`, `GET reservations/{rid}/folios`, `GET folios/{fid}`,
+  `POST folios/{fid}/charges` (Idempotency-Key; a charge or a package as one line per component),
+  `POST folios/{fid}/charges/{itemId}/reverse` (`folio.adjust` and a reason; 409 `ALREADY_REVERSED` names who and when),
+  `POST folios/{fid}/split` (to an existing or a new folio; reversal here, copy there). 422 `FOLIO_CLOSED` for bookings
+  that don't take charges (enquiry, pending, cancelled, no-show).
+- The main folio is opened when a booking becomes CONFIRMED. Room nights are posted at check-in for the whole stay
+  (`folio.room_charge_posting = "AT_CHECK_IN"`, the default) or night by night (`"NIGHTLY"`) by a background job that
+  runs every 15 minutes (`Folio:RoomChargeJob:Enabled`). Every writer locks the reservation row first.
+- Dev seed S007: main folios for the demo bookings; R00008 with room nights, airport pick-up and dinner; R00007 with its
+  room night and laundry; `frontdesk.allow_checkout_with_balance = true` on the demo property only (payments arrive in
+  Sprint 10).
+- Staff app: **Folios** (`/folios`: search, in house / arriving / all) and the bill (`/folios/:id`: balance, sums,
+  chips by category, every line with who posted it, reversed lines struck through with the reason, a switcher between
+  the stay's folios) with **Post charge** (charge or package), **Reverse** (managers, with a reason) and **Move lines**;
+  a **Bill** button on the booking page and the front desk lists.
+- Tests: backend `FolioTests` (the brief's ₹10,950 example, DELETE/UPDATE refused by the database, reversal needs
+  `folio.adjust` and a reason, 10 pairs of simultaneous reversals, idempotent posting, field errors, package lines and
+  split, folio at confirmation and `FOLIO_CLOSED` after cancel, nightly posting with a pinned clock, early departure,
+  permissions and tenancy), `FolioUnitTests` and a dev seed test; frontend `folios.spec.ts`; browser steps
+  S08-01 … S08-07; `check-api.mjs` Sprint 08 block; `database/queries/check-sprint-08.sql`.
+
+### Changed
+- The front desk's balance and the check-out rule use the real folio balance (`FolioBalances` replaces the Sprint 7
+  placeholder). Check-out posts any night still missing and, when the guest leaves early, reverses the released nights
+  before checking the balance.
+- `ReservationService` opens the main folio on confirmation; `FrontDeskService` posts room nights at check-in.
+- Browser step S07-03 expects the demo bill on R00007 (*still owed*) instead of *Nothing owed*.
+
+### Documentation
+- `docs/architecture/system-design.md`: Sprint 08 in section 3, part 4.18 *Folios: the bill of a stay*, and the folio
+  flow diagram (`tools/handbooks/assets/folio-flow.png`). API.md, DATABASE.md, `schema-sprint-08.md`, ARCHITECTURE
+  module map, RUN_AND_TEST.md and REVIEWING.md Sprint 08 sections.
+
 ## [sprint-07] — 2026-10-18 — Front desk (accepted)
 
 ### Added

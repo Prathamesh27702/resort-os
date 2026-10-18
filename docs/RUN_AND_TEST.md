@@ -345,6 +345,49 @@ booking, *Checked in*, source *Walk-in*. Then **Front desk → Arrivals**: R0000
 By hand: [REVIEWING.md → Sprint 07](sprints/REVIEWING.md#sprint-07--front-desk).
 Screenshots: [sprint-07-screens/](sprints/sprint-07-screens/).
 
+### Sprint 08: Folio
+
+**New:** **Folios** (menu): the running bill of every stay. Each bill shows its balance, what it adds up to by category
+(room, food, transport …) and every line with the day, who posted it and when. **Post charge** adds a charge (what for,
+description, quantity, price, day) or sells a package (one line per part). Lines are **never edited or deleted**: a
+manager presses **Reverse** and gives a reason, and the line stays on the bill struck through, next to its negative
+reversal. **Move lines** moves charges to another bill of the same stay (e.g. a friend pays the activities). Room nights
+go on the bill by themselves at check-in (or night by night, a property setting), and a guest leaving early is not
+charged for the nights released. The booking page and the front desk get a **Bill** button, and the front desk's
+balance is now real. Demo data: R00008 (Room 104) has its room nights, an airport pick-up (₹1,200) and dinner (₹1,450);
+R00007 (Room 105) has its room night and laundry (4 × ₹80). Because payments only arrive in Sprint 10, the demo property
+lets guests check out with a balance. Nothing new to install and no new keys; reset the database before the review,
+restart the API and watch for `Applying migration V010__folio` and `Dev seed S007__folios`.
+
+```powershell
+# Backend (22 tests: FolioTests, FolioUnitTests and the folio dev seed test; includes the brief's ₹10,950 example,
+# DELETE/UPDATE refused by the database, and the same charge reversed by 10 pairs of clicks at once)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Folio|FullyQualifiedName~Dev_seed_folios"
+
+# Frontend unit tests (folio helpers: category names, quantity text, what happened to a line)
+cd frontend
+npm run test:ci
+
+# Browser (7 steps, S08-01 … S08-07; S08-02 and S08-03 are the demo: post charges, reverse one, the balance)
+npm run e2e -- e2e/sprint-08.spec.ts
+cd ..
+
+# API checks: the Sprint 08 block must be all PASS
+node scripts/check-api.mjs
+
+# Database checks (blocks 3, 6 and 7 must return no rows)
+Get-Content database/queries/check-sprint-08.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: **Folios → R00008** → **Post charge**: *Food*, *Lunch at the shack*, 1 × 900 → **Post charge**;
+the balance goes up by ₹900. As the owner press **Reverse** on that line, type *Posted to the wrong guest* →
+**Reverse**: the line is struck through with the reason, a *Reversal: Lunch at the shack* line of −₹900 appears and the
+balance is back. Nothing can be deleted. How it works:
+[system-design.md → 4.18](architecture/system-design.md#418-folios-the-bill-of-a-stay).
+
+By hand: [REVIEWING.md → Sprint 08](sprints/REVIEWING.md#sprint-08--folio).
+Screenshots: [sprint-08-screens/](sprints/sprint-08-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -357,7 +400,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 210 backend passed, 59 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 232 backend passed, 63 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -365,7 +408,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–07 (expected: 69 passed, about 8 minutes)
+# 3. Every browser test, Sprints 01–08 (expected: 76 passed, about 10 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -380,13 +423,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–07:
+Expected totals for Sprints 01–08:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 210 passed, 0 failed |
-| Frontend unit tests | 59 of 59 SUCCESS |
-| Browser tests | 69 passed (12 + 14 + 13 + 6 + 7 + 8 + 9) |
+| Backend tests | 232 passed, 0 failed |
+| Frontend unit tests | 63 of 63 SUCCESS |
+| Browser tests | 76 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7) |
 | API checks | 0 failed |
 
 Other useful commands:

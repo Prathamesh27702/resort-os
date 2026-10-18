@@ -878,5 +878,38 @@
   <text class="s" x="46" y="506"><tspan class="b">Business date:</tspan> every "today" is Property.LocalDate(clock): at 00:30 IST it is already tomorrow at the resort, though still yesterday in UTC.</text>
   <text class="s" x="46" y="526"><tspan class="b">Same lock order as booking and moves:</tspan> reservation row first, then room rows by id, so the front desk queues behind a booking instead of deadlocking.</text>
 </svg>
+<svg id="folio-flow" width="1200" height="616" viewBox="0 0 1200 616">
+  <rect width="1200" height="616" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 08: the bill of a stay. Lines are only ever added: a correction is a new, negative line</text>
+  <rect class="lane" x="30" y="56" width="1140" height="230" rx="10"/>
+  <text class="t b" x="46" y="82">Post a charge, then reverse it (two managers press Reverse at the same moment)</text>
+  <rect class="step" x="46" y="98" width="200" height="64" rx="8"/><text class="s" x="58" y="122">1. Idempotency-Key</text><text class="xs" x="58" y="144">a retried click posts once</text>
+  <rect class="step" x="266" y="98" width="200" height="64" rx="8"/><text class="s" x="278" y="122">2. Lock the booking's row</text><text class="xs" x="278" y="144">charges queue up per stay</text>
+  <rect class="step" x="486" y="98" width="200" height="64" rx="8"/><text class="s" x="498" y="122">3. Takes charges?</text><text class="xs" x="498" y="144">confirmed, in house, left</text>
+  <rect class="win" x="706" y="98" width="220" height="64" rx="8"/><text class="s b" x="718" y="122">4. INSERT CHARGE, COMMIT</text><text class="xs" x="718" y="144">amount = qty × price (CHECK)</text>
+  <path class="arrow" d="M246,130 L264,130"/><path class="arrow" d="M466,130 L484,130"/><path class="arrow" d="M686,130 L704,130"/>
+  <rect class="lose" x="946" y="98" width="210" height="64" rx="8"/><text class="s b" x="958" y="122">Cancelled booking</text><text class="xs" x="958" y="144">422 FOLIO_CLOSED, in words</text>
+  <rect class="step" x="46" y="186" width="200" height="64" rx="8"/><text class="s" x="58" y="210">Reverse: folio.adjust</text><text class="xs" x="58" y="232">+ a reason (3–500 chars)</text>
+  <rect class="step" x="266" y="186" width="200" height="64" rx="8"/><text class="s" x="278" y="210">Lock, then reversed yet?</text><text class="xs" x="278" y="232">the second click WAITS here</text>
+  <rect class="win" x="486" y="186" width="220" height="64" rx="8"/><text class="s b" x="498" y="210">INSERT REVERSAL, COMMIT</text><text class="xs" x="498" y="232">trigger: negates the charge exactly</text>
+  <rect class="lose" x="726" y="186" width="430" height="64" rx="8"/><text class="s b" x="738" y="210">The second click: 409 ALREADY_REVERSED</text><text class="xs" x="738" y="232">"… was already reversed at 14:05 by Rita (reason: …)"; UNIQUE backs it up.</text>
+  <path class="arrow" d="M246,218 L264,218"/><path class="arrow" d="M466,218 L484,218"/>
+  <text class="xs" x="46" y="274">Move lines to another folio (split) = a reversal here ("Moved to F00007") + the same line there (transferred_from_item_id): both bills keep their history, the stay's total doesn't change.</text>
+  <rect class="lane" x="30" y="306" width="1140" height="170" rx="10"/>
+  <text class="t b" x="46" y="332">Room nights: three writers, one rule (each night of a stay is charged once)</text>
+  <rect class="step" x="46" y="348" width="250" height="78" rx="8"/><text class="s" x="58" y="372">Check-in (default AT_CHECK_IN)</text><text class="xs" x="58" y="392">every night of the stay</text><text class="xs" x="58" y="410">NIGHTLY: tonight only</text>
+  <rect class="step" x="46" y="436" width="250" height="30" rx="8"/><text class="xs" x="58" y="456">Job every 15 min · Check-out: nights still due</text>
+  <rect class="step" x="336" y="348" width="250" height="78" rx="8"/><text class="s" x="348" y="372">Lock the booking's row</text><text class="xs" x="348" y="392">job, check-in and check-out</text><text class="xs" x="348" y="410">can't overlap on one stay</text>
+  <rect class="step" x="626" y="348" width="250" height="78" rx="8"/><text class="s" x="638" y="372">Nights with no line yet</text><text class="xs" x="638" y="392">price = all rooms that night,</text><text class="xs" x="638" y="410">as booked (rate breakdowns)</text>
+  <rect class="win" x="916" y="348" width="240" height="78" rx="8"/><text class="s b" x="928" y="372">INSERT ROOM_NIGHT</text><text class="xs" x="928" y="392">UNIQUE (reservation, night):</text><text class="xs" x="928" y="410">a second insert is refused</text>
+  <path class="arrow" d="M296,387 L334,387"/><path class="arrow" d="M586,387 L624,387"/><path class="arrow" d="M876,387 L914,387"/>
+  <rect class="ask" x="336" y="436" width="820" height="30" rx="8"/><text class="xs" x="348" y="456">Leaving early: the released nights' lines are reversed ("Left early on …: reason"), then the balance is checked (422 BALANCE_DUE unless allowed).</text>
+  <rect class="zone" x="30" y="494" width="1140" height="104" rx="8"/>
+  <text class="s" x="46" y="516"><tspan class="b">Never changed, never deleted:</tspan> triggers refuse UPDATE and DELETE on folio_items and folio_item_taxes, whoever runs them.</text>
+  <text class="s" x="46" y="538"><tspan class="b">Balance is never stored:</tspan> sum of the lines (tax from Sprint 9) minus payments (Sprint 10). A charge and its reversal add up to ₹0, both stay.</text>
+  <text class="s" x="46" y="560"><tspan class="b">Same lock order as the front desk:</tspan> the reservation row first, so posting, reversing, check-in, check-out and the job queue instead of racing.</text>
+  <text class="s" x="46" y="580"><tspan class="b">Tax copied at posting time</tspan> (folio_item_taxes, Sprint 9): a later rate change never alters a posted bill.</text>
+</svg>
 </body>
 </html>
