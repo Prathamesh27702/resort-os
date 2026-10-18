@@ -73,7 +73,7 @@ test('S07-03 Departures: check out today’s guest; the room is marked dirty, th
   await line(q, 'R00007').getByRole('button', { name: /^Check out / }).click();
   const dlg = q.locator('mat-dialog-container');
   await expect(dlg).toContainText('Room 105');
-  await expect(dlg).toContainText('Nothing owed');
+  await expect(dlg).toContainText('still owed');   // Sprint 8: the demo bill has the room night and laundry (the demo property allows leaving with a balance)
   await shot(q, '03-check-out');
   await dlg.getByRole('button', { name: 'Check out' }).click();
   await said(q, 'Checked out: R00007');

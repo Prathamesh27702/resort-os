@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 07](sprint-07-front-desk.md) |
+| 🟢 Done | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 07](sprint-07-front-desk.md) |
 
 **Goal:** The folio is the central financial object for a stay (brief §20).
 
@@ -10,27 +10,37 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Accepted by the owner on 18 Oct 2026 and released to main (tag sprint-08).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V010: folios (one main folio per confirmed booking, F00001 … per property, more to split a bill), folio_items (immutable CHARGE / REVERSAL lines, 8 categories, source MANUAL / ROOM_NIGHT / PACKAGE) and folio_item_taxes (filled from Sprint 9); UPDATE and DELETE refused by triggers
+- Database guards: amount = quantity × price and total = amount + tax (CHECK); a reversal is the exact negative of a charge on the same folio (trigger); a line is reversed or moved once (UNIQUE); each night of a stay is charged once (partial UNIQUE index)
+- Main folio opened when a booking becomes CONFIRMED; fn_open_missing_folios() opens them for existing bookings
+- Room nights posted at check-in for the stay (folio.room_charge_posting = AT_CHECK_IN, default) or night by night (NIGHTLY) by a background job every 15 minutes; check-out posts missing nights and reverses the nights released by an early departure before checking the balance
+- Post a charge (Idempotency-Key) or a package as one line per component; reverse with folio.adjust and a reason (409 ALREADY_REVERSED names who and when); move lines to another or a new folio (reversal here, copy there); FOLIO_CLOSED for bookings that don't take charges
+- The front desk's balance and the check-out rule now use the real folio balance
+- Screens: Folios (/folios: search, in house / arriving / all), the bill (/folios/:id: balance, sums by category, every line, reversed lines struck through with the reason, Post charge, Reverse, Move lines), Bill buttons on the booking page and the front desk
+- Dev seed S007: main folios, R00008 room nights + airport pick-up + dinner, R00007 room night + laundry; the demo property allows check-out with a balance until payments (Sprint 10)
+- System design guide: Sprint 08 section, part 4.18 Folios, folio flow diagram
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__folio.sql — new tables (next free number)
-- backend/Resort.Domain/Folio/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Folio/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/FolioEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/FolioTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/folios/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-08.md, this guide, CHANGELOG.md
+- database/migrations/V010__folio.sql; database/seed/dev/S007__folios.sql; database/queries/check-sprint-08.sql
+- backend/Resort.Domain/Folios/Folios.cs
+- backend/Resort.Contracts/FolioContracts.cs
+- backend/Resort.Application/ — Folios/FolioService.cs, Folios/FolioPosting.cs (shared posting steps, FolioBalances, RoomChargeRun), Validation/FolioValidators.cs, FrontDesk/FrontDeskService.cs, FrontDesk/FolioBalances.cs, Reservations/ReservationService.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/Endpoints/FolioEndpoints.cs, Infrastructure/RoomChargeJob.cs + Program.cs
+- backend/Resort.Tests/ — Integration/FolioTests.cs, Unit/FolioUnitTests.cs, Support/FolioFactory.cs, Support/ResortApiFactory.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/folios/ (folios.page.ts, folio.page.ts, folio-dialogs.ts, folios.api.ts, folios.spec.ts), features/reservations/reservation.page.ts, features/front-desk/front-desk.page.ts, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-08.spec.ts (and sprint-07.spec.ts S07-03); scripts/check-api.mjs (Sprint 08 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-08.md, docs/architecture/system-design.md, lifecycles.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-08-screens/; tools/handbooks/diagrams (folio-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 232 passed, 0 failed on real PostgreSQL 16 (22 new: FolioTests with the brief's ₹10,950 example, DELETE/UPDATE refused by the database, reversal permission and reason, the same charge reversed by 10 pairs of simultaneous clicks, idempotent posting, field errors, package lines and split, folio at confirmation and FOLIO_CLOSED, nightly posting with a pinned clock, early departure, permissions and tenancy; FolioUnitTests; the folio dev seed check)
+- Frontend: 63 of 63 unit tests passed (4 new for the folio helpers); ESLint clean; production build OK
+- Browser tests: 76 of 76 passed (Sprints 01–07 plus the 7 new Sprint 08 steps: find a bill, post three charges with a field error, reverse with a reason as a manager only, move a line to a new folio, the Bill button on the front desk, permissions, phone); API checks 100 of 100 (11 new); database checks clean; screenshots in docs/sprints/sprint-08-screens
 
 **Outcome**
 
@@ -48,6 +58,8 @@ Expected when accepted:
 
 **API endpoints**
 
+- `GET /api/v1/properties/{propertyId}/folios?q&show`
+- `GET /api/v1/properties/{propertyId}/reservations/{reservationId}/folios`
 - `GET /api/v1/properties/{propertyId}/folios/{id}`
 - `POST /api/v1/properties/{propertyId}/folios/{id}/charges  (Idempotency-Key)`
 - `POST /api/v1/properties/{propertyId}/folios/{id}/charges/{itemId}/reverse  (reason required)`
@@ -64,10 +76,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Folio created at reservation confirmation; room charges posted nightly (job) or at check-in for the stay
-- [ ] Charges are immutable; corrections are reversal lines (brief §85)
-- [ ] Charge categories: ROOM, FOOD, BEVERAGE, ACTIVITY, TRANSPORT, EQUIPMENT, LAUNDRY, OTHER
-- [ ] Package charges split by package_components
+- [x] Folio created at reservation confirmation; room charges posted nightly (job) or at check-in for the stay
+- [x] Charges are immutable; corrections are reversal lines (brief §85)
+- [x] Charge categories: ROOM, FOOD, BEVERAGE, ACTIVITY, TRANSPORT, EQUIPMENT, LAUNDRY, OTHER
+- [x] Package charges split by package_components
 
 ## How to run this sprint
 
@@ -86,6 +98,11 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- A night charged twice is impossible (ux_folio_items_room_night); if a night is missing, check the booking is CHECKED_IN and folio.room_charge_posting, then run check-sprint-08.sql block 5 for that reference.
+- 'Rows in folio_items cannot be changed' from the database is the immutability trigger working: correct a line with a reversal, never an UPDATE.
 
 ## How to test
 

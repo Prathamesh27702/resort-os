@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Resort.Application.Accommodation;
 using Resort.Application.Audit;
 using Resort.Application.Common;
+using Resort.Application.Folios;
 using Resort.Application.FrontDesk;
 using Resort.Application.Guests;
 using Resort.Application.Identity;
@@ -36,7 +37,10 @@ public static class DependencyInjection
         services.AddScoped<ReservationService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<FrontDeskService>();
-        services.AddScoped<IFolioBalances, NoFolioBalances>();   // Sprint 8 replaces it with the folio's real balance
+        services.AddScoped<FolioPosting>();
+        services.AddScoped<FolioService>();
+        services.AddScoped<RoomChargeRun>();
+        services.AddScoped<IFolioBalances, FolioBalances>();
         return services;
     }
 }

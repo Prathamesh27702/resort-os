@@ -60,6 +60,10 @@ export const routes: Routes = [
       })),
 
       // /users, /roles, /audit
+      // /folios (Sprint 8)
+      { path: 'folios', canActivate: [permissionGuard('folio.read')], loadComponent: () => import('./features/folios/folios.page').then(m => m.FoliosPage) },
+      { path: 'folios/:id', canActivate: [permissionGuard('folio.read')], loadComponent: () => import('./features/folios/folio.page').then(m => m.FolioPage) },
+
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },
       { path: 'users/:id', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

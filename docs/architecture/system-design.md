@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–07 built and accepted (October 2026); Sprint 08 (folio) in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–08 built and accepted (October 2026); Sprint 09 (GST and tax engine) in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -71,7 +71,7 @@ backend/
   Resort.Contracts       Request/response records (what the API accepts and returns)
   Resort.Application     One service per use case group, validators, permission codes, shared helpers
                          Common/ (errors, idempotency, concurrency, protection), Identity/, Properties/,
-                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Audit/, Validation/
+                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Folios/, Audit/, Validation/
   Resort.Infrastructure  AppDbContext (EF Core, snake_case), SQL migrator, audit interceptor,
                          JWT + password hashing (Identity/Security.cs), field encryption, file store, dev seeder
   Resort.Api             Program.cs (pipeline), Endpoints/*.cs (one file per module),
@@ -225,6 +225,27 @@ flowchart LR
   and Check in / Check out / Assign room on the booking page. `desk-actions.ts` is shared by both: one click when
   nothing is in the way, otherwise a window that says why and offers *Choose another room* or *Check in anyway*.
   [4.17](#417-the-front-desk) explains the rules.
+
+### Sprint 08: Folio (the bill of a stay)
+
+![The bill of a stay](../../tools/handbooks/assets/folio-flow.png)
+
+- Migration V010: `folios` (one main folio per confirmed booking, more to split a bill), `folio_items` (immutable
+  lines: CHARGE or REVERSAL, eight categories, source MANUAL / ROOM_NIGHT / PACKAGE) and `folio_item_taxes` (filled
+  from Sprint 9). Triggers refuse UPDATE and DELETE; CHECKs and a trigger make every amount add up and every reversal
+  cancel its charge exactly. Details: [schema-sprint-08.md](../database/schema-sprint-08.md).
+- `Domain/Folios/Folios.cs`: categories, sources, the posting setting and `FolioMath` (line amount, package lines,
+  negation), unit-tested.
+- `Application/Folios/FolioPosting.cs`: the shared steps every writer uses (open the main folio, post room nights,
+  reverse, sum the balance). `FolioService.cs`: list, read, post a charge or a package, reverse, split.
+  `RoomChargeRun` (in FolioPosting.cs) is the nightly room charge; `Api/Infrastructure/RoomChargeJob.cs` runs it every
+  15 minutes. `FolioBalances` replaces Sprint 7's placeholder, so the front desk's balance and the check-out rule are real.
+- Hooks into earlier code: `ReservationService` opens the main folio when a booking becomes CONFIRMED;
+  `FrontDeskService` posts room nights at check-in and at check-out, and reverses released nights on an early departure.
+- Screens: `/folios` (search, in house / arriving / all) and `/folios/:id` (balance, sums by category, every line with
+  who posted it, reversed lines struck through with the reason; Post charge, Move lines, Reverse for managers),
+  plus a Bill button on the booking page and on the front desk lists. [4.18](#418-folios-the-bill-of-a-stay)
+  explains the rules.
 
 ---
 
@@ -501,6 +522,37 @@ check-in flow in section 3 (Sprint 07). Tests: `FrontDeskTests`, `FrontDeskClock
    check-in. If the room turns out not ready or the guest looks like a duplicate, nothing is saved and the screen asks.
    A retried click returns the same stay.
 
+### 4.18 Folios: the bill of a stay
+
+Code: `Application/Folios/`, `Domain/Folios/Folios.cs`, `database/migrations/V010__folio.sql`, `features/folios/`.
+Diagram: section 3 (Sprint 08). Tests: `FolioTests`, `FolioUnitTests`.
+
+1. **A bill line is never changed.** Accounting needs to show what was charged and what was corrected, so a mistake
+   is a REVERSAL line (negative quantity, the original's id, a reason), never an edit. Database triggers refuse UPDATE
+   and DELETE on `folio_items`, so this holds for any code or any person with SQL access. A charge can be reversed
+   once (`UNIQUE (reverses_item_id)`), and a trigger checks the reversal is its exact negative on the same folio.
+2. **Totals are summed, never stored.** The balance is the sum of the lines (minus payments from Sprint 10); there is no
+   running total to drift. Reversed and reversing lines add up to ₹0 and both stay visible.
+3. **Every writer locks the reservation row first.** Posting, reversing, moving lines, check-in, check-out and the
+   nightly job all start with `SELECT … FOR UPDATE` on the booking, the same order as the front desk. Two managers
+   reversing at once: the second waits, then sees the reversal and gets 409 `ALREADY_REVERSED` naming who and when
+   (raced 10 times in the tests).
+4. **Each night is charged once.** Room nights can come from check-in, the job or check-out. The partial unique index
+   on `(reservation_id, service_date)` for room-night charges makes a second insert impossible; the code skips nights
+   that already have a line. It is keyed by date, not by room row, because room moves and early departures replace the
+   rows. A night's price is what was booked (the rate breakdowns), not today's rate.
+5. **Leaving early reverses the nights released**, then the balance is checked, so a guest is never billed for nights
+   the front desk gave back.
+6. **Moving lines is reversal plus copy.** Splitting a bill (the company pays the room, the guest the bar) reverses
+   each line on the old folio ("Moved to F00007") and posts it on the new one with `transferred_from_item_id`. The
+   stay's total is unchanged and both folios show what happened.
+7. **A retried click charges once.** Posting needs an `Idempotency-Key`, as bookings do ([4.8](#48-idempotency-a-retried-click-never-books-twice)).
+8. **Tax is copied, not looked up** (`folio_item_taxes`, from Sprint 9), so a later rate change never alters a posted
+   bill.
+
+Limit, on purpose: a booking isn't linked to a package yet, so selling a package with a room part on top of the room
+nights would charge the room twice; staff sell packages for extras until bookings carry their package.
+
 ## 5. Changing the system safely
 
 | You want to | Do this |
@@ -551,3 +603,4 @@ request:
 | 01–05 | First edition (October 2026): foundation, accommodation, guests, rates, reservations; system design 4.1–4.15 |
 | 06 | Reservation calendar (read model, drag-and-drop), room-move diagram; system design 4.16 Moving a guest to another room (accepted 17 Oct 2026) |
 | 07 | Front desk (lists, check-in/out, walk-ins, room readiness), check-in flow diagram; system design 4.17 The front desk (accepted 18 Oct 2026) |
+| 08 | Folio (bills, immutable lines, reversals, room nights, split), folio flow diagram; system design 4.18 Folios (accepted 18 Oct 2026) |

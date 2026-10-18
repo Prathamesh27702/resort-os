@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Accommodation;
 using Resort.Application.Common;
+using Resort.Application.Folios;
 using Resort.Application.Guests;
 using Resort.Application.Reservations;
 using Resort.Application.Validation;
@@ -24,7 +25,7 @@ namespace Resort.Application.FrontDesk;
 /// </summary>
 public sealed class FrontDeskService(
     IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, GuestService guests,
-    CallerAccess access, IFolioBalances folios)
+    CallerAccess access, IFolioBalances folios, FolioPosting posting)
 {
     public const string AllowCheckoutWithBalance = "frontdesk.allow_checkout_with_balance";
     public const string AllowCheckinWhenNotReady = "frontdesk.allow_checkin_when_not_ready";
@@ -322,6 +323,9 @@ public sealed class FrontDeskService(
         reservation.StatusChangedAt = now;
         reservation.CheckedInAt = now;
         await db.SaveChangesAsync(ct);
+
+        // The stay goes on the bill: the whole stay now, or tonight only when the property posts room nights nightly.
+        await posting.PostDueRoomNightsAsync(property, reservation, ct);
     }
 
     // ------------------------------------------------------------------ check-out
@@ -340,12 +344,6 @@ public sealed class FrontDeskService(
                 $"{reservation.Reference} is {ReservationStatuses.Words(reservation.Status)}, not checked in, so it can't be checked out.",
                 new { from = reservation.Status, to = ReservationStatuses.CheckedOut });
         if (r.Version is { } v) ConcurrencyGuard.ExpectVersion(db, reservation, v);
-
-        var balance = await folios.BalanceAsync(reservation.Id, ct);
-        if (balance > 0 && !await SettingAsync(propertyId, AllowCheckoutWithBalance, false, ct))
-            throw new BusinessRuleAppException("BALANCE_DUE",
-                $"{reservation.Reference} still owes {Money.Rupees(balance)}. Take the payment before check-out, or ask a manager to allow " +
-                $"check-out with a balance (property setting {AllowCheckoutWithBalance}).", new { balance });
 
         var reason = ReservationService.Clean(r.Reason);
         var departure = FrontDeskRules.DepartureOnCheckOut(reservation.CheckIn, reservation.CheckOut, today);
@@ -376,10 +374,21 @@ public sealed class FrontDeskService(
             reservations.AddNote(reservation,
                 $"Left early on {QuoteEngine.Day(departure)} instead of {QuoteEngine.Day(reservation.CheckOut)}; " +
                 $"{BlockService.NightsText(departure, reservation.CheckOut)} released ({Money.Rupees(before - reservation.TotalAmount)} less). Reason: {reason}");
+            // The nights not stayed come off the bill (reversal lines, Sprint 8).
+            await posting.ReverseRoomNightsFromAsync(reservation, departure, $"Left early on {QuoteEngine.Day(departure)}: {reason}", ct);
             reservation.CheckOut = departure;
         }
         else if (reason is { Length: < 3 })
             throw ReservationService.Field(nameof(r.Reason), "The reason must be at least 3 characters.");
+
+        // Every night stayed is on the bill (nightly posting may not have reached the last one), then the bill must be paid.
+        await db.SaveChangesAsync(ct);
+        await posting.PostRoomNightsAsync(reservation, reservation.CheckOut, ct);
+        var balance = await folios.BalanceAsync(reservation.Id, ct);
+        if (balance > 0 && !await SettingAsync(propertyId, AllowCheckoutWithBalance, false, ct))
+            throw new BusinessRuleAppException("BALANCE_DUE",
+                $"{reservation.Reference} still owes {Money.Rupees(balance)}. Take the payment before check-out, or ask a manager to allow " +
+                $"check-out with a balance (property setting {AllowCheckoutWithBalance}).", new { balance });
 
         foreach (var u in rows) u.HoldsInventory = false;
         audit.Reason = reason;

@@ -61,6 +61,8 @@ public class ResortApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         // Throwaway test key (32 zero-to-31 bytes) and a private folder for ID scans.
         builder.UseSetting("Encryption:Key", Convert.ToBase64String(Enumerable.Range(0, 32).Select(i => (byte)i).ToArray()));
         builder.UseSetting("FileStore:Root", FileRoot);
+        // Tests run the nightly room charge themselves (RoomChargeRun), at a time they choose.
+        builder.UseSetting("Folio:RoomChargeJob:Enabled", "false");
     }
 
     public async Task InitializeAsync()

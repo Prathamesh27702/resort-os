@@ -140,4 +140,33 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(("ARRIVING", "DIRTY"), dashboard.Rooms.Where(r => r.UnitCode == "101").Select(r => (r.Occupancy, r.Housekeeping)).Single());
         Assert.Equal("OCCUPIED", dashboard.Rooms.Single(r => r.UnitCode == "104").Occupancy);
     }
+
+    /// <summary>Sprint 8: every confirmed demo booking has a main folio; the in-house guests' bills have their room nights,
+    /// R00008 dinner and a pick-up, R00007 laundry; demo check-out with a balance is allowed until payments (Sprint 10).</summary>
+    [Fact]
+    public async Task Dev_seed_folios_have_room_nights_and_demo_charges_for_the_guests_in_house()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var all = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios?show=all");
+        var billable = await app.WithDbAsync(db => db.Reservations.IgnoreQueryFilters()
+            .CountAsync(r => r.PropertyId == pid && (r.Status == "CONFIRMED" || r.Status == "CHECKED_IN" || r.Status == "CHECKED_OUT")));
+        Assert.Equal(billable, all.Items.Count(f => f.IsPrimary));
+        Assert.Equal(all.Items.Count, all.Items.Select(f => f.Number).Distinct().Count());
+
+        var inHouse = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios");
+        Assert.Equal(["R00007", "R00008"], inHouse.Items.Select(f => f.Reference).Order());
+        var r8 = await owner.GetJsonAsync<FolioDto>($"/api/v1/properties/{pid}/folios/{inHouse.Items.Single(f => f.Reference == "R00008").Id}");
+        Assert.Equal(["ROOM", "ROOM", "ROOM", "TRANSPORT", "FOOD"], r8.Items.OrderBy(i => i.Source != "ROOM_NIGHT").ThenBy(i => i.PostedAt).Select(i => i.Category));
+        Assert.Equal(r8.Items.Sum(i => i.Total), r8.Balance);
+        var r7 = await owner.GetJsonAsync<FolioDto>($"/api/v1/properties/{pid}/folios/{inHouse.Items.Single(f => f.Reference == "R00007").Id}");
+        Assert.Equal(["ROOM", "LAUNDRY"], r7.Items.Select(i => i.Category));
+        Assert.Equal(320m, r7.Items.Single(i => i.Category == "LAUNDRY").Total);
+
+        var settings = await owner.GetJsonAsync<List<PropertySettingDto>>($"/api/v1/properties/{pid}/settings");
+        Assert.True(settings.Single(x => x.Key == "frontdesk.allow_checkout_with_balance").Value.GetBoolean());
+    }
 }

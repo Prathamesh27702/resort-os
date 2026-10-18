@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 08](sprint-08-folio.md) |
+| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 08](sprint-08-folio.md) |
 
 **Goal:** GST as a first-class, versioned, configurable domain (brief §23, §86).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 08 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

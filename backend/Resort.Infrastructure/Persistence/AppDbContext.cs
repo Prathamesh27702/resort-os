@@ -6,6 +6,7 @@ using Resort.Application.Common;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
+using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
@@ -64,6 +65,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
     public DbSet<UnitHousekeepingStatus> UnitHousekeepingStatus => Set<UnitHousekeepingStatus>();
     public DbSet<UnitHousekeepingChange> UnitHousekeepingHistory => Set<UnitHousekeepingChange>();
+    public DbSet<Folio> Folios => Set<Folio>();
+    public DbSet<FolioItem> FolioItems => Set<FolioItem>();
+    public DbSet<FolioItemTax> FolioItemTaxes => Set<FolioItemTax>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -253,6 +257,32 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         });
         b.Entity<UnitHousekeepingStatus>().ToTable("unit_housekeeping_status");
         b.Entity<UnitHousekeepingChange>().ToTable("unit_housekeeping_history");
+
+        // ---- Sprint 8: folios (database/migrations/V010__folio.sql)
+        b.Entity<Folio>(e =>
+        {
+            e.ToTable("folios");
+            e.Property(x => x.Currency).HasColumnType("char(3)");
+        });
+        b.Entity<FolioItem>(e =>
+        {
+            e.ToTable("folio_items");
+            // Declared so EF inserts a new folio before the lines that point to it, and a charge before its reversal.
+            e.HasOne<Folio>().WithMany().HasForeignKey(x => x.FolioId);
+            e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.ReversesItemId);
+            e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.TransferredFromItemId);
+            e.Property(x => x.Quantity).HasColumnType("numeric(12,3)");
+            foreach (var m in new[] { nameof(FolioItem.UnitPrice), nameof(FolioItem.Amount), nameof(FolioItem.TaxAmount), nameof(FolioItem.Total) })
+                e.Property(m).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<FolioItemTax>(e =>
+        {
+            e.ToTable("folio_item_taxes");
+            e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.FolioItemId);
+            e.Property(x => x.Rate).HasColumnType("numeric(5,2)");
+            e.Property(x => x.TaxableValue).HasColumnType("numeric(12,2)");
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

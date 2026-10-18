@@ -15,6 +15,7 @@ import { formatPhone } from '../guests/guests.api';
 import { guestsText, statusClass, statusLabel } from '../reservations/reservations.api';
 import { addDays, shortDate } from '../rooms/rooms.api';
 import { dayLabel, rupeesExact } from '../settings/rates/rates.api';
+import { FoliosApi } from '../folios/folios.api';
 import { DeskActions } from './desk-actions';
 import { FrontDeskApi, deskStay, housekeepingLabel, occupancyLabel, placeName, stayAction } from './front-desk.api';
 
@@ -131,6 +132,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
                         @if (canCheckOut() && (tab() !== 'in-house' || s.overdue || s.checkOut <= today())) {
                           <button mat-flat-button (click)="checkOut(s)" [disabled]="busy()" [attr.aria-label]="'Check out ' + s.guestName">Check out</button>
                         }
+                        @if (canFolio()) { <button mat-button (click)="openBill(s)" [attr.aria-label]="'Bill of ' + s.guestName">Bill</button> }
                         @if (canCheckIn() && tab() === 'in-house') { <button mat-button (click)="assign(s)" [disabled]="busy()">Move</button> }
                         @if (canCheckOut() && tab() === 'in-house' && !s.overdue && s.checkOut > today()) {
                           <button mat-button (click)="checkOut(s)" [disabled]="busy()">Check out</button>
@@ -219,6 +221,7 @@ export class FrontDeskPage {
   private auth = inject(AuthService);
   private snack = inject(MatSnackBar);
   private router = inject(Router);
+  private folios = inject(FoliosApi);
 
   dash = signal<FrontDeskDashboard | null>(null);
   list = signal<FrontDeskList | null>(null);
@@ -244,6 +247,7 @@ export class FrontDeskPage {
   canCheckIn = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkin', this.props.current()?.id); });
   canCheckOut = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkout', this.props.current()?.id); });
   canWalkIn = computed(() => this.canCheckIn() && this.auth.can('reservation.create', this.props.current()?.id));
+  canFolio = computed(() => { this.auth.me(); return this.auth.can('folio.read', this.props.current()?.id); });
   canHousekeeping = computed(() => { this.auth.me(); return this.auth.can('housekeeping.update', this.props.current()?.id); });
 
   todayText = computed(() => this.today() ? dayLabel(this.today()) : '');
@@ -306,6 +310,14 @@ export class FrontDeskPage {
         this.refresh();
       },
       error: e => { this.busy.set(false); this.rowError.update(x => ({ ...x, [s.reservationId]: toProblem(e).detail })); },
+    });
+  }
+
+  /** Sprint 8: opens the stay's main bill. */
+  openBill(s: FrontDeskStay) {
+    this.folios.forReservation(this.pid(), s.reservationId).subscribe({
+      next: list => { const main = list.find(f => f.isPrimary); if (main) this.router.navigate(['/folios', main.id]); },
+      error: e => this.rowError.update(x => ({ ...x, [s.reservationId]: toProblem(e).detail })),
     });
   }
 

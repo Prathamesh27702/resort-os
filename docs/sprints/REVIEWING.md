@@ -223,6 +223,30 @@ S07-09). Database checks: `database/queries/check-sprint-07.sql`. How it stays s
 | 11 | As a **housekeeper** | No **Front desk** in the menu (the room-cleaning screens come in Sprint 13) |
 | 12 | Phone width (390 px) → Front desk | The tiles and tabs fit the screen and each guest keeps their buttons |
 
+### Sprint 08 — folio
+
+Continue on a **freshly reset database** (then restart the API). The demo data adds bills: **R00008** (Room 104, in
+house) with its room nights, an airport pick-up and dinner; **R00007** (Room 105, leaving today) with its room night and
+laundry. Sign in as a **receptionist** for steps 1–5, then as the **owner**. Screenshots: [sprint-08-screens/](sprint-08-screens/).
+The browser tests do all of this for you: `cd frontend; npm run e2e:headed -- e2e/sprint-08.spec.ts` (names S08-01 …
+S08-07). Database checks: `database/queries/check-sprint-08.sql`. How it stays safe:
+[system-design.md → 4.18](../architecture/system-design.md#418-folios-the-bill-of-a-stay).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Folios** (new in the menu, after Calendar) | The bills of the guests in house: R00007 and R00008, each with its folio number (F0000…), lines, total and balance. **All** also shows the confirmed bookings still to arrive |
+| 2 | Open **R00008** | *Balance* in red, the sums (*Charges*, *Reversals 0*, *Tax 0*, *Paid 0*), chips per category (*Room*, *Food ₹1,450.00*, *Transport ₹1,200.00*) and the lines: one *Room night: Room 104* per night, *Airport pick-up (Goa airport)*, *Dinner at the beach shack*, each with who posted it and when |
+| 3 | **Post charge** → *What for* Food, leave *Description* empty, 1 × 1450 → **Post charge** | Under the field: *Say what the charge is for, e.g. Dinner at the beach shack.* Nothing is posted |
+| 4 | **The demo.** Post three charges: *Food · Lunch at the shack · 1 × 900*, *Transport · Taxi to Panjim · 1 × 800*, *Activity · Kayaking · 2 × 650* (the window shows ₹1,300.00 before you post) | After each one: *Posted to F0000…. Balance ₹…*; the balance grows by ₹900, ₹800 and ₹1,300. Kayaking shows *2 × ₹650.00* |
+| 5 | Look for a **Reverse** button | There is none: a receptionist can post but not reverse |
+| 6 | As the **owner**, open the same bill → **Reverse** on *Taxi to Panjim* → **Reverse** with no reason | Under the field: *Say why the charge is reversed (at least 3 characters), e.g. Posted to the wrong guest.* |
+| 7 | Type *Posted to the wrong guest* → **Reverse** | The taxi line is struck through with *Reversed: Posted to the wrong guest*; a new line *Reversal: Taxi to Panjim −₹800.00*; the balance drops by ₹800; *Reversals −₹800.00* |
+| 8 | **Move lines** → tick *Kayaking* → **A new folio** → name it *Paid by Arjun (friend)* → **Move lines** | *Moved to F0000… (Paid by Arjun (friend))*. The main bill shows Kayaking as *Moved to F0000…* and is ₹1,300 lower; the two bills appear as buttons on top; the new one has *Kayaking ₹1,300.00 · Moved from F0000…* |
+| 9 | Open the booking **R00008** → **Bill · ₹…** | The main bill opens. On **Front desk → In house**, the **Bill** button on a row does the same |
+| 10 | **Front desk → Departures** → R00007 → **Check out** | The window now shows *₹… still owed* (room night and laundry). The demo property allows checking out with a balance until payments arrive (Sprint 10), so **Check out** goes through; a real property refuses with *R00007 still owes ₹…* |
+| 11 | As a **housekeeper** | No **Folios** in the menu |
+| 12 | Phone width (390 px) → a bill | The balance, sums and lines fit the screen |
+
 ## Part C — Decide
 
 ### Accept

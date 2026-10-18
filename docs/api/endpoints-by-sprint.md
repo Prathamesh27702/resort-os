@@ -68,14 +68,16 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `POST /api/v1/properties/{propertyId}/reservations/{id}/check-out` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/walk-ins` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
 | `PUT /api/v1/properties/{propertyId}/rooms/{unitId}/housekeeping` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
-| `GET /api/v1/properties/{propertyId}/folios/{id}` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/folios/{id}/charges  (Idempotency-Key)` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/folios/{id}/charges/{itemId}/reverse  (reason required)` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/folios/{id}/split` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `GET|POST /api/v1/properties/{propertyId}/gst-registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
-| `GET|POST /api/v1/tax/categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
-| `GET|POST /api/v1/tax/rules  (effective_from/effective_to)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
-| `POST /api/v1/tax/calculate  (preview)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
+| `GET /api/v1/properties/{propertyId}/folios?q&show` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/reservations/{reservationId}/folios` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/folios/{id}` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/folios/{id}/charges  (Idempotency-Key)` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/folios/{id}/charges/{itemId}/reverse  (reason required)` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/folios/{id}/split` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `GET|POST /api/v1/properties/{propertyId}/gst-registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `GET|POST /api/v1/tax/categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `GET|POST /api/v1/tax/rules  (effective_from/effective_to)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `POST /api/v1/tax/calculate  (preview)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/payments  (Idempotency-Key)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/payments/{id}/allocate` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/payments/{id}/refund  (reason required)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
