@@ -107,7 +107,7 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 4 | Reservations | reservations, reservation_units, idempotency_keys, rate_plans, packages | 4–6 | built |
 | 5 | Guests | guests, guest_documents, guest_preferences | 3 | built |
 | 6 | Front desk | unit_housekeeping_status, unit_housekeeping_history (uses reservations; folios from Sprint 8) | 7 | built |
-| 7 | Folio | folios, folio_items, folio_item_taxes | 8 | planned |
+| 7 | Folio | folios, folio_items, folio_item_taxes | 8 | built |
 | 8 | Payments | payments, payment_allocations, refunds, cash_drawer_* | 10–11 | planned |
 | 9 | GST / invoicing | gst_registrations, tax_rules, invoices, credit_notes, receipts | 9, 12 | planned |
 | 10 | Housekeeping | housekeeping_tasks, unit_housekeeping_status | 13 | planned |

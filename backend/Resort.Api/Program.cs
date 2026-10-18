@@ -103,6 +103,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
 });
 builder.Services.AddHsts(o => { o.MaxAge = TimeSpan.FromDays(365); o.IncludeSubDomains = true; });
 
+builder.Services.AddHostedService<RoomChargeJob>();
+
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecurityTransformer>());
 
@@ -160,6 +162,7 @@ app.MapGuestEndpoints();
 app.MapRateEndpoints();
 app.MapReservationEndpoints();
 app.MapFrontDeskEndpoints();
+app.MapFolioEndpoints();
 
 app.Run();
 

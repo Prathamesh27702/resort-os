@@ -4,6 +4,7 @@ using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Accommodation;
 using Resort.Application.Common;
+using Resort.Application.Folios;
 using Resort.Contracts;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Guests;
@@ -22,7 +23,7 @@ namespace Resort.Application.Reservations;
 ///   4. price every night from the rate grid (<see cref="QuoteEngine"/>), insert, store the response, COMMIT
 /// The EXCLUDE constraints on reservation_units are the final guard: a 23P01 becomes 409 ROOM_UNAVAILABLE.
 /// </summary>
-public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock)
+public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, FolioPosting folios)
 {
     public const int MaxNights = 180;
 
@@ -163,6 +164,8 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         AddHistory(reservation, null, status, null);
         if (Clean(r.Note) is { } note) AddNote(reservation, note);
         await db.SaveChangesAsync(ct);
+        // A confirmed booking gets its bill (Sprint 8); a pending one when it is confirmed.
+        if (status == ReservationStatuses.Confirmed) await folios.EnsureMainFolioAsync(reservation, ct);
         return reservation;
     }
 
@@ -272,6 +275,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         reservation.StatusChangedAt = clock.GetUtcNow();
         AddHistory(reservation, from, to, reason);
         await db.SaveChangesAsync(ct);
+        if (to == ReservationStatuses.Confirmed) await folios.EnsureMainFolioAsync(reservation, ct);
         await tx.CommitAsync(ct);
         return await ToDtoAsync(reservation, ct);
     }
@@ -708,7 +712,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
 
     internal static ValidationException Field(string field, string message) => new([new ValidationFailure(field, message)]);
 
-    private async Task<Dictionary<Guid, (string Name, Dictionary<Guid, string> Beds)>> RoomNamesAsync(IEnumerable<Guid> unitIds, CancellationToken ct)
+    internal async Task<Dictionary<Guid, (string Name, Dictionary<Guid, string> Beds)>> RoomNamesAsync(IEnumerable<Guid> unitIds, CancellationToken ct)
     {
         var ids = unitIds.Distinct().ToList();
         return await db.AccommodationUnits.AsNoTracking().Include(u => u.Beds).Where(u => ids.Contains(u.Id))
@@ -716,7 +720,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
     }
 
     /// <summary>"Room 103", "Room 103, Room 104", "Dormitory · 2 beds".</summary>
-    private static string RoomsText(IEnumerable<ReservationUnit> units, Dictionary<Guid, (string Name, Dictionary<Guid, string> Beds)> names) =>
+    internal static string RoomsText(IEnumerable<ReservationUnit> units, Dictionary<Guid, (string Name, Dictionary<Guid, string> Beds)> names) =>
         string.Join(", ", units.GroupBy(u => u.UnitId).Select(g =>
         {
             var name = names.TryGetValue(g.Key, out var n) ? n.Name : "?";

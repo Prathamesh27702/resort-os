@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
+using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
@@ -54,6 +55,9 @@ public interface IAppDbContext
     DbSet<IdempotencyKey> IdempotencyKeys { get; }
     DbSet<UnitHousekeepingStatus> UnitHousekeepingStatus { get; }
     DbSet<UnitHousekeepingChange> UnitHousekeepingHistory { get; }
+    DbSet<Folio> Folios { get; }
+    DbSet<FolioItem> FolioItems { get; }
+    DbSet<FolioItemTax> FolioItemTaxes { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

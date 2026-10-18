@@ -40,6 +40,10 @@ public static class Perm
     public const string HousekeepingRead = "housekeeping.read";
     public const string HousekeepingUpdate = "housekeeping.update";
 
+    public const string FolioRead = "folio.read";
+    public const string FolioPostCharge = "folio.post_charge";
+    public const string FolioAdjust = "folio.adjust";
+
     public const string AuditRead = "audit.read";
     public const string SystemSettings = "system.settings";
 
@@ -51,6 +55,7 @@ public static class Perm
         GuestRead, GuestCreate, GuestUpdate, GuestDelete, GuestDocumentRead,
         ReservationRead, ReservationCreate, ReservationUpdate, ReservationCancel,
         FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate,
+        FolioRead, FolioPostCharge, FolioAdjust,
         AuditRead, SystemSettings,
     ];
 }

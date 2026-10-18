@@ -453,6 +453,49 @@ ratePlanId?, specialRequests?, note?, overrideHousekeeping?, overrideReason? }` 
 `true`: reception may check into a room that isn't ready, with a reason) and `frontdesk.allow_checkout_with_balance`
 (default `false`).
 
+## Built endpoints (Sprint 8 — folio)
+
+All under `/api/v1/properties/{propertyId}`. A folio is the bill of one stay; every confirmed booking has a main folio
+("Main", F00001 …), opened when it is confirmed. **Lines are never edited or deleted**: a mistake is corrected with a
+reversal line, and moving a line to another folio is a reversal here plus a copy there. Reading needs `folio.read`,
+posting and moving lines `folio.post_charge`, reversing `folio.adjust` (owner, general manager and manager). Totals are
+summed from the lines; tax is 0 until Sprint 9 and payments 0 until Sprint 10. How it stays consistent:
+[system-design.md → 4.18](architecture/system-design.md#418-folios-the-bill-of-a-stay).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /folios?q&show&page&pageSize` | Folios with their booking, total and balance. `show`: `in-house` (default), `open` (in house and arriving), `all`; `q` searches the folio number, booking reference, guest name or phone | `folio.read` | — | `PagedResult<FolioListItemDto>` | 400 `Show` ("'x' isn't a folio filter. Use in-house, open or all."), 403, 404 | — |
+| `GET /reservations/{reservationId}/folios` | The folios of one booking, main first (the Bill buttons on the booking page and the front desk) | `folio.read` | — | `FolioSummaryDto[]` | 403, 404 | — |
+| `GET /folios/{id}` | One bill: every line in order, sums by category, charges, reversals, tax, total, payments, balance, the stay's other folios, and whether it takes charges | `folio.read` | — | `FolioDto` | 403, 404 | — |
+| `POST /folios/{id}/charges` | Post a charge, or sell a package (one line per component, adding up to the package price). `Idempotency-Key` required; a repeat returns the same bill with `Idempotent-Replayed: true` | `folio.post_charge` | `PostChargeRequest` | 201 `FolioDto` | 400 under the field (below), 403, 404; **422 `FOLIO_CLOSED`** ("R00005 is cancelled, so nothing can be charged to F00004."), `IDEMPOTENCY_KEY_REUSED` | INSERT folio item(s) |
+| `POST /folios/{id}/charges/{itemId}/reverse` | Cancel a charge with a reversal line (same quantity and price, negated) and the reason. The charge stays on the bill, marked reversed | `folio.adjust` | `ReverseChargeRequest` | `FolioDto` | 400 `Reason` ("Say why the charge is reversed (at least 3 characters), e.g. Posted to the wrong guest."), 403, 404; **409 `ALREADY_REVERSED`** ("\"Airport transfer\" was already reversed at 14:05 on Sun 18 Oct 2026 by Rita (reason: …). Reload to see it." or "… was moved to F00007 at …. Open F00007 to change it."); 422 `NOT_REVERSIBLE` (a reversal line), `FOLIO_CLOSED` | INSERT reversal, with the reason |
+| `POST /folios/{id}/split` | Move charges to another folio of the same stay, or to a new one (`newFolioName`, optional `billToGuestId`). Each line is reversed here ("Moved to F00007 (…)") and posted there; the stay's total doesn't change | `folio.post_charge` | `SplitFolioRequest` | `SplitFolioResultDto` | 400 `ItemIds` ("Choose at least one line to move.", not on this folio, a reversal, already reversed or moved), `TargetFolioId` ("Choose the folio to move the lines to, or name a new one (one of the two).", the same folio, another booking's), `NewFolioName`, `BillToGuestId`; 403, 404; 422 `FOLIO_CLOSED` | INSERT folio (when new), reversals and copies |
+
+`PostChargeRequest = { category?, description?, quantity = 1, unitPrice = 0, serviceDate?, packageId? }`. **Field
+errors** (400, each under its field), for a charge: `Category` ("Choose what the charge is for: Room, Food, Beverage,
+Activity, Transport, Equipment, Laundry, Other."), `Description` ("Say what the charge is for, e.g. Dinner at the beach
+shack.", > 200), `Quantity` (> 0, at most 9,999, 3 decimals), `UnitPrice` (as every price: not negative, 2 decimals; and
+quantity × price at most ₹1,00,00,000); for a package: `PackageId` (unknown, switched off), `Quantity` ("A package is
+sold whole: enter how many, 1 to 50."); for both: `ServiceDate` (default today at the property; "A charge can't be dated
+after today (…). Post it on the day of the service.", or more than 30 days before arrival).
+`ReverseChargeRequest = { reason }` · `SplitFolioRequest = { itemIds, targetFolioId? | newFolioName?, billToGuestId? }`.
+
+`FolioDto = { id, number, name, isPrimary, reservationId, reference, reservationStatus, guestId, guestName,
+billToGuestId, billToName, checkIn, checkOut, rooms, currency, items: FolioItemDto[], categories: [{ category, amount }],
+charges, reversals, tax, total, payments, balance, folios: [{ id, number, name, isPrimary, total, balance }], canPost,
+cantPostReason }`. `FolioItemDto = { id, itemType: CHARGE | REVERSAL, category, description, serviceDate, quantity,
+unitPrice, amount, taxAmount, total, source: MANUAL | ROOM_NIGHT | PACKAGE, packageId, packageName, groupId,
+reversesItemId, reversedByItemId, reason, reversalReason, movedFrom, movedTo, postedAt, postedByName, live }`. `live` is a
+charge that still counts (not reversed or moved). A booking takes charges while CONFIRMED, CHECKED_IN or CHECKED_OUT
+(late bar bills after check-out); otherwise `canPost` is false and `cantPostReason` says why.
+
+**Room nights** are posted by the system (`source: ROOM_NIGHT`, one line per night with all the booking's rooms, at the
+booked prices): at check-in for the whole stay (property setting `folio.room_charge_posting` = `"AT_CHECK_IN"`, the
+default) or one night at a time (`"NIGHTLY"`, by a job that runs every 15 minutes). A night is never charged twice. At
+check-out any night still missing is posted, and when a guest leaves early the released nights are reversed ("Left early
+on …: reason") before the balance is checked. From this sprint the front desk's `balance` (Sprint 7) is the main folio's
+balance.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

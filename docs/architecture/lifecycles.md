@@ -30,6 +30,12 @@ history shows both steps). Check-out sets every room being left to DIRTY in `uni
 `CHECK_OUT` row in `unit_housekeeping_history`, the event Sprint 13 turns into a cleaning task. Leaving early needs a
 reason and releases the nights left. A walk-in is created CONFIRMED and checked in within one transaction.
 
+Folio (Sprint 8): the main folio is opened when a booking becomes CONFIRMED and takes charges while the booking is
+CONFIRMED, CHECKED_IN or CHECKED_OUT (late bills after departure); otherwise posting is refused (`FOLIO_CLOSED`). Room
+nights are posted at check-in (or nightly), missing nights at check-out, and a guest leaving early has the released
+nights reversed before the balance is checked. A line is posted once and never changed: CHARGE → (optionally) one
+REVERSAL with a reason, or moved once to another folio of the stay (reversal here, copy there).
+
 ### Overbooking prevention (Sprint 5 — the exact algorithm goes in `booking-algorithm.md`)
 
 1. Client sends `Idempotency-Key`. If the key exists with the same request hash, return the stored response.

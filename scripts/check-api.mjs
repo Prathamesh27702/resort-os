@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–07: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–08: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -12,6 +12,8 @@
 //     throwaway guest per run that it anonymises straight away
 //   - the BAR price of the Standard room for one night about 90 days ahead: raised by ₹1, then put back (both audited)
 //   - bookings about 120, 130 and 140 nights ahead, each cancelled straight away (Sprints 05–07; cancelled bookings stay as history)
+//   - on the bill of one guest in house: a ₹1 "API check" charge and its reversal (Sprint 08; bill lines are never deleted,
+//     so both stay, and they add up to ₹0)
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -381,6 +383,47 @@ if (freeLater.length && walkIn && checkGuest && std) {
       { token: R, body: { reason: 'API check' } }, b => b.status === 'CANCELLED' || b.status);
   }
 } else record('Check-in refusals on a booking 140 nights ahead', false, 'no free Standard room, or no walk-in source / check guest');
+
+// ---------------------------------------------------------------- Sprint 08 — folios
+title('Sprint 08 — folios: charges, reversals, room nights');
+// Read-only lists, the refusals, then one ₹1 charge on an in-house guest's bill that the owner reverses (net ₹0).
+await expectCall('Folios of the guests in house', 'GET', `${P}/folios?show=in-house`, 200, { token: R },
+  b => Array.isArray(b.items) || 'no items');
+await expectCall('An unknown list filter → 400 under Show with the choices', 'GET', `${P}/folios?show=everything`, 400, { token: R },
+  b => !!b.details?.Show?.[0] || JSON.stringify(b.details));
+const inHouse = (await call('GET', `${P}/folios?show=in-house`, { token: R })).json?.items?.find(f => f.isPrimary);
+if (inHouse) {
+  const F = `${P}/folios/${inHouse.id}`;
+  const before = (await call('GET', F, { token: R })).json;
+  await expectCall(`Bill ${inHouse.number}: every line, the sums by category, the balance`, 'GET', F, 200, { token: R },
+    b => (Array.isArray(b.items) && Array.isArray(b.categories) && typeof b.balance === 'number' && b.canPost === true) || JSON.stringify(b).slice(0, 200));
+  await expectCall('Charge without a description → 400 under Description', 'POST', `${F}/charges`, 400,
+    { token: R, headers: { 'Idempotency-Key': `api-check-charge-bad-${Date.now()}` },
+      body: { category: 'OTHER', description: '', quantity: 1, unitPrice: 1 } },
+    b => /Say what the charge is for/.test(b.details?.Description?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('Charge without an Idempotency-Key → 400', 'POST', `${F}/charges`, 400,
+    { token: R, body: { category: 'OTHER', description: 'API check', quantity: 1, unitPrice: 1 } });
+  const key = `api-check-charge-${Date.now()}`;
+  const charge = { category: 'OTHER', description: 'API check', quantity: 1, unitPrice: 1 };
+  const posted = await expectCall('Receptionist posts a ₹1 charge → the balance goes up by ₹1', 'POST', `${F}/charges`, 201,
+    { token: R, headers: { 'Idempotency-Key': key }, body: charge }, b => b.balance === before.balance + 1 || `balance ${b.balance}, was ${before.balance}`);
+  const again = await call('POST', `${F}/charges`, { token: R, headers: { 'Idempotency-Key': key }, body: charge });
+  record('Same key again → charged once, marked as replayed',
+    again.status === 201 && again.json?.balance === before.balance + 1 && again.headers.get('idempotent-replayed') === 'true',
+    `status ${again.status}, balance ${again.json?.balance}, replayed ${again.headers.get('idempotent-replayed')}`);
+  const line = posted?.json?.items?.filter(i => i.description === 'API check' && i.live).at(-1);
+  if (line) {
+    const url = `${F}/charges/${line.id}/reverse`;
+    await expectCall('Receptionist can’t reverse a charge → 403', 'POST', url, 403, { token: R, body: { reason: 'API check' } });
+    await expectCall('Reverse without a reason → 400 under Reason', 'POST', url, 400, { token: T, body: { reason: '' } },
+      b => /Say why the charge is reversed/.test(b.details?.Reason?.[0] ?? '') || JSON.stringify(b.details));
+    await expectCall('Owner reverses it with a reason → the balance is back, both lines stay', 'POST', url, 200,
+      { token: T, body: { reason: 'API check' } },
+      b => (b.balance === before.balance && b.items.some(i => i.id === line.id && !i.live)) || `balance ${b.balance}, was ${before.balance}`);
+    await expectCall('Reverse it again → 409 ALREADY_REVERSED with who and when', 'POST', url, 409,
+      { token: T, body: { reason: 'API check' } }, b => (b.code === 'ALREADY_REVERSED' && b.message.includes('already reversed')) || `${b.code}: ${b.message}`);
+  }
+} else record('Charge and reverse on an in-house guest’s bill', false, 'nobody is in house (the demo data has R00008 in Room 104)');
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);
