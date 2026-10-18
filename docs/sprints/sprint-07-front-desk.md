@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🟡 In review — **current sprint** | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
+| 🟢 Done | Phase 2 — Guests, reservations, availability, calendar, front desk | M | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
 
 **Goal:** Reception completes check-in and check-out in very few clicks.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built on 17 Oct 2026 and in review: pull request into develop. Test it on the claude/sprint-07-a71b5l branch until it is merged.
+**Now:** Accepted by the owner on 18 Oct 2026 and released to main (tag sprint-07).
 
 **Done so far**
 

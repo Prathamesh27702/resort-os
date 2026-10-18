@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 7
+current: 8
 
 sprints:
 
@@ -646,7 +646,7 @@ sprints:
 - id: 7
   title: Front desk — arrivals, departures, in-house, check-in/out
   phase: 2
-  status: in-review
+  status: done
   size: M
   module: FrontDesk
   feature: front-desk
@@ -654,7 +654,7 @@ sprints:
   goal: Reception completes check-in and check-out in very few clicks.
   client: "Reception checks guests in and out in a few clicks, with today's arrivals, departures and in-house guests on one screen."
   progress:
-    now: "Built on 17 Oct 2026 and in review: pull request into develop. Test it on the claude/sprint-07-a71b5l branch until it is merged."
+    now: "Accepted by the owner on 18 Oct 2026 and released to main (tag sprint-07)."
     done:
       - "Migration V009: reservations.checked_in_at / checked_out_at; unit_housekeeping_status (one row per room or dorm bed, no row = READY) and unit_housekeeping_history (append-only events CHECK_OUT, ROOM_MOVE, MANUAL; consumed_at for Sprint 13)"
       - "Business date everywhere: 'today' is the property's local date from its timezone (an injected clock), never the server's; tested at 23:30 and 00:30 IST"
@@ -710,11 +710,33 @@ sprints:
     - "A check-in refused with ROOM_OCCUPIED names the booking still in the room: check that guest out first (or they are overdue on Departures)."
   demo:
     - Today's arrivals → assign room → check in → in-house list
+  handbook:
+    highlights:
+      - "Today's arrivals, departures and in-house guests on one Front desk screen, with each room's cleaning state"
+      - "Check a guest in or out in a few clicks; a room that isn't ready can still be used with a reason"
+      - "A walk-in guest is booked and checked in from one screen"
+      - "A guest leaving early gives a reason and the nights left are released for sale"
+      - "Rooms become dirty at check-out and are marked ready again from the rooms board"
+      - "'Today' is always the resort's own date (India time), never the server's"
+    design:
+      ui: "Front desk (menu) has tabs for Arrivals, Departures, In house and Rooms, with counts on top. Each arrival shows the room, its cleaning state and why a check-in would be refused; Check in, Check out and Choose room are buttons on the row and on the booking page. A room that isn't ready asks for a reason before check-in. Walk-in (/front-desk/walk-in) takes the stay, the guest and the room on one screen and checks the guest in. The same screen works on a phone."
+      api: "GET /front-desk/arrivals, /departures, /in-house and /dashboard read by the property's local date. POST /reservations/{id}/check-in locks the booking, then its rooms, and needs each room free and READY (override with a reason when frontdesk.allow_checkin_when_not_ready is on). POST /check-out is refused while the folio balance is above zero unless frontdesk.allow_checkout_with_balance is on; leaving early needs a reason. POST /assign-room moves a room before or during the stay. POST /walk-ins creates the guest, the booking and the check-in in one transaction, with an Idempotency-Key. PUT /rooms/{unitId}/housekeeping marks a room ready or dirty."
+      database: "Migration V009 adds checked_in_at and checked_out_at to reservations, unit_housekeeping_status (one row per room or dorm bed; no row means READY) and the append-only unit_housekeeping_history (CHECK_OUT, ROOM_MOVE and MANUAL events, with consumed_at kept for housekeeping in Sprint 13)."
+    diagrams:
+      - {file: tools/handbooks/assets/check-in-flow.png, caption: "Checking a guest in: locks, room checks and what is written"}
+    screenshots:
+      - {file: docs/sprints/sprint-07-screens/01-arrivals.png, caption: "Front desk: today's arrivals with room and cleaning state"}
+      - {file: docs/sprints/sprint-07-screens/02-not-ready.png, caption: "A room that isn't ready needs a reason to check in"}
+      - {file: docs/sprints/sprint-07-screens/03-check-out.png, caption: "Checking a guest out"}
+      - {file: docs/sprints/sprint-07-screens/04-rooms-board.png, caption: "The rooms board: dirty rooms are marked ready here"}
+      - {file: docs/sprints/sprint-07-screens/06-walk-in.png, caption: "A walk-in guest booked and checked in from one screen"}
+      - {file: docs/sprints/sprint-07-screens/08-left-early.png, caption: "A guest who left early: the nights left are released for sale"}
+      - {file: docs/sprints/sprint-07-screens/09-phone.png, caption: "On a phone: the counts and the in-house list"}
 
 - id: 8
   title: Folio
   phase: 3
-  status: planned
+  status: in-progress
   size: M
   module: Folio
   feature: folios

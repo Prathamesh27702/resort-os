@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-07] — Unreleased — Front desk (in review)
+## [sprint-07] — 2026-10-18 — Front desk (accepted)
 
 ### Added
 - Migration V009: `reservations.checked_in_at` / `checked_out_at`; `unit_housekeeping_status` (cleaning state per room

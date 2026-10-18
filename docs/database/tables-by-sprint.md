@@ -43,11 +43,11 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `reservation_notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `reservation_status_history` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `idempotency_keys` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
-| `unit_housekeeping_status` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
-| `unit_housekeeping_history` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
-| `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
-| `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
-| `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
+| `unit_housekeeping_status` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
+| `unit_housekeeping_history` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
+| `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
+| `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
+| `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
 | `gst_registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
 | `tax_categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
 | `tax_rules` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
