@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 07 — Front desk — arrivals, departures, in-house, check-in/out](sprint-07-front-desk.md)** · status: 🟡 In review
+> **Current sprint: [Sprint 08 — Folio](sprint-08-folio.md)** · status: 🔵 In progress
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -18,8 +18,8 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 04 | [Rate plans and packages](sprint-04-rate-plans-and-packages.md) | Phase 2 | M | 🟢 Done |
 | 05 | [Availability engine and reservations core](sprint-05-availability-engine-and-reservations.md) | Phase 2 | L | 🟢 Done |
 | 06 | [Reservation calendar](sprint-06-reservation-calendar.md) | Phase 2 | M | 🟢 Done |
-| 07 | [Front desk — arrivals, departures, in-house, check-in/out](sprint-07-front-desk.md) | Phase 2 | M | 🟡 In review |
-| 08 | [Folio](sprint-08-folio.md) | Phase 3 | M | ⚪ Planned |
+| 07 | [Front desk — arrivals, departures, in-house, check-in/out](sprint-07-front-desk.md) | Phase 2 | M | 🟢 Done |
+| 08 | [Folio](sprint-08-folio.md) | Phase 3 | M | 🔵 In progress |
 | 09 | [GST configuration and tax engine](sprint-09-gst-configuration-and-tax-engine.md) | Phase 3 | M | ⚪ Planned |
 | 10 | [Payments, refunds, cash drawer](sprint-10-payments-refunds-cash-drawer.md) | Phase 3 | M | ⚪ Planned |
 | 11 | [Razorpay](sprint-11-razorpay.md) | Phase 3 | M | ⚪ Planned |
