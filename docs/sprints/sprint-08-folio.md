@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 07](sprint-07-front-desk.md) |
+| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 07](sprint-07-front-desk.md) |
 
 **Goal:** The folio is the central financial object for a stay (brief §20).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 07 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

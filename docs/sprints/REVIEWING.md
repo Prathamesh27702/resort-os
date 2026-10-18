@@ -199,6 +199,30 @@ browser for steps 4–7. Screenshots: [sprint-06-screens/](sprint-06-screens/). 
 | 10 | As a **housekeeper** | No **Calendar** in the menu |
 | 11 | Phone width (390 px) → Calendar | A list by day: *Arrives*, *In house*, *Leaves* and *Blocked* lines per room; tap a booking for its details and **Move** |
 
+### Sprint 07 — front desk
+
+Continue on a **freshly reset database** (then restart the API). The demo data adds: **R00007** in Room 105 leaving
+today, **R00008** in Room 104 for two more nights, and **Room 101 dirty**, so today's arrival R00001 can't go straight
+in. Sign in as a **receptionist** (the account from Sprint 01) for steps 1–10. Screenshots: [sprint-07-screens/](sprint-07-screens/).
+The browser tests do all of this for you: `cd frontend; npm run e2e:headed -- e2e/sprint-07.spec.ts` (names S07-01 …
+S07-09). Database checks: `database/queries/check-sprint-07.sql`. How it stays safe:
+[system-design.md → 4.17](../architecture/system-design.md#417-the-front-desk).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Front desk** (new in the menu) | Today's date at the resort, four tiles (*Arrivals checked in 0 / 2*, *Departures checked out 0 / 1*, *In house 2*, *Ready to sell …*) and the **Arrivals** tab: R00001 (Room 101, chip *Dirty*, and the line *Room 101 is dirty, not ready.*) and R00004 (two dorm beds, *Ready*) |
+| 2 | **The demo.** R00001 → **Check in** | A window: *Room 101 is dirty, not ready. Ask housekeeping to mark it ready, assign a ready room, or check in anyway with a reason.* |
+| 3 | **Choose another room** → open the list → **Room 102 · Deluxe room · Ready** → **Assign room** | The guest is put in Room 102 and checked in straight away: *Checked in: R00001, Room 102*. The row now says *Checked in* |
+| 4 | **In house** tab | R00001 (Room 102), R00007 (Room 105) and R00008 (Room 104), each with **Move** and **Check out** |
+| 5 | **Departures** → R00007 → **Check out** | *Room 105 · Nothing owed* (bills arrive in Sprint 8) and *The room is marked dirty for housekeeping.* → **Check out** → *Checked out: R00007*; the row says *Left* |
+| 6 | **Rooms** tab (as the owner: the receptionist can't change cleaning states) | Room 105 *Vacant · Dirty* with **Mark ready**; Room 102 *Occupied* by R00001. Press **Mark ready** on Room 105 → *Room 105: Ready* |
+| 7 | **In house** → R00008 → **Check out** → **Check out** with no reason | Under the field: *Say why the guest is leaving early (at least 3 characters).* Type *Family emergency* → **Check out**. Open R00008: *Left early on … instead of …; 2 nights released (₹… less). Reason: Family emergency*, and the total is lower |
+| 8 | **The acceptance test.** **Walk-in** → leave *Leaving on* as tomorrow, 1 adult → **Find a room** → **Choose** (e.g. Dormitory bed) → type a first name and phone → **Use this new guest** → **Check in** | Three steps on one screen. You land on the new booking: *Checked in*, source *Walk-in*, *Checked in* time shown. On Front desk the *In house* tile went up by one |
+| 9 | Walk-in again with *Leaving on* = today | Under the field: *Leaving must be after today (…).* Nothing is booked |
+| 10 | Open **R00002** (arrives tomorrow) | No **Check in** button. (The API would refuse: *R00002 arrives on …; it is … at the property.*) |
+| 11 | As a **housekeeper** | No **Front desk** in the menu (the room-cleaning screens come in Sprint 13) |
+| 12 | Phone width (390 px) → Front desk | The tiles and tabs fit the screen and each guest keeps their buttons |
+
 ## Part C — Decide
 
 ### Accept

@@ -42,7 +42,6 @@ Expected when accepted:
 
 **Tables**
 
-- `unit_housekeeping_status`
 - `housekeeping_tasks`
 - `housekeeping_checklist_templates`
 - `housekeeping_checklist_items`

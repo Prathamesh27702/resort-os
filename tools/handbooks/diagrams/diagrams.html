@@ -848,5 +848,35 @@
   <text class="s" x="46" y="446"><tspan class="b">Final guard:</tspan> the EXCLUDE constraint and the block trigger on reservation_units refuse an overlapping row (23P01 → 409).</text>
   <text class="s" x="46" y="466"><tspan class="b">The screen never guesses:</tspan> the bar moves only after the server says 200 and the calendar reloads; a 409 shows its reason.</text>
 </svg>
+<svg id="check-in-flow" width="1200" height="560" viewBox="0 0 1200 560">
+  <rect width="1200" height="560" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 07: check-in and check-out at the front desk ("today" is always the property's date, Asia/Kolkata)</text>
+  <rect class="lane" x="30" y="56" width="1140" height="220" rx="10"/>
+  <text class="t b" x="46" y="82">Check in R00001 (two receptionists press Check in at the same moment)</text>
+  <rect class="step" x="46" y="98" width="170" height="64" rx="8"/><text class="s" x="58" y="122">1. Lock R00001's row</text><text class="xs" x="58" y="144">the second click WAITS here</text>
+  <rect class="step" x="234" y="98" width="170" height="64" rx="8"/><text class="s" x="246" y="122">2. Status and date</text><text class="xs" x="246" y="144">arrives today, not over</text>
+  <rect class="step" x="422" y="98" width="170" height="64" rx="8"/><text class="s" x="434" y="122">3. Lock room rows</text><text class="xs" x="434" y="144">in id order: no deadlocks</text>
+  <rect class="step" x="610" y="98" width="170" height="64" rx="8"/><text class="s" x="622" y="122">4. Previous guest gone?</text><text class="xs" x="622" y="144">else 409 ROOM_OCCUPIED</text>
+  <rect class="step" x="798" y="98" width="170" height="64" rx="8"/><text class="s" x="810" y="122">5. Room READY?</text><text class="xs" x="810" y="144">no row = ready</text>
+  <rect class="win" x="986" y="98" width="170" height="64" rx="8"/><text class="s b" x="998" y="122">6. CHECKED_IN, COMMIT</text><text class="xs" x="998" y="144">time, history, audit</text>
+  <path class="arrow" d="M216,130 L232,130"/><path class="arrow" d="M404,130 L420,130"/><path class="arrow" d="M592,130 L608,130"/><path class="arrow" d="M780,130 L796,130"/><path class="arrow" d="M968,130 L984,130"/>
+  <rect class="ask" x="610" y="186" width="358" height="74" rx="8"/><text class="s b" x="622" y="208">Not ready: 409 HOUSEKEEPING_NOT_READY</text><text class="xs" x="622" y="228">"Room 101 is dirty, not ready." The desk chooses another room,</text><text class="xs" x="622" y="246">or checks in anyway with a reason (kept in history and a note).</text>
+  <path class="arrowp" d="M883,162 L883,184"/>
+  <rect class="lose" x="46" y="186" width="358" height="74" rx="8"/><text class="s b" x="58" y="208">The second click: 409 ALREADY_CHECKED_IN</text><text class="xs" x="58" y="228">once the first commits, step 2 sees CHECKED_IN: "R00001 is already</text><text class="xs" x="58" y="246">checked in (at 14:05 on Sat 17 Oct 2026 by Rita)". Nothing written.</text>
+  <rect class="lane" x="30" y="296" width="1140" height="150" rx="10"/>
+  <text class="t b" x="46" y="322">Check out R00007</text>
+  <rect class="step" x="46" y="338" width="200" height="64" rx="8"/><text class="s" x="58" y="362">1. Lock the row, status</text><text class="xs" x="58" y="384">must be CHECKED_IN</text>
+  <rect class="step" x="266" y="338" width="200" height="64" rx="8"/><text class="s" x="278" y="362">2. Folio balance &gt; 0?</text><text class="xs" x="278" y="384">422 BALANCE_DUE (setting)</text>
+  <rect class="step" x="486" y="338" width="200" height="64" rx="8"/><text class="s" x="498" y="362">3. Leaving early?</text><text class="xs" x="498" y="384">reason; nights left released</text>
+  <rect class="step" x="706" y="338" width="200" height="64" rx="8"/><text class="s" x="718" y="362">4. Rooms → DIRTY</text><text class="xs" x="718" y="384">+ CHECK_OUT history row</text>
+  <rect class="win" x="926" y="338" width="230" height="64" rx="8"/><text class="s b" x="938" y="362">5. CHECKED_OUT, COMMIT</text><text class="xs" x="938" y="384">all in one transaction</text>
+  <path class="arrow" d="M246,370 L264,370"/><path class="arrow" d="M466,370 L484,370"/><path class="arrow" d="M686,370 L704,370"/><path class="arrow" d="M906,370 L924,370"/>
+  <text class="xs" x="46" y="428">The housekeeping event is written with the check-out, so it can't be lost or left behind by a check-out that rolled back. Sprint 13 turns it into a cleaning task (consumed_at).</text>
+  <rect class="zone" x="30" y="464" width="1140" height="80" rx="8"/>
+  <text class="s" x="46" y="486"><tspan class="b">Walk-in:</tspan> guest (found or new) + booking from today on a ready room + steps 1–6 above, in ONE transaction; a failure anywhere saves nothing.</text>
+  <text class="s" x="46" y="506"><tspan class="b">Business date:</tspan> every "today" is Property.LocalDate(clock): at 00:30 IST it is already tomorrow at the resort, though still yesterday in UTC.</text>
+  <text class="s" x="46" y="526"><tspan class="b">Same lock order as booking and moves:</tspan> reservation row first, then room rows by id, so the front desk queues behind a booking instead of deadlocking.</text>
+</svg>
 </body>
 </html>

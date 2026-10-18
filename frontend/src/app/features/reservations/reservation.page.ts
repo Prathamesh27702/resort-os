@@ -19,6 +19,9 @@ import { shortDate } from '../rooms/rooms.api';
 import { dayLabel, rupees, rupeesExact } from '../settings/rates/rates.api';
 import { ReservationsApi, guestsText, statusClass, statusLabel } from './reservations.api';
 import { dateError, stayDates } from './reservations.forms';
+import { DeskActions } from '../front-desk/desk-actions';
+import { deskStayOf, stayAction } from '../front-desk/front-desk.api';
+import { Observable } from 'rxjs';
 
 /** One booking: stay, rooms, the price night by night, guests, notes and every status change. */
 @Component({
@@ -37,6 +40,15 @@ import { dateError, stayDates } from './reservations.forms';
                {{ guestsText(r.adults, r.children) }}</p>
           </div>
           <div class="head-actions">
+            @if (deskAction() === 'check-in' && auth.can('frontdesk.checkin', pid)) {
+              <button mat-flat-button (click)="checkIn()" [disabled]="busy()"><mat-icon>login</mat-icon>Check in</button>
+            }
+            @if (deskAction() === 'check-out' && auth.can('frontdesk.checkout', pid)) {
+              <button mat-flat-button (click)="checkOut()" [disabled]="busy()"><mat-icon>logout</mat-icon>Check out</button>
+            }
+            @if (roomMovable() && auth.can('frontdesk.checkin', pid)) {
+              <button mat-stroked-button (click)="assignRoom()" [disabled]="busy()"><mat-icon>meeting_room</mat-icon>{{ r.status === 'CHECKED_IN' ? 'Move room' : 'Assign room' }}</button>
+            }
             @if (can('CONFIRMED') && auth.can('reservation.update', pid)) {
               <button mat-flat-button (click)="confirm()" [disabled]="busy()">{{ r.status === 'INQUIRY' ? 'Turn into a booking' : 'Confirm' }}</button>
             }
@@ -61,6 +73,8 @@ import { dateError, stayDates } from './reservations.forms';
               <dt>Rate plan</dt><dd>{{ r.ratePlanName }} <span class="mute">({{ r.mealPlan }})</span></dd>
               <dt>Total</dt><dd class="num"><b>{{ rupeesExact(r.totalAmount) }}</b></dd>
               <dt>Booked</dt><dd>{{ when(r.createdAt) }}@if (r.createdByName) { by {{ r.createdByName }} }</dd>
+              @if (r.checkedInAt) { <dt>Checked in</dt><dd>{{ when(r.checkedInAt) }}</dd> }
+              @if (r.checkedOutAt) { <dt>Checked out</dt><dd>{{ when(r.checkedOutAt) }}</dd> }
               @if (r.specialRequests) { <dt>Requests</dt><dd class="pre">{{ r.specialRequests }}</dd> }
             </dl>
           </section>
@@ -190,6 +204,11 @@ export class ReservationPage implements OnInit {
   holds = computed(() => this.currentUnits().some(u => u.holdsInventory));
   changeable = computed(() => ['INQUIRY', 'PENDING', 'CONFIRMED'].includes(this.r()?.status ?? ''));
   history = computed(() => [...(this.r()?.history ?? [])].reverse());
+  /** Sprint 7: what the front desk can do with this booking today (check in an arrival, check out an in-house guest). */
+  deskAction = computed(() => { const r = this.r(); return r ? stayAction(r, this.today()) : null; });
+  roomMovable = computed(() => ['PENDING', 'CONFIRMED', 'CHECKED_IN'].includes(this.r()?.status ?? '') && this.r()!.checkOut > this.today());
+  private today = () => this.props.current()!.localDate;
+  private desk = inject(DeskActions);
 
   statusLabel = statusLabel;
   statusClass = statusClass;
@@ -226,6 +245,17 @@ export class ReservationPage implements OnInit {
   confirm() {
     this.busy.set(true);
     this.api.confirm(this.pid, this.id()).subscribe({ next: r => this.done(r, `${r.reference} confirmed`), error: e => this.failed(e) });
+  }
+
+  checkIn() { this.deskStep(this.desk.checkIn(this.pid, deskStayOf(this.r()!), this.today()), 'checked in'); }
+  checkOut() { this.deskStep(this.desk.checkOut(this.pid, deskStayOf(this.r()!), this.today()), 'checked out'); }
+  assignRoom() { this.deskStep(this.desk.assignRoom(this.pid, deskStayOf(this.r()!), this.today()), 'room changed'); }
+  private deskStep(step: Observable<Reservation | null>, what: string) {
+    this.busy.set(true); this.error.set('');
+    step.subscribe({
+      next: r => { if (r) this.done(r, `${r.reference} ${what}`); else this.busy.set(false); },
+      error: e => this.failed(e),
+    });
   }
 
   cancel() {

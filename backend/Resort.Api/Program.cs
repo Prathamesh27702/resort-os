@@ -159,6 +159,7 @@ app.MapAccommodationEndpoints();
 app.MapGuestEndpoints();
 app.MapRateEndpoints();
 app.MapReservationEndpoints();
+app.MapFrontDeskEndpoints();
 
 app.Run();
 

@@ -192,6 +192,8 @@ export interface Reservation {
   specialRequests: string | null; guests: ReservationGuest[]; units: ReservationUnit[]; breakdown: ReservationNight[];
   notes: ReservationNote[]; history: ReservationStatusChange[]; nextStatuses: ReservationStatus[];
   createdAt: string; createdByName: string | null; version: number;
+  /** When the guest actually arrived and left (Sprint 7). */
+  checkedInAt: string | null; checkedOutAt: string | null;
 }
 export interface ReservationRoomRequest { accommodationTypeId: string; unitId: string | null; adults: number; children: number; }
 export interface ReservationSource { id: string; code: string; name: string; channel: string; commissionPercent: number | null; }
@@ -210,3 +212,35 @@ export interface CalendarBooking {
 }
 export interface CalendarBlock { id: string; unitId: string; bedId: string | null; blockType: string; startDate: string; endDate: string; reason: string; }
 export interface Calendar { from: string; to: string; today: string; rooms: CalendarRoom[]; bookings: CalendarBooking[]; blocks: CalendarBlock[]; }
+
+// ---------------------------------------------------------------- front desk (Sprint 7)
+export type Housekeeping = 'DIRTY' | 'CLEANING' | 'CLEAN' | 'INSPECTION' | 'READY' | 'OUT_OF_ORDER';
+/** A room (or dorm bed) of a booking with its cleaning state; occupiedBy = another booking still checked in there. */
+export interface FrontDeskRoom {
+  reservationUnitId: string; unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null;
+  typeName: string; startDate: string; endDate: string; housekeeping: Housekeeping; occupiedBy: string | null;
+}
+/** One booking on a front desk list. late = due on an earlier day, not arrived; overdue = still in after departure day;
+ *  checkInProblem = why check-in won't go straight through (null = it will). */
+export interface FrontDeskStay {
+  reservationId: string; reference: string; status: ReservationStatus; guestId: string; guestName: string; guestPhone: string | null;
+  isVip: boolean; checkIn: string; checkOut: string; nights: number; adults: number; children: number; rooms: FrontDeskRoom[];
+  sourceName: string; totalAmount: number; balance: number; currency: string; specialRequests: string | null;
+  checkedInAt: string | null; checkedOutAt: string | null; late: boolean; overdue: boolean; checkInProblem: string | null; version: number;
+}
+export interface FrontDeskList { date: string; today: string; items: FrontDeskStay[]; }
+export type Occupancy = 'VACANT' | 'OCCUPIED' | 'ARRIVING' | 'BLOCKED' | 'INACTIVE';
+export interface FrontDeskBoardRoom {
+  unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null; typeName: string;
+  occupancy: Occupancy; housekeeping: Housekeeping; reservationId: string | null; reference: string | null; guestName: string | null;
+  until: string | null;
+}
+export interface FrontDeskDashboard {
+  today: string; arrivalsExpected: number; arrivalsCheckedIn: number; departuresExpected: number; departuresCheckedOut: number;
+  overdue: number; inHouseStays: number; inHouseGuests: number; roomsTotal: number; roomsOccupied: number; roomsReady: number;
+  roomsNotReady: number; roomsBlocked: number; rooms: FrontDeskBoardRoom[];
+}
+export interface RoomOption {
+  unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null; accommodationTypeId: string;
+  typeName: string; housekeeping: Housekeeping; free: boolean; fits: boolean; problem: string | null;
+}

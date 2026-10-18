@@ -77,6 +77,9 @@ public class Reservation : AuditableEntity, IPropertyScoped, IVersioned, IAudite
     public string Currency { get; set; } = "INR";
     public string? SpecialRequests { get; set; }
     public DateTimeOffset StatusChangedAt { get; set; }
+    /// <summary>When the guest arrived and left (Sprint 7). Who did it is in the status history.</summary>
+    public DateTimeOffset? CheckedInAt { get; set; }
+    public DateTimeOffset? CheckedOutAt { get; set; }
     public uint Version { get; set; }
 
     public List<ReservationUnit> Units { get; set; } = [];

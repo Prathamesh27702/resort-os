@@ -18,3 +18,6 @@
 - version: "1.6"
   date: 2026-10-17
   change: "Sprint 06 (Reservation calendar) accepted: day, week and month calendar of rooms and dorm beds, moving a guest by drag-and-drop with a reason, list by day on phones. Room-move flow diagram. Sprint 07 (Front desk) started."
+- version: "1.7"
+  date: 2026-10-18
+  change: "Sprint 07 (Front desk) accepted: arrivals, departures and in-house lists, check-in and check-out in a few clicks, walk-ins on one screen, early departures with a reason, rooms marked dirty and ready. Check-in flow diagram. Sprint 08 (Folio) started."

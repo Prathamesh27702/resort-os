@@ -63,14 +63,15 @@ public sealed record ReservationNoteDto(Guid Id, string Note, DateTimeOffset Cre
 public sealed record ReservationStatusChangeDto(string? FromStatus, string ToStatus, string? Reason, DateTimeOffset ChangedAt, string? ChangedByName);
 
 /// <summary>A reservation in full. Breakdown covers the current rooms only. NextStatuses: the moves the status graph
-/// allows from here (the caller's permissions are checked when they try one).</summary>
+/// allows from here (the caller's permissions are checked when they try one). CheckedInAt/CheckedOutAt: when the guest
+/// actually arrived and left (Sprint 7).</summary>
 public sealed record ReservationDto(
     Guid Id, string Reference, string Status, DateOnly CheckIn, DateOnly CheckOut, int Nights, short Adults, short Children,
     Guid SourceId, string SourceName, Guid RatePlanId, string RatePlanName, string MealPlan, decimal TotalAmount, string Currency,
     string? SpecialRequests, IReadOnlyList<ReservationGuestDto> Guests, IReadOnlyList<ReservationUnitDto> Units,
     IReadOnlyList<ReservationNightDto> Breakdown, IReadOnlyList<ReservationNoteDto> Notes,
     IReadOnlyList<ReservationStatusChangeDto> History, IReadOnlyList<string> NextStatuses,
-    DateTimeOffset CreatedAt, string? CreatedByName, uint Version);
+    DateTimeOffset CreatedAt, string? CreatedByName, uint Version, DateTimeOffset? CheckedInAt = null, DateTimeOffset? CheckedOutAt = null);
 
 // ---------------------------------------------------------------- reservation calendar (Sprint 6)
 /// <summary>Everything the calendar draws for [From, To): the rooms (and dorm beds) as rows, the bookings and the blocks
