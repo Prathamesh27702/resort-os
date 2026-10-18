@@ -13,6 +13,7 @@ using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
+using Resort.Domain.Tax;
 
 namespace Resort.Infrastructure.Persistence;
 
@@ -68,6 +69,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<Folio> Folios => Set<Folio>();
     public DbSet<FolioItem> FolioItems => Set<FolioItem>();
     public DbSet<FolioItemTax> FolioItemTaxes => Set<FolioItemTax>();
+    public DbSet<GstRegistration> GstRegistrations => Set<GstRegistration>();
+    public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
+    public DbSet<TaxRule> TaxRules => Set<TaxRule>();
+    public DbSet<TaxRuleSlab> TaxRuleSlabs => Set<TaxRuleSlab>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -282,6 +287,26 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.Property(x => x.Rate).HasColumnType("numeric(5,2)");
             e.Property(x => x.TaxableValue).HasColumnType("numeric(12,2)");
             e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+
+        // ---- Sprint 9: GST and the tax engine (database/migrations/V011__tax.sql)
+        b.Entity<GstRegistration>(e =>
+        {
+            e.ToTable("gst_registrations");
+            e.Property(x => x.Gstin).HasColumnType("char(15)");
+            e.Property(x => x.StateCode).HasColumnType("char(2)");
+        });
+        b.Entity<TaxCategory>().ToTable("tax_categories");
+        b.Entity<TaxRule>(e =>
+        {
+            e.ToTable("tax_rules");
+            e.HasMany(x => x.Slabs).WithOne().HasForeignKey(x => x.TaxRuleId);
+        });
+        b.Entity<TaxRuleSlab>(e =>
+        {
+            e.ToTable("tax_rule_slabs");
+            e.Property(x => x.UpTo).HasColumnType("numeric(12,2)");
+            e.Property(x => x.Rate).HasColumnType("numeric(5,2)");
         });
 
         foreach (var entity in b.Model.GetEntityTypes())

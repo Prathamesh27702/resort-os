@@ -911,5 +911,36 @@
   <text class="s" x="46" y="560"><tspan class="b">Same lock order as the front desk:</tspan> the reservation row first, so posting, reversing, check-in, check-out and the job queue instead of racing.</text>
   <text class="s" x="46" y="580"><tspan class="b">Tax copied at posting time</tspan> (folio_item_taxes, Sprint 9): a later rate change never alters a posted bill.</text>
 </svg>
+<svg id="tax-flow" width="1200" height="636" viewBox="0 0 1200 636">
+  <rect width="1200" height="636" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 09: GST is data with dates. The tax engine reads the rule of the service day; the bill keeps what it used</text>
+  <rect class="lane" x="30" y="56" width="1140" height="250" rx="10"/>
+  <text class="t b" x="46" y="82">One charge (a room night, a dinner, a package part): TaxCalculator, used by every module that charges</text>
+  <rect class="step" x="46" y="98" width="200" height="78" rx="8"/><text class="s" x="58" y="122">1. Tax category?</text><text class="xs" x="58" y="144">ROOM → Accommodation 996311</text><text class="xs" x="58" y="162">FOOD → Restaurant 996331</text>
+  <rect class="step" x="266" y="98" width="200" height="78" rx="8"/><text class="s" x="278" y="122">2. Registration that day?</text><text class="xs" x="278" y="144">GSTIN of the property's state;</text><text class="xs" x="278" y="162">REGULAR charges GST</text>
+  <rect class="step" x="486" y="98" width="200" height="78" rx="8"/><text class="s" x="498" y="122">3. Rule that day?</text><text class="xs" x="498" y="144">from ≤ day ≤ to (both included);</text><text class="xs" x="498" y="162">one per category (EXCLUDE)</text>
+  <rect class="step" x="706" y="98" width="210" height="78" rx="8"/><text class="s" x="718" y="122">4. Slab per unit</text><text class="xs" x="718" y="144">one room / bed, one night:</text><text class="xs" x="718" y="162">₹7,500.00 → 5%, ₹7,500.01 → 18%</text>
+  <rect class="win" x="936" y="98" width="220" height="78" rx="8"/><text class="s b" x="948" y="122">5. Split and round</text><text class="xs" x="948" y="144">same state: CGST + SGST (rate ÷ 2)</text><text class="xs" x="948" y="162">else IGST; each to the paisa</text>
+  <path class="arrow" d="M246,137 L264,137"/><path class="arrow" d="M466,137 L484,137"/><path class="arrow" d="M686,137 L704,137"/><path class="arrow" d="M916,137 L934,137"/>
+  <rect class="ask" x="46" y="190" width="420" height="44" rx="8"/><text class="xs" x="58" y="210">No category, no registration or COMPOSITION:</text><text class="xs" x="58" y="226">no GST, and the preview says why in words</text>
+  <rect class="lose" x="486" y="190" width="430" height="44" rx="8"/><text class="xs" x="498" y="210">Registered and taxed but no rule for the day: 422 TAX_RULE_MISSING,</text><text class="xs" x="498" y="226">the charge is refused rather than posted without GST</text>
+  <rect class="win" x="936" y="190" width="220" height="44" rx="8"/><text class="xs" x="948" y="210">folio_item_taxes: code, rate,</text><text class="xs" x="948" y="226">taxable value, amount, rule id</text>
+  <text class="xs" x="46" y="262">A night with several rooms is taxed room by room (each by its own slab); parts at the same rate are added up, then rounded once per tax.</text>
+  <text class="xs" x="46" y="282">Reversals and moved lines copy the tax rows of the line they come from: they never ask the engine again.</text>
+  <rect class="lane" x="30" y="326" width="1140" height="170" rx="10"/>
+  <text class="t b" x="46" y="352">The accountant changes GST from next month: Add rule (tax.manage), no deployment</text>
+  <rect class="step" x="46" y="368" width="250" height="78" rx="8"/><text class="s" x="58" y="392">Starts today (India) or later</text><text class="xs" x="58" y="412">a rule never reaches back;</text><text class="xs" x="58" y="430">rate a multiple of 0.02%</text>
+  <rect class="step" x="336" y="368" width="250" height="78" rx="8"/><text class="s" x="348" y="392">Lock the category's row</text><text class="xs" x="348" y="412">two accountants can't add</text><text class="xs" x="348" y="430">overlapping rules at once</text>
+  <rect class="step" x="626" y="368" width="250" height="78" rx="8"/><text class="s" x="638" y="392">Running rule ends day − 1</text><text class="xs" x="638" y="412">its only change allowed (trigger);</text><text class="xs" x="638" y="430">any other overlap: field error</text>
+  <rect class="win" x="916" y="368" width="240" height="78" rx="8"/><text class="s b" x="928" y="392">INSERT rule + slabs</text><text class="xs" x="928" y="412">with its source; unverified</text><text class="xs" x="928" y="430">until someone presses Verify</text>
+  <path class="arrow" d="M296,407 L334,407"/><path class="arrow" d="M586,407 L624,407"/><path class="arrow" d="M876,407 L914,407"/>
+  <text class="xs" x="46" y="476">Dinner ₹1,450 on 31 Oct: 5% → ₹72.50, kept for good. Dinner ₹1,450 on 1 Nov: 18% → ₹261.00. Same code, different row.</text>
+  <rect class="zone" x="30" y="514" width="1140" height="104" rx="8"/>
+  <text class="s" x="46" y="536"><tspan class="b">No rate in the code:</tspan> tax_categories, tax_rules and tax_rule_slabs hold every rate, limit and SAC code, seeded per organisation (V011).</text>
+  <text class="s" x="46" y="558"><tspan class="b">History never moves:</tspan> rules are never deleted, slabs never change, and a posted line keeps the rule id and rate it used.</text>
+  <text class="s" x="46" y="580"><tspan class="b">Seeded rules are unverified:</tspan> entered from public notifications; the accountant checks each and presses Verify before go-live.</text>
+  <text class="s" x="46" y="602"><tspan class="b">One engine:</tspan> the folio uses it now; POS, purchasing and invoices will use the same TaxCalculator.</text>
+</svg>
 </body>
 </html>

@@ -5,7 +5,7 @@ const rupees = (v: number) => `₹${v}`;
 const line = (over: Partial<FolioItem>): FolioItem => ({
   id: 'i1', itemType: 'CHARGE', category: 'FOOD', description: 'Dinner', serviceDate: '2026-10-18', quantity: 1, unitPrice: 1450, amount: 1450,
   taxAmount: 0, total: 1450, source: 'MANUAL', packageId: null, packageName: null, groupId: null, reversesItemId: null, reversedByItemId: null,
-  reason: null, reversalReason: null, movedFrom: null, movedTo: null, postedAt: '2026-10-18T15:00:00Z', postedByName: 'Rita', live: true, ...over,
+  reason: null, reversalReason: null, movedFrom: null, movedTo: null, postedAt: '2026-10-18T15:00:00Z', postedByName: 'Rita', live: true, taxes: [], ...over,
 });
 
 describe('folio helpers (Sprint 8)', () => {

@@ -163,6 +163,7 @@ app.MapRateEndpoints();
 app.MapReservationEndpoints();
 app.MapFrontDeskEndpoints();
 app.MapFolioEndpoints();
+app.MapTaxEndpoints();
 
 app.Run();
 

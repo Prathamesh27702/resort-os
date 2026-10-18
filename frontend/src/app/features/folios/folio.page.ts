@@ -10,6 +10,7 @@ import { Folio, FolioItem } from '../../core/models';
 import { PropertyContext, inZone } from '../../core/property-context';
 import { statusClass, statusLabel } from '../reservations/reservations.api';
 import { shortDate } from '../rooms/rooms.api';
+import { pct, taxText } from '../settings/gst/gst.api';
 import { dayLabel, rupeesExact } from '../settings/rates/rates.api';
 import { PostChargeDialog, ReverseChargeDialog, SplitFolioDialog, SplitResult } from './folio-dialogs';
 import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from './folios.api';
@@ -52,7 +53,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
 
         <div class="sums">
           <div class="balance"><span>Balance</span><b class="num" [class.owed]="f.balance > 0" data-testid="balance">{{ money(f.balance) }}</b>
-            <small class="mute">Payments arrive in Sprint 10; GST is added from Sprint 9.</small></div>
+            <small class="mute">GST included where it applies. Payments arrive in Sprint 10.</small></div>
           <dl>
             <dt>Charges</dt><dd class="num">{{ money(f.charges) }}</dd>
             <dt>Reversals</dt><dd class="num">{{ money(f.reversals) }}</dd>
@@ -82,7 +83,8 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
                     @if (note(i); as n) { <br /><small [class]="i.itemType === 'REVERSAL' || i.reversedByItemId ? 'why' : 'mute'">{{ n }}</small> }
                   </td>
                   <td class="hide-sm"><span class="chip cat">{{ label(i.category) }}</span></td>
-                  <td class="right num"><b>{{ money(i.total) }}</b></td>
+                  <td class="right num"><b>{{ money(i.total) }}</b>
+                    @if (i.taxes.length) { <br /><small class="mute" [attr.title]="taxTitle(i)">{{ money(i.amount) }} + {{ tax(i.taxes) }} {{ money(i.taxAmount) }}</small> }</td>
                   <td class="right">
                     @if (canReverse() && i.live) {
                       <button mat-button (click)="reverse(i)" [disabled]="busy()" [attr.aria-label]="'Reverse ' + i.description">Reverse</button>
@@ -162,6 +164,9 @@ export class FolioPage {
   label = categoryLabel;
   note = lineNote;
   qty = (i: FolioItem) => quantityText(i, rupeesExact);
+  tax = taxText;
+  /** "CGST 2.5% ₹36.25 · SGST 2.5% ₹36.25" on hover. */
+  taxTitle = (i: FolioItem) => i.taxes.map(t => `${t.code} ${pct(t.rate)} ${rupeesExact(t.amount)}`).join(' · ');
   private pid = () => this.props.current()!.id;
 
   constructor() {

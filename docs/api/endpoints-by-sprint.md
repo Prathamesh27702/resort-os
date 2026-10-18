@@ -77,6 +77,7 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `GET|POST /api/v1/properties/{propertyId}/gst-registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
 | `GET|POST /api/v1/tax/categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
 | `GET|POST /api/v1/tax/rules  (effective_from/effective_to)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `POST /api/v1/tax/rules/{id}/verify` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
 | `POST /api/v1/tax/calculate  (preview)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/payments  (Idempotency-Key)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/payments/{id}/allocate` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |

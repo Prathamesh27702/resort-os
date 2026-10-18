@@ -459,7 +459,7 @@ All under `/api/v1/properties/{propertyId}`. A folio is the bill of one stay; ev
 ("Main", F00001 …), opened when it is confirmed. **Lines are never edited or deleted**: a mistake is corrected with a
 reversal line, and moving a line to another folio is a reversal here plus a copy there. Reading needs `folio.read`,
 posting and moving lines `folio.post_charge`, reversing `folio.adjust` (owner, general manager and manager). Totals are
-summed from the lines; tax is 0 until Sprint 9 and payments 0 until Sprint 10. How it stays consistent:
+summed from the lines; GST is added from Sprint 9 (below) and payments arrive in Sprint 10. How it stays consistent:
 [system-design.md → 4.18](architecture/system-design.md#418-folios-the-bill-of-a-stay).
 
 | Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
@@ -495,6 +495,64 @@ default) or one night at a time (`"NIGHTLY"`, by a job that runs every 15 minute
 check-out any night still missing is posted, and when a guest leaves early the released nights are reversed ("Left early
 on …: reason") before the balance is checked. From this sprint the front desk's `balance` (Sprint 7) is the main folio's
 balance.
+
+## Built endpoints (Sprint 9 — GST and the tax engine)
+
+No GST rate, threshold or SAC code is in the code: they are **rules with dates** in the database, so an accountant adds
+next month's rate here and bills use it from its first day, with no deployment. One engine (`TaxCalculator`) taxes every
+charge; the folio stores the rule id and the rate it used with each line, so a later rule never changes a posted
+charge. Reading needs `tax.read` (owner, general manager, manager, accountant); changing categories and rules needs
+`tax.manage` **organisation-wide** (they apply to every property); a registration needs `tax.manage` for its property.
+Nothing here is deleted. How it works: [GST.md](GST.md) (worked examples) and
+[system-design.md → 4.19](architecture/system-design.md#419-gst-rules-as-data-the-tax-engine).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /properties/{propertyId}/gst-registrations` | The GSTINs the property bills under, newest first; `current` = it covers today | `tax.read` | — | `GstRegistrationDto[]` | 403, 404 | — |
+| `POST /properties/{propertyId}/gst-registrations` | Add a registration from a date. A registration that runs on past that day is ended the day before. A property with no GST state takes the GSTIN's | `tax.manage` | `CreateGstRegistrationRequest` | 201 `GstRegistrationDto` | 400 under the field (below), 403, 404 | INSERT registration (and UPDATE of the one it ends) |
+| `GET /tax/categories` | What is taxed: code, name, SAC/HSN, the bill charge category it covers, how many rules, and the rule that applies today | `tax.read` (any scope) | — | `TaxCategoryDto[]` | 403 | — |
+| `POST /tax/categories` | Add a category | `tax.manage` (org-wide) | `CreateTaxCategoryRequest` | 201 `TaxCategoryDto` | 400 `Code` ("The code SPA is already used by Spa. Choose another code."), `Name`, `HsnSac` ("Enter the SAC or HSN code: 4, 6 or 8 digits, e.g. 996311 for accommodation."), `ChargeCategory` ("Food charges are already taxed under Restaurant service. A charge category can belong to one tax category only."), 403 | INSERT category |
+| `GET /tax/rules?categoryId` | Every rule (of one category): dates, type, rates, source, notes, `state` PAST / CURRENT / FUTURE (by today in India), who verified it | `tax.read` (any scope) | — | `TaxRuleDto[]` | 403 | — |
+| `POST /tax/rules` | Add a rule from `effectiveFrom` (today in India or later). The category's rule that runs on past that day is ended the day before (`closedRule` in the result); any other overlap is refused | `tax.manage` (org-wide) | `CreateTaxRuleRequest` | 201 `CreateTaxRuleResultDto` | 400 under the field (below), 403 | INSERT rule and rates (and UPDATE of the rule it ends) |
+| `POST /tax/rules/{id}/verify` | Record that the caller checked the rule against its source (seeded rules start unverified). Verifying again changes nothing | `tax.manage` (org-wide) | — | `TaxRuleDto` | 403, 404 | UPDATE rule |
+| `POST /tax/calculate` | Preview the GST on a charge on a day, with the same engine the bills use. Changes nothing | `tax.read` for the property | `TaxCalculationRequest` | `TaxCalculationDto` | 400 `PropertyId`, `TaxCategoryId`, `ChargeCategory`, `Amount`, `UnitValue`, `PlaceOfSupply`; 403 | — |
+
+`CreateGstRegistrationRequest = { gstin, legalName, tradeName?, registrationType = REGULAR | COMPOSITION, effectiveFrom,
+effectiveTo? }`. **Field errors**: `Gstin` says exactly what is wrong ("A GSTIN has 15 characters; this one has 14.",
+"99 isn't a GST state code.", "Characters 3 to 12 are the PAN …", "Character 14 of a GSTIN is always Z.", "The last
+character (check digit) should be 9 for this GSTIN; check it for a typing mistake.", "This GSTIN is registered in
+Maharashtra (27), but Main Resort is in Goa (30). A property bills under the GSTIN of its own state."), `LegalName`,
+`RegistrationType`, `EffectiveFrom` (required; "Main Resort is already registered under 30AABCT1234C1Z9 from Sat 1 Jul
+2017 with no end date, which overlaps. Start this registration after …"), `EffectiveTo` (before the start).
+
+`CreateTaxRuleRequest = { taxCategoryId, effectiveFrom, effectiveTo?, ruleType: FLAT | SLAB, slabs: [{ upTo?, rate,
+inputTaxCredit }], source, notes? }`. A FLAT rule has one rate with `upTo` null; a SLAB rule two or more, exactly one
+with `upTo` null (everything above the other limits). A value **exactly at a limit is in that slab** (₹7,500.00 is "up to
+₹7,500"). **Field errors**: `EffectiveFrom` ("A new rule can start today (Sun 18 Oct 2026) or later. Charges already
+posted keep the GST they were posted with …", "Restaurant service already has a rule from Sun 1 Nov 2026 with no end
+date, which overlaps. Start the new rule after …"), `EffectiveTo`, `RuleType`, `Source` ("Say where the rule comes from,
+e.g. Notification 05/2025-Central Tax (Rate), so it can be checked later."), `Slabs` ("A slab rule needs at least two
+rates …", "A flat rule has one rate for any value …", "Exactly one rate must have no upper limit …", "Two rates have the
+same upper limit …"), `Slabs[i].Rate` (0–100; "The rate is split evenly into CGST and SGST, so it must be a multiple of
+0.02% (e.g. 5, 18 or 0.1)."), `Slabs[i].UpTo`.
+
+`TaxCalculationRequest = { propertyId, taxCategoryId? | chargeCategory?, date? (default today at the property), amount,
+unitValue? (the value of one unit for one night, which picks the slab; default amount), placeOfSupply? (a state code;
+default the property's state) }` → `TaxCalculationDto = { date, amount, unitValue, taxed, noTaxReason, gstin,
+supplierState, placeOfSupply, intraState, category, rule, slab, components: [{ code, rate, taxableValue, amount }], tax,
+total }`. When `taxed` is false, `noTaxReason` says why: "Transport charges carry no GST: no tax category covers them.
+…", "Beach Annex has no GST registration on …, so it charges no GST. …", "… is under the composition scheme on … : it
+charges guests no GST.", "There is no GST rule for Equipment rental on …. Ask your accountant to add one in Settings →
+GST."
+
+**On the bill (Sprint 8 endpoints).** Every new charge is taxed when it is posted: `taxAmount` is the line's GST and
+`total = amount + taxAmount`; `FolioItemDto.taxes = [{ code: CGST | SGST | IGST, rate, taxableValue, amount, taxRuleId }]`
+(CGST and SGST each at half the rate). A room night is taxed room by room at the slab of each room's price for that
+night; a package component is taxed in its own category, the room part at its value per night. A reversal or a moved
+line carries the same taxes as its charge (negated for a reversal). Posting a charge in a taxed category on a day no
+rule covers, at a registered property, is refused: **422 `TAX_RULE_MISSING`** ("There is no GST rule for Equipment
+rental on Sun 18 Oct 2026. Ask your accountant to add one in Settings → GST. Until then equipment charges dated Sun 18
+Oct 2026 can't be posted.").
 
 ### Health (no auth, not rate-limited)
 

@@ -19,6 +19,9 @@ const own = { id: '', ref: '', guest: '', folioId: '', nights: 0 };
 
 interface FreeType { inventoryMode: string; accommodationTypeId: string; freeRooms: { id: string; name: string }[] }
 
+// Sprint 9: the demo property is GST-registered, so food carries 5% GST (₹1,450 + ₹72.50); transport and activities have no
+// tax category, so they carry none
+const dinner = 1450 + 72.5;
 const money = (v: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(v);
 const row = (page: Page, desc: string) => page.locator(`tr[data-line="${desc}"]`);
 const said = (page: Page, text: string | RegExp) => expect(page.locator('mat-snack-bar-container', { hasText: text })).toBeVisible();
@@ -101,19 +104,19 @@ test('S08-02 The receptionist posts dinner, a transfer and kayaking; a missing d
   await dlg.getByLabel('Description').fill('Dinner at the beach shack');
   await shot(q, '03-post-charge');
   await dlg.getByRole('button', { name: 'Post charge' }).click();
-  await said(q, `Balance ${money(own.nights + 1450)}`);
+  await said(q, `Balance ${money(own.nights + dinner)}`);
 
   dlg = await post('Transport', 'Airport transfer', '1', '1200');
   await dlg.getByRole('button', { name: 'Post charge' }).click();
-  await said(q, `Balance ${money(own.nights + 2650)}`);
+  await said(q, `Balance ${money(own.nights + dinner + 1200)}`);
 
   dlg = await post('Activity', 'Kayaking', '2', '650');
   await expect(dlg).toContainText(money(1300));
   await dlg.getByRole('button', { name: 'Post charge' }).click();
-  await said(q, `Balance ${money(own.nights + 3950)}`);
+  await said(q, `Balance ${money(own.nights + dinner + 2500)}`);
 
   await expect(row(q, 'Kayaking')).toContainText(`2 × ${money(650)}`);
-  await expect(q.getByTestId('balance')).toHaveText(money(own.nights + 3950));
+  await expect(q.getByTestId('balance')).toHaveText(money(own.nights + dinner + 2500));
   await shot(q, '04-charges');
 });
 
@@ -134,7 +137,7 @@ test('S08-03 Only a manager reverses, and only with a reason; the reversed line 
   await dlg.getByLabel('Reason').fill('Posted to the wrong guest');
   await shot(p, '05-reverse');
   await dlg.getByRole('button', { name: 'Reverse' }).click();
-  await said(p, `Reversed: Airport transfer. Balance ${money(own.nights + 2750)}`);
+  await said(p, `Reversed: Airport transfer. Balance ${money(own.nights + dinner + 1300)}`);
   await expect(row(p, 'Airport transfer')).toHaveClass(/reversed/);
   await expect(row(p, 'Airport transfer')).toContainText('Reversed: Posted to the wrong guest');
   await expect(row(p, 'Reversal: Airport transfer')).toContainText(money(-1200));
@@ -155,7 +158,7 @@ test('S08-04 Moving kayaking to a new folio: both bills show it and the stay’s
   await shot(q, '07-move-lines');
   await dlg.getByRole('button', { name: 'Move lines' }).click();
   await said(q, /Moved to F\d{5} \(Paid by Arjun \(friend\)\)/);
-  await expect(q.getByTestId('balance')).toHaveText(money(own.nights + 1450));
+  await expect(q.getByTestId('balance')).toHaveText(money(own.nights + dinner));
   await expect(row(q, 'Kayaking')).toContainText(/Moved to F\d{5}/);
 
   const other = q.locator('nav.folios a', { hasText: 'Paid by Arjun' });

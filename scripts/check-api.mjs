@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–08: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–09: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -14,6 +14,7 @@
 //   - bookings about 120, 130 and 140 nights ahead, each cancelled straight away (Sprints 05–07; cancelled bookings stay as history)
 //   - on the bill of one guest in house: a ₹1 "API check" charge and its reversal (Sprint 08; bill lines are never deleted,
 //     so both stay, and they add up to ₹0)
+//   - Sprint 09 changes nothing: it reads the GST settings and asks the tax engine for previews
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -424,6 +425,46 @@ if (inHouse) {
       { token: T, body: { reason: 'API check' } }, b => (b.code === 'ALREADY_REVERSED' && b.message.includes('already reversed')) || `${b.code}: ${b.message}`);
   }
 } else record('Charge and reverse on an in-house guest’s bill', false, 'nobody is in house (the demo data has R00008 in Room 104)');
+
+// ---------------------------------------------------------------- Sprint 09 — GST and the tax engine
+title('Sprint 09 — GST registrations, tax categories and rules, the tax preview');
+// Read-only: the settings, previews and refusals. Adding a rule would change your GST from its date, so it is left to the
+// review script (REVIEWING.md → Sprint 09) and the browser tests.
+await expectCall('The property\u2019s GST registration', 'GET', `${P}/gst-registrations`, 200, { token: T },
+  b => (Array.isArray(b) && b.some(r => r.current && /^[0-9]{2}[A-Z0-9]{13}$/.test(r.gstin))) || `no current registration: ${JSON.stringify(b).slice(0, 200)}`);
+const cats = await expectCall('Tax categories with the rule that applies today', 'GET', '/api/v1/tax/categories', 200, { token: T },
+  b => (Array.isArray(b) && ['ACCOMMODATION', 'RESTAURANT'].every(c => b.some(x => x.code === c && x.currentRule))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Every rule with its dates, rates and source', 'GET', '/api/v1/tax/rules', 200, { token: T },
+  b => (Array.isArray(b) && b.length >= 3 && b.every(r => r.source && r.slabs.length > 0)) || JSON.stringify(b).slice(0, 200));
+const preview = (date, amount, extra = {}) => ({ propertyId: prop.id, chargeCategory: 'ROOM', date, amount, ...extra });
+await expectCall('Preview: ₹3,500 room night on 21 Sep 2025 → 12% (CGST 6% + SGST 6% = ₹420)', 'POST', '/api/v1/tax/calculate', 200,
+  { token: T, body: preview('2025-09-21', 3500) }, b => (b.taxed && b.tax === 420 && b.components.length === 2) || `${b.tax}: ${b.noTaxReason ?? ''}`);
+await expectCall('Preview: the same night on 22 Sep 2025 → 5% (₹175)', 'POST', '/api/v1/tax/calculate', 200,
+  { token: T, body: preview('2025-09-22', 3500) }, b => (b.taxed && b.tax === 175) || `${b.tax}: ${b.noTaxReason ?? ''}`);
+await expectCall('Preview: exactly ₹7,500 a night is still in the 5% slab', 'POST', '/api/v1/tax/calculate', 200,
+  { token: T, body: preview('2026-01-10', 7500) }, b => (b.slab?.rate === 5 && b.tax === 375) || JSON.stringify(b.slab));
+await expectCall('Preview: ₹7,500.01 a night → 18%', 'POST', '/api/v1/tax/calculate', 200,
+  { token: T, body: preview('2026-01-10', 7500.01) }, b => b.slab?.rate === 18 || JSON.stringify(b.slab));
+await expectCall('Preview: food with the place of supply in another state → IGST', 'POST', '/api/v1/tax/calculate', 200,
+  { token: T, body: preview('2026-01-10', 1000, { chargeCategory: 'FOOD', placeOfSupply: '27' }) },
+  b => (!b.intraState && b.components.length === 1 && b.components[0].code === 'IGST' && b.tax === 50) || JSON.stringify(b.components));
+await expectCall('Preview without saying what is charged → 400 under ChargeCategory', 'POST', '/api/v1/tax/calculate', 400,
+  { token: T, body: { propertyId: prop.id, amount: 100 } }, b => !!b.details?.ChargeCategory?.[0] || JSON.stringify(b.details));
+await expectCall('A registration with a wrong check digit → 400 saying what the digit should be', 'POST', `${P}/gst-registrations`, 400,
+  { token: T, body: { gstin: '30AABCT1234C1Z8', legalName: 'API check', effectiveFrom: '2026-04-01' } },
+  b => /check digit\) should be 9/.test(b.details?.Gstin?.[0] ?? '') || JSON.stringify(b.details));
+const food = cats?.json?.find?.(c => c.code === 'RESTAURANT');
+if (food) {
+  await expectCall('A rule starting yesterday → 400: a rule can only start today or later', 'POST', '/api/v1/tax/rules', 400,
+    { token: T, body: { taxCategoryId: food.id, effectiveFrom: '2020-01-01', ruleType: 'FLAT', slabs: [{ upTo: null, rate: 5, inputTaxCredit: false }], source: 'API check' } },
+    b => /can start today/.test(b.details?.EffectiveFrom?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('A slab rule with one rate → 400 under Slabs', 'POST', '/api/v1/tax/rules', 400,
+    { token: T, body: { taxCategoryId: food.id, effectiveFrom: '2099-01-01', ruleType: 'SLAB', slabs: [{ upTo: null, rate: 5, inputTaxCredit: false }], source: 'API check' } },
+    b => /at least two rates/.test(b.details?.Slabs?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('Receptionist can\u2019t add a rule → 403', 'POST', '/api/v1/tax/rules', 403,
+    { token: R, body: { taxCategoryId: food.id, effectiveFrom: '2099-01-01', ruleType: 'FLAT', slabs: [{ upTo: null, rate: 5, inputTaxCredit: false }], source: 'API check' } });
+} else record('Rule refusals', false, 'no RESTAURANT tax category (migration V011 seeds it)');
+await expectCall('Receptionist can\u2019t read the GST settings → 403', 'GET', '/api/v1/tax/categories', 403, { token: R });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);
