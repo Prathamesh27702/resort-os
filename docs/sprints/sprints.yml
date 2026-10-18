@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 8
+current: 9
 
 sprints:
 
@@ -736,7 +736,7 @@ sprints:
 - id: 8
   title: Folio
   phase: 3
-  status: in-progress
+  status: done
   size: M
   module: Folio
   feature: folios
@@ -744,7 +744,7 @@ sprints:
   goal: The folio is the central financial object for a stay (brief §20).
   client: "Every stay has one running bill (folio) that collects room charges, meals, activities and transport."
   progress:
-    now: "Built on branch claude/sprint-08-2574ky; pull request into develop, waiting for the owner's review."
+    now: "Accepted by the owner on 18 Oct 2026 and released to main (tag sprint-08)."
     done:
       - "Migration V010: folios (one main folio per confirmed booking, F00001 … per property, more to split a bill), folio_items (immutable CHARGE / REVERSAL lines, 8 categories, source MANUAL / ROOM_NIGHT / PACKAGE) and folio_item_taxes (filled from Sprint 9); UPDATE and DELETE refused by triggers"
       - "Database guards: amount = quantity × price and total = amount + tax (CHECK); a reversal is the exact negative of a charge on the same folio (trigger); a line is reversed or moved once (UNIQUE); each night of a stay is charged once (partial UNIQUE index)"
@@ -820,7 +820,7 @@ sprints:
 - id: 9
   title: GST configuration and tax engine
   phase: 3
-  status: planned
+  status: in-progress
   size: M
   module: Tax
   feature: settings/gst
