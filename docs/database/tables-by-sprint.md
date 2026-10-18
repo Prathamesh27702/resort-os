@@ -45,13 +45,13 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `idempotency_keys` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `unit_housekeeping_status` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
 | `unit_housekeeping_history` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟢 Done |
-| `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | 🔵 In progress |
-| `gst_registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
-| `tax_categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
-| `tax_rules` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
-| `tax_rule_slabs` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | ⚪ Planned |
+| `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
+| `gst_registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `tax_categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `tax_rules` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
+| `tax_rule_slabs` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
 | `payments` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
 | `payment_allocations` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
 | `refunds` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |

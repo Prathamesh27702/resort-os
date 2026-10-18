@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 07](sprint-07-front-desk.md) |
+| 🟢 Done | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 07](sprint-07-front-desk.md) |
 
 **Goal:** The folio is the central financial object for a stay (brief §20).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built on branch claude/sprint-08-2574ky; pull request into develop, waiting for the owner's review.
+**Now:** Accepted by the owner on 18 Oct 2026 and released to main (tag sprint-08).
 
 **Done so far**
 

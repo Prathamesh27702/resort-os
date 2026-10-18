@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-08] — Unreleased — Folio (in review)
+## [sprint-08] — 2026-10-18 — Folio (accepted)
 
 ### Added
 - Migration V010: `folios` (one main folio per confirmed booking, numbered F00001 … per property; more to split a bill),

@@ -21,3 +21,6 @@
 - version: "1.7"
   date: 2026-10-18
   change: "Sprint 07 (Front desk) accepted: arrivals, departures and in-house lists, check-in and check-out in a few clicks, walk-ins on one screen, early departures with a reason, rooms marked dirty and ready. Check-in flow diagram. Sprint 08 (Folio) started."
+- version: "1.8"
+  date: 2026-10-18
+  change: "Sprint 08 (Folio) accepted: a running bill for every stay with room nights, meals, transport, activities and packages; nothing can be edited or deleted, a manager reverses a line with a reason; bills can be split; the front desk shows the real balance. Folio flow diagram. Sprint 09 (GST configuration and tax engine) started."
