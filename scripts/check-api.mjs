@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–04: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–07: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -11,6 +11,7 @@
 //   - a guest "API Check Guest" (+91 90000 00999, created once) with one more passport document per run, and one
 //     throwaway guest per run that it anonymises straight away
 //   - the BAR price of the Standard room for one night about 90 days ahead: raised by ₹1, then put back (both audited)
+//   - bookings about 120, 130 and 140 nights ahead, each cancelled straight away (Sprints 05–07; cancelled bookings stay as history)
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -340,6 +341,46 @@ if (freeStd.length >= 2 && walkIn && checkGuest && std) {
         { token: R, body: { reason: 'API check' } }, b => b.status === 'CANCELLED' || b.status);
   }
 } else record('Move a booking between two free Standard rooms 130 nights ahead', false, 'fewer than 2 free Standard rooms, or no walk-in source / check guest');
+
+// ---------------------------------------------------------------- Sprint 07 — front desk
+title('Sprint 07 — front desk: arrivals, check-in and check-out, walk-ins, room readiness');
+// Read-only lists, then the refusals (nothing is checked in or out). One booking 140 nights ahead is made and cancelled.
+await expectCall('Front desk dashboard: counts and the rooms board', 'GET', `${P}/front-desk/dashboard`, 200, { token: R },
+  b => (b.today === today && Array.isArray(b.rooms) && b.rooms.length > 0 && typeof b.arrivalsExpected === 'number') || JSON.stringify(b).slice(0, 200));
+await expectCall("Today's arrivals use the property's date", 'GET', `${P}/front-desk/arrivals`, 200, { token: R },
+  b => (b.today === today && b.date === today && Array.isArray(b.items)) || `today ${b.today}, date ${b.date}`);
+await expectCall('Departures for tomorrow', 'GET', `${P}/front-desk/departures?date=${plus(1)}`, 200, { token: R },
+  b => b.date === plus(1) || b.date);
+await expectCall('In house', 'GET', `${P}/front-desk/in-house`, 200, { token: R }, b => Array.isArray(b.items) || 'no items');
+const room103 = byCode('103');
+await expectCall('Receptionist can’t change a room’s cleaning state → 403', 'PUT', `${P}/rooms/${room103.id}/housekeeping`, 403,
+  { token: R, body: { bedId: null, status: 'READY', reason: null } });
+await expectCall('Cleaning state must be one of the six → 400 under Status', 'PUT', `${P}/rooms/${room103.id}/housekeeping`, 400,
+  { token: T, body: { bedId: null, status: 'SPARKLING', reason: null } }, b => !!b.details?.Status?.[0] || JSON.stringify(b.details));
+await expectCall('Walk-in with neither a guest nor new guest details → 400 under GuestId', 'POST', `${P}/walk-ins`, 400,
+  { token: R, headers: { 'Idempotency-Key': `api-check-walkin-${Date.now()}` },
+    body: { guestId: null, newGuest: null, checkOut: plus(1), rooms: [], ratePlanId: null, specialRequests: null, note: null } },
+  b => /one of the two/.test(b.details?.GuestId?.[0] ?? '') || JSON.stringify(b.details));
+const f0 = plus(140), f1 = plus(141);
+const freeLater = ((await call('GET', `${P}/availability?from=${f0}&to=${f1}&adults=1`, { token: R })).json?.types ?? [])
+  .find(t => t.code === 'STANDARD_ROOM')?.freeRooms ?? [];
+if (freeLater.length && walkIn && checkGuest && std) {
+  const made = await expectCall(`Receptionist books ${freeLater[0].name} 140 nights ahead`, 'POST', `${P}/reservations`, 201,
+    { token: R, headers: { 'Idempotency-Key': `api-check-desk-${Date.now()}` },
+      body: { checkIn: f0, checkOut: f1, rooms: [{ accommodationTypeId: std.accommodationTypeId, unitId: freeLater[0].id, adults: 1, children: 0 }],
+              guestIds: [checkGuest.id], sourceId: walkIn.id, ratePlanId: null, status: 'CONFIRMED', specialRequests: null, note: null } });
+  if (made?.json) {
+    const r = made.json;
+    await expectCall('Check in before the arrival day → 422 CHECK_IN_DATE with the dates', 'POST', `${P}/reservations/${r.id}/check-in`, 422,
+      { token: R, body: { version: null } }, b => (b.code === 'CHECK_IN_DATE' && b.message.includes('Change the arrival date')) || `${b.code}: ${b.message}`);
+    await expectCall('Check out a guest who never checked in → 422 INVALID_STATUS_TRANSITION', 'POST', `${P}/reservations/${r.id}/check-out`, 422,
+      { token: R, body: { version: null } }, b => b.code === 'INVALID_STATUS_TRANSITION' || `${b.code}: ${b.message}`);
+    await expectCall('Room options for the booking (with readiness)', 'GET', `${P}/reservations/${r.id}/room-options?reservationUnitId=${r.units[0].id}`, 200,
+      { token: R }, b => (Array.isArray(b) && b.length > 0 && 'housekeeping' in b[0]) || JSON.stringify(b).slice(0, 200));
+    await expectCall('Cancel the check booking (frees the room)', 'POST', `${P}/reservations/${r.id}/cancel`, 200,
+      { token: R, body: { reason: 'API check' } }, b => b.status === 'CANCELLED' || b.status);
+  }
+} else record('Check-in refusals on a booking 140 nights ahead', false, 'no free Standard room, or no walk-in source / check guest');
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

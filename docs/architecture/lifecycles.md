@@ -13,7 +13,7 @@ stateDiagram-v2
   INQUIRY --> PENDING
   PENDING --> CONFIRMED: payment captured / deposit / manager confirm
   PENDING --> CANCELLED: hold expired / cancelled
-  CONFIRMED --> CHECKED_IN: arrival, room assigned + READY
+  CONFIRMED --> CHECKED_IN: arrival, room assigned + READY (or override with reason)
   CONFIRMED --> CANCELLED: cancellation (policy, reason)
   CONFIRMED --> NO_SHOW: night audit after arrival date
   CHECKED_IN --> CHECKED_OUT: folio settled (or allowed balance)
@@ -24,6 +24,11 @@ stateDiagram-v2
 
 Sources: direct website, walk-in, phone, WhatsApp, MakeMyTrip, Goibibo, Booking.com, Airbnb, Agoda, Expedia, travel
 agent, corporate, referral, other (`reservation_sources`). Reservations are never deleted (brief §87).
+
+Front desk (Sprint 7): a PENDING booking is confirmed on the way in (PENDING → CHECKED_IN is not a valid move, so the
+history shows both steps). Check-out sets every room being left to DIRTY in `unit_housekeeping_status` and writes a
+`CHECK_OUT` row in `unit_housekeeping_history`, the event Sprint 13 turns into a cleaning task. Leaving early needs a
+reason and releases the nights left. A walk-in is created CONFIRMED and checked in within one transaction.
 
 ### Overbooking prevention (Sprint 5 — the exact algorithm goes in `booking-algorithm.md`)
 

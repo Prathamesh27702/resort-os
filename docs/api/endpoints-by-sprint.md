@@ -58,13 +58,16 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `POST /api/v1/properties/{propertyId}/reservations/{id}/notes` | [Sprint 05](../sprints/sprint-05-availability-engine-and-reservations.md) | 🟢 Done |
 | `GET /api/v1/properties/{propertyId}/calendar?from&to` | [Sprint 06](../sprints/sprint-06-reservation-calendar.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/reservations/{id}/reassign  (reason required)` | [Sprint 06](../sprints/sprint-06-reservation-calendar.md) | 🟢 Done |
-| `GET /api/v1/properties/{propertyId}/front-desk/arrivals?date` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
-| `GET /api/v1/properties/{propertyId}/front-desk/departures?date` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
-| `GET /api/v1/properties/{propertyId}/front-desk/in-house` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/reservations/{id}/assign-room` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/reservations/{id}/check-in` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/reservations/{id}/check-out` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/walk-ins` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/front-desk/arrivals?date` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `GET /api/v1/properties/{propertyId}/front-desk/departures?date` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `GET /api/v1/properties/{propertyId}/front-desk/in-house` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `GET /api/v1/properties/{propertyId}/front-desk/dashboard` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `GET /api/v1/properties/{propertyId}/reservations/{id}/room-options?reservationUnitId` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `POST /api/v1/properties/{propertyId}/reservations/{id}/assign-room` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `POST /api/v1/properties/{propertyId}/reservations/{id}/check-in` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `POST /api/v1/properties/{propertyId}/reservations/{id}/check-out` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `POST /api/v1/properties/{propertyId}/walk-ins` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
+| `PUT /api/v1/properties/{propertyId}/rooms/{unitId}/housekeeping` | [Sprint 07](../sprints/sprint-07-front-desk.md) | 🟡 In review |
 | `GET /api/v1/properties/{propertyId}/folios/{id}` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/folios/{id}/charges  (Idempotency-Key)` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/folios/{id}/charges/{itemId}/reverse  (reason required)` | [Sprint 08](../sprints/sprint-08-folio.md) | ⚪ Planned |

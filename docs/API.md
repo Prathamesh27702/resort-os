@@ -383,7 +383,7 @@ another room for the others."); `GuestIds` (none, unknown, merged or anonymised 
 
 **Statuses.** PENDING, CONFIRMED and CHECKED_IN hold rooms; INQUIRY holds nothing. Allowed moves are in the table
 `reservation_status_transitions`; anything else is 422 `INVALID_STATUS_TRANSITION` with `details: { from, to, allowed }`.
-Check-in/check-out arrive in Sprint 7, refunds in Sprint 10. Reservations are never deleted; an enquiry is cancelled.
+Check-in/check-out arrived in Sprint 7 (below), refunds in Sprint 10. Reservations are never deleted; an enquiry is cancelled.
 
 **Related changes.** `POST /blocks` returns 409 `BLOCK_OVERLAPS_RESERVATION` ("Room 103 is booked on R00002 …") when a
 booking holds the room. `GET /guests/{id}/stays` lists real reservations with their `reference`; merging guests moves
@@ -412,6 +412,46 @@ there, a dormitory for a room booking or a private room for a bed guest, too sma
 most 2; this room has 3 guests. Choose a bigger room."); `BedId` (missing for a dormitory, not in that dormitory,
 inactive, given for a private room). A whole room line moves for all its nights; checked-in guests move with the front
 desk (Sprint 7).
+
+## Built endpoints (Sprint 7 — front desk)
+
+All under `/api/v1/properties/{propertyId}`. **"Today" is the property's business date** (its timezone, from an injected
+clock), never the server's. Lists need `reservation.read`; check-in, room assignment and walk-ins need
+`frontdesk.checkin`; check-out `frontdesk.checkout`; marking a room `housekeeping.update`. A walk-in also needs
+`reservation.create` (and `guest.create` for a new guest). How check-in stays race-free:
+[system-design.md → 4.17](architecture/system-design.md#417-the-front-desk).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /front-desk/arrivals?date` | Bookings arriving on `date` (default today); on today also earlier arrivals that haven't come yet (`late: true`). PENDING, CONFIRMED, CHECKED_IN and CHECKED_OUT | `reservation.read` | — | `FrontDeskListDto` | 403, 404 | — |
+| `GET /front-desk/departures?date` | Bookings leaving on `date`; on today also guests still in after their departure day (`overdue: true`) | `reservation.read` | — | `FrontDeskListDto` | 403, 404 | — |
+| `GET /front-desk/in-house` | Every CHECKED_IN booking | `reservation.read` | — | `FrontDeskListDto` | 403, 404 | — |
+| `GET /front-desk/dashboard` | Counts for today (arrivals, departures, overdue, in house, rooms ready / not ready / occupied / blocked) and the rooms board: every room and dorm bed with occupancy (`VACANT`, `OCCUPIED`, `ARRIVING`, `BLOCKED`, `INACTIVE`) and cleaning state | `reservation.read` | — | `FrontDeskDashboardDto` | 403, 404 | — |
+| `GET /reservations/{id}/room-options?reservationUnitId` | Every room (or bed) the row could move to, with `free`, `fits`, `housekeeping` and the `problem` in words | `reservation.read` | — | `RoomOptionDto[]` | 400 `ReservationUnitId`, 403, 404 | — |
+| `POST /reservations/{id}/assign-room` | Before arrival: the room for the whole stay (price unchanged). In house: a move **from today**; the nights already slept stay on the first room, which becomes DIRTY (`ROOM_MOVE`). Reason required in house | `frontdesk.checkin` | `AssignRoomRequest` | `ReservationDto` | 400 under the field, 403, 404, 409 `ROOM_UNAVAILABLE`, `ROOM_OCCUPIED`, `HOUSEKEEPING_NOT_READY` (target not ready and no override), `CONCURRENCY_CONFLICT`; 422 `RESERVATION_NOT_MOVABLE` | as Sprint 6 reassign, plus housekeeping rows |
+| `POST /reservations/{id}/check-in` | Locks the booking, then its rooms; checks the date, that the previous guest has left, and that the room is READY. PENDING is confirmed on the way in. Sets `checkedInAt` | `frontdesk.checkin` | `CheckInRequest` | `ReservationDto` | 403, 404; **409** `ALREADY_CHECKED_IN` ("R00001 is already checked in (at 14:05 on Sat 17 Oct 2026 by Rita). Reload to see it."), `ROOM_OCCUPIED` ("Room 105 is still occupied: R00007 (Asha Rao) was due out … and hasn't checked out. Check them out first, or assign this guest another room."), `HOUSEKEEPING_NOT_READY` ("Room 101 is dirty, not ready. Ask housekeeping to mark it ready, assign a ready room, or check in anyway with a reason."), `CONCURRENCY_CONFLICT`; **422** `CHECK_IN_DATE` ("R00002 arrives on Sun 18 Oct 2026; it is Sat 17 Oct 2026 at the property. Change the arrival date …"), `INVALID_STATUS_TRANSITION`, `OVERRIDE_NOT_ALLOWED`; 400 `OverrideReason` | UPDATE reservation, status history (with the override reason), note when overridden |
+| `POST /reservations/{id}/check-out` | Refused while the folio balance is above zero unless the property allows it. Leaving before the booked day needs a reason; the nights from the departure day are released and the total re-priced. The rooms being left become DIRTY (`CHECK_OUT` events). Sets `checkedOutAt` | `frontdesk.checkout` | `CheckOutRequest` | `ReservationDto` | 400 `Reason` ("The guest is booked until …. Say why they are leaving early …"), 403, 404, 409 `ALREADY_CHECKED_OUT`, `CONCURRENCY_CONFLICT`; 422 `BALANCE_DUE` ("R00007 still owes ₹2,000. Take the payment before check-out, or ask a manager …"), `INVALID_STATUS_TRANSITION` | UPDATE reservation, status history, note when early, housekeeping rows |
+| `POST /walk-ins` | Guest (existing `guestId` or `newGuest`) + booking from today (source Walk-in, ready rooms first) + check-in, **one transaction**: if any step fails nothing is saved. `Idempotency-Key` required; a repeat returns the same stay with `Idempotent-Replayed: true` | `frontdesk.checkin` (+ `reservation.create`, `guest.create`) | `WalkInRequest` | 201 `ReservationDto` | 400 under the field (`GuestId`: "Choose a returning guest, or enter the new guest's details (one of the two).", `NewGuest.*` as Create guest, `CheckOut`: "Check-out must be after today (… at the property).", `Rooms`, …), 409 `POSSIBLE_DUPLICATE` (with the matches; resend with `newGuest.ignoreDuplicates: true`), `ROOM_UNAVAILABLE`, `HOUSEKEEPING_NOT_READY`; 422 `IDEMPOTENCY_KEY_REUSED` | as guest create + booking + check-in |
+| `PUT /rooms/{unitId}/housekeeping` | Set a room's (or a dorm bed's, with `bedId`) cleaning state by hand, e.g. *ready*. The full housekeeping workflow comes in Sprint 13 | `housekeeping.update` | `SetHousekeepingRequest` | `FrontDeskBoardRoomDto` | 400 `Status` (not one of the six), `BedId`, 403, 404 | UPDATE/INSERT state + history row (`MANUAL`) |
+
+`FrontDeskListDto = { date, today, items: FrontDeskStayDto[] }`. `FrontDeskStayDto = { reservationId, reference, status,
+guestId, guestName, guestPhone, isVip, checkIn, checkOut, nights, adults, children, rooms: [{ reservationUnitId, unitId,
+unitCode, unitName, bedId, bedCode, typeName, startDate, endDate, housekeeping, occupiedBy }], sourceName, totalAmount,
+balance, currency, specialRequests, checkedInAt, checkedOutAt, late, overdue, checkInProblem, version }`. `checkInProblem`
+says in words why a check-in would be refused right now (e.g. "Room 101 is dirty, not ready."); `balance` is 0 until
+folios arrive (Sprint 8).
+
+`AssignRoomRequest = { reservationUnitId, unitId, bedId?, reason?, version, overrideHousekeeping? }` ·
+`CheckInRequest = { version?, overrideHousekeeping?, overrideReason? }` · `CheckOutRequest = { version?, reason? }` ·
+`WalkInRequest = { guestId? | newGuest?, checkOut, rooms: [{ accommodationTypeId, unitId?, adults, children }],
+ratePlanId?, specialRequests?, note?, overrideHousekeeping?, overrideReason? }` ·
+`SetHousekeepingRequest = { bedId?, status: DIRTY | CLEANING | CLEAN | INSPECTION | READY | OUT_OF_ORDER, reason? }`.
+`version` is optional on check-in and check-out (the front desk acts on what it sees); when sent, an older version is
+409 `CONCURRENCY_CONFLICT`.
+
+**Property settings** (`PUT /settings/{key}`, JSON `true`/`false`): `frontdesk.allow_checkin_when_not_ready` (default
+`true`: reception may check into a room that isn't ready, with a reason) and `frontdesk.allow_checkout_with_balance`
+(default `false`).
 
 ### Health (no auth, not rate-limited)
 

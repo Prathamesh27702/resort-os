@@ -2,6 +2,48 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-07] — Unreleased — Front desk (in review)
+
+### Added
+- Migration V009: `reservations.checked_in_at` / `checked_out_at`; `unit_housekeeping_status` (cleaning state per room
+  or dorm bed; no row = READY) and append-only `unit_housekeeping_history` (`CHECK_OUT`, `ROOM_MOVE`, `MANUAL` events,
+  `consumed_at` for Sprint 13).
+- Front desk API under `/api/v1/properties/{id}`: `front-desk/arrivals?date` (with late arrivals), `front-desk/departures?date`
+  (with overdue guests), `front-desk/in-house`, `front-desk/dashboard` (counts and rooms board),
+  `reservations/{rid}/room-options`, `reservations/{rid}/assign-room`, `reservations/{rid}/check-in`,
+  `reservations/{rid}/check-out`, `walk-ins` (Idempotency-Key) and `PUT rooms/{unitId}/housekeeping`.
+- Every "today" is the property's business date from an injected clock (`TimeProvider`), never the server's date.
+- Check-in locks the reservation, then its rooms by id; refuses with the reason when the previous guest hasn't left
+  (`ROOM_OCCUPIED`), the room isn't ready (`HOUSEKEEPING_NOT_READY`, or check in anyway with a reason when
+  `frontdesk.allow_checkin_when_not_ready` allows it), it is the wrong day (`CHECK_IN_DATE`) or already done
+  (`ALREADY_CHECKED_IN`, naming who and when). PENDING bookings are confirmed on the way in.
+- Check-out refuses while the folio balance is above zero unless `frontdesk.allow_checkout_with_balance` (the balance
+  comes from Sprint 8; until then it is 0); leaving early needs a reason and releases the nights left; rooms become DIRTY
+  with a `CHECK_OUT` event in the same transaction.
+- Moving an in-house guest splits the stay at today; the old room becomes DIRTY (`ROOM_MOVE`).
+- Walk-in: guest (found or new), booking from today on a ready room and check-in in one transaction.
+- Dev seed S006: R00007 in house leaving today, R00008 in house for two more nights, Room 101 dirty.
+- Staff app: **Front desk** (`/front-desk/arrivals | departures | in-house | rooms`) with tiles, lists, one-click
+  check-in and check-out, a window that says why a check-in can't go straight through (choose another room or check in
+  anyway), a rooms board with *Mark ready*; **Walk-in** (`/front-desk/walk-in`, three steps on one screen); Check in,
+  Check out and Assign room on the booking page.
+- Tests: backend `FrontDeskTests` (the same booking checked in by 20 pairs of simultaneous clicks, the demo flow,
+  date rules, readiness and its override, settings, the check-out event, balance, early departure, walk-in with replay and
+  rollback, field errors, permissions, dashboard and in-house moves), `FrontDeskClockTests` (arrivals at 23:30 and 00:30
+  IST, mid-stay move, overdue guest), `FrontDeskUnitTests` and a dev seed test; frontend `front-desk.spec.ts`; browser
+  steps S07-01 … S07-09; `check-api.mjs` Sprint 07 block; `database/queries/check-sprint-07.sql`.
+
+### Changed
+- `ReservationService`: booking and room-move steps shared with the front desk (`BookAsync`, `MoveRoomAsync`); a checked-in
+  booking's room is changed from the front desk (the calendar's reassign says so).
+- `ReservationDto` gains `checkedInAt` and `checkedOutAt`.
+- `unit_housekeeping_status` is created in Sprint 07 instead of Sprint 13 (tables-by-sprint updated).
+
+### Documentation
+- `docs/architecture/system-design.md`: Sprint 07 in section 3, part 4.17 *The front desk*, and the check-in flow
+  diagram (`tools/handbooks/assets/check-in-flow.png`). API.md, DATABASE.md, `schema-sprint-07.md`, lifecycles,
+  ARCHITECTURE module map, RUN_AND_TEST.md and REVIEWING.md Sprint 07 sections.
+
 ## [sprint-06] — 2026-10-17 — Reservation calendar (accepted)
 
 ### Added

@@ -97,30 +97,29 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         var property = await LoadPropertyAsync(propertyId, ct);
         var orgId = caller.RequireOrganizationId();
         var scope = $"POST /api/v1/properties/{propertyId}/reservations";
-        var hash = Idempotency.Hash(r);
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
         // 1. Claim the key. A concurrent request with the same key waits here until the first one commits or rolls back.
-        var claimed = await db.Database.ExecuteSqlAsync(
-            $"""
-             INSERT INTO idempotency_keys (id, organization_id, scope, key, request_hash, user_id)
-             VALUES ({Guid.CreateVersion7()}, {orgId}, {scope}, {key}, {hash}, {caller.UserId})
-             ON CONFLICT (organization_id, scope, key) DO NOTHING
-             """, ct);
-        if (claimed == 0)
-        {
-            var stored = await db.IdempotencyKeys.AsNoTracking().SingleAsync(k => k.Scope == scope && k.Key == key, ct);
-            if (!stored.RequestHash.AsSpan().SequenceEqual(hash))
-                throw new BusinessRuleAppException("IDEMPOTENCY_KEY_REUSED",
-                    $"This {Idempotency.Header} was already used for a different booking ({ReferenceOf(stored)}). " +
-                    "Each new booking needs a new key; reload the form and try again.");
-            if (stored.Response is null)
-                throw new ConflictAppException("IDEMPOTENCY_IN_PROGRESS", "The same booking is still being saved. Wait a moment and reload.");
-            return (JsonSerializer.Deserialize<ReservationDto>(stored.Response, Idempotency.Json)!, true);
-        }
+        if (await Idempotency.ClaimAsync(db, orgId, caller.UserId, scope, key, Idempotency.Hash(r), "booking", ct) is { } stored)
+            return (JsonSerializer.Deserialize<ReservationDto>(stored, Idempotency.Json)!, true);
 
-        // 2. Check what the request refers to.
+        // 2–4. Check, lock, allocate, price, insert.
+        var reservation = await BookAsync(property, r, new HashSet<Guid>(), ct);
+
+        var dto = await ToDtoAsync(reservation, ct);
+        await Idempotency.CompleteAsync(db, orgId, scope, key, 201, dto, reservation.Id, ct);
+        await tx.CommitAsync(ct);
+        return (dto, false);
+    }
+
+    /// <summary>Steps 2–4 of the booking algorithm inside the caller's transaction: check what the request refers to,
+    /// lock the rooms of its types, allocate (taking rooms in <paramref name="preferred"/> first), price and save.
+    /// Shared by a booking and a walk-in (Sprint 7).</summary>
+    internal async Task<Reservation> BookAsync(Property property, CreateReservationRequest r, IReadOnlySet<Guid> preferred, CancellationToken ct)
+    {
+        var propertyId = property.Id;
+        var orgId = caller.RequireOrganizationId();
         var today = property.LocalDate(clock.GetUtcNow());
         if (r.CheckIn < today)
             throw Field(nameof(r.CheckIn), $"Check-in can't be before today ({QuoteEngine.Day(today)} at the property).");
@@ -132,8 +131,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         var plan = await ResolvePlanAsync(propertyId, r.RatePlanId, ct);
         var lines = await ResolveLinesAsync(propertyId, r.Rooms, ct);
 
-        // 3–4. Lock, allocate, price.
-        var priced = await AllocateAndPriceAsync(propertyId, plan, lines, r.CheckIn, r.CheckOut, null, new HashSet<Guid>(), ct);
+        var priced = await AllocateAndPriceAsync(propertyId, plan, lines, r.CheckIn, r.CheckOut, null, preferred, ct);
 
         var reservation = new Reservation
         {
@@ -165,16 +163,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         AddHistory(reservation, null, status, null);
         if (Clean(r.Note) is { } note) AddNote(reservation, note);
         await db.SaveChangesAsync(ct);
-
-        var dto = await ToDtoAsync(reservation, ct);
-        var json = JsonSerializer.Serialize(dto, Idempotency.Json);
-        await db.Database.ExecuteSqlAsync(
-            $"""
-             UPDATE idempotency_keys SET status_code = 201, response = {json}::jsonb, resource_id = {reservation.Id}, completed_at = now()
-              WHERE organization_id = {orgId} AND scope = {scope} AND key = {key}
-             """, ct);
-        await tx.CommitAsync(ct);
-        return (dto, false);
+        return reservation;
     }
 
     // ------------------------------------------------------------------ change dates / rooms / guests
@@ -291,82 +280,106 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
 
     /// <summary>
     /// Moves one room (or dorm bed) of a booking to another for the same nights; the price stays as booked.
-    /// Same locking as booking: the reservation row first, then the target room row (the lock a booking, a date change
-    /// and a block on that room all take), then the availability check sees every committed booking and block.
-    /// The old row is superseded (kept as history) and a new one inserted, with the nightly prices copied.
+    /// A checked-in guest is moved from the front desk instead (<see cref="MoveRoomAsync"/> from today, Sprint 7).
     /// </summary>
     public async Task<ReservationDto> ReassignAsync(Guid propertyId, Guid id, ReassignRoomRequest r, CancellationToken ct)
     {
         var reason = Clean(r.Reason)!;
-        var orgId = caller.RequireOrganizationId();
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var reservation = await LockAsync(propertyId, id, ct);
         if (reservation.Status == ReservationStatuses.CheckedIn)
             throw new BusinessRuleAppException("RESERVATION_NOT_MOVABLE",
-                $"{reservation.Reference} is checked in. Moving an in-house guest mid-stay comes with the front desk (Sprint 7); " +
-                "for now change the room at check-out or with a new booking.");
+                $"{reservation.Reference} is checked in. Move an in-house guest from the front desk (In-house → Move room): " +
+                "the move starts today and the nights already slept stay with the first room.");
         if (!ReservationStatuses.Changeable.Contains(reservation.Status))
             throw new BusinessRuleAppException("RESERVATION_NOT_MOVABLE",
                 $"{reservation.Reference} is {ReservationStatuses.Words(reservation.Status)}, so its room can't be changed.");
         ConcurrencyGuard.ExpectVersion(db, reservation, r.Version);
 
-        var row = await db.ReservationUnits.SingleOrDefaultAsync(u => u.Id == r.ReservationUnitId && u.ReservationId == id, ct);
+        await MoveRoomAsync(reservation, r.ReservationUnitId, r.UnitId, r.BedId, reason, null, null, ct);
+        await tx.CommitAsync(ct);
+        return await ToDtoAsync(reservation, ct);
+    }
+
+    /// <summary>What a room move did: the row that was replaced, where the guest went, and from which night.</summary>
+    internal sealed record RoomMove(ReservationUnit Old, AccommodationUnit Target, Bed? Bed, string SourceName, string TargetName, DateOnly From);
+
+    /// <summary>
+    /// Moves one current room (or dorm bed) row of a locked reservation to another room for the nights from
+    /// <paramref name="from"/> (null = all its nights) to the row's end; the price stays as booked, night by night.
+    /// Same locking as booking: the caller holds the reservation row; this locks the target room row (the lock a booking,
+    /// a date change and a block on that room all take), then the availability check sees every committed booking and block.
+    /// The old row is superseded (kept as history). Moving from a later night keeps the nights before it on the old
+    /// room as a new row, so the stay reads right on the calendar. <paramref name="check"/> runs once the target is
+    /// locked and known to be free (the front desk checks housekeeping there).
+    /// </summary>
+    internal async Task<RoomMove> MoveRoomAsync(Reservation reservation, Guid rowId, Guid unitId, Guid? bedId, string reason, DateOnly? from,
+        Func<AccommodationUnit, Bed?, Task>? check, CancellationToken ct)
+    {
+        var propertyId = reservation.PropertyId;
+        var orgId = caller.RequireOrganizationId();
+        var row = await db.ReservationUnits.SingleOrDefaultAsync(u => u.Id == rowId && u.ReservationId == reservation.Id, ct);
         if (row is null || !row.IsCurrent)
-            throw Field(nameof(r.ReservationUnitId), $"That room is no longer part of {reservation.Reference}. Reload the calendar and try again.");
+            throw Field("ReservationUnitId", $"That room is no longer part of {reservation.Reference}. Reload and try again.");
+        var moveFrom = from is { } f && f > row.StartDate ? f : row.StartDate;
+        if (moveFrom >= row.EndDate)
+            throw Field("ReservationUnitId",
+                $"That room of {reservation.Reference} was booked {BlockService.NightsText(row.StartDate, row.EndDate)}, so there are no nights left to move.");
 
         // Lock the target room before reading anything about it (fixed order: reservation, then room).
         await db.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM accommodation_units WHERE id = {r.UnitId} AND property_id = {propertyId} AND organization_id = {orgId} FOR UPDATE", ct);
+            $"SELECT 1 FROM accommodation_units WHERE id = {unitId} AND property_id = {propertyId} AND organization_id = {orgId} FOR UPDATE", ct);
         var target = await db.AccommodationUnits.Include(u => u.Type).Include(u => u.Beds)
-                         .SingleOrDefaultAsync(u => u.Id == r.UnitId && u.PropertyId == propertyId, ct)
-                     ?? throw Field(nameof(r.UnitId), "That room doesn't exist at this property. Reload the calendar and choose again.");
+                         .SingleOrDefaultAsync(u => u.Id == unitId && u.PropertyId == propertyId, ct)
+                     ?? throw Field("UnitId", "That room doesn't exist at this property. Reload and choose again.");
         var source = await db.AccommodationUnits.AsNoTracking().Include(u => u.Beds).SingleAsync(u => u.Id == row.UnitId, ct);
         var sourceName = row.BedId is { } sb ? $"{source.Name} bed {source.Beds.First(b => b.Id == sb).Code}" : source.Name;
 
         var isBed = row.BedId is not null;
         if (!target.IsActive || !target.Type.IsActive)
-            throw Field(nameof(r.UnitId), $"{target.Name} is inactive, so guests can't be moved into it.");
+            throw Field("UnitId", $"{target.Name} is inactive, so guests can't be moved into it.");
         if (isBed && target.Type.InventoryMode != InventoryModes.Bed)
-            throw Field(nameof(r.UnitId), $"This guest has a dormitory bed; {target.Name} is a private room. Move them to a bed in a dormitory, " +
-                                          "or change the booking's room type on the booking page.");
+            throw Field("UnitId", $"This guest has a dormitory bed; {target.Name} is a private room. Move them to a bed in a dormitory, " +
+                                  "or change the booking's room type on the booking page.");
         if (!isBed && target.Type.InventoryMode == InventoryModes.Bed)
-            throw Field(nameof(r.UnitId), $"{target.Name} is a dormitory, sold by the bed. Move this room booking to another room, " +
-                                          "or change the booking's room type on the booking page.");
+            throw Field("UnitId", $"{target.Name} is a dormitory, sold by the bed. Move this room booking to another room, " +
+                                  "or change the booking's room type on the booking page.");
         Bed? bed = null;
         if (isBed)
         {
-            if (r.BedId is null)
-                throw Field(nameof(r.BedId), $"Choose the bed in {target.Name}.");
-            bed = target.Beds.FirstOrDefault(b => b.Id == r.BedId)
-                  ?? throw Field(nameof(r.BedId), $"That bed isn't in {target.Name}. Reload the calendar and choose again.");
+            if (bedId is null)
+                throw Field("BedId", $"Choose the bed in {target.Name}.");
+            bed = target.Beds.FirstOrDefault(b => b.Id == bedId)
+                  ?? throw Field("BedId", $"That bed isn't in {target.Name}. Reload and choose again.");
             if (!bed.IsActive)
-                throw Field(nameof(r.BedId), $"Bed {bed.Code} in {target.Name} is inactive, so guests can't be moved into it.");
+                throw Field("BedId", $"Bed {bed.Code} in {target.Name} is inactive, so guests can't be moved into it.");
         }
-        else if (r.BedId is not null)
-            throw Field(nameof(r.BedId), $"{target.Name} is a private room; it has no beds to choose.");
+        else if (bedId is not null)
+            throw Field("BedId", $"{target.Name} is a private room; it has no beds to choose.");
         if (row.UnitId == target.Id && row.BedId == bed?.Id)
-            throw Field(nameof(r.UnitId), $"The guest is already in {sourceName}. Choose a different {(isBed ? "bed" : "room")}.");
+            throw Field("UnitId", $"The guest is already in {sourceName}. Choose a different {(isBed ? "bed" : "room")}.");
         if (!isBed && row.Adults + row.Children > target.Type.MaxOccupancy)
-            throw Field(nameof(r.UnitId),
+            throw Field("UnitId",
                 $"{target.Name} ({target.Type.Name}) sleeps at most {target.Type.MaxOccupancy}; this room has {row.Adults + row.Children} guests. " +
                 "Choose a bigger room.");
 
         // Free for every night? The same rules the booking engine uses (held bookings and active blocks).
         var inventory = await InventoryLoader.UnitsAsync(db, propertyId, [target.AccommodationTypeId], ct);
         var unit = inventory.Single(u => u.UnitId == target.Id);
-        var taken = await InventoryLoader.TakenAsync(db, [target.Id], row.StartDate, row.EndDate, null, ct);
-        var free = AvailabilityEngine.Free([unit], taken, row.StartDate, row.EndDate);
+        var taken = await InventoryLoader.TakenAsync(db, [target.Id], moveFrom, row.EndDate, null, ct);
+        var free = AvailabilityEngine.Free([unit], taken, moveFrom, row.EndDate);
         var isFree = isBed ? free.FreeBeds.Any(b => b.Bed.BedId == bed!.Id) : free.FreeRooms.Any(u => u.UnitId == target.Id);
         if (!isFree)
         {
-            var clash = taken.FirstOrDefault(o => o.Overlaps(row.StartDate, row.EndDate) && (o.BedId is null || o.BedId == bed?.Id));
+            var clash = taken.FirstOrDefault(o => o.Overlaps(moveFrom, row.EndDate) && (o.BedId is null || o.BedId == bed?.Id));
             var what = isBed ? $"Bed {bed!.Code} in {target.Name}" : target.Name;
             throw new ConflictAppException("ROOM_UNAVAILABLE",
-                $"{what} isn't free {BlockService.NightsText(row.StartDate, row.EndDate)}: {clash?.Label ?? "it is taken"}. Choose another {(isBed ? "bed" : "room")}.",
+                $"{what} isn't free {BlockService.NightsText(moveFrom, row.EndDate)}: {clash?.Label ?? "it is taken"}. Choose another {(isBed ? "bed" : "room")}.",
                 new { unitId = target.Id, bedId = bed?.Id });
         }
+        if (check is not null) await check(target, bed);
 
-        // Supersede the old row (it stops holding first), then insert the new one with the same nights and prices.
+        // Supersede the old row (it stops holding first), then insert the new rows with the same nights and prices.
         var now = clock.GetUtcNow();
         audit.Reason = reason;
         var holds = row.HoldsInventory;
@@ -374,29 +387,47 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         row.SupersededAt = now;
         await db.SaveChangesAsync(ct);
 
-        var moved = new ReservationUnit
+        var nights = await db.ReservationRateBreakdowns.AsNoTracking().Where(n => n.ReservationUnitId == row.Id).ToListAsync(ct);
+        if (moveFrom > row.StartDate)
+            AddRow(row, row.UnitId, row.BedId, row.AccommodationTypeId, row.StartDate, moveFrom, holds, nights);
+        AddRow(row, target.Id, bed?.Id, target.AccommodationTypeId, moveFrom, row.EndDate, holds, nights);
+
+        var targetName = bed is null ? target.Name : $"{target.Name} bed {bed.Code}";
+        AddNote(reservation, moveFrom > row.StartDate
+            ? $"Moved from {sourceName} to {targetName} from {QuoteEngine.Day(moveFrom)} ({BlockService.NightsText(moveFrom, row.EndDate)}). Reason: {reason}"
+            : $"Moved from {sourceName} to {targetName} ({BlockService.NightsText(row.StartDate, row.EndDate)}). Reason: {reason}");
+        reservation.UpdatedAt = now;   // a new version, so a screen showing the old rooms can't save over the move
+        await db.SaveChangesAsync(ct);
+        return new RoomMove(row, target, bed, sourceName, targetName, moveFrom);
+    }
+
+    /// <summary>A new current row copied from <paramref name="old"/> for [start, end) in a room (or bed), with the old
+    /// row's prices for those nights.</summary>
+    internal ReservationUnit AddRow(ReservationUnit old, Guid unitId, Guid? bedId, Guid typeId, DateOnly start, DateOnly end, bool holds,
+        IEnumerable<ReservationRateBreakdown> nights)
+    {
+        var copy = new ReservationUnit
         {
-            OrganizationId = row.OrganizationId,
-            PropertyId = row.PropertyId,
-            ReservationId = row.ReservationId,
-            AccommodationTypeId = target.AccommodationTypeId,
-            UnitId = target.Id,
-            BedId = bed?.Id,
-            StartDate = row.StartDate,
-            EndDate = row.EndDate,
-            Adults = row.Adults,
-            Children = row.Children,
+            OrganizationId = old.OrganizationId,
+            PropertyId = old.PropertyId,
+            ReservationId = old.ReservationId,
+            AccommodationTypeId = typeId,
+            UnitId = unitId,
+            BedId = bedId,
+            StartDate = start,
+            EndDate = end,
+            Adults = old.Adults,
+            Children = old.Children,
             HoldsInventory = holds,
         };
-        db.ReservationUnits.Add(moved);
-        var nights = await db.ReservationRateBreakdowns.AsNoTracking().Where(n => n.ReservationUnitId == row.Id).ToListAsync(ct);
-        foreach (var n in nights)
+        db.ReservationUnits.Add(copy);
+        foreach (var n in nights.Where(n => n.StayDate >= start && n.StayDate < end))
             db.ReservationRateBreakdowns.Add(new ReservationRateBreakdown
             {
                 OrganizationId = n.OrganizationId,
                 PropertyId = n.PropertyId,
                 ReservationId = n.ReservationId,
-                ReservationUnitId = moved.Id,
+                ReservationUnitId = copy.Id,
                 RatePlanId = n.RatePlanId,
                 StayDate = n.StayDate,
                 Units = n.Units,
@@ -410,13 +441,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
                 ExtraChildAmount = n.ExtraChildAmount,
                 Total = n.Total,
             });
-
-        var targetName = bed is null ? target.Name : $"{target.Name} bed {bed.Code}";
-        AddNote(reservation, $"Moved from {sourceName} to {targetName} ({BlockService.NightsText(row.StartDate, row.EndDate)}). Reason: {reason}");
-        reservation.UpdatedAt = now;   // a new version, so a screen showing the old rooms can't save over the move
-        await db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
-        return await ToDtoAsync(reservation, ct);
+        return copy;
     }
 
     // ------------------------------------------------------------------ notes
@@ -596,7 +621,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
 
     // ------------------------------------------------------------------ helpers
 
-    private void AddHistory(Reservation r, string? from, string to, string? reason) =>
+    internal void AddHistory(Reservation r, string? from, string to, string? reason) =>
         db.ReservationStatusHistory.Add(new ReservationStatusChange
         {
             OrganizationId = r.OrganizationId,
@@ -609,7 +634,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
             ChangedBy = caller.UserId,
         });
 
-    private void AddNote(Reservation r, string note) =>
+    internal void AddNote(Reservation r, string note) =>
         db.ReservationNotes.Add(new ReservationNote
         {
             OrganizationId = r.OrganizationId,
@@ -671,7 +696,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         ?? throw new NotFoundAppException("Reservation", id);
 
     /// <summary>Locks the reservation row for this transaction (status changes and edits of one booking serialise), then loads it.</summary>
-    private async Task<Reservation> LockAsync(Guid propertyId, Guid id, CancellationToken ct)
+    internal async Task<Reservation> LockAsync(Guid propertyId, Guid id, CancellationToken ct)
     {
         var orgId = caller.RequireOrganizationId();
         await db.Database.ExecuteSqlAsync(
@@ -679,14 +704,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         return await LoadAsync(propertyId, id, ct);
     }
 
-    private static string? Clean(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
-
-    private static string ReferenceOf(IdempotencyKey k)
-    {
-        if (k.Response is null) return "still being saved";
-        using var doc = JsonDocument.Parse(k.Response);
-        return doc.RootElement.TryGetProperty("reference", out var r) ? r.GetString() ?? "another booking" : "another booking";
-    }
+    internal static string? Clean(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     internal static ValidationException Field(string field, string message) => new([new ValidationFailure(field, message)]);
 
@@ -706,7 +724,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
             return beds == 0 ? name : $"{name} · {beds} bed{(beds == 1 ? "" : "s")}";
         }));
 
-    private async Task<ReservationDto> ToDtoAsync(Reservation r, CancellationToken ct)
+    internal async Task<ReservationDto> ToDtoAsync(Reservation r, CancellationToken ct)
     {
         var units = await db.ReservationUnits.AsNoTracking().Where(u => u.ReservationId == r.Id).ToListAsync(ct);
         var rooms = await db.AccommodationUnits.AsNoTracking().Include(u => u.Type).Include(u => u.Beds)
@@ -755,6 +773,6 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
             notes.Select(n => new ReservationNoteDto(n.Id, n.Note, n.CreatedAt, Name(n.CreatedBy))).ToList(),
             history.Select(h => new ReservationStatusChangeDto(h.FromStatus, h.ToStatus, h.Reason, h.ChangedAt, Name(h.ChangedBy))).ToList(),
             ReservationStatuses.Transitions[r.Status],
-            r.CreatedAt, Name(r.CreatedBy), r.Version);
+            r.CreatedAt, Name(r.CreatedBy), r.Version, r.CheckedInAt, r.CheckedOutAt);
     }
 }
