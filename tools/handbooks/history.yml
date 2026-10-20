@@ -27,3 +27,6 @@
 - version: "1.9"
   date: 2026-10-20
   change: "Sprint 09 (GST configuration and tax engine) accepted: GST worked out on every charge (CGST + SGST or IGST), rates kept as rules with dates that an accountant changes from next month without a software update, room GST by the price per room per night, posted charges keep their GST. Tax flow diagram. Sprint 10 (Payments, refunds, cash drawer) started."
+- version: "1.10"
+  date: 2026-10-20
+  change: "Sprint 10 (Payments, refunds, cash drawer) accepted: cash, UPI, card and bank payments on the bill or on account, refunds with a reason that can never exceed the payment, voids, the cash drawer opened and closed against a count with manager approval of a shortfall, no card data stored, real balances at check-out. Payment flow diagram. Sprint 11 (Razorpay) started."

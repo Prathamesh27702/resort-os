@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 08](sprint-08-folio.md) |
+| 🟢 Done | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 08](sprint-08-folio.md) |
 
 **Goal:** Record cash/UPI/card/bank payments, allocate them to folios, refund safely, reconcile the cash drawer (brief §21, §39).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review: pull request into develop, waiting for the owner's acceptance.
+**Now:** Accepted by the owner on 20 Oct 2026 and released to main (tag sprint-10).
 
 **Done so far**
 

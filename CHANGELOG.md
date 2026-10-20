@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-10] — Unreleased — Payments, refunds, cash drawer (in review)
+## [sprint-10] — 2026-10-20 — Payments, refunds, cash drawer (accepted)
 
 ### Added
 - Migration V012: `payments` (numbered P00001 per property; CASH, UPI, CARD, BANK_TRANSFER; status graph in
