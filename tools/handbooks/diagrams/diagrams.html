@@ -942,5 +942,36 @@
   <text class="s" x="46" y="580"><tspan class="b">Seeded rules are unverified:</tspan> entered from public notifications; the accountant checks each and presses Verify before go-live.</text>
   <text class="s" x="46" y="602"><tspan class="b">One engine:</tspan> the folio uses it now; POS, purchasing and invoices will use the same TaxCalculator.</text>
 </svg>
+<svg id="payment-flow" width="1200" height="636" viewBox="0 0 1200 636">
+  <rect width="1200" height="636" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 10: money in and out. A refund can't overspend its payment; the cash drawer is a ledger that must balance</text>
+  <rect class="lane" x="30" y="56" width="1140" height="250" rx="10"/>
+  <text class="t b" x="46" y="82">Two refunds on the same ₹1,000 cash payment at the same moment (payment.refund, Idempotency-Key, a reason)</text>
+  <rect class="step" x="46" y="98" width="200" height="78" rx="8"/><text class="s" x="58" y="122">1. Lock the booking</text><text class="xs" x="58" y="144">same order as the bill and</text><text class="xs" x="58" y="162">the front desk: no deadlock</text>
+  <rect class="step" x="266" y="98" width="200" height="78" rx="8"/><text class="s" x="278" y="122">2. Lock the payment</text><text class="xs" x="278" y="144">SELECT … FOR UPDATE: the</text><text class="xs" x="278" y="162">second refund waits here</text>
+  <rect class="step" x="486" y="98" width="200" height="78" rx="8"/><text class="s" x="498" y="122">3. What is left?</text><text class="xs" x="498" y="144">amount − already refunded;</text><text class="xs" x="498" y="162">on account first, then bills</text>
+  <rect class="step" x="706" y="98" width="210" height="78" rx="8"/><text class="s" x="718" y="122">4. Cash? Lock the shift</text><text class="xs" x="718" y="144">at most what the drawer</text><text class="xs" x="718" y="162">should hold; − movement</text>
+  <rect class="win" x="936" y="98" width="220" height="78" rx="8"/><text class="s b" x="948" y="122">5. INSERT refund, COMMIT</text><text class="xs" x="948" y="144">trigger checks the limits again;</text><text class="xs" x="948" y="162">status PARTIALLY_REFUNDED</text>
+  <path class="arrow" d="M246,137 L264,137"/><path class="arrow" d="M466,137 L484,137"/><path class="arrow" d="M686,137 L704,137"/><path class="arrow" d="M916,137 L934,137"/>
+  <rect class="lose" x="46" y="190" width="640" height="44" rx="8"/><text class="xs" x="58" y="210">The second refund of ₹900 gets the lock after the first ₹200 commits, sees ₹800 left: 400 under Amount</text><text class="xs" x="58" y="226">"P00003 was ₹1,000 and ₹200 of it is already refunded, so at most ₹800 can be refunded."</text>
+  <rect class="win" x="706" y="190" width="450" height="44" rx="8"/><text class="xs" x="718" y="210">fn_payment_money_check: refunded ≤ amount, a bill gets back at most</text><text class="xs" x="718" y="226">what the payment put on it. Holds for any code or SQL.</text>
+  <text class="xs" x="46" y="262">A payment goes on a bill (at most what it owes) or stays on account for the booking (an advance) until it is put on a bill; nothing is stored twice.</text>
+  <text class="xs" x="46" y="282">Void (entered by mistake): CANCELLED with a reason, counts for nothing; refused once anything is refunded or its cash shift is closed.</text>
+  <rect class="lane" x="30" y="326" width="1140" height="170" rx="10"/>
+  <text class="t b" x="46" y="352">The cash drawer shift: what it should hold is the sum of its movements, never a number someone types</text>
+  <rect class="step" x="46" y="368" width="200" height="78" rx="8"/><text class="s" x="58" y="392">Open (operate)</text><text class="xs" x="58" y="412">float counted in: + ₹5,000</text><text class="xs" x="58" y="430">one open shift per drawer</text>
+  <rect class="step" x="266" y="368" width="200" height="78" rx="8"/><text class="s" x="278" y="392">Movements</text><text class="xs" x="278" y="412">+ ₹1,000 cash P00003</text><text class="xs" x="278" y="430">− ₹200 refund · = ₹5,800</text>
+  <rect class="step" x="486" y="368" width="200" height="78" rx="8"/><text class="s" x="498" y="392">Close: count</text><text class="xs" x="498" y="412">₹5,750 counted − ₹5,800</text><text class="xs" x="498" y="430">expected = − ₹50 (short)</text>
+  <rect class="ask" x="706" y="368" width="210" height="78" rx="8"/><text class="s b" x="718" y="392">VARIANCE_PENDING</text><text class="xs" x="718" y="412">needs a reason: "Gave too</text><text class="xs" x="718" y="430">much change to a guest"</text>
+  <rect class="win" x="936" y="368" width="220" height="78" rx="8"/><text class="s b" x="948" y="392">Approve → CLOSED</text><text class="xs" x="948" y="412">cash_drawer.approve_variance,</text><text class="xs" x="948" y="430">with a note; audited</text>
+  <path class="arrow" d="M246,407 L264,407"/><path class="arrow" d="M466,407 L484,407"/><path class="arrow" d="M686,407 L704,407"/><path class="arrow" d="M916,407 L934,407"/>
+  <text class="xs" x="46" y="476">Count = expected: CLOSED at once. Movements can only be added while the shift is OPEN (trigger), so a closed count never drifts.</text>
+  <rect class="zone" x="30" y="514" width="1140" height="104" rx="8"/>
+  <text class="s" x="46" y="536"><tspan class="b">Nothing is deleted:</tspan> a payment changes only its status (along payment_status_transitions) and void; allocations, refunds and movements never change.</text>
+  <text class="s" x="46" y="558"><tspan class="b">No card data, ever:</tspan> no column for it; a card reference can't hold 13+ digits (CHECK); anything passing the Luhn check is refused under its field.</text>
+  <text class="s" x="46" y="580"><tspan class="b">Balances are sums:</tspan> a bill's paid = its allocations − refunds off it; the booking's balance (check-out) also counts money on account.</text>
+  <text class="s" x="46" y="602"><tspan class="b">Idempotency-Key</tspan> on taking and refunding money: a double click or a retry never moves money twice.</text>
+</svg>
 </body>
 </html>

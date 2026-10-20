@@ -66,6 +66,9 @@ export const routes: Routes = [
       // /folios (Sprint 8)
       { path: 'folios', canActivate: [permissionGuard('folio.read')], loadComponent: () => import('./features/folios/folios.page').then(m => m.FoliosPage) },
       { path: 'folios/:id', canActivate: [permissionGuard('folio.read')], loadComponent: () => import('./features/folios/folio.page').then(m => m.FolioPage) },
+      // /payments (Sprint 10)
+      { path: 'payments', canActivate: [permissionGuard('payment.read')], loadComponent: () => import('./features/payments/payments.page').then(m => m.PaymentsPage) },
+      { path: 'payments/:id', canActivate: [permissionGuard('payment.read')], loadComponent: () => import('./features/payments/payment.page').then(m => m.PaymentPage) },
 
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

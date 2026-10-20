@@ -16,6 +16,7 @@ import { guestsText, statusClass, statusLabel } from '../reservations/reservatio
 import { addDays, shortDate } from '../rooms/rooms.api';
 import { dayLabel, rupeesExact } from '../settings/rates/rates.api';
 import { FoliosApi } from '../folios/folios.api';
+import { CashDrawerPanel } from '../payments/cash-drawer-panel';
 import { DeskActions } from './desk-actions';
 import { FrontDeskApi, deskStay, housekeepingLabel, occupancyLabel, placeName, stayAction } from './front-desk.api';
 
@@ -29,7 +30,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
  */
 @Component({
   selector: 'app-front-desk',
-  imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatMenuModule, MatSnackBarModule, MatTooltipModule],
+  imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatMenuModule, MatSnackBarModule, MatTooltipModule, CashDrawerPanel],
   template: `
     <div class="page wide">
       <div class="page-head">
@@ -52,6 +53,8 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
             <span>Ready to sell · {{ d.roomsNotReady }} not ready · {{ d.roomsOccupied }} occupied</span></a>
         </div>
       }
+
+      @if (canDrawer()) { <app-cash-drawer-panel /> }
 
       <nav class="tabs" aria-label="Front desk lists">
         <a routerLink="/front-desk/arrivals" routerLinkActive="on">Arrivals</a>
@@ -247,6 +250,7 @@ export class FrontDeskPage {
   canCheckIn = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkin', this.props.current()?.id); });
   canCheckOut = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkout', this.props.current()?.id); });
   canWalkIn = computed(() => this.canCheckIn() && this.auth.can('reservation.create', this.props.current()?.id));
+  canDrawer = computed(() => { this.auth.me(); return this.auth.can('payment.read', this.props.current()?.id); });
   canFolio = computed(() => { this.auth.me(); return this.auth.can('folio.read', this.props.current()?.id); });
   canHousekeeping = computed(() => { this.auth.me(); return this.auth.can('housekeeping.update', this.props.current()?.id); });
 
