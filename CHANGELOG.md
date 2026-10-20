@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-09] — Unreleased — GST configuration and tax engine (in review)
+## [sprint-09] — 2026-10-20 — GST configuration and tax engine (accepted)
 
 ### Added
 - Migration V011: `gst_registrations` (a property's GSTIN from/to a date; format CHECK, state = first two digits,

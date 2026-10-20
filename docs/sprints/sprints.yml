@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 9
+current: 10
 
 sprints:
 
@@ -820,7 +820,7 @@ sprints:
 - id: 9
   title: GST configuration and tax engine
   phase: 3
-  status: in-progress
+  status: done
   size: M
   module: Tax
   feature: settings/gst
@@ -828,7 +828,7 @@ sprints:
   goal: GST as a first-class, versioned, configurable domain (brief §23, §86).
   client: "GST is calculated automatically and correctly for each item (CGST/SGST or IGST), with rates kept up to date by configuration, not code."
   progress:
-    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    now: "Accepted by the owner on 20 Oct 2026 and released to main (tag sprint-09)."
     done:
       - "Migration V011: gst_registrations (GSTIN per property with dates, REGULAR or COMPOSITION), tax_categories (SAC/HSN, the folio charge category covered), tax_rules (dates, FLAT or SLAB, source, verified by) and tax_rule_slabs (up to, rate, input tax credit); EXCLUDE constraints stop overlapping periods; rules and slabs never deleted, slabs never changed, a rule changes only its end date and verification (trigger)"
       - "Seeded as data for every organisation (and every new one, by trigger), unverified: Accommodation 996311 (18 Jul 2022 – 21 Sep 2025 up to ₹7,500 12%, above 18%; from 22 Sep 2025 up to ₹7,500 5% without ITC, above 18%) and Restaurant service 996331 (5% from 15 Nov 2017), each with its notification"
@@ -877,11 +877,32 @@ sprints:
     - "Tax is calculated on taxable value after discount; check discount allocation first when totals differ by a few paise."
   demo:
     - Same charge before/after a rule change date
+  handbook:
+    highlights:
+      - "GST is worked out automatically on every charge: CGST + SGST inside the state, IGST across states"
+      - "No GST rate is built into the software: rates are rules with dates, kept up to date by your accountant"
+      - "Your accountant adds next month's rate on the GST page, with no software update; the old rate ends the day before"
+      - "Room GST follows the price of each room per night (₹7,500 limit), as the law requires"
+      - "A posted charge keeps the GST it was charged with, even if the rate changes later"
+      - "The rules shipped with Resort OS are marked unverified until your accountant checks them"
+    design:
+      ui: "GST (menu) shows the property's GSTIN, what is taxed (Accommodation, Restaurant service) and each one's rules with their dates, rates and source. Add registration, Add category and Add rule open forms that explain any mistake under its field; Verify records who checked a rule; Try a charge shows the GST of any amount on any day. Each line of a bill shows its amount + GST."
+      api: "GET|POST /properties/{id}/gst-registrations, GET|POST /tax/categories and /tax/rules (a new rule starts today or later and ends the running one the day before), POST /tax/rules/{id}/verify and POST /tax/calculate (preview). One tax engine, TaxCalculator, is used by every module that charges."
+      database: "Migration V011 adds gst_registrations, tax_categories, tax_rules and tax_rule_slabs, with dates that can't overlap, nothing deletable and rules that only change their end date; folio_item_taxes now names the rule each tax used. Accommodation and restaurant GST are seeded as data for every organisation."
+    diagrams:
+      - {file: tools/handbooks/assets/tax-flow.png, caption: "How GST is worked out for a charge, and how an accountant changes a rate from next month"}
+    screenshots:
+      - {file: docs/sprints/sprint-09-screens/01-gst.png, caption: "GST: the registration and the rules with their sources"}
+      - {file: docs/sprints/sprint-09-screens/02-before-change.png, caption: "A room night on 21 Sep 2025: 12% GST"}
+      - {file: docs/sprints/sprint-09-screens/03-after-change.png, caption: "The same room night on 22 Sep 2025: 5% GST"}
+      - {file: docs/sprints/sprint-09-screens/05-rules.png, caption: "Next month's restaurant rule added; the old one ends the day before"}
+      - {file: docs/sprints/sprint-09-screens/06-bill-with-gst.png, caption: "A bill with GST under each line"}
+      - {file: docs/sprints/sprint-09-screens/08-phone.png, caption: "On a phone: the GST page stays readable"}
 
 - id: 10
   title: Payments, refunds, cash drawer
   phase: 3
-  status: planned
+  status: in-progress
   size: M
   module: Payments
   feature: payments
