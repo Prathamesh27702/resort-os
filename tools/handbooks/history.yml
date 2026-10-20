@@ -24,3 +24,6 @@
 - version: "1.8"
   date: 2026-10-18
   change: "Sprint 08 (Folio) accepted: a running bill for every stay with room nights, meals, transport, activities and packages; nothing can be edited or deleted, a manager reverses a line with a reason; bills can be split; the front desk shows the real balance. Folio flow diagram. Sprint 09 (GST configuration and tax engine) started."
+- version: "1.9"
+  date: 2026-10-20
+  change: "Sprint 09 (GST configuration and tax engine) accepted: GST worked out on every charge (CGST + SGST or IGST), rates kept as rules with dates that an accountant changes from next month without a software update, room GST by the price per room per night, posted charges keep their GST. Tax flow diagram. Sprint 10 (Payments, refunds, cash drawer) started."
