@@ -8,8 +8,13 @@ public abstract class AppException(string code, string message, object? details 
     public object? Details { get; } = details;
 }
 
-public sealed class NotFoundAppException(string entity, object id)
-    : AppException("NOT_FOUND", $"{entity} '{id}' was not found.");
+public sealed class NotFoundAppException : AppException
+{
+    public NotFoundAppException(string entity, object id) : base("NOT_FOUND", $"{entity} '{id}' was not found.") { }
+
+    /// <summary>A not-found whose message is written for the person reading it (e.g. a guest with a wrong link).</summary>
+    public NotFoundAppException(string message) : base("NOT_FOUND", message) { }
+}
 
 public sealed class ConflictAppException(string code, string message, object? details = null) : AppException(code, message, details);
 

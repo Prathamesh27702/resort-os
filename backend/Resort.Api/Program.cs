@@ -43,7 +43,7 @@ if (!string.IsNullOrWhiteSpace(otlp))
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.IsProduction());
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<AppExceptionHandler>();
 builder.Services.ConfigureHttpJsonOptions(o =>
@@ -165,6 +165,7 @@ app.MapFrontDeskEndpoints();
 app.MapFolioEndpoints();
 app.MapTaxEndpoints();
 app.MapPaymentEndpoints();
+app.MapRazorpayEndpoints();
 
 app.Run();
 

@@ -11,9 +11,16 @@ namespace Resort.Application.Validation;
 internal static class PaymentRules
 {
     public static readonly string MethodMessage =
-        $"Choose how the money was paid: {string.Join(", ", PaymentMethods.All.Select(PaymentMethods.Words))}.";
+        $"Choose how the money was paid: {string.Join(", ", PaymentMethods.Desk.Select(PaymentMethods.Words))}.";
+
+    public const string OnlineMessage =
+        "Online payments are recorded by Razorpay when the guest pays. Send the guest a payment link from the booking instead.";
 
     public static bool IsMethod(string? m) => m is not null && PaymentMethods.All.Contains(m.Trim().ToUpperInvariant());
+
+    public static bool IsDeskMethod(string? m) => m is not null && PaymentMethods.Desk.Contains(m.Trim().ToUpperInvariant());
+
+    public static bool IsOnline(string? m) => m?.Trim().ToUpperInvariant() == PaymentMethods.Online;
 
     /// <summary>A reference for <paramref name="method"/>: at most 100 characters and never a card number (brief §3).</summary>
     public static void Reference<T>(AbstractValidator<T> v, System.Linq.Expressions.Expression<Func<T, string?>> field, Func<T, string?> method)
@@ -39,7 +46,8 @@ public sealed class CreatePaymentRequestValidator : AbstractValidator<CreatePaym
 {
     public CreatePaymentRequestValidator()
     {
-        RuleFor(x => x.Method).Must(PaymentRules.IsMethod).WithMessage(PaymentRules.MethodMessage);
+        RuleFor(x => x.Method).Must(m => !PaymentRules.IsOnline(m)).WithMessage(PaymentRules.OnlineMessage)
+            .Must(PaymentRules.IsDeskMethod).WithMessage(PaymentRules.MethodMessage);
         Money.Rules(this, x => x.Amount, "The amount", positive: true);
         RuleFor(x => x.ReservationId).Must((x, id) => x.FolioId is not null || (id is not null && id != Guid.Empty))
             .WithMessage("Choose the folio this pays, or the booking to put the money on account for.");
@@ -104,4 +112,24 @@ public sealed class ApproveVarianceRequestValidator : AbstractValidator<ApproveV
 {
     public ApproveVarianceRequestValidator() =>
         PaymentRules.Reason(this, x => x.Note, "Change given wrongly to a guest; staff told", "variance is approved");
+}
+
+// ---------------------------------------------------------------- Razorpay payment links (Sprint 11)
+
+public sealed class CreatePaymentLinkRequestValidator : AbstractValidator<CreatePaymentLinkRequest>
+{
+    public CreatePaymentLinkRequestValidator()
+    {
+        RuleFor(x => x.ReservationId).NotEqual(Guid.Empty).WithMessage("Choose the booking the guest is paying for.");
+        Money.Rules(this, x => x.Amount, "The amount", positive: true);
+        RuleFor(x => x.Amount).Must(a => a <= 0 || a >= 1m).WithMessage("The amount must be at least ₹1, Razorpay's smallest payment.");
+        RuleFor(x => x.Note).MaximumLength(500).WithMessage("The note can be at most 500 characters.")
+            .Must(n => !PaymentMath.LooksLikeCardNumber(n)).WithMessage("This looks like a card number, and card details are never stored. Take it out of the note.");
+    }
+}
+
+public sealed class CancelPaymentLinkRequestValidator : AbstractValidator<CancelPaymentLinkRequest>
+{
+    public CancelPaymentLinkRequestValidator() =>
+        PaymentRules.Reason(this, x => x.Reason, "Guest will pay at the desk", "link is cancelled");
 }

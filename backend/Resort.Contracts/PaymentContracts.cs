@@ -4,7 +4,9 @@ namespace Resort.Contracts;
 
 /// <summary>
 /// A payment with what became of it. Method CASH, UPI, CARD or BANK_TRANSFER; Status CAPTURED, PARTIALLY_REFUNDED,
-/// REFUNDED or CANCELLED (voided) for a payment taken at the desk. Allocated: put on folios; OnAccount: still not on any
+/// REFUNDED or CANCELLED (voided) for a payment taken at the desk. Method ONLINE (Sprint 11): paid through Razorpay,
+/// recorded by its webhook only — PaymentReference is Razorpay's pay_… id, GatewayMethod how the guest paid (upi, card …),
+/// PaymentLinkId the link it paid; it may also be AUTHORIZED (not in hand yet) or FAILED. Allocated: put on folios; OnAccount: still not on any
 /// folio (an advance for the booking); Refundable: captured − already refunded. CanVoid / CantVoidReason: whether it can
 /// still be voided (nothing refunded, and cash only while its drawer session is open).
 /// </summary>
@@ -13,7 +15,8 @@ public sealed record PaymentDto(
     decimal Amount, decimal Allocated, decimal Refunded, decimal OnAccount, decimal Refundable, string Currency,
     string? PaymentReference, string? Note, Guid? CashDrawerSessionId, DateTimeOffset ReceivedAt, string? ReceivedByName,
     DateTimeOffset? VoidedAt, string? VoidedByName, string? VoidReason, bool CanVoid, string? CantVoidReason,
-    IReadOnlyList<PaymentAllocationDto> Allocations, IReadOnlyList<RefundDto> Refunds, IReadOnlyList<PaymentFolioDto> Folios);
+    IReadOnlyList<PaymentAllocationDto> Allocations, IReadOnlyList<RefundDto> Refunds, IReadOnlyList<PaymentFolioDto> Folios,
+    string? GatewayMethod = null, Guid? PaymentLinkId = null);
 
 /// <summary>Part of a payment on a folio. Refunded: what was refunded from that folio out of this payment.</summary>
 public sealed record PaymentAllocationDto(
@@ -64,7 +67,8 @@ public sealed record AllocationLine(Guid FolioId, decimal Amount);
 /// <summary>
 /// Gives money back (needs payment.refund, an Idempotency-Key header and a reason). Amount ≤ what is left to refund.
 /// FolioId: the folio it comes off (needed when the payment is on more than one folio and on account is not enough);
-/// Method: how the money goes back (default the payment's method; CASH comes out of the open drawer).
+/// Method: how the money goes back (default the payment's method; CASH comes out of the open drawer; ONLINE, only for an
+/// online payment, sends it back through Razorpay and stays PENDING until Razorpay confirms it).
 /// </summary>
 public sealed record RefundPaymentRequest(decimal Amount, string? Reason, string? Method = null, Guid? FolioId = null, string? Reference = null);
 
@@ -105,3 +109,59 @@ public sealed record CloseCashDrawerRequest(decimal CountedAmount, string? Note 
 
 /// <summary>Approves a short or over drawer (needs cash_drawer.approve_variance and a note, 3–500 characters).</summary>
 public sealed record ApproveVarianceRequest(string? Note);
+
+// ---------------------------------------------------------------- Razorpay payment links (Sprint 11)
+
+/// <summary>Creates a payment link for a booking (needs payment.create and an Idempotency-Key header): an order at
+/// Razorpay for Amount (₹1 up to what the booking still owes, less what open links already ask for). Note: shown to staff.</summary>
+public sealed record CreatePaymentLinkRequest(Guid ReservationId, decimal Amount, string? Note = null);
+
+/// <summary>Cancels an unpaid link (needs payment.create and a reason). The guest's page then says so; a payment that
+/// still arrives is recorded, because the money is real.</summary>
+public sealed record CancelPaymentLinkRequest(string? Reason);
+
+/// <summary>
+/// A payment link. Status CREATED (waiting for the guest), PAID (Razorpay's webhook confirmed a captured payment) or
+/// CANCELLED. PayPath: the guest's page, /pay/&lt;token&gt; on the staff app's address. Attempts / LastError: the guest's
+/// failed tries and Razorpay's reason for the last one. CallbackAt: when the guest's browser came back from Checkout (it
+/// changes only what the page shows). Events: the webhooks received for it, oldest first (on the link's own page only).
+/// </summary>
+public sealed record PaymentLinkDto(
+    Guid Id, Guid ReservationId, string Reference, string GuestName, string GatewayOrderId, decimal Amount, string Currency, string Status,
+    string PayPath, string? Note, int Attempts, string? LastError, DateTimeOffset? CallbackAt, Guid? PaymentId, string? PaymentNumber,
+    string? PaymentStatus, DateTimeOffset? PaidAt, DateTimeOffset CreatedAt, string? CreatedByName, DateTimeOffset? CancelledAt,
+    string? CancelledByName, string? CancelReason, IReadOnlyList<WebhookEventDto>? Events);
+
+/// <summary>A Razorpay webhook as received. Status PROCESSED, IGNORED (verified, nothing to do) or FAILED (our error; Razorpay
+/// retries it). Outcome: what it did, or why it changed nothing.</summary>
+public sealed record WebhookEventDto(Guid Id, string EventId, string EventType, string Status, string? Outcome, int Attempts, DateTimeOffset ReceivedAt);
+
+/// <summary>
+/// A booking's payment links and what it still owes: Due = the larger of the booking's price and its bills' total; Paid =
+/// payments that count, net of refunds; Owed = Due − Paid; Open = what unpaid links ask for. CanCreate / CantCreateReason:
+/// whether a new link can be sent now (and why not). Fake: the server uses the built-in fake Razorpay (no keys set).
+/// </summary>
+public sealed record BookingPaymentLinksDto(
+    Guid ReservationId, string Reference, decimal Due, decimal Paid, decimal Owed, decimal Open, bool CanCreate, string? CantCreateReason,
+    bool Fake, IReadOnlyList<PaymentLinkDto> Links);
+
+/// <summary>
+/// What the guest's pay page shows (anonymous, by the link's token). Status AWAITING_PAYMENT, CONFIRMING (the guest's
+/// browser says it paid, or Razorpay authorised it; waiting for the webhook), PAID, CANCELLED or CLOSED (the booking was
+/// cancelled). Message: the same, in words. KeyId and GatewayOrderId: what Razorpay Checkout needs (only while it can be
+/// paid). Fake: the built-in fake Razorpay is in use, so the page offers test buttons instead of Checkout.
+/// </summary>
+public sealed record PayPageDto(
+    string PropertyName, string BookingReference, string GuestName, DateOnly CheckIn, DateOnly CheckOut, decimal Amount, string Currency,
+    string Status, string Message, string? KeyId, string? GatewayOrderId, bool Fake, string? LastError, string? PaymentNumber,
+    DateTimeOffset? PaidAt);
+
+/// <summary>What Razorpay Checkout hands the browser after a payment. Only changes what the page shows: the webhook
+/// records the payment.</summary>
+public sealed record PayCallbackRequest(string? RazorpayPaymentId, string? RazorpayOrderId, string? RazorpaySignature);
+
+/// <summary>The fake Razorpay's checkout (development and tests only): pay the link, or fail with a reason.</summary>
+public sealed record FakeCheckoutRequest(bool Succeed = true, string? Method = null);
+
+/// <summary>The answer to Razorpay's webhook: processed, duplicate (already processed once) or ignored, and why.</summary>
+public sealed record WebhookAckDto(string Status, string Message);

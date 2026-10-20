@@ -3,31 +3,38 @@ using Resort.Domain.Common;
 namespace Resort.Domain.Payments;
 
 /// <summary>How the money came in (or went back). Card means the property's own terminal: we store its approval code at
-/// most, never card data (brief §3).</summary>
+/// most, never card data (brief §3). Online means paid through Razorpay (Sprint 11): only the webhook records it.</summary>
 public static class PaymentMethods
 {
     public const string Cash = "CASH";
     public const string Upi = "UPI";
     public const string Card = "CARD";
     public const string BankTransfer = "BANK_TRANSFER";
+    public const string Online = "ONLINE";
 
-    public static readonly string[] All = [Cash, Upi, Card, BankTransfer];
+    public static readonly string[] All = [Cash, Upi, Card, BankTransfer, Online];
 
-    /// <summary>"Cash", "UPI", "Card", "Bank transfer" — for descriptions and messages.</summary>
+    /// <summary>The methods staff record at the desk. Online payments come from Razorpay's webhook only.</summary>
+    public static readonly string[] Desk = [Cash, Upi, Card, BankTransfer];
+
+    /// <summary>"Cash", "UPI", "Card", "Bank transfer", "Online" — for descriptions and messages.</summary>
     public static string Words(string method) => method switch
     {
         Cash => "Cash",
         Upi => "UPI",
         Card => "Card",
         BankTransfer => "Bank transfer",
+        Online => "Online (Razorpay)",
         _ => method,
     };
 }
 
 /// <summary>
 /// The payment status machine (database table payment_status_transitions; docs/RAZORPAY.md). A payment taken at the desk
-/// is created CAPTURED; PENDING, AUTHORIZED and FAILED are for the online gateway (Sprint 11). CANCELLED is a voided
-/// payment: it counts for nothing.
+/// is created CAPTURED. An online payment (Sprint 11) is created AUTHORIZED or CAPTURED by Razorpay's webhook, and an
+/// authorised one becomes CAPTURED or FAILED. CANCELLED is a voided payment: it counts for nothing. A gateway refund
+/// that fails gives the money back, so an online payment may move from REFUNDED or PARTIALLY_REFUNDED back to
+/// PARTIALLY_REFUNDED or CAPTURED (<see cref="GatewayReturns"/>; the database allows it for ONLINE payments only).
 /// </summary>
 public static class PaymentStatuses
 {
@@ -44,7 +51,7 @@ public static class PaymentStatuses
     /// <summary>The allowed moves; null = the statuses a payment may be created in. Same graph as the database.</summary>
     public static readonly IReadOnlyDictionary<string, string[]> Transitions = new Dictionary<string, string[]>
     {
-        [""] = [Pending, Captured],
+        [""] = [Pending, Authorized, Captured],
         [Pending] = [Authorized, Captured, Failed, Cancelled],
         [Authorized] = [Captured, Failed, Cancelled],
         [Captured] = [PartiallyRefunded, Refunded, Cancelled],
@@ -55,6 +62,26 @@ public static class PaymentStatuses
     };
 
     public static bool CanMove(string? from, string to) => from == to || Transitions[from ?? ""].Contains(to);
+
+    /// <summary>The moves a failed gateway refund makes (online payments only).</summary>
+    public static readonly IReadOnlyDictionary<string, string[]> GatewayReturns = new Dictionary<string, string[]>
+    {
+        [Refunded] = [PartiallyRefunded, Captured],
+        [PartiallyRefunded] = [Captured],
+    };
+
+    /// <summary>
+    /// How far along an online payment is, so webhooks that arrive out of order can't move it backwards: a "captured"
+    /// that came before "authorized" stays captured, and a "failed" after "captured" changes nothing (docs/RAZORPAY.md).
+    /// </summary>
+    public static int GatewayRank(string? status) => status switch
+    {
+        null => 0,
+        Pending => 1,
+        Authorized => 2,
+        Failed => 3,
+        _ => 4,   // captured, refunded in part or in full, voided: the money arrived
+    };
 
     /// <summary>Money that was received and still counts on the bill (refunds are subtracted separately).</summary>
     public static readonly string[] Counted = [Captured, PartiallyRefunded, Refunded];
@@ -72,7 +99,7 @@ public static class PaymentStatuses
 
 public static class RefundStatuses
 {
-    /// <summary>Sent to the gateway, not confirmed yet (Sprint 11).</summary>
+    /// <summary>Sent to Razorpay, not confirmed yet (Sprint 11). Counts as refunded until it fails.</summary>
     public const string Pending = "PENDING";
     /// <summary>The money has gone back. Every refund made at the desk.</summary>
     public const string Processed = "PROCESSED";
@@ -98,12 +125,85 @@ public class Payment : AuditableEntity, IPropertyScoped, IAudited
     public string? Note { get; set; }
     /// <summary>The drawer session the cash went into (cash only).</summary>
     public Guid? CashDrawerSessionId { get; set; }
+    /// <summary>The payment link it paid (online payments only). <see cref="Reference"/> is then Razorpay's pay_… id.</summary>
+    public Guid? GatewayOrderId { get; set; }
+    /// <summary>How the guest paid at Razorpay: upi, card, netbanking, wallet … (online payments only; never card details).</summary>
+    public string? GatewayMethod { get; set; }
     public DateTimeOffset ReceivedAt { get; set; }
     public Guid? ReceivedBy { get; set; }
     public DateTimeOffset? CapturedAt { get; set; }
     public DateTimeOffset? VoidedAt { get; set; }
     public Guid? VoidedBy { get; set; }
     public string? VoidReason { get; set; }
+}
+
+public static class GatewayOrderStatuses
+{
+    /// <summary>Waiting for the guest to pay.</summary>
+    public const string Created = "CREATED";
+    /// <summary>Razorpay's webhook confirmed a captured payment.</summary>
+    public const string Paid = "PAID";
+    /// <summary>Cancelled by staff. A payment that still arrives is recorded (the money is real) and the link becomes PAID.</summary>
+    public const string Cancelled = "CANCELLED";
+}
+
+/// <summary>
+/// A payment link (Sprint 11): an order created at Razorpay for a booking and an amount, and the private link
+/// /pay/<see cref="PublicToken"/> the guest opens to pay it. Only the webhook marks it paid. Never deleted.
+/// </summary>
+public class PaymentGatewayOrder : AuditableEntity, IPropertyScoped, IAudited
+{
+    public const string Razorpay = "RAZORPAY";
+    public Guid OrganizationId { get; set; }
+    public Guid PropertyId { get; set; }
+    public Guid ReservationId { get; set; }
+    public string Gateway { get; set; } = Razorpay;
+    /// <summary>Razorpay's order_… id.</summary>
+    public string GatewayOrderId { get; set; } = default!;
+    public decimal Amount { get; set; }
+    public string Currency { get; set; } = "INR";
+    public string Status { get; set; } = GatewayOrderStatuses.Created;
+    public string PublicToken { get; set; } = default!;
+    public string? Note { get; set; }
+    /// <summary>Failed tries by the guest (card declined, UPI timed out …), and the last reason Razorpay gave.</summary>
+    public int Attempts { get; set; }
+    public string? LastError { get; set; }
+    /// <summary>When the guest's browser came back from Checkout. It only changes what the pay page shows.</summary>
+    public DateTimeOffset? CallbackAt { get; set; }
+    public Guid? PaymentId { get; set; }
+    public DateTimeOffset? PaidAt { get; set; }
+    public DateTimeOffset? CancelledAt { get; set; }
+    public Guid? CancelledBy { get; set; }
+    public string? CancelReason { get; set; }
+}
+
+public static class WebhookEventStatuses
+{
+    public const string Processed = "PROCESSED";
+    /// <summary>Verified, but nothing to do (not our order, already captured, an event we don't use …).</summary>
+    public const string Ignored = "IGNORED";
+    /// <summary>Our error while processing; processed again when Razorpay retries. Also the state of the row while the
+    /// event is being processed, inside the transaction that then marks it PROCESSED or IGNORED.</summary>
+    public const string Failed = "FAILED";
+}
+
+/// <summary>One verified webhook delivery, stored once per Razorpay event id. Not tenant-scoped: the webhook has no
+/// signed-in caller, and an event is matched to a property only through its payment link.</summary>
+public class WebhookEvent : Entity
+{
+    public string Provider { get; set; } = PaymentGatewayOrder.Razorpay;
+    public string EventId { get; set; } = default!;
+    public string EventType { get; set; } = default!;
+    public Guid? OrganizationId { get; set; }
+    public Guid? PropertyId { get; set; }
+    public Guid? GatewayOrderId { get; set; }
+    public Guid? PaymentId { get; set; }
+    public string Status { get; set; } = WebhookEventStatuses.Failed;
+    public string? Outcome { get; set; }
+    public string Payload { get; set; } = "{}";
+    public int Attempts { get; set; } = 1;
+    public DateTimeOffset ReceivedAt { get; set; }
+    public DateTimeOffset? ProcessedAt { get; set; }
 }
 
 /// <summary>Part of a payment put on a folio. Immutable.</summary>
@@ -131,6 +231,8 @@ public class Refund : AuditableEntity, IPropertyScoped, IAudited
     public string Reason { get; set; } = default!;
     public string? Reference { get; set; }
     public Guid? CashDrawerSessionId { get; set; }
+    /// <summary>Razorpay's rfnd_… id when the money went back online (one Razorpay refund can cover several rows).</summary>
+    public string? GatewayRefundId { get; set; }
     public DateTimeOffset RefundedAt { get; set; }
     public Guid? RefundedBy { get; set; }
 }
@@ -246,6 +348,11 @@ public static class PaymentMath
         }
         return best;
     }
+
+    /// <summary>Rupees to paise for the gateway (amounts are whole paise; checked by the validators).</summary>
+    public static long ToPaise(decimal rupees) => (long)decimal.Round(rupees * 100m, 0, MidpointRounding.AwayFromZero);
+
+    public static decimal FromPaise(long paise) => paise / 100m;
 
     public static bool Luhn(ReadOnlySpan<char> digits)
     {
