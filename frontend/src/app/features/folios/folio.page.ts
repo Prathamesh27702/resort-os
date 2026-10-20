@@ -6,19 +6,22 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth.service';
 import { toProblem } from '../../core/http';
-import { Folio, FolioItem } from '../../core/models';
+import { Folio, FolioItem, FolioPaymentLine, Payment } from '../../core/models';
 import { PropertyContext, inZone } from '../../core/property-context';
 import { statusClass, statusLabel } from '../reservations/reservations.api';
 import { shortDate } from '../rooms/rooms.api';
 import { pct, taxText } from '../settings/gst/gst.api';
 import { dayLabel, rupeesExact } from '../settings/rates/rates.api';
+import { TakePaymentDialog } from '../payments/payment-dialogs';
+import { methodLabel } from '../payments/payments.api';
 import { PostChargeDialog, ReverseChargeDialog, SplitFolioDialog, SplitResult } from './folio-dialogs';
 import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from './folios.api';
 
 /**
  * One bill (Sprint 8): every line in date order, what it adds up to by category, and the balance. Lines are never edited
  * or deleted: a reversed charge stays on the bill, struck through, next to its reversal and the reason. Staff post
- * charges and move lines to another folio; managers (folio.adjust) reverse.
+ * charges and move lines to another folio; managers (folio.adjust) reverse. Sprint 10: payments and refunds on the bill
+ * are listed under it, and the balance is what is still owed after them.
  */
 @Component({
   selector: 'app-folio',
@@ -35,6 +38,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
               {{ dayLabel(f.checkIn) }} – {{ dayLabel(f.checkOut) }}@if (!f.isPrimary) { · {{ f.name }} }</p>
           </div>
           <div class="head-actions">
+            @if (canPay()) { <button mat-flat-button (click)="pay()" [disabled]="busy()"><mat-icon>payments</mat-icon>Take payment</button> }
             @if (canPost() && f.canPost) { <button mat-flat-button (click)="post()" [disabled]="busy()"><mat-icon>add</mat-icon>Post charge</button> }
             @if (canPost() && f.canPost && live().length) {
               <button mat-stroked-button (click)="split()" [disabled]="busy()"><mat-icon>call_split</mat-icon>Move lines</button>
@@ -53,7 +57,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
 
         <div class="sums">
           <div class="balance"><span>Balance</span><b class="num" [class.owed]="f.balance > 0" data-testid="balance">{{ money(f.balance) }}</b>
-            <small class="mute">GST included where it applies. Payments arrive in Sprint 10.</small></div>
+            <small class="mute">GST included where it applies.@if (f.balance < 0) { Paid more than the bill: refund the difference from the payment. }</small></div>
           <dl>
             <dt>Charges</dt><dd class="num">{{ money(f.charges) }}</dd>
             <dt>Reversals</dt><dd class="num">{{ money(f.reversals) }}</dd>
@@ -100,6 +104,26 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
             }
           </table>
         </div>
+
+        <h2>Payments</h2>
+        <div class="panel">
+          <table class="data" aria-label="Payments on this bill">
+            <thead><tr><th>Payment</th><th class="hide-sm">When</th><th class="right">Amount</th></tr></thead>
+            <tbody>
+              @for (p of f.paymentLines; track (p.refundId ?? p.paymentId)) {
+                <tr [class.reversed]="p.voided" [class.reversal]="p.kind === 'REFUND'" [attr.data-payment-line]="p.paymentNumber + (p.kind === 'REFUND' ? '-refund' : '')">
+                  <td><a [routerLink]="['/payments', p.paymentId]" class="num"><b>{{ p.paymentNumber }}</b></a>
+                    {{ p.kind === 'REFUND' ? 'Refund' : 'Payment' }} · {{ methodLabel(p.method) }}@if (p.voided) { · voided }
+                    @if (p.detail) { <br /><small [class]="p.kind === 'REFUND' ? 'why' : 'mute'">{{ p.detail }}</small> }</td>
+                  <td class="hide-sm">{{ time(p.at) }}@if (p.byName) { <br /><small class="mute">{{ p.byName }}</small> }</td>
+                  <td class="right num"><b>{{ lineMoney(p) }}</b></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" class="empty">No payment on this bill yet.@if (canPay()) { Use Take payment when the guest pays. }</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
       } @else if (error()) {
         <div class="page-head"><div><a routerLink="/folios" class="back">Folios</a><h1>Folio</h1></div></div>
         <p class="err" role="alert">{{ error() }}</p>
@@ -108,6 +132,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
   `,
   styles: `
     .wide { max-width: 1100px; }
+    h2 { margin: 20px 0 8px; }
     .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .folios { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
     .folios a { padding: 6px 12px; border: 1px solid #d9e0de; border-radius: 16px; color: #1b2a2e; text-decoration: none; background: #fff; }
@@ -154,9 +179,13 @@ export class FolioPage {
   busy = signal(false);
   live = computed(() => liveCharges(this.f()?.items ?? []));
   canPost = computed(() => { this.auth.me(); return this.auth.can('folio.post_charge', this.props.current()?.id); });
+  canPay = computed(() => { this.auth.me(); return this.auth.can('payment.create', this.props.current()?.id); });
   canReverse = computed(() => { this.auth.me(); return this.auth.can('folio.adjust', this.props.current()?.id); });
 
   money = rupeesExact;
+  methodLabel = methodLabel;
+  /** A refund reads as money going back; a payment as money in. */
+  lineMoney = (p: FolioPaymentLine) => (p.kind === 'REFUND' ? '− ' : '') + rupeesExact(Math.abs(p.amount));
   shortDate = shortDate;
   dayLabel = dayLabel;
   statusLabel = statusLabel;
@@ -189,6 +218,16 @@ export class FolioPage {
         if (!r) return;
         this.f.set(r);
         this.snack.open(`Posted to ${r.number}. Balance ${rupeesExact(r.balance)}`, undefined, { duration: 3000 });
+      });
+  }
+
+  pay() {
+    this.dialog.open(TakePaymentDialog, { data: { propertyId: this.pid(), folio: this.f()! }, autoFocus: 'first-tabbable' })
+      .afterClosed().subscribe((p: Payment | undefined) => {
+        if (!p) return;
+        this.load(this.f()!.id);
+        this.snack.open(p.onAccount > 0 && p.allocated === 0 ? `${p.number}: ${rupeesExact(p.amount)} taken on account`
+          : `${p.number}: ${rupeesExact(p.amount)} paid`, undefined, { duration: 3000 });
       });
   }
 

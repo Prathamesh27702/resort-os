@@ -204,7 +204,7 @@ export interface CalendarRoom {
   id: string; code: string; name: string; accommodationTypeId: string; accommodationTypeName: string; inventoryMode: InventoryMode;
   maxOccupancy: number; floor: string | null; isActive: boolean; beds: CalendarBed[];
 }
-/** One room (or dorm bed) of a booking for [startDate, endDate). paymentStatus: NONE until payments arrive (Sprint 10). */
+/** One room (or dorm bed) of a booking for [startDate, endDate). paymentStatus: NONE, PARTIAL or PAID from the payments taken (Sprint 10). */
 export interface CalendarBooking {
   reservationUnitId: string; reservationId: string; reference: string; status: ReservationStatus; unitId: string; bedId: string | null;
   startDate: string; endDate: string; guestName: string; adults: number; children: number; sourceName: string;
@@ -259,12 +259,19 @@ export interface FolioItem {
 /** One tax on a bill line, as calculated when it was posted (Sprint 9): CGST 2.5% on ₹1,450 = ₹36.25. */
 export interface FolioItemTax { code: TaxCode; rate: number; taxableValue: number; amount: number; taxRuleId: string | null; }
 export interface FolioSummary { id: string; number: string; name: string; isPrimary: boolean; total: number; balance: number; }
-/** A bill: total = sum of lines, GST included (Sprint 9); balance = total − payments (payments arrive in Sprint 10). */
+/** A bill: total = sum of lines, GST included (Sprint 9); payments = what it has been paid, net of refunds (Sprint 10);
+ *  balance = total − payments (negative: in credit). */
 export interface Folio {
   id: string; number: string; name: string; isPrimary: boolean; reservationId: string; reference: string; reservationStatus: ReservationStatus;
   guestId: string; guestName: string; billToGuestId: string | null; billToName: string | null; checkIn: string; checkOut: string; rooms: string;
   currency: string; items: FolioItem[]; categories: { category: ChargeCategory; amount: number }[]; charges: number; reversals: number;
   tax: number; total: number; payments: number; balance: number; folios: FolioSummary[]; canPost: boolean; cantPostReason: string | null;
+  paymentLines: FolioPaymentLine[];
+}
+/** A payment (+) or refund (−) on a bill. Voided: the payment was voided and counts for nothing. */
+export interface FolioPaymentLine {
+  paymentId: string; paymentNumber: string; refundId: string | null; kind: 'PAYMENT' | 'REFUND'; method: PaymentMethod; amount: number; at: string;
+  byName: string | null; detail: string | null; voided: boolean;
 }
 export interface FolioListItem {
   id: string; number: string; name: string; isPrimary: boolean; reservationId: string; reference: string; reservationStatus: ReservationStatus;
@@ -300,3 +307,45 @@ export interface TaxCalculation {
   placeOfSupply: string | null; intraState: boolean; category: TaxCategory | null; rule: TaxRule | null; slab: TaxSlab | null;
   components: TaxComponent[]; tax: number; total: number;
 }
+
+// ---------------------------------------------------------------- payments and the cash drawer (Sprint 10)
+
+export type PaymentMethod = 'CASH' | 'UPI' | 'CARD' | 'BANK_TRANSFER';
+export type PaymentStatus = 'PENDING' | 'AUTHORIZED' | 'CAPTURED' | 'FAILED' | 'REFUNDED' | 'PARTIALLY_REFUNDED' | 'CANCELLED';
+
+/** A payment with what became of it: on folios (allocated), on account (an advance), refunded, or voided (CANCELLED). */
+export interface Payment {
+  id: string; number: string; reservationId: string; reference: string; guestName: string; method: PaymentMethod; status: PaymentStatus;
+  amount: number; allocated: number; refunded: number; onAccount: number; refundable: number; currency: string;
+  paymentReference: string | null; note: string | null; cashDrawerSessionId: string | null; receivedAt: string; receivedByName: string | null;
+  voidedAt: string | null; voidedByName: string | null; voidReason: string | null; canVoid: boolean; cantVoidReason: string | null;
+  allocations: PaymentAllocation[]; refunds: Refund[]; folios: PaymentFolio[];
+}
+export interface PaymentAllocation {
+  id: string; folioId: string; folioNumber: string; folioName: string; amount: number; refunded: number; allocatedAt: string; allocatedByName: string | null;
+}
+export interface Refund {
+  id: string; paymentId: string; paymentNumber: string; folioId: string | null; folioNumber: string | null; amount: number; method: PaymentMethod;
+  status: 'PENDING' | 'PROCESSED' | 'FAILED'; reason: string; reference: string | null; refundedAt: string; refundedByName: string | null;
+}
+export interface PaymentFolio { id: string; number: string; name: string; isPrimary: boolean; balance: number; }
+export interface PaymentListItem {
+  id: string; number: string; reservationId: string; reference: string; guestName: string; method: PaymentMethod; status: PaymentStatus;
+  amount: number; refunded: number; onAccount: number; paymentReference: string | null; receivedAt: string; receivedByName: string | null;
+  folios: string | null;
+}
+export interface PaymentMethodTotal { method: PaymentMethod; count: number; received: number; refunded: number; net: number; }
+export interface PaymentList extends Paged<PaymentListItem> { byMethod: PaymentMethodTotal[]; received: number; refundedTotal: number; net: number; }
+
+export type DrawerStatus = 'OPEN' | 'VARIANCE_PENDING' | 'CLOSED';
+export interface CashDrawerSession {
+  id: string; cashDrawerId: string; drawerName: string; status: DrawerStatus; openedAt: string; openedByName: string | null; openingFloat: number;
+  openNote: string | null; cashIn: number; cashOut: number; expected: number; payments: number; closedAt: string | null; closedByName: string | null;
+  counted: number | null; variance: number | null; closeNote: string | null; approvedAt: string | null; approvedByName: string | null;
+  approvalNote: string | null; movements: CashDrawerMovement[] | null;
+}
+export interface CashDrawerMovement {
+  id: string; movementType: 'OPENING_FLOAT' | 'PAYMENT' | 'REFUND' | 'VOID' | 'PAY_IN' | 'PAY_OUT'; amount: number; description: string;
+  paymentId: string | null; paymentNumber: string | null; reference: string | null; movedAt: string; byName: string | null;
+}
+export interface CashDrawer { id: string; name: string; current: CashDrawerSession | null; pendingApproval: CashDrawerSession[]; recent: CashDrawerSession[]; }

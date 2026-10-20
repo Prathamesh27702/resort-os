@@ -28,7 +28,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
             </a>
           }
         </nav>
-        <p class="later">Billing, kitchen and staff modules arrive in later sprints.</p>
+        <p class="later">Invoices, kitchen and staff modules arrive in later sprints.</p>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -115,6 +115,7 @@ export class Shell {
     { label: 'Reservations', icon: 'event_available', link: '/reservations', perm: 'reservation.read', exact: true },
     { label: 'Calendar', icon: 'calendar_month', link: '/reservations/calendar', perm: 'reservation.read' },
     { label: 'Folios', icon: 'receipt_long', link: '/folios', perm: 'folio.read' },
+    { label: 'Payments', icon: 'payments', link: '/payments', perm: 'payment.read' },
     { label: 'Guests', icon: 'group', link: '/guests', perm: 'guest.read' },
     { label: 'Rooms', icon: 'bed', link: '/rooms', perm: 'accommodation.read', exact: true },
     { label: 'Room status', icon: 'grid_view', link: '/rooms/status', perm: 'accommodation.read' },
