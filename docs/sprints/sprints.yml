@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 10
+current: 11
 
 sprints:
 
@@ -902,7 +902,7 @@ sprints:
 - id: 10
   title: Payments, refunds, cash drawer
   phase: 3
-  status: in-progress
+  status: done
   size: M
   module: Payments
   feature: payments
@@ -910,7 +910,7 @@ sprints:
   goal: Record cash/UPI/card/bank payments, allocate them to folios, refund safely, reconcile the cash drawer (brief §21, §39).
   client: "Cash, UPI, card and bank payments are recorded against the bill, refunds are controlled, and the cash drawer balances at shift end."
   progress:
-    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    now: "Accepted by the owner on 20 Oct 2026 and released to main (tag sprint-10)."
     done:
       - "Migration V012: payments (P00001 numbers; CASH, UPI, CARD, BANK_TRANSFER; status machine in a table and a trigger), payment_allocations (what part of a payment is on which bill), refunds (reason required), cash_drawers (one Front desk drawer per property), cash_drawer_sessions (OPEN, VARIANCE_PENDING, CLOSED; one open shift per drawer) and cash_drawer_movements (every rupee in and out of the drawer); nothing can be deleted, and only a payment's status and void fields can change"
       - "No card data: a card reference that holds 13 or more digits in a row is refused by the database, and anything that looks like a card number (13–19 digits passing the Luhn check) is refused under its field by the API and the form"
@@ -962,11 +962,33 @@ sprints:
     - "A cash payment or refund is refused with \"cash drawer isn't open\": open a shift on the front desk (Cash drawer → Open drawer); a cash refund is also capped at what the drawer should hold now."
   demo:
     - Take cash + UPI → partial refund → close drawer with ₹50 short
+  handbook:
+    highlights:
+      - "Cash, UPI, card and bank transfer payments are recorded on the guest's bill, or taken in advance on account"
+      - "Refunds need a reason and a manager or accountant, and can never give back more than was paid"
+      - "The cash drawer is opened with the cash counted in it and closed against a count; a shortfall needs a reason and a manager's approval"
+      - "Card numbers are never stored: anything that looks like one is refused"
+      - "Payments, refunds and drawer shifts are never deleted; every change is in the audit trail"
+      - "Bill balances, check-out and the calendar now show what has really been paid"
+    design:
+      ui: "Payments (menu) lists every payment with totals by method, filters and search, and the cash drawer panel; a payment's page shows its bills, what is on account and its refunds, with Refund, Void and Put on a bill. On a bill, Take payment chooses the method and whether the money goes on the bill or on account; the bill lists its payments and refunds. The front desk shows the cash drawer: Open drawer, Close drawer with the difference shown as you type, and Approve for managers. Every mistake is explained under its field."
+      api: "GET|POST /properties/{id}/payments (list with totals; take money with an Idempotency-Key), GET /payments/{id}, POST /payments/{id}/allocate, /refund (reason, Idempotency-Key) and /void (reason); GET /cash-drawer, POST /cash-drawer/open, /close and /sessions/{id}/approve-variance. Refunds lock the booking, the payment and the cash shift in that order, so two refunds at once can't exceed the payment."
+      database: "Migration V012 adds payments (status machine enforced by a trigger), payment_allocations, refunds, cash_drawers, cash_drawer_sessions and cash_drawer_movements (the drawer's ledger). Nothing can be deleted; a trigger locks the payment row and refuses any allocation or refund that would overspend it; no column can hold card data."
+    diagrams:
+      - {file: tools/handbooks/assets/payment-flow.png, caption: "How two refunds at once are kept within the payment, and how a cash drawer shift balances"}
+    screenshots:
+      - {file: docs/sprints/sprint-10-screens/01-drawer-open.png, caption: "The cash drawer on the front desk, opened with ₹5,000"}
+      - {file: docs/sprints/sprint-10-screens/04-bill-paid.png, caption: "A bill paid in cash and UPI: the balance is nil"}
+      - {file: docs/sprints/sprint-10-screens/03-card-number-refused.png, caption: "A card number is refused: card details are never stored"}
+      - {file: docs/sprints/sprint-10-screens/05-refund.png, caption: "A refund needs a reason"}
+      - {file: docs/sprints/sprint-10-screens/07-close-short.png, caption: "Closing the drawer ₹50 short, with the reason"}
+      - {file: docs/sprints/sprint-10-screens/09-payments.png, caption: "Payments: the day's totals by method"}
+      - {file: docs/sprints/sprint-10-screens/10-phone.png, caption: "On a phone: payments stay readable"}
 
 - id: 11
   title: Razorpay
   phase: 3
-  status: planned
+  status: in-progress
   size: M
   module: Payments
   feature: payments
