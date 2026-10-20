@@ -195,4 +195,32 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var tax = (await res.Content.ReadFromJsonAsync<TaxCalculationDto>())!;
         Assert.Equal((true, 30m, 630m, "30AABCT1234C1Z9"), (tax.Taxed, tax.Tax, tax.Total, tax.Gstin));
     }
+
+    /// <summary>Sprint 10: yesterday's drawer shift is closed and balanced with R00007's ₹500 cash on its bill; R00002's ₹2,000
+    /// UPI advance is on account; no shift is left open, so opening today's drawer is part of the demo.</summary>
+    [Fact]
+    public async Task Dev_seed_has_a_closed_drawer_shift_a_cash_payment_on_a_bill_and_an_advance_on_account()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var drawer = await owner.GetJsonAsync<CashDrawerDto>($"/api/v1/properties/{pid}/cash-drawer");
+        Assert.Null(drawer.Current);
+        var shift = Assert.Single(drawer.Recent);
+        Assert.Equal(("CLOSED", 5000m, 500m, 5500m, 0m), (shift.Status, shift.OpeningFloat, shift.CashIn, shift.Counted!.Value, shift.Variance!.Value));
+
+        var payments = await owner.GetJsonAsync<PaymentListDto>($"/api/v1/properties/{pid}/payments");
+        Assert.Equal(new[] { ("P00001", "R00007", "CASH", 0m), ("P00002", "R00002", "UPI", 2000m) },
+            payments.Items.OrderBy(p => p.Number).Select(p => (p.Number, p.Reference, p.Method, p.OnAccount)));
+        var inHouse = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios");
+        var r7 = await owner.GetJsonAsync<FolioDto>($"/api/v1/properties/{pid}/folios/{inHouse.Items.Single(f => f.Reference == "R00007").Id}");
+        Assert.Equal((500m, r7.Total - 500m), (r7.Payments, r7.Balance));
+
+        // the next payment is numbered after the seeded ones
+        var next = await app.WithDbAsync(db => db.Database.SqlQuery<long>(
+            $"SELECT last_value AS \"Value\" FROM property_counters WHERE property_id = {pid} AND name = 'payment'").SingleAsync());
+        Assert.Equal(2L, next);
+    }
 }

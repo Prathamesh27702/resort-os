@@ -17,7 +17,7 @@ namespace Resort.Application.Reservations;
 ///   blocks                       ix_unit_blocks_property_active (property_id, start_date, end_date) WHERE status = 'ACTIVE'
 /// then the guests and sources those bookings name, by id.
 /// </summary>
-public sealed class CalendarService(IAppDbContext db, TimeProvider clock)
+public sealed class CalendarService(IAppDbContext db, TimeProvider clock, Payments.PaymentLedger ledger)
 {
     /// <summary>The widest window one request may ask for: a month view plus a few days either side.</summary>
     public const int MaxDays = 62;
@@ -90,20 +90,29 @@ public sealed class CalendarService(IAppDbContext db, TimeProvider clock)
             .Select(b => new CalendarBlockDto(b.Id, b.UnitId, b.BedId, b.BlockType, b.StartDate, b.EndDate, b.Reason))
             .ToListAsync(ct);
 
+        var reservationIds = rows.Select(r => r.ReservationId).Distinct().ToList();
+        var paid = await ledger.PaidByReservationAsync(reservationIds, ct);
+        var billed = await db.FolioItems.AsNoTracking().Where(i => reservationIds.Contains(i.ReservationId)).GroupBy(i => i.ReservationId)
+            .Select(g => new { g.Key, Sum = g.Sum(i => i.Total) }).ToDictionaryAsync(x => x.Key, x => x.Sum, ct);
+
         var bookings = rows.OrderBy(r => r.StartDate).ThenBy(r => r.Reference, StringComparer.Ordinal)
             .Select(r => new CalendarBookingDto(r.Id, r.ReservationId, r.Reference, r.Status, r.UnitId, r.BedId, r.StartDate, r.EndDate,
                 guests.GetValueOrDefault(r.PrimaryGuestId, "Guest"), r.Adults, r.Children, sources.GetValueOrDefault(r.SourceId, ""),
-                PaymentStatuses.None, r.TotalAmount, r.Version))
+                BookingPaymentStatuses.Of(paid[r.ReservationId], Math.Max(r.TotalAmount, billed.GetValueOrDefault(r.ReservationId))),
+                r.TotalAmount, r.Version))
             .ToList();
 
         return new CalendarDto(f, t, property.LocalDate(clock.GetUtcNow()), rooms, bookings, blocks);
     }
 }
 
-/// <summary>A booking's payment state as the calendar shows it. Only NONE exists until payments are recorded (Sprint 10).</summary>
-public static class PaymentStatuses
+/// <summary>A booking's payment state as the calendar shows it (Sprint 10): NONE when nothing is paid, PAID when what is
+/// paid covers the booking's price or its bills (whichever is more), PARTIAL in between.</summary>
+public static class BookingPaymentStatuses
 {
     public const string None = "NONE";
     public const string Partial = "PARTIAL";
     public const string Paid = "PAID";
+
+    public static string Of(decimal paid, decimal owed) => paid <= 0 ? None : paid >= owed ? Paid : Partial;
 }

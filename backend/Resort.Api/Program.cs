@@ -164,6 +164,7 @@ app.MapReservationEndpoints();
 app.MapFrontDeskEndpoints();
 app.MapFolioEndpoints();
 app.MapTaxEndpoints();
+app.MapPaymentEndpoints();
 
 app.Run();
 

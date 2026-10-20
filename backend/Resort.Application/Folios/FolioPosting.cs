@@ -239,8 +239,8 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
             });
     }
 
-    /// <summary>What the booking owes on all its folios: the sum of every line (payments arrive in Sprint 10).</summary>
-    public async Task<decimal> BalanceAsync(Guid reservationId, CancellationToken ct) =>
+    /// <summary>What the booking's folios add up to: the sum of every line, before payments.</summary>
+    public async Task<decimal> TotalAsync(Guid reservationId, CancellationToken ct) =>
         await db.FolioItems.IgnoreQueryFilters().Where(i => i.ReservationId == reservationId).SumAsync(i => (decimal?)i.Total, ct) ?? 0m;
 
     internal static string Trim(string s) => s.Length <= 200 ? s : s[..197] + "…";
@@ -248,11 +248,12 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
     private static DateOnly Min(DateOnly a, DateOnly b) => a < b ? a : b;
 }
 
-/// <summary>What a reservation owes for the check-out rule: the sum of its folios (Sprint 8). Payments (Sprint 10) will
-/// be subtracted here.</summary>
-public sealed class FolioBalances(FolioPosting posting) : FrontDesk.IFolioBalances
+/// <summary>What a reservation owes for the check-out rule: the sum of its folios (Sprint 8) minus everything paid for
+/// it, on its folios or on account (Sprint 10).</summary>
+public sealed class FolioBalances(FolioPosting posting, Payments.PaymentLedger ledger) : FrontDesk.IFolioBalances
 {
-    public Task<decimal> BalanceAsync(Guid reservationId, CancellationToken ct) => posting.BalanceAsync(reservationId, ct);
+    public async Task<decimal> BalanceAsync(Guid reservationId, CancellationToken ct) =>
+        await posting.TotalAsync(reservationId, ct) - await ledger.PaidForReservationAsync(reservationId, ct);
 }
 
 /// <summary>Runs the nightly room charge posting for every checked-in booking (the job calls it every few minutes;

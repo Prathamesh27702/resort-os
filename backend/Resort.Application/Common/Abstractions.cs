@@ -8,6 +8,7 @@ using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
+using Resort.Domain.Payments;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
 using Resort.Domain.Tax;
@@ -63,6 +64,12 @@ public interface IAppDbContext
     DbSet<TaxCategory> TaxCategories { get; }
     DbSet<TaxRule> TaxRules { get; }
     DbSet<TaxRuleSlab> TaxRuleSlabs { get; }
+    DbSet<Payment> Payments { get; }
+    DbSet<PaymentAllocation> PaymentAllocations { get; }
+    DbSet<Refund> Refunds { get; }
+    DbSet<CashDrawer> CashDrawers { get; }
+    DbSet<CashDrawerSession> CashDrawerSessions { get; }
+    DbSet<CashDrawerMovement> CashDrawerMovements { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

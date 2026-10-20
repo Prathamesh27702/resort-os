@@ -11,6 +11,7 @@ using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
+using Resort.Domain.Payments;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
 using Resort.Domain.Tax;
@@ -73,6 +74,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
     public DbSet<TaxRule> TaxRules => Set<TaxRule>();
     public DbSet<TaxRuleSlab> TaxRuleSlabs => Set<TaxRuleSlab>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<PaymentAllocation> PaymentAllocations => Set<PaymentAllocation>();
+    public DbSet<Refund> Refunds => Set<Refund>();
+    public DbSet<CashDrawer> CashDrawers => Set<CashDrawer>();
+    public DbSet<CashDrawerSession> CashDrawerSessions => Set<CashDrawerSession>();
+    public DbSet<CashDrawerMovement> CashDrawerMovements => Set<CashDrawerMovement>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -307,6 +314,44 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.ToTable("tax_rule_slabs");
             e.Property(x => x.UpTo).HasColumnType("numeric(12,2)");
             e.Property(x => x.Rate).HasColumnType("numeric(5,2)");
+        });
+
+        // ---- Sprint 10: payments, refunds and the cash drawer (database/migrations/V012__payments.sql)
+        b.Entity<CashDrawer>().ToTable("cash_drawers");
+        b.Entity<CashDrawerSession>(e =>
+        {
+            e.ToTable("cash_drawer_sessions");
+            e.HasOne<CashDrawer>().WithMany().HasForeignKey(x => x.CashDrawerId);
+            foreach (var m in new[] { nameof(CashDrawerSession.OpeningFloat), nameof(CashDrawerSession.ExpectedAmount),
+                         nameof(CashDrawerSession.CountedAmount), nameof(CashDrawerSession.Variance) })
+                e.Property(m).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<Payment>(e =>
+        {
+            e.ToTable("payments");
+            e.Property(x => x.Currency).HasColumnType("char(3)");
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<PaymentAllocation>(e =>
+        {
+            e.ToTable("payment_allocations");
+            // Declared so EF inserts a new payment before its allocations, refunds and drawer movements.
+            e.HasOne<Payment>().WithMany().HasForeignKey(x => x.PaymentId);
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<Refund>(e =>
+        {
+            e.ToTable("refunds");
+            e.HasOne<Payment>().WithMany().HasForeignKey(x => x.PaymentId);
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<CashDrawerMovement>(e =>
+        {
+            e.ToTable("cash_drawer_movements");
+            e.HasOne<CashDrawerSession>().WithMany().HasForeignKey(x => x.SessionId);
+            e.HasOne<Payment>().WithMany().HasForeignKey(x => x.PaymentId);
+            e.HasOne<Refund>().WithMany().HasForeignKey(x => x.RefundId);
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
         });
 
         foreach (var entity in b.Model.GetEntityTypes())
