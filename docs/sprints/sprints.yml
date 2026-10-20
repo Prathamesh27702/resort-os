@@ -1017,9 +1017,9 @@ sprints:
       - "frontend/e2e/sprint-11.spec.ts; scripts/check-api.mjs (Sprint 11 checks); .env.example"
       - "docs/RAZORPAY.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-11.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-11-screens/; tools/handbooks/diagrams (razorpay-flow)"
     results:
-      - "RESULTS_BACKEND"
+      - "Backend: 340 passed, 0 failed on real PostgreSQL 16 (24 new: RazorpayTests with the demo, duplicate delivery processed once (also two at the same moment), bad signature → 401 with nothing stored, captured before authorised, a declined try, a cancelled link paid anyway, the guest page and fake checkout, link limits and idempotency, permissions and tenants, retries and timeouts, online refunds processed and failed, the database refusing edits and deletes; RazorpayUnitTests with HMAC vectors, paise and the forward-only rank)"
       - "Frontend: 81 of 81 unit tests passed (9 new: Razorpay helpers, the send-link dialog's limits and card-number check, the guest page's test buttons, polling while confirming and an invalid link); ESLint clean; production build OK"
-      - "RESULTS_E2E"
+      - "Browser tests: 96 of 96 passed (Sprints 01–10 plus the 6 new Sprint 11 steps: send a link with the amount checked, the guest page on a phone with a declined try, pay, the booking confirmed with the webhook history, a ₹500 refund through Razorpay, a bad signature and a cancelled link); API checks 147 of 147 (16 new); database checks clean; screenshots in docs/sprints/sprint-11-screens. Real Razorpay test mode is for the owner's review (needs their test keys and a tunnel)"
   scope:
     tables: [payment_gateway_orders, webhook_events]
     api:

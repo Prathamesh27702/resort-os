@@ -532,7 +532,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: BACKEND_TOTAL backend passed, 81 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 340 backend passed, 81 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -559,7 +559,7 @@ Expected totals for Sprints 01–11:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | BACKEND_TOTAL passed, 0 failed |
+| Backend tests | 340 passed, 0 failed |
 | Frontend unit tests | 81 of 81 SUCCESS |
 | Browser tests | 96 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7 + 7 + 6) |
 | API checks | 0 failed |
