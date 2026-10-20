@@ -278,6 +278,40 @@ How it works: [system-design.md → 4.19](../architecture/system-design.md#419-g
 | 17 | Phone width (390 px) → GST | Registration, rules and *Try a charge* fit the screen |
 | 18 | **Before go-live** (not part of the review) | Your accountant checks every seeded rule against its notification and presses **Verify**; the notification numbers and dates were entered from public sources and must be confirmed |
 
+### Sprint 10 — payments, refunds and the cash drawer
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V012__payments` and
+`Dev seed S009__payments`). The demo data has yesterday's closed drawer shift (float ₹5,000, R00007 paid ₹500 in cash,
+counted ₹5,500) and a ₹2,000 UPI advance on account for R00002 (arriving tomorrow). No shift is open. Sign in as a
+**receptionist** (the account from Sprint 01) for steps 1–7, then as the **owner** (or a manager) in a second window.
+Screenshots: [sprint-10-screens/](sprint-10-screens/). The browser tests do the demo for you:
+`cd frontend; npm run e2e:headed -- e2e/sprint-10.spec.ts` (names S10-01 … S10-07). Database checks:
+`database/queries/check-sprint-10.sql`. How it works:
+[system-design.md → 4.20](../architecture/system-design.md#420-refunds-that-cant-overspend-and-a-cash-drawer-that-balances).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Front desk** | A *Cash drawer* panel above the lists: *Front desk drawer closed*, *Last shift closed* yesterday, and **Open drawer** |
+| 2 | **Open drawer** → Cash in the drawer *5000* → **Open drawer** | *Drawer open with ₹5,000.00*; the panel says *open*, since now, with your name, and *Should hold ₹5,000.00* |
+| 3 | **Folios** → R00008's main bill → **Take payment** | A dialog with what the bill owes; methods *Cash, UPI, Card, Bank transfer*; *Pay this bill* or *On account (advance)*; the amount filled with what is owed |
+| 4 | **The demo.** *Cash*, Amount *1000* → **Take ₹1,000.00** | *P000… : ₹1,000.00 paid*; the balance drops by ₹1,000; under *Payments* the line *Payment · Cash* with your name |
+| 5 | **Take payment** → *Card*, Approval code *4111 1111 1111 1111* → **Take** | Under the field: *This looks like a card number, and card details are never stored. Take it out.* Nothing is sent. Card details are never stored anywhere |
+| 6 | Switch to *UPI*, UPI transaction id *428915736012* (amount: the rest) → **Take** | The balance is **₹0.00**; two payment lines; the UPI one shows the UTR |
+| 7 | Click the cash payment's number | The payment page: *Received*, on the bill, *Can still be refunded ₹1,000.00*; **no Refund button** (receptionists can't refund) |
+| 8 | **As the owner**, the same payment → **Refund** → Amount *200* → **Refund** with no reason | Under *Reason*: *Say why the money is refunded (at least 3 characters), e.g. Guest cancelled the airport transfer.* |
+| 9 | Reason *Guest cancelled the airport transfer*, Paid back by *Cash* → **Refund** | *Refunded. ₹800.00 can still be refunded*; status *Part refunded*; the refund with its reason, your name and the time. The bill now owes ₹200.00 and shows the refund as *− ₹200.00* |
+| 10 | **Refund** again with Amount *900* | Under *Amount*: *Enter an amount from ₹0.01 to ₹800.00.* (the API refuses it too: *… so at most ₹800 can be refunded*). **Cancel** |
+| 11 | **As the receptionist**, Front desk | *Should hold ₹5,800.00* (₹5,000 + ₹1,000 − ₹200) |
+| 12 | **Close drawer** → Cash counted now *5750* | *Short ₹50.00* as you type; the note field becomes *Why it is short* |
+| 13 | **Close drawer** with no reason | Under the field: *Say why the drawer is short (at least 3 characters).* |
+| 14 | *Gave too much change to a guest* → **Close drawer** | *Drawer closed ₹50.00 short; waiting for a manager to approve*; the panel shows *₹50.00 short* with your note and *Waiting for a manager*; the drawer is closed |
+| 15 | **The acceptance test.** As the owner: **Payments** (new in the menu, after Folios) | The drawer panel lists the ₹50 short shift; **Approve** → *Your note* → **Approve**: *Variance approved; the shift is closed*, and it leaves the list |
+| 16 | Payments, *Today* | *Taken, less refunds* and a tile per method: *Cash · 1* ₹800.00 (₹200.00 refunded), *UPI · 1* the rest; each payment with its status; search by *P00002* or *R00002* finds the advance |
+| 17 | **P00002** (the advance) | ₹2,000.00 *On account* for R00002, *Not on a bill yet*. **Put on a bill** appears once R00002 is checked in and its bill owes money |
+| 18 | **Take payment** with *Cash* while the drawer is closed | Under the methods: *The Front desk cash drawer isn't open, so a payment in cash can't be recorded. Open it on the front desk …* |
+| 19 | A payment entered by mistake: take ₹1 by UPI on account, open it → **Void** → a reason | *Voided*; it counts for nothing on the bill. After a refund, or once its cash shift is closed, **Void** is gone and the page says why |
+| 20 | Phone width (390 px) → Payments and a payment | Totals, rows and buttons fit the screen |
+
 ## Part C — Decide
 
 ### Accept

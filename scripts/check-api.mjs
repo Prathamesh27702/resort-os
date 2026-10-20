@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–09: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–10: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -15,6 +15,8 @@
 //   - on the bill of one guest in house: a ₹1 "API check" charge and its reversal (Sprint 08; bill lines are never deleted,
 //     so both stay, and they add up to ₹0)
 //   - Sprint 09 changes nothing: it reads the GST settings and asks the tax engine for previews
+//   - Sprint 10: a ₹1 UPI payment on account for the demo booking R00002, voided straight away (payments are never
+//     deleted, so it stays as a voided payment that counts for nothing); every other check is a read or a refusal
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -465,6 +467,58 @@ if (food) {
     { token: R, body: { taxCategoryId: food.id, effectiveFrom: '2099-01-01', ruleType: 'FLAT', slabs: [{ upTo: null, rate: 5, inputTaxCredit: false }], source: 'API check' } });
 } else record('Rule refusals', false, 'no RESTAURANT tax category (migration V011 seeds it)');
 await expectCall('Receptionist can\u2019t read the GST settings → 403', 'GET', '/api/v1/tax/categories', 403, { token: R });
+
+// ---------------------------------------------------------------- Sprint 10 — payments, refunds, cash drawer
+title('Sprint 10 — payments, refunds and the cash drawer');
+const key = () => ({ 'Idempotency-Key': `api-check-${randomBytes(6).toString('hex')}` });
+const drawer = await expectCall('The cash drawer (Front desk), its shifts and what waits for approval', 'GET', `${P}/cash-drawer`, 200, { token: T },
+  b => (b?.name && Array.isArray(b.recent) && Array.isArray(b.pendingApproval)) || JSON.stringify(b).slice(0, 200));
+const pays = await expectCall('Payments with totals by method (demo: P00001 cash, P00002 UPI advance)', 'GET', `${P}/payments?pageSize=100`, 200, { token: T },
+  b => (Array.isArray(b?.items) && Array.isArray(b.byMethod) && ['P00001', 'P00002'].every(n => b.items.some(i => i.number === n))) || JSON.stringify(b).slice(0, 200));
+const advance = pays?.json?.items?.find?.(i => i.number === 'P00002');
+if (advance) {
+  await expectCall('One payment: P00002 is ₹2,000 on account for R00002', 'GET', `${P}/payments/${advance.id}`, 200, { token: T },
+    b => (b.amount === 2000 && b.onAccount + b.allocated === 2000 - b.refunded && b.reference === 'R00002') || JSON.stringify(b).slice(0, 200));
+  await expectCall('A refund of more than the payment → 400 under Amount, saying the most that can be refunded', 'POST', `${P}/payments/${advance.id}/refund`, 400,
+    { token: T, headers: key(), body: { amount: 999999, reason: 'API check', method: 'UPI' } },
+    b => /at most/.test(b.details?.Amount?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('A refund without a reason → 400 under Reason', 'POST', `${P}/payments/${advance.id}/refund`, 400,
+    { token: T, headers: key(), body: { amount: 1, method: 'UPI' } }, b => /Say why/.test(b.details?.Reason?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('Receptionist can’t refund → 403', 'POST', `${P}/payments/${advance.id}/refund`, 403,
+    { token: R, headers: key(), body: { amount: 1, reason: 'API check', method: 'UPI' } });
+
+  const body = { method: 'UPI', amount: 1, reservationId: advance.reservationId, note: 'API check' };
+  await expectCall('Taking money without an Idempotency-Key → 400', 'POST', `${P}/payments`, 400, { token: T, body });
+  await expectCall('A card number in the reference → 400 under PaymentReference (card details are never stored)', 'POST', `${P}/payments`, 400,
+    { token: T, headers: key(), body: { ...body, method: 'CARD', paymentReference: '4111 1111 1111 1111' } },
+    b => /card number/.test(b.details?.PaymentReference?.[0] ?? '') || JSON.stringify(b.details));
+  const one = await expectCall('₹1 by UPI on account for R00002', 'POST', `${P}/payments`, 201, { token: T, headers: key(), body },
+    b => (b.status === 'CAPTURED' && b.onAccount === 1 && b.canVoid) || JSON.stringify(b).slice(0, 200));
+  if (one?.json?.id) {
+    await expectCall('Void without a reason → 400 under Reason', 'POST', `${P}/payments/${one.json.id}/void`, 400, { token: T, body: {} },
+      b => !!b.details?.Reason?.[0] || JSON.stringify(b.details));
+    await expectCall('Void it with a reason → CANCELLED, counts for nothing', 'POST', `${P}/payments/${one.json.id}/void`, 200,
+      { token: T, body: { reason: 'API check: entered by the check script' } }, b => (b.status === 'CANCELLED' && b.voidReason) || JSON.stringify(b).slice(0, 200));
+    await expectCall('Voiding it twice → 409 ALREADY_VOIDED', 'POST', `${P}/payments/${one.json.id}/void`, 409,
+      { token: T, body: { reason: 'API check again' } }, b => b.code === 'ALREADY_VOIDED' || b.code);
+  }
+} else record('Payment checks', false, 'no P00002 (dev seed S009 adds it; reset the database)');
+
+if (drawer?.json && !drawer.json.current) {
+  await expectCall('Cash with the drawer closed → 400 under Method, saying to open it', 'POST', `${P}/payments`, 400,
+    { token: T, headers: key(), body: { method: 'CASH', amount: 1, reservationId: advance?.reservationId } },
+    b => /drawer isn’t open|drawer isn't open/.test(b.details?.Method?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('Closing a drawer that isn’t open → 422 DRAWER_NOT_OPEN', 'POST', `${P}/cash-drawer/close`, 422,
+    { token: T, body: { countedAmount: 0 } }, b => b.code === 'DRAWER_NOT_OPEN' || b.code);
+} else console.log(' SKIP  Closed-drawer refusals (a shift is open; close it to run them)');
+const closed = drawer?.json?.recent?.find?.(s => s.status === 'CLOSED');
+if (closed) {
+  await expectCall('Approving a shift that balanced → 409 NO_VARIANCE_PENDING', 'POST', `${P}/cash-drawer/sessions/${closed.id}/approve-variance`, 409,
+    { token: T, body: { note: 'API check' } }, b => b.code === 'NO_VARIANCE_PENDING' || b.code);
+}
+await expectCall('Receptionist can read the drawer', 'GET', `${P}/cash-drawer`, 200, { token: R });
+await expectCall('Receptionist can’t approve a variance → 403', 'POST', `${P}/cash-drawer/sessions/${closed?.id ?? '00000000-0000-0000-0000-000000000000'}/approve-variance`, 403,
+  { token: R, body: { note: 'API check' } });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

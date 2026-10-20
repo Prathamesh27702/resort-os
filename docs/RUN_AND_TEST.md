@@ -430,6 +430,50 @@ tax credit*, a source → **Add rule**: *The rule before it now ends on …*. Th
 By hand: [REVIEWING.md → Sprint 09](sprints/REVIEWING.md#sprint-09--gst-and-the-tax-engine).
 Screenshots: [sprint-09-screens/](sprints/sprint-09-screens/).
 
+### Sprint 10: payments, refunds and the cash drawer
+
+**New:** **Payments** (menu, after Folios): every payment with its status, totals by method for a day or a week,
+search by payment, booking, reference or guest, and the **cash drawer** panel (also on the **Front desk**). On a bill,
+**Take payment**: cash, UPI, card (the property's terminal) or bank transfer, onto the bill (at most what it owes) or
+*on account* for the booking as an advance. A payment's page has **Refund** (with a reason; managers and the
+accountant), **Void** (entered by mistake) and **Put on a bill** (an advance). The drawer is opened with the cash
+counted in it; cash payments and refunds go in and out of it; closing compares the count with what it should hold, and
+a short or over count needs a reason and a manager's approval. **No card number is ever stored**: anything that looks
+like one is refused under its field. Balances, check-out and the calendar's *paid* now use real payments. Demo data:
+yesterday's closed shift (₹500 cash from R00007) and a ₹2,000 UPI advance for R00002; no shift is open. Nothing new to
+install and no new keys; reset the database before the review, restart the API and watch for
+`Applying migration V012__payments` and `Dev seed S009__payments`.
+
+```powershell
+# Backend (38 tests: PaymentTests, PaymentUnitTests and the payments dev seed test; includes two refunds at once
+# that can't exceed the payment, DELETE and UPDATE refused by the database, and the cash drawer demo)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Payment|FullyQualifiedName~Dev_seed_has_a_closed_drawer"
+
+# Frontend unit tests (payment helpers: the card-number check, the drawer variance, labels)
+cd frontend
+npm run test:ci
+
+# Browser (7 steps, S10-01 … S10-07; S10-01 … S10-05 are the demo: open the drawer, cash + UPI, a ₹200 refund,
+# close ₹50 short, the manager approves)
+npm run e2e -- e2e/sprint-10.spec.ts
+cd ..
+
+# API checks: the Sprint 10 block must be all PASS (it takes ₹1 by UPI on account for R00002 and voids it)
+node scripts/check-api.mjs
+
+# Database checks (blocks 4, 5, 6, 7, 8, 10 and 11 must return no rows)
+Get-Content database/queries/check-sprint-10.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: **Front desk** → **Open drawer** with *5000* → **Folios → R00008** → **Take payment** *Cash 1000*,
+then the rest by *UPI*: the balance is ₹0.00. Open the cash payment → **Refund** *200* with a reason (as the owner). Front
+desk → *Should hold ₹5,800.00* → **Close drawer**, count *5750*, reason *Gave too much change* → *₹50.00 short; waiting
+for a manager*. As the owner, **Payments** → **Approve**. How it works:
+[system-design.md → 4.20](architecture/system-design.md#420-refunds-that-cant-overspend-and-a-cash-drawer-that-balances).
+
+By hand: [REVIEWING.md → Sprint 10](sprints/REVIEWING.md#sprint-10--payments-refunds-and-the-cash-drawer).
+Screenshots: [sprint-10-screens/](sprints/sprint-10-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -442,7 +486,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 278 backend passed, 67 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 316 backend passed, 72 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -450,7 +494,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–09 (expected: 83 passed, about 12 minutes)
+# 3. Every browser test, Sprints 01–10 (expected: 90 passed, about 13 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -465,13 +509,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–09:
+Expected totals for Sprints 01–10:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 278 passed, 0 failed |
-| Frontend unit tests | 67 of 67 SUCCESS |
-| Browser tests | 83 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7) |
+| Backend tests | 316 passed, 0 failed |
+| Frontend unit tests | 72 of 72 SUCCESS |
+| Browser tests | 90 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7 + 7) |
 | API checks | 0 failed |
 
 Other useful commands:

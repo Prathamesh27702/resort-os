@@ -79,10 +79,12 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `GET|POST /api/v1/tax/rules  (effective_from/effective_to)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
 | `POST /api/v1/tax/rules/{id}/verify` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
 | `POST /api/v1/tax/calculate  (preview)` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
-| `POST /api/v1/properties/{propertyId}/payments  (Idempotency-Key)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `GET|POST /api/v1/properties/{propertyId}/payments  (Idempotency-Key)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/payments/{id}` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/payments/{id}/allocate` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/payments/{id}/refund  (reason required)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/payments/{id}/void  (reason required)` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/cash-drawer` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/cash-drawer/open | close` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/cash-drawer/sessions/{id}/approve-variance` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `POST /api/v1/properties/{propertyId}/payments/razorpay/orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | ⚪ Planned |

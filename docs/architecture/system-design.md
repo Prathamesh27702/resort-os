@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–09 built and accepted (October 2026); Sprint 10 (payments, refunds, cash drawer) in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–09 built and accepted (October 2026); Sprint 10 (payments, refunds, cash drawer) built and in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -71,7 +71,7 @@ backend/
   Resort.Contracts       Request/response records (what the API accepts and returns)
   Resort.Application     One service per use case group, validators, permission codes, shared helpers
                          Common/ (errors, idempotency, concurrency, protection), Identity/, Properties/,
-                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Folios/, Tax/, Audit/, Validation/
+                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Folios/, Tax/, Payments/, Audit/, Validation/
   Resort.Infrastructure  AppDbContext (EF Core, snake_case), SQL migrator, audit interceptor,
                          JWT + password hashing (Identity/Security.cs), field encryption, file store, dev seeder
   Resort.Api             Program.cs (pipeline), Endpoints/*.cs (one file per module),
@@ -267,6 +267,27 @@ flowchart LR
 - Screens: `/settings/gst` (registration, categories with their rules, Add rule, Verify, Try a charge); the bill shows
   *amount + GST* under each line. [4.19](#419-gst-rules-as-data-the-tax-engine) explains the rules; worked examples in
   [GST.md](../GST.md#worked-examples).
+
+### Sprint 10: Payments, refunds and the cash drawer
+
+![Refunds and the cash drawer](../../tools/handbooks/assets/payment-flow.png)
+
+- Migration V012: `payments` (P00001 numbers, CASH / UPI / CARD / BANK_TRANSFER, the status graph in
+  `payment_status_transitions`), `payment_allocations` (which bill a payment settles), `refunds` (with a reason),
+  `cash_drawers`, `cash_drawer_sessions` (one shift, OPEN / VARIANCE_PENDING / CLOSED) and `cash_drawer_movements` (the
+  drawer's ledger). Triggers refuse deletes, let a payment change only its status and void, and check every allocation
+  and refund against its payment under a row lock (`fn_payment_money_check`). No column can hold card data. Details:
+  [schema-sprint-10.md](../database/schema-sprint-10.md).
+- `Domain/Payments/Payments.cs`: the entities, the status graph and `PaymentMath` (what can be refunded, what is on
+  account, the status after a refund, the variance, the card-number check with Luhn), unit-tested.
+- `Application/Payments/PaymentService.cs`: list, read, take (on a bill or on account), allocate, refund, void.
+  `CashDrawerService.cs`: open, close, approve a variance, and the helpers the payment service uses to put cash in and
+  out of the open shift. `PaymentLedger.cs`: the one place that sums what bills and bookings have been paid.
+- Hooks into earlier code: `FolioService` and `FolioBalances` (front desk, check-out) subtract real payments;
+  `CalendarService` shows paid / part paid; `FolioDto` lists the bill's payment lines.
+- Screens: `/payments` (totals by method, filters, search, the drawer panel) and `/payments/:id` (Refund, Void, Put on
+  a bill); **Take payment** and the payments list on the bill (`/folios/:id`); the cash drawer panel on the front desk.
+  [4.20](#420-refunds-that-cant-overspend-and-a-cash-drawer-that-balances) explains the rules.
 
 ---
 
@@ -552,7 +573,7 @@ Diagram: section 3 (Sprint 08). Tests: `FolioTests`, `FolioUnitTests`.
    is a REVERSAL line (negative quantity, the original's id, a reason), never an edit. Database triggers refuse UPDATE
    and DELETE on `folio_items`, so this holds for any code or any person with SQL access. A charge can be reversed
    once (`UNIQUE (reverses_item_id)`), and a trigger checks the reversal is its exact negative on the same folio.
-2. **Totals are summed, never stored.** The balance is the sum of the lines (minus payments from Sprint 10); there is no
+2. **Totals are summed, never stored.** The balance is the sum of the lines (minus payments from Sprint 10, [4.20](#420-refunds-that-cant-overspend-and-a-cash-drawer-that-balances)); there is no
    running total to drift. Reversed and reversing lines add up to ₹0 and both stay visible.
 3. **Every writer locks the reservation row first.** Posting, reversing, moving lines, check-in, check-out and the
    nightly job all start with `SELECT … FOR UPDATE` on the booking, the same order as the front desk. Two managers
@@ -639,6 +660,41 @@ secrets and vulnerable-package scan.
 
 ---
 
+### 4.20 Refunds that can't overspend, and a cash drawer that balances
+
+Code: `Application/Payments/`, `Domain/Payments/Payments.cs`, `database/migrations/V012__payments.sql`,
+`features/payments/`. Diagram: section 3 (Sprint 10). Tests: `PaymentTests`, `PaymentUnitTests`.
+
+1. **Money records are never edited.** A refund is a new row with its reason; a mistake is a void (status
+   `CANCELLED`, with a reason), never a delete. A trigger lets a payment change only its status and void fields, and
+   only along `payment_status_transitions` (desk payments start `CAPTURED`; the gateway states are ready for
+   Razorpay). Allocations, refunds and drawer movements can't change at all.
+2. **Two refunds at once can't exceed the payment.** Every writer locks in the same order as the bill and the front
+   desk: the booking row, then the payment row (`SELECT … FOR UPDATE`), then the cash shift. The second refund waits,
+   then sees the first and gets a field error naming what is left. `fn_payment_money_check` runs the same checks inside
+   the database under the same lock (refunded ≤ amount; on bills + refunded from account ≤ amount; a bill gets back at
+   most what the payment put on it), so they hold for any code or SQL. The test fires refunds through a barrier and
+   checks the total never passes the payment.
+3. **On account is a remainder, not a column.** A payment on a bill is capped at what the bill owes; anything else
+   stays on account for the booking (an advance) until it is put on a bill. On account = amount − on bills − refunded
+   from account. A refund takes from on account first, then from the bills it paid. What a bill has been paid is its
+   allocations less refunds off it; the booking's balance (check-out, the front desk) also counts money on account.
+   Nothing is stored twice, so nothing drifts.
+4. **The drawer is a ledger.** Opening a shift writes the float as the first movement; every cash payment, cash
+   refund and voided cash payment adds a signed movement. What the drawer should hold is their sum. Closing stores the
+   expected and counted amounts; a difference needs a reason and leaves the shift `VARIANCE_PENDING` until someone with
+   `cash_drawer.approve_variance` approves it with a note. Movements can be added only while the shift is OPEN
+   (trigger), and a partial unique index allows one open shift per drawer.
+5. **Cash rules follow the drawer.** Cash can't be taken without an open shift; a cash refund can't take more than the
+   drawer should hold; a cash payment can be voided only while its shift is open (after the close the count already
+   included it, so a refund is the honest correction).
+6. **No card data, ever** (brief §3). There is no column for a card number, expiry or CVV. A card payment's reference
+   is the terminal's approval code: the database refuses 13 or more digits in a row, and the API and the form refuse
+   anything that looks like a card number (13–19 digits passing the Luhn check, spaces and dashes ignored) under its
+   field. The check is on exact digit runs, so a 22-character RTGS UTR isn't mistaken for a card.
+7. **A retried click moves money once.** Taking and refunding money need an `Idempotency-Key`
+   ([4.8](#48-idempotency-a-retried-click-never-books-twice)).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -658,3 +714,4 @@ request:
 | 07 | Front desk (lists, check-in/out, walk-ins, room readiness), check-in flow diagram; system design 4.17 The front desk (accepted 18 Oct 2026) |
 | 08 | Folio (bills, immutable lines, reversals, room nights, split), folio flow diagram; system design 4.18 Folios (accepted 18 Oct 2026) |
 | 09 | GST configuration and the tax engine (registrations, categories, dated rules, slabs, tax on bills), tax flow diagram; system design 4.19 GST: rules as data (accepted 20 Oct 2026) |
+| 10 | Payments, refunds and the cash drawer (status machine, allocations, on account, drawer ledger, variance approval), payment flow diagram; system design 4.20 Refunds that can't overspend (in review) |
