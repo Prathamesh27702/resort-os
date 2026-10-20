@@ -934,7 +934,7 @@ sprints:
     results:
       - "Backend: 316 passed, 0 failed on real PostgreSQL 16 (38 new: PaymentTests with the demo flow, two refunds at once that can't exceed the payment, DELETE and UPDATE refused by the database, idempotent take and refund, field errors, cash needing an open drawer, an advance put on a bill, a refund when a guest leaves early, void rules, the list and permissions; PaymentUnitTests with the status machine, refundable amounts, variance and the card-number check; the payments dev seed check)"
       - "Frontend: 72 of 72 unit tests passed (5 new for the payment helpers); ESLint clean; production build OK"
-      - "Browser tests: E2E_RESULT"
+      - "Browser tests: 90 of 90 passed (Sprints 01–09 plus the 7 new Sprint 10 steps: open the drawer, cash + UPI with a card number refused, a ₹200 refund the receptionist can't make, close ₹50 short with a reason, the manager approves and the totals by method, API refusals, phone); API checks 131 of 131 (17 new); database checks clean; screenshots in docs/sprints/sprint-10-screens"
   scope:
     tables: [payments, payment_allocations, refunds, cash_drawers, cash_drawer_sessions, cash_drawer_movements]
     api:

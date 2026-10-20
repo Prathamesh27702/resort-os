@@ -498,7 +498,7 @@ if (advance) {
     await expectCall('Void without a reason → 400 under Reason', 'POST', `${P}/payments/${one.json.id}/void`, 400, { token: T, body: {} },
       b => !!b.details?.Reason?.[0] || JSON.stringify(b.details));
     await expectCall('Void it with a reason → CANCELLED, counts for nothing', 'POST', `${P}/payments/${one.json.id}/void`, 200,
-      { token: T, body: { reason: 'API check: entered by the check script' } }, b => (b.status === 'CANCELLED' && b.voidReason) || JSON.stringify(b).slice(0, 200));
+      { token: T, body: { reason: 'API check: entered by the check script' } }, b => (b.status === 'CANCELLED' && !!b.voidReason) || JSON.stringify(b).slice(0, 200));
     await expectCall('Voiding it twice → 409 ALREADY_VOIDED', 'POST', `${P}/payments/${one.json.id}/void`, 409,
       { token: T, body: { reason: 'API check again' } }, b => b.code === 'ALREADY_VOIDED' || b.code);
   }

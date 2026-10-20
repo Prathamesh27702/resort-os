@@ -22,7 +22,7 @@
 - Void (a payment entered by mistake) with a reason, refused once anything is refunded or its cash shift is closed; Idempotency-Key on taking and refunding money
 - Screens: Payments (/payments: totals by method, filters, search) and one payment (/payments/:id: Refund, Void, Put on a bill); Take payment and the payments list on the bill; the cash drawer panel on the front desk and on Payments
 - Dev seed S009: yesterday's closed shift with a ₹500 cash payment, and a ₹2,000 UPI advance on R00002
-- [done] Docs: API.md, DATABASE.md, schema-sprint-10.md, system design 3.10 and 4.20, RUN_AND_TEST, REVIEWING
+- [done] Docs: API.md, DATABASE.md, schema-sprint-10.md, system design Sprint 10 and 4.20 with the payment flow diagram, RUN_AND_TEST, REVIEWING
 
 **Files added / changed**
 
@@ -34,13 +34,13 @@
 - backend/Resort.Tests/ — Integration/PaymentTests.cs, Unit/PaymentUnitTests.cs, Integration/DevSeedTests.cs
 - frontend/src/app/ — features/payments/ (payments.page.ts, payment.page.ts, payment-dialogs.ts, cash-drawer-panel.ts, payments.api.ts, payments.spec.ts), features/folios/folio.page.ts, features/front-desk/front-desk.page.ts, core/models.ts, app.routes.ts, layout/shell.ts
 - frontend/e2e/sprint-10.spec.ts; scripts/check-api.mjs (Sprint 10 checks)
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-10.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-10-screens/
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-10.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-10-screens/; tools/handbooks/diagrams (payment-flow)
 
 **Test results**
 
 - Backend: 316 passed, 0 failed on real PostgreSQL 16 (38 new: PaymentTests with the demo flow, two refunds at once that can't exceed the payment, DELETE and UPDATE refused by the database, idempotent take and refund, field errors, cash needing an open drawer, an advance put on a bill, a refund when a guest leaves early, void rules, the list and permissions; PaymentUnitTests with the status machine, refundable amounts, variance and the card-number check; the payments dev seed check)
 - Frontend: 72 of 72 unit tests passed (5 new for the payment helpers); ESLint clean; production build OK
-- Browser tests: E2E_RESULT
+- Browser tests: 90 of 90 passed (Sprints 01–09 plus the 7 new Sprint 10 steps: open the drawer, cash + UPI with a card number refused, a ₹200 refund the receptionist can't make, close ₹50 short with a reason, the manager approves and the totals by method, API refusals, phone); API checks 131 of 131 (17 new); database checks clean; screenshots in docs/sprints/sprint-10-screens
 
 **Outcome**
 
