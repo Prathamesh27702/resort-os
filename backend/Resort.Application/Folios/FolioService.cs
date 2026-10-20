@@ -8,6 +8,7 @@ using Resort.Domain.Folios;
 using Resort.Domain.Organizations;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
+using Resort.Domain.Tax;
 
 namespace Resort.Application.Folios;
 
@@ -25,6 +26,7 @@ public sealed class FolioService(
 {
     public const int MaxQuantity = 9999;
     public const int MaxPackageQuantity = 50;
+    private static readonly string[] TaxCodeOrder = [TaxCodes.Cgst, TaxCodes.Sgst, TaxCodes.Igst, TaxCodes.Cess];
 
     public sealed record ListQuery(string? Q, string? Show, int Page, int PageSize);
 
@@ -123,7 +125,8 @@ public sealed class FolioService(
                 throw ReservationService.Field(nameof(r.Quantity), $"{quantity} × {Money.Rupees(package.Price)} is more than {Money.Rupees(Money.Max)}; post fewer at a time.");
             var group = Guid.CreateVersion7();
             for (var i = 0; i < parts.Count; i++)
-                posting.Add(folio, new FolioItem
+                // the room part of a package is taxed on its value for one night
+                await posting.ChargeAsync(folio, new FolioItem
                 {
                     Category = parts[i].Category,
                     Description = FolioPosting.Trim($"{package.Name}: {parts[i].Description}"),
@@ -133,14 +136,15 @@ public sealed class FolioService(
                     Source = FolioItemSources.Package,
                     PackageId = package.Id,
                     GroupId = group,
-                });
+                }, [new TaxablePart(parts[i].Amount * quantity,
+                    parts[i].Category == ChargeCategories.Room ? TaxMath.Round(parts[i].Amount / Math.Max((short)1, package.Nights)) : parts[i].Amount)], ct);
         }
         else
         {
             if (FolioMath.LineAmount(r.Quantity, r.UnitPrice) > Money.Max)
                 throw ReservationService.Field(nameof(r.UnitPrice),
                     $"{r.Quantity:0.###} × {Money.Rupees(r.UnitPrice)} is more than {Money.Rupees(Money.Max)}; split it into smaller charges.");
-            posting.Add(folio, new FolioItem
+            await posting.ChargeAsync(folio, new FolioItem
             {
                 Category = r.Category!.Trim().ToUpperInvariant(),
                 Description = r.Description!.Trim(),
@@ -148,7 +152,7 @@ public sealed class FolioService(
                 Quantity = r.Quantity,
                 UnitPrice = r.UnitPrice,
                 Source = FolioItemSources.Manual,
-            });
+            }, null, ct);
         }
         await db.SaveChangesAsync(ct);
 
@@ -338,6 +342,10 @@ public sealed class FolioService(
             .Where(u => u.ReservationId == reservation.Id && u.SupersededAt == null && u.EndDate == reservation.CheckOut).ToListAsync(ct);
         var rooms = ReservationService.RoomsText(units, await reservations.RoomNamesAsync(units.Select(u => u.UnitId), ct));
 
+        var itemIds = items.Select(i => i.Id).ToList();
+        var taxes = (await db.FolioItemTaxes.AsNoTracking().Where(t => itemIds.Contains(t.FolioItemId)).ToListAsync(ct))
+            .OrderBy(t => t.Rate).ThenBy(t => Array.IndexOf(TaxCodeOrder, t.TaxCode))
+            .ToLookup(t => t.FolioItemId, t => new FolioItemTaxDto(t.TaxCode, t.Rate, t.TaxableValue, t.Amount, t.TaxRuleId));
         var lines = items.Select(i =>
         {
             var reversal = reversalOf.GetValueOrDefault(i.Id);
@@ -347,7 +355,7 @@ public sealed class FolioService(
                 i.TransferredFromItemId is { } src && byId.TryGetValue(src, out var o) ? numbers[o.FolioId] : null,
                 movedTo.GetValueOrDefault(i.Id),
                 i.PostedAt, i.PostedBy is { } u ? users.GetValueOrDefault(u) : null,
-                i.ItemType == FolioItemTypes.Charge && reversal is null);
+                i.ItemType == FolioItemTypes.Charge && reversal is null, taxes[i.Id].ToList());
         }).ToList();
         var categories = ChargeCategories.All
             .Select(c => new FolioCategoryTotalDto(c, items.Where(i => i.Category == c).Sum(i => i.Total)))

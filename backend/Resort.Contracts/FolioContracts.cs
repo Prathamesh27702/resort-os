@@ -3,7 +3,7 @@ namespace Resort.Contracts;
 // ---------------------------------------------------------------- folios (Sprint 8)
 
 /// <summary>A bill with every line, its totals by category and its balance. Lines are never edited or deleted: a
-/// correction is a REVERSAL line. Total = sum of the lines (tax included, 0 until Sprint 9); Balance = Total − Payments
+/// correction is a REVERSAL line. Total = sum of the lines, GST included (Sprint 9); Balance = Total − Payments
 /// (payments arrive in Sprint 10, 0 until then). CanPost: the booking is in a state that takes charges (confirmed,
 /// checked in or checked out); CantPostReason says why not otherwise.</summary>
 public sealed record FolioDto(
@@ -15,12 +15,16 @@ public sealed record FolioDto(
 
 /// <summary>One line. ItemType CHARGE or REVERSAL; Source MANUAL, ROOM_NIGHT or PACKAGE. ReversedBy / ReversalReason:
 /// the reversal that cancelled this charge. MovedFrom / MovedTo: the folio number a line was split from or to.
-/// Live: a charge that still counts (not reversed).</summary>
+/// Live: a charge that still counts (not reversed). Taxes: the GST on the line as calculated when it was posted (Sprint 9),
+/// with the rule and rate used; a reversal or a moved line carries the same taxes as its charge.</summary>
 public sealed record FolioItemDto(
     Guid Id, string ItemType, string Category, string Description, DateOnly ServiceDate, decimal Quantity, decimal UnitPrice,
     decimal Amount, decimal TaxAmount, decimal Total, string Source, Guid? PackageId, string? PackageName, Guid? GroupId,
     Guid? ReversesItemId, Guid? ReversedByItemId, string? Reason, string? ReversalReason, string? MovedFrom, string? MovedTo,
-    DateTimeOffset PostedAt, string? PostedByName, bool Live);
+    DateTimeOffset PostedAt, string? PostedByName, bool Live, IReadOnlyList<FolioItemTaxDto> Taxes);
+
+/// <summary>One tax on a line: CGST 2.5% on ₹1,450.00 = ₹36.25, under rule TaxRuleId.</summary>
+public sealed record FolioItemTaxDto(string Code, decimal Rate, decimal TaxableValue, decimal Amount, Guid? TaxRuleId);
 
 /// <summary>What a folio adds up to in one category (charges minus reversals).</summary>
 public sealed record FolioCategoryTotalDto(string Category, decimal Amount);

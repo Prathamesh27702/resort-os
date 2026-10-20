@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 09 — GST configuration and tax engine](sprint-09-gst-configuration-and-tax-engine.md)** · status: 🔵 In progress
+> **Current sprint: [Sprint 10 — Payments, refunds, cash drawer](sprint-10-payments-refunds-cash-drawer.md)** · status: 🔵 In progress
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -20,8 +20,8 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 06 | [Reservation calendar](sprint-06-reservation-calendar.md) | Phase 2 | M | 🟢 Done |
 | 07 | [Front desk — arrivals, departures, in-house, check-in/out](sprint-07-front-desk.md) | Phase 2 | M | 🟢 Done |
 | 08 | [Folio](sprint-08-folio.md) | Phase 3 | M | 🟢 Done |
-| 09 | [GST configuration and tax engine](sprint-09-gst-configuration-and-tax-engine.md) | Phase 3 | M | 🔵 In progress |
-| 10 | [Payments, refunds, cash drawer](sprint-10-payments-refunds-cash-drawer.md) | Phase 3 | M | ⚪ Planned |
+| 09 | [GST configuration and tax engine](sprint-09-gst-configuration-and-tax-engine.md) | Phase 3 | M | 🟢 Done |
+| 10 | [Payments, refunds, cash drawer](sprint-10-payments-refunds-cash-drawer.md) | Phase 3 | M | 🔵 In progress |
 | 11 | [Razorpay](sprint-11-razorpay.md) | Phase 3 | M | ⚪ Planned |
 | 12 | [GST invoices, credit/debit notes, receipts](sprint-12-gst-invoices-credit-debit-notes-receipts.md) | Phase 3 | L | ⚪ Planned |
 | 13 | [Housekeeping and maintenance (mobile-first)](sprint-13-housekeeping-and-maintenance-mobile.md) | Phase 4 | M | ⚪ Planned |

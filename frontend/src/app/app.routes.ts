@@ -33,6 +33,9 @@ export const routes: Routes = [
       { path: 'settings/packages/new', canActivate: [permissionGuard('rate.manage')], loadComponent: () => import('./features/settings/packages/package-edit.page').then(m => m.PackageEditPage) },
       { path: 'settings/packages/:id', canActivate: [permissionGuard('rate.read')], loadComponent: () => import('./features/settings/packages/package-edit.page').then(m => m.PackageEditPage) },
 
+      // /settings/gst (Sprint 9)
+      { path: 'settings/gst', canActivate: [permissionGuard('tax.read')], loadComponent: () => import('./features/settings/gst/gst.page').then(m => m.GstPage) },
+
       // /rooms (Sprint 2)
       { path: 'rooms', canActivate: [permissionGuard('accommodation.read')], loadComponent: () => import('./features/rooms/rooms.page').then(m => m.RoomsPage) },
       { path: 'rooms/new', canActivate: [permissionGuard('accommodation.manage')], loadComponent: () => import('./features/rooms/room-edit.page').then(m => m.RoomEditPage) },

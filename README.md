@@ -3,7 +3,7 @@
 India-first resort operating system: reservations, rooms and dorm beds, front desk, folio, GST invoicing, payments,
 housekeeping, restaurant, inventory, staff, activities, transport and reporting, in one modular monolith.
 
-> **Current sprint: [Sprint 09 — GST configuration and tax engine](docs/sprints/sprint-09-gst-configuration-and-tax-engine.md)** (🔵 in progress) · Sprints 01–08 accepted (tags `sprint-01` … `sprint-08`) · New here? Read [how the system works](docs/architecture/system-design.md)
+> **Current sprint: [Sprint 10 — Payments, refunds, cash drawer](docs/sprints/sprint-10-payments-refunds-cash-drawer.md)** (🔵 in progress) · Sprints 01–09 accepted (tags `sprint-01` … `sprint-09`) · New here? Read [how the system works](docs/architecture/system-design.md)
 > All sprints and their status: [docs/sprints](docs/sprints/README.md) · GitHub *Milestones* show the same.
 
 | | |

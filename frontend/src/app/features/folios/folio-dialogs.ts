@@ -89,7 +89,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
         <input matInput type="date" formControlName="serviceDate" [max]="data.today" />
         <mat-error>{{ err('serviceDate') || 'Choose the day.' }}</mat-error>
       </mat-form-field>
-      <p class="amount">Adds <b class="num">{{ money(amount()) }}</b> to the bill</p>
+      <p class="amount">Adds <b class="num">{{ money(amount()) }}</b> to the bill, before GST</p>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
     </form>
     <div mat-dialog-actions align="end">

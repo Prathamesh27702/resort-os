@@ -48,16 +48,16 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `folios` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
 | `folio_items` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
 | `folio_item_taxes` | [Sprint 08](../sprints/sprint-08-folio.md) | 🟢 Done |
-| `gst_registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
-| `tax_categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
-| `tax_rules` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
-| `tax_rule_slabs` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🔵 In progress |
-| `payments` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
-| `payment_allocations` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
-| `refunds` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
-| `cash_drawers` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
-| `cash_drawer_sessions` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
-| `cash_drawer_movements` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | ⚪ Planned |
+| `gst_registrations` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
+| `tax_categories` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
+| `tax_rules` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
+| `tax_rule_slabs` | [Sprint 09](../sprints/sprint-09-gst-configuration-and-tax-engine.md) | 🟢 Done |
+| `payments` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `payment_allocations` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `refunds` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `cash_drawers` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `cash_drawer_sessions` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
+| `cash_drawer_movements` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🔵 In progress |
 | `payment_gateway_orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | ⚪ Planned |
 | `webhook_events` | [Sprint 11](../sprints/sprint-11-razorpay.md) | ⚪ Planned |
 | `invoice_series` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |

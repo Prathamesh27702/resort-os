@@ -2,6 +2,46 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-09] — 2026-10-20 — GST configuration and tax engine (accepted)
+
+### Added
+- Migration V011: `gst_registrations` (a property's GSTIN from/to a date; format CHECK, state = first two digits,
+  periods of a property can't overlap), `tax_categories` (what is taxed, SAC/HSN, the bill charge category it covers —
+  one tax category per charge category), `tax_rules` (a category's rule from/to a date, FLAT or SLAB, its source and
+  notes, who verified it; rules of a category can't overlap; only the end date and the verification can change) and
+  `tax_rule_slabs` (rates by value per unit per night, with or without input tax credit; immutable).
+  `folio_item_taxes.tax_rule_id` now references `tax_rules`. Nothing in these tables can be deleted.
+- Seed rules **as data** (`fn_seed_tax_defaults`, also run for every new organisation by a trigger): accommodation
+  (SAC 996311) 18 Jul 2022 – 21 Sep 2025 up to ₹7,500 12% / above 18%, and from 22 Sep 2025 up to ₹7,500 5% without ITC
+  / above 18% with ITC; restaurant service (SAC 996331) 5% without ITC from 15 Nov 2017 — each with its notification as
+  the source, unverified until the accountant presses Verify.
+- The tax engine (`TaxCalculator`, `TaxMath`): the registration, category and rule effective on the day of the service;
+  slab by the value of one unit for one night (a value exactly at a limit is in that slab); CGST + SGST at half the rate
+  each inside the supplier's state, IGST across states; each tax rounded to the paisa once per line (halves away from
+  zero). No registration on the day, a composition registration or no tax category → no GST, with the reason.
+- GST API: `GET|POST /properties/{id}/gst-registrations`, `GET|POST /tax/categories`, `GET|POST /tax/rules` (a new rule
+  ends the running one the day before), `POST /tax/rules/{id}/verify`, `POST /tax/calculate` (preview).
+- Dev seed S008: the demo property is registered for GST in Goa (30AABCT1234C1Z9, made up, valid check digit).
+- Staff app: **Settings → GST** (`/settings/gst`): the property's registration, every tax category with its rules over
+  time (Now / Upcoming, source, Verify), *Add registration*, *Add category*, *Add rule* (one rate, or rates by value per
+  night) and *Try a charge* (the preview, CGST/SGST or IGST). The bill shows each line's GST under its amount.
+- Tests: backend `TaxTests` (seeded rules, the same night before/after the rule change date, IGST and no-tax reasons,
+  room nights by slab, food vs transport, reversal and moved line keep their tax, package components, **a rule change
+  doesn't change a posted charge**, the accountant adds next month's rule, field errors, `TAX_RULE_MISSING`, permissions
+  and tenancy), `TaxUnitTests` (slab boundaries, intra- vs inter-state, rounding per line, GSTIN check digit) and a dev
+  seed test; frontend `gst.spec.ts`; browser steps S09-01 … S09-07; `check-api.mjs` Sprint 09 block;
+  `database/queries/check-sprint-09.sql`.
+
+### Changed
+- Posting a charge, a package or a room night now stores its GST (`folio_items.tax_amount` and `folio_item_taxes` with the
+  rule id and rate). Charges in a taxed category on a day no rule covers are refused (`TAX_RULE_MISSING`) instead of
+  being posted without GST. `FolioItemDto` has `taxes`.
+- Browser steps S08-02 … S08-04 expect 5% GST on the dinner they post (the demo property is now GST-registered).
+
+### Documentation
+- GST.md worked examples; API.md, DATABASE.md, `schema-sprint-09.md`, system design 4.19 and its diagram, ARCHITECTURE
+  module map, RUN_AND_TEST.md and REVIEWING.md Sprint 09 sections.
+
 ## [sprint-08] — 2026-10-18 — Folio (accepted)
 
 ### Added
