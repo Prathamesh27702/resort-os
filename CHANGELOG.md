@@ -2,6 +2,46 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-10] — 2026-10-20 — Payments, refunds, cash drawer (accepted)
+
+### Added
+- Migration V012: `payments` (numbered P00001 per property; CASH, UPI, CARD, BANK_TRANSFER; status graph in
+  `payment_status_transitions`, enforced by a trigger; only the status and the void fields can change; cash only with a
+  drawer shift; a card reference can't hold 13 or more digits), `payment_allocations` (which bill a payment settles),
+  `refunds` (reason 3–500 characters; cash only with a drawer shift), `cash_drawers` ("Front desk" for every property),
+  `cash_drawer_sessions` (OPEN → CLOSED or VARIANCE_PENDING → CLOSED; one open shift per drawer; counts never change) and
+  `cash_drawer_movements` (the drawer's signed ledger; rows only while the shift is open). Nothing in these tables can be
+  deleted. `fn_payment_money_check` locks the payment row and refuses an allocation or refund that would overspend it.
+- Payments API: `GET|POST /properties/{id}/payments` (list with totals by method; take money on a bill or on account,
+  `Idempotency-Key`), `GET /payments/{id}`, `POST /payments/{id}/allocate`, `/refund` (`Idempotency-Key`, reason) and
+  `/void` (reason). Cash drawer API: `GET /cash-drawer`, `GET /cash-drawer/sessions/{id}`, `POST /cash-drawer/open`,
+  `/close` and `/sessions/{id}/approve-variance`. Permissions `payment.read`, `payment.create`, `payment.refund`,
+  `payment.void`, `cash_drawer.operate`, `cash_drawer.approve_variance` (seeded to roles since Sprint 1).
+- Refunds can't overspend: the booking, the payment and the cash shift are locked in that order, the service checks
+  what is left, and the database checks again; a refund takes from on account first, then the bills the payment paid.
+- No card data: anything that looks like a card number (13–19 digits passing the Luhn check) is refused under its
+  field, in the API and in the forms.
+- Dev seed S009: yesterday's closed shift (₹5,000 float, ₹500 cash from R00007 as P00001, counted ₹5,500) and a ₹2,000
+  UPI advance on account for R00002 (P00002).
+- Staff app: **Payments** (`/payments`: totals by method, filters, search, the cash drawer panel) and one payment
+  (`/payments/:id`: bills, on account, refunds, Refund, Void, Put on a bill); **Take payment** and the bill's payment
+  lines on `/folios/:id`; the cash drawer panel on the front desk (Open drawer, Close drawer with the variance as you
+  type, Approve).
+- Tests: backend `PaymentTests` (the demo flow, concurrent refunds through a barrier, DELETE/UPDATE refused by the
+  database, idempotent take and refund, field errors, cash needing an open drawer, an advance put on a bill, a refund
+  when a guest leaves early, void rules, the list and permissions), `PaymentUnitTests` and a dev seed test; frontend
+  `payments.spec.ts`; browser steps S10-01 … S10-07; `check-api.mjs` Sprint 10 block;
+  `database/queries/check-sprint-10.sql`.
+
+### Changed
+- Bill balances subtract real payments (net of refunds); the front desk balance and check-out use the booking's bills
+  less every payment that counts, so money on account counts too. `FolioDto` has `paymentLines`. The calendar's payment
+  status is `NONE`, `PARTIAL` or `PAID` from real payments.
+
+### Documentation
+- API.md, DATABASE.md, `schema-sprint-10.md`, system design 3 (Sprint 10) and 4.20 with the payment flow diagram,
+  ARCHITECTURE module map, RUN_AND_TEST.md and REVIEWING.md Sprint 10 sections.
+
 ## [sprint-09] — 2026-10-20 — GST configuration and tax engine (accepted)
 
 ### Added

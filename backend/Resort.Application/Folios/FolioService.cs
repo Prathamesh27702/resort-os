@@ -22,7 +22,8 @@ namespace Resort.Application.Folios;
 /// both pass.
 /// </summary>
 public sealed class FolioService(
-    IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, FolioPosting posting)
+    IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, FolioPosting posting,
+    Payments.PaymentLedger ledger)
 {
     public const int MaxQuantity = 9999;
     public const int MaxPackageQuantity = 50;
@@ -311,6 +312,7 @@ public sealed class FolioService(
         var roomNames = await reservations.RoomNamesAsync(units.Select(u => u.UnitId), ct);
         var guestIds = rows.Select(x => x.Reservation.PrimaryGuestId).Distinct().ToList();
         var guests = await db.Guests.AsNoTracking().Where(g => guestIds.Contains(g.Id)).ToDictionaryAsync(g => g.Id, g => g.FullName, ct);
+        var paid = await ledger.PaidByFolioAsync(folioIds, ct);
         return rows.Select(x =>
         {
             var (f, r) = x;
@@ -318,7 +320,7 @@ public sealed class FolioService(
             var total = s?.Total ?? 0m;
             return new FolioListItemDto(f.Id, f.Number, f.Name, f.IsPrimary, r.Id, r.Reference, r.Status, guests.GetValueOrDefault(r.PrimaryGuestId, ""),
                 r.CheckIn, r.CheckOut, ReservationService.RoomsText(units.Where(u => u.ReservationId == r.Id && u.EndDate == r.CheckOut), roomNames),
-                s?.Lines ?? 0, total, total, f.Currency);
+                s?.Lines ?? 0, total, total - paid[f.Id], f.Currency);
         }).ToList();
     }
 
@@ -361,11 +363,12 @@ public sealed class FolioService(
             .Select(c => new FolioCategoryTotalDto(c, items.Where(i => i.Category == c).Sum(i => i.Total)))
             .Where(c => items.Any(i => i.Category == c.Category)).ToList();
         var total = items.Sum(i => i.Total);
+        var paid = await ledger.PaidByFolioAsync(folios.Select(f => f.Id).ToList(), ct);
         var summaries = folios.OrderByDescending(f => f.IsPrimary).ThenBy(f => f.Number)
             .Select(f =>
             {
                 var t = all.Where(i => i.FolioId == f.Id).Sum(i => i.Total);
-                return new FolioSummaryDto(f.Id, f.Number, f.Name, f.IsPrimary, t, t);
+                return new FolioSummaryDto(f.Id, f.Number, f.Name, f.IsPrimary, t, t - paid[f.Id]);
             }).ToList();
 
         return new FolioDto(folio.Id, folio.Number, folio.Name, folio.IsPrimary, reservation.Id, reservation.Reference, reservation.Status,
@@ -374,7 +377,8 @@ public sealed class FolioService(
             lines, categories,
             Charges: items.Where(i => i.ItemType == FolioItemTypes.Charge).Sum(i => i.Total),
             Reversals: items.Where(i => i.ItemType == FolioItemTypes.Reversal).Sum(i => i.Total),
-            Tax: items.Sum(i => i.TaxAmount), Total: total, Payments: 0m, Balance: total,
-            summaries, CanPost: CantPost(folio, reservation) is null, CantPostReason: CantPost(folio, reservation));
+            Tax: items.Sum(i => i.TaxAmount), Total: total, Payments: paid[folio.Id], Balance: total - paid[folio.Id],
+            summaries, CanPost: CantPost(folio, reservation) is null, CantPostReason: CantPost(folio, reservation),
+            PaymentLines: await ledger.FolioLinesAsync(folio.Id, ct));
     }
 }

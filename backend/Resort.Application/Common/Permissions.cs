@@ -44,6 +44,13 @@ public static class Perm
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
 
+    public const string PaymentRead = "payment.read";
+    public const string PaymentCreate = "payment.create";
+    public const string PaymentRefund = "payment.refund";
+    public const string PaymentVoid = "payment.void";
+    public const string CashDrawerOperate = "cash_drawer.operate";
+    public const string CashDrawerApproveVariance = "cash_drawer.approve_variance";
+
     public const string TaxRead = "tax.read";
     public const string TaxManage = "tax.manage";
 
@@ -59,6 +66,7 @@ public static class Perm
         ReservationRead, ReservationCreate, ReservationUpdate, ReservationCancel,
         FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate,
         FolioRead, FolioPostCharge, FolioAdjust,
+        PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,
         AuditRead, SystemSettings,
     ];

@@ -54,6 +54,14 @@ public class Property : AuditableEntity, IOrganizationScoped, ISoftDelete, IVers
         var tz = TimeZoneInfo.FindSystemTimeZoneById(Timezone);
         return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(utcNow, tz).DateTime);
     }
+
+    /// <summary>The instant a local calendar day starts at the property (midnight there), for filtering by business day.</summary>
+    public DateTimeOffset StartOfDay(DateOnly day)
+    {
+        var tz = TimeZoneInfo.FindSystemTimeZoneById(Timezone);
+        var local = day.ToDateTime(TimeOnly.MinValue);
+        return new DateTimeOffset(local, tz.GetUtcOffset(local)).ToUniversalTime();
+    }
 }
 
 public class PropertySetting : AuditableEntity, IPropertyScoped, IAudited

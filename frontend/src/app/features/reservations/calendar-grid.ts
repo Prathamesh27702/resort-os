@@ -9,7 +9,7 @@ export interface CalendarDrop { booking: CalendarBooking; target: CalRow; }
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-/** "No payment recorded" until payments arrive (Sprint 10). */
+/** What the booking has paid so far (Sprint 10): paid in full, part paid, or nothing recorded yet. */
 export function paymentText(s: CalendarBooking['paymentStatus']): string {
   return s === 'PAID' ? 'Paid' : s === 'PARTIAL' ? 'Part paid' : 'No payment recorded';
 }

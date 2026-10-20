@@ -3,15 +3,16 @@ namespace Resort.Contracts;
 // ---------------------------------------------------------------- folios (Sprint 8)
 
 /// <summary>A bill with every line, its totals by category and its balance. Lines are never edited or deleted: a
-/// correction is a REVERSAL line. Total = sum of the lines, GST included (Sprint 9); Balance = Total − Payments
-/// (payments arrive in Sprint 10, 0 until then). CanPost: the booking is in a state that takes charges (confirmed,
-/// checked in or checked out); CantPostReason says why not otherwise.</summary>
+/// correction is a REVERSAL line. Total = sum of the lines, GST included (Sprint 9); Payments = what the folio has been
+/// paid (allocations of payments that count, minus refunds from it; Sprint 10); Balance = Total − Payments (negative: in
+/// credit). PaymentLines: those payments and refunds, oldest first. CanPost: the booking is in a state that takes charges
+/// (confirmed, checked in or checked out); CantPostReason says why not otherwise.</summary>
 public sealed record FolioDto(
     Guid Id, string Number, string Name, bool IsPrimary, Guid ReservationId, string Reference, string ReservationStatus,
     Guid GuestId, string GuestName, Guid? BillToGuestId, string? BillToName, DateOnly CheckIn, DateOnly CheckOut, string Rooms,
     string Currency, IReadOnlyList<FolioItemDto> Items, IReadOnlyList<FolioCategoryTotalDto> Categories,
     decimal Charges, decimal Reversals, decimal Tax, decimal Total, decimal Payments, decimal Balance,
-    IReadOnlyList<FolioSummaryDto> Folios, bool CanPost, string? CantPostReason);
+    IReadOnlyList<FolioSummaryDto> Folios, bool CanPost, string? CantPostReason, IReadOnlyList<FolioPaymentDto> PaymentLines);
 
 /// <summary>One line. ItemType CHARGE or REVERSAL; Source MANUAL, ROOM_NIGHT or PACKAGE. ReversedBy / ReversalReason:
 /// the reversal that cancelled this charge. MovedFrom / MovedTo: the folio number a line was split from or to.

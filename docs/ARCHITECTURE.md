@@ -108,7 +108,7 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 5 | Guests | guests, guest_documents, guest_preferences | 3 | built |
 | 6 | Front desk | unit_housekeeping_status, unit_housekeeping_history (uses reservations; folios from Sprint 8) | 7 | built |
 | 7 | Folio | folios, folio_items, folio_item_taxes | 8 | built |
-| 8 | Payments | payments, payment_allocations, refunds, cash_drawer_* | 10–11 | planned |
+| 8 | Payments | payments, payment_allocations, refunds, cash_drawers, cash_drawer_sessions, cash_drawer_movements (Sprint 10); gateway orders, webhooks (Sprint 11) | 10–11 | desk payments and cash drawer built; Razorpay planned |
 | 9 | GST / invoicing | gst_registrations, tax_categories, tax_rules, tax_rule_slabs (Sprint 9); invoices, credit_notes, receipts (Sprint 12) | 9, 12 | tax engine built; invoices planned |
 | 10 | Housekeeping | housekeeping_tasks, unit_housekeeping_status | 13 | planned |
 | 11 | Maintenance | maintenance_assets, maintenance_tickets | 13 | planned |

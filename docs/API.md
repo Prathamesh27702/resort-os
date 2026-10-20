@@ -403,7 +403,7 @@ guest needs `reservation.update`. How a move stays race-free: [system-design.md 
 maxOccupancy, floor, isActive, beds: [{ id, code, name, isActive }] }], bookings: [{ reservationUnitId, reservationId,
 reference, status, unitId, bedId, startDate, endDate, guestName, adults, children, sourceName, paymentStatus, totalAmount,
 version }], blocks: [{ id, unitId, bedId, blockType, startDate, endDate, reason }] }`. `paymentStatus` is `NONE` until
-payments are recorded (Sprint 10), then `PARTIAL` or `PAID`.
+payments are recorded (Sprint 10), then `PARTIAL` or `PAID` (paid net of refunds against the booking's bills).
 
 `ReassignRoomRequest = { reservationUnitId, unitId, bedId?, reason, version }`. **Field errors** (400, each under its
 field): `Reason` (missing: "Say why the guest is moving (at least 3 characters), e.g. AC not working in 102.", < 3, > 500);
@@ -459,7 +459,7 @@ All under `/api/v1/properties/{propertyId}`. A folio is the bill of one stay; ev
 ("Main", F00001 …), opened when it is confirmed. **Lines are never edited or deleted**: a mistake is corrected with a
 reversal line, and moving a line to another folio is a reversal here plus a copy there. Reading needs `folio.read`,
 posting and moving lines `folio.post_charge`, reversing `folio.adjust` (owner, general manager and manager). Totals are
-summed from the lines; GST is added from Sprint 9 (below) and payments arrive in Sprint 10. How it stays consistent:
+summed from the lines; GST is added from Sprint 9 and payments from Sprint 10 (below). How it stays consistent:
 [system-design.md → 4.18](architecture/system-design.md#418-folios-the-bill-of-a-stay).
 
 | Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
@@ -553,6 +553,76 @@ line carries the same taxes as its charge (negated for a reversal). Posting a ch
 rule covers, at a registered property, is refused: **422 `TAX_RULE_MISSING`** ("There is no GST rule for Equipment
 rental on Sun 18 Oct 2026. Ask your accountant to add one in Settings → GST. Until then equipment charges dated Sun 18
 Oct 2026 can't be posted.").
+
+## Built endpoints (Sprint 10 — payments, refunds, cash drawer)
+
+All under `/api/v1/properties/{propertyId}`. Money taken at the property: cash, UPI, card (on the property's own
+terminal) and bank transfer. A desk payment is `CAPTURED` when it is recorded (the money is in hand); the gateway states
+are for Razorpay (Sprint 11). **Nothing is edited or deleted**: a refund and a void are new records with their reasons.
+**No card data, ever**: there is no field for a card number, and anything that looks like one (13–19 digits in a row
+passing the Luhn check, spaces and dashes ignored) is refused under its field. Taking and refunding money need an
+`Idempotency-Key`, so a double click or a retry can't move money twice; a repeat returns the first result with
+`Idempotent-Replayed: true`. Reading needs `payment.read`, taking money and putting an advance on a bill
+`payment.create`, refunds `payment.refund`, voids `payment.void`, the drawer `cash_drawer.operate`, approving a short or
+over drawer `cash_drawer.approve_variance` (role defaults in V002: receptionists take money and run the drawer; managers
+also refund and approve variances; the accountant refunds and approves variances; voids are for the owner and the general
+manager). How the locking works:
+[system-design.md → 4.20](architecture/system-design.md#420-refunds-that-cant-overspend-and-a-cash-drawer-that-balances).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /payments?q&method&status&from&to&reservationId&page&pageSize` | Payments, newest first, with totals by method (received, refunded, net; voided payments left out). `from`/`to` are days at the property; `q` searches the payment number, booking reference, payment reference or guest name | `payment.read` | — | `PaymentListDto` | 400 `Method` ("'CHEQUE' isn't a payment method. Use CASH, UPI, CARD, BANK_TRANSFER."), `Status`, 403, 404 | — |
+| `GET /payments/{id}` | One payment: its bills, what is on account, refunds, the booking's folios and whether it can still be voided (and why not) | `payment.read` | — | `PaymentDto` | 403, 404 | — |
+| `POST /payments` | Take money. With `folioId` the whole amount goes on that bill (at most what it owes); with only `reservationId` it stays **on account** for the booking (an advance). Cash goes into the open drawer shift | `payment.create` | `CreatePaymentRequest` | 201 `PaymentDto` | 400 under the field (below), `Idempotency-Key` missing; 403, 404; 422 `BOOKING_CLOSED` / `FOLIO_CLOSED` ("R00005 is cancelled, so no payment can be taken for it."), `IDEMPOTENCY_KEY_REUSED` | INSERT payment (+ allocation, + drawer movement) |
+| `POST /payments/{id}/allocate` | Put money that is on account onto bills of the same booking | `payment.create` | `AllocatePaymentRequest` | `PaymentDto` | 400 `Allocations` ("P00002 has ₹2,000 on account; ₹2,500 can't be allocated. Allocate at most ₹2,000.", "F00004 owes ₹1,200; ₹1,500 would put it in credit. Allocate at most ₹1,200.", another booking's folio), 403, 404; 422 `PAYMENT_NOT_CAPTURED`, `FOLIO_CLOSED` | INSERT allocations |
+| `POST /payments/{id}/refund` | Give money back, with a reason. It comes off what is on account first, then the bills it paid (or the one named). The payment becomes `PARTIALLY_REFUNDED` or `REFUNDED` | `payment.refund` | `RefundPaymentRequest` | `PaymentDto` | 400 under the field (below), `Idempotency-Key` missing; 403, 404; 422 `PAYMENT_NOT_CAPTURED` ("P00003 was voided (Entered twice), so nothing of it can be refunded."), `IDEMPOTENCY_KEY_REUSED` | INSERT refund(s) (+ drawer movement), UPDATE payment status, with the reason |
+| `POST /payments/{id}/void` | Cancel a payment entered by mistake, with a reason. It becomes `CANCELLED` and counts for nothing; voided cash leaves the drawer | `payment.void` | `VoidPaymentRequest` | `PaymentDto` | 400 `Reason`, 403, 404; **409 `ALREADY_VOIDED`** ("P00003 was already voided at 14:05 on Tue 20 Oct 2026 by Rita (reason: …). Reload to see it."); 422 `NOT_VOIDABLE` ("Part of P00003 has been refunded, so it can't be voided. Refund the rest instead.", or its cash shift is closed) | UPDATE payment (+ drawer movement), with the reason |
+| `GET /cash-drawer?drawerId` | The drawer: the open shift with what it should hold now, shifts waiting for approval, the last closed ones | `payment.read` | — | `CashDrawerDto` | 400 `DrawerId`, 403, 404 | — |
+| `GET /cash-drawer/sessions/{id}` | One shift with its ledger (every movement) | `payment.read` | — | `CashDrawerSessionDto` | 403, 404 | — |
+| `POST /cash-drawer/open` | Open a shift with the cash counted into the drawer (the float) | `cash_drawer.operate` | `OpenCashDrawerRequest` | 201 `CashDrawerSessionDto` | 400 `OpeningFloat`, `Note`; 403, 404; **409 `DRAWER_ALREADY_OPEN`** ("The Front desk drawer is already open since 08:00 on Tue 20 Oct 2026 (Rekha). …") | INSERT session + opening float movement |
+| `POST /cash-drawer/close` | Close the open shift with the cash counted now. Counted = expected → `CLOSED`; short or over → `VARIANCE_PENDING`, which needs a note | `cash_drawer.operate` | `CloseCashDrawerRequest` | `CashDrawerSessionDto` | 400 `CountedAmount`, `Note` ("The drawer should hold ₹5,800 but ₹5,750 was counted: ₹50 short. Count again, or say why (at least 3 characters) …"); 403, 404; 422 `DRAWER_NOT_OPEN` | UPDATE session, with the note |
+| `POST /cash-drawer/sessions/{id}/approve-variance` | Approve a short or over shift, with a note; it becomes `CLOSED`. The person who closed it may approve it if they hold the permission | `cash_drawer.approve_variance` | `ApproveVarianceRequest` | `CashDrawerSessionDto` | 400 `Note` ("Say why the variance is approved (at least 3 characters), e.g. …"); 403, 404; **409 `NO_VARIANCE_PENDING`** (it balanced, or "This shift's variance was already approved at … by …. Reload to see it.") | UPDATE session, with the note |
+
+`CreatePaymentRequest = { method, amount, folioId?, reservationId?, paymentReference?, note? }`. **Field errors** (400,
+each under its field): `Method` ("Choose how the money was paid: Cash, UPI, Card, Bank transfer."; cash with no open shift:
+"The Front desk cash drawer isn't open, so a payment in cash can't be recorded. Open it on the front desk (Cash drawer →
+Open drawer) with the cash in it, or choose another method."), `Amount` (more than ₹0, 2 decimals, at most ₹1,00,00,000;
+on a bill: "F00006 owes ₹9,500, so it can take at most that. Take ₹9,500, or record the rest on account for the booking."),
+`ReservationId` ("Choose the folio this pays, or the booking to put the money on account for."), `FolioId` (another
+booking's bill), `PaymentReference` (≤ 100; for a card: "Don't type the card number: card details are never stored. Enter
+the approval code from the terminal slip (up to 12 digits), or leave it empty."; otherwise "This looks like a card number,
+and card details are never stored. …"), `Note` (≤ 500, no card numbers).
+`AllocatePaymentRequest = { allocations: [{ folioId, amount }] }` (1–20 lines, each folio once).
+
+`RefundPaymentRequest = { amount, reason, method? (default the payment's), folioId?, reference? }`. **Field errors**:
+`Amount` ("P00003 was ₹1,000 and ₹200 of it is already refunded, so at most ₹800 can be refunded.", "P00003 has ₹1,000 on
+F00006, so at most that can be refunded from it."), `Reason` ("Say why the money is refunded (at least 3 characters), e.g.
+Guest cancelled the airport transfer."), `Method` (a cash refund needs an open shift, and "The drawer should hold ₹300,
+less than ₹500. Refund by another method, or add cash to the drawer first."), `FolioId` ("P00003 isn't on that folio. …"),
+`Reference` (as above). `VoidPaymentRequest = { reason }` · `OpenCashDrawerRequest = { openingFloat, note?, drawerId? }` ·
+`CloseCashDrawerRequest = { countedAmount, note?, drawerId? }` · `ApproveVarianceRequest = { note }`.
+
+`PaymentDto = { id, number, reservationId, reference, guestName, method, status, amount, allocated, refunded, onAccount,
+refundable, currency, paymentReference, note, cashDrawerSessionId, receivedAt, receivedByName, voidedAt, voidedByName,
+voidReason, canVoid, cantVoidReason, allocations: [{ id, folioId, folioNumber, folioName, amount, refunded, allocatedAt,
+allocatedByName }], refunds: RefundDto[], folios: [{ id, number, name, isPrimary, balance }] }`.
+`RefundDto = { id, paymentId, paymentNumber, folioId, folioNumber, amount, method, status, reason, reference, refundedAt,
+refundedByName }`. `PaymentListDto = { items: [{ id, number, reservationId, reference, guestName, method, status, amount,
+refunded, onAccount, paymentReference, receivedAt, receivedByName, folios }], page, pageSize, total, byMethod: [{ method,
+count, received, refunded, net }], received, refundedTotal, net }`.
+`CashDrawerDto = { id, name, current: CashDrawerSessionDto?, pendingApproval: CashDrawerSessionDto[], recent:
+CashDrawerSessionDto[] }`. `CashDrawerSessionDto = { id, cashDrawerId, drawerName, status: OPEN | VARIANCE_PENDING |
+CLOSED, openedAt, openedByName, openingFloat, openNote, cashIn, cashOut, expected, payments, closedAt, closedByName,
+counted, variance (counted − expected; negative = short), closeNote, approvedAt, approvedByName, approvalNote, movements?:
+[{ id, movementType: OPENING_FLOAT | PAYMENT | REFUND | VOID | PAY_IN | PAY_OUT, amount (+ in, − out), description,
+paymentId, paymentNumber, reference, movedAt, byName }] }`.
+
+**On the bill and the booking (earlier endpoints).** `FolioDto.payments` is what the bill has been paid (its allocations
+from payments that count, less refunds taken off it), `balance = total − payments`, and `FolioDto.paymentLines = [{
+paymentId, paymentNumber, refundId, kind: PAYMENT | REFUND, method, amount (refunds negative), at, byName, detail, voided
+}]`. The front desk's balance and check-out use the **booking**: all its bills less every payment that counts, net of
+refunds, so money on account counts too. The calendar's `paymentStatus` is `NONE`, `PARTIAL` or `PAID` from the same
+numbers.
 
 ### Health (no auth, not rate-limited)
 
