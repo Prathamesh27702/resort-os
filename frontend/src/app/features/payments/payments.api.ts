@@ -1,6 +1,8 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { CashDrawer, CashDrawerSession, DrawerStatus, Payment, PaymentList, PaymentMethod, PaymentStatus } from '../../core/models';
+import {
+  BookingPaymentLinks, CashDrawer, CashDrawerSession, DrawerStatus, Payment, PaymentLink, PaymentLinkStatus, PaymentList, PaymentMethod, PaymentStatus, PayPage,
+} from '../../core/models';
 
 export interface TakePayment {
   method: PaymentMethod; amount: number; folioId: string | null; reservationId: string | null; paymentReference: string | null; note: string | null;
@@ -41,10 +43,40 @@ export class PaymentsApi {
   approveVariance(pid: string, id: string, note: string) {
     return this.http.post<CashDrawerSession>(`${this.base(pid)}/cash-drawer/sessions/${id}/approve-variance`, { note });
   }
+
+  // Razorpay payment links (Sprint 11). Creating one needs an Idempotency-Key, so a double click makes one link.
+  links(pid: string, reservationId: string) {
+    return this.http.get<BookingPaymentLinks>(`${this.base(pid)}/payments/razorpay/orders`, { params: { reservationId } });
+  }
+  link(pid: string, id: string) { return this.http.get<PaymentLink>(`${this.base(pid)}/payments/razorpay/orders/${id}`); }
+  createLink(pid: string, body: { reservationId: string; amount: number; note: string | null }, idempotencyKey: string) {
+    return this.http.post<PaymentLink>(`${this.base(pid)}/payments/razorpay/orders`, body, this.key(idempotencyKey));
+  }
+  cancelLink(pid: string, id: string, reason: string) {
+    return this.http.post<PaymentLink>(`${this.base(pid)}/payments/razorpay/orders/${id}/cancel`, { reason });
+  }
 }
 
+/** The guest's pay page (no sign-in; the link's token is the proof). The callback only changes what the page shows:
+ *  Razorpay's webhook records the payment. fakeCheckout works only while the server uses the fake Razorpay. */
+@Injectable({ providedIn: 'root' })
+export class PayPageApi {
+  private http = inject(HttpClient);
+  private base = (token: string) => `/api/v1/pay/${encodeURIComponent(token)}`;
+  get(token: string) { return this.http.get<PayPage>(this.base(token)); }
+  callback(token: string, body: { razorpayPaymentId: string; razorpayOrderId: string; razorpaySignature: string }) {
+    return this.http.post<PayPage>(`${this.base(token)}/callback`, body);
+  }
+  fakeCheckout(token: string, succeed: boolean, method: string) {
+    return this.http.post<PayPage>(`${this.base(token)}/fake-checkout`, { succeed, method });
+  }
+}
+
+/** Methods staff type in at the desk. ONLINE payments are recorded by Razorpay, never typed in. */
 export const METHODS: PaymentMethod[] = ['CASH', 'UPI', 'CARD', 'BANK_TRANSFER'];
-const METHOD_LABEL: Record<PaymentMethod, string> = { CASH: 'Cash', UPI: 'UPI', CARD: 'Card', BANK_TRANSFER: 'Bank transfer' };
+/** Every method, for filters. */
+export const ALL_METHODS: PaymentMethod[] = [...METHODS, 'ONLINE'];
+const METHOD_LABEL: Record<PaymentMethod, string> = { CASH: 'Cash', UPI: 'UPI', CARD: 'Card', BANK_TRANSFER: 'Bank transfer', ONLINE: 'Online (Razorpay)' };
 export const methodLabel = (m: PaymentMethod | string) => METHOD_LABEL[m as PaymentMethod] ?? m;
 
 const STATUS_LABEL: Record<PaymentStatus, string> = {
@@ -72,6 +104,18 @@ export function varianceOf(expected: number, counted: number | null): { amount: 
   const amount = Math.round((counted - expected) * 100) / 100;
   return { amount, words: amount === 0 ? 'Balanced' : amount < 0 ? 'Short' : 'Over' };
 }
+
+const GATEWAY_METHOD: Record<string, string> = { upi: 'UPI', card: 'card', netbanking: 'net banking', wallet: 'wallet', emi: 'EMI', paylater: 'pay later' };
+/** "Online (Razorpay), by UPI". */
+export function onlineMethodText(gatewayMethod: string | null | undefined): string {
+  return gatewayMethod ? `Online (Razorpay), by ${GATEWAY_METHOD[gatewayMethod] ?? gatewayMethod}` : 'Online (Razorpay)';
+}
+
+const LINK_LABEL: Record<PaymentLinkStatus, string> = { CREATED: 'Waiting for the guest', PAID: 'Paid', CANCELLED: 'Cancelled' };
+export const linkStatusLabel = (s: PaymentLinkStatus) => LINK_LABEL[s] ?? s;
+export const linkStatusClass = (s: PaymentLinkStatus) => (s === 'PAID' ? 'ok' : s === 'CANCELLED' ? 'off' : 'wait');
+/** The full address of a link's pay page, to copy and send to the guest. */
+export const payUrl = (payPath: string, origin = location.origin) => origin + payPath;
 
 const DRAWER_LABEL: Record<DrawerStatus, string> = { OPEN: 'Open', VARIANCE_PENDING: 'Waiting for approval', CLOSED: 'Closed' };
 export const drawerStatusLabel = (s: DrawerStatus) => DRAWER_LABEL[s];

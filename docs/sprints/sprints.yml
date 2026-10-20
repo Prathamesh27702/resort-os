@@ -995,17 +995,46 @@ sprints:
   depends: [10]
   goal: Online payments where the server-verified webhook is authoritative (brief §22).
   client: "Guests pay online with UPI and cards through Razorpay; payment links can be sent before arrival."
+  progress:
+    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    done:
+      - "Migration V013: payment_gateway_orders (a payment link: Razorpay order, amount, the guest's private token, CREATED / PAID / CANCELLED, declined tries) and webhook_events (every verified delivery, unique on Razorpay's event id, with what it did); payments get method ONLINE (unique on Razorpay's payment id) and refunds ONLINE with Razorpay's refund id; nothing can be deleted"
+      - "IPaymentGateway + RazorpayPaymentGateway over HttpClient: a 10 s timeout per try, up to 3 tries with exponential backoff and jitter when safe (a refund is never retried on an unclear failure); a built-in fake Razorpay (same HTTP calls, signed webhooks) for tests and for development without keys, never in production"
+      - "Webhook: HMAC-SHA256 over the raw body (wrong → 401, nothing stored); the event id is claimed once inside the transaction (duplicates, even at the same moment, change nothing); the payment is fetched from Razorpay and only moves forward, so captured-before-authorised is handled; our errors are stored FAILED and retried by Razorpay"
+      - "One transaction: the payment is recorded, the link marked paid, the money put on the main bill (the rest on account) and a pending booking confirmed"
+      - "Browser callback only checks the signature and shows \"confirming\"; it never records a payment. Online payments can't be voided; refunds go back through Razorpay and wait for refund.processed (refund.failed puts the money back)"
+      - "Screens: Online payment links on a booking (send with the amount checked against what is owed, copy, WhatsApp, cancel with a reason, History of what Razorpay sent); the guest's page /pay/:token without sign-in (Razorpay Checkout, or test buttons with the fake); online details and Razorpay refunds on a payment"
+      - "No new dev seed: a link needs a real order in Razorpay; the seeded pending booking R00003 is the demo booking"
+      - "[done] Docs: RAZORPAY.md, API.md, DATABASE.md, schema-sprint-11.md, system design Sprint 11 and 4.21 with the Razorpay flow diagram, RUN_AND_TEST, REVIEWING"
+    files:
+      - "database/migrations/V013__razorpay.sql; database/queries/check-sprint-11.sql"
+      - "backend/Resort.Domain/Payments/Payments.cs"
+      - "backend/Resort.Contracts/PaymentContracts.cs"
+      - "backend/Resort.Application/ — Payments/PaymentGateway.cs, Payments/PaymentLinkService.cs, Payments/RazorpayWebhookService.cs, Payments/PaymentService.cs, Validation/PaymentValidators.cs, Reservations/ReservationService.cs, Common/SystemActor.cs, Common/Errors.cs, Common/Abstractions.cs, DependencyInjection.cs"
+      - "backend/Resort.Infrastructure/ — Payments/RazorpayPaymentGateway.cs, Payments/FakeRazorpayServer.cs, Persistence/AppDbContext.cs, DependencyInjection.cs; backend/Resort.Api/ — Endpoints/RazorpayEndpoints.cs, Infrastructure/CurrentUser.cs, Program.cs"
+      - "backend/Resort.Tests/ — Integration/RazorpayTests.cs, Unit/RazorpayUnitTests.cs, Support/RazorpayFactory.cs"
+      - "frontend/src/app/ — features/pay/pay.page.ts, features/payments/ (payment-links-panel.ts, payments.api.ts, payment-dialogs.ts, payment.page.ts, payments.page.ts, payment-links.spec.ts), features/reservations/reservation.page.ts, core/models.ts, app.routes.ts"
+      - "frontend/e2e/sprint-11.spec.ts; scripts/check-api.mjs (Sprint 11 checks); .env.example"
+      - "docs/RAZORPAY.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-11.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-11-screens/; tools/handbooks/diagrams (razorpay-flow)"
+    results:
+      - "RESULTS_BACKEND"
+      - "Frontend: 81 of 81 unit tests passed (9 new: Razorpay helpers, the send-link dialog's limits and card-number check, the guest page's test buttons, polling while confirming and an invalid link); ESLint clean; production build OK"
+      - "RESULTS_E2E"
   scope:
     tables: [payment_gateway_orders, webhook_events]
     api:
       - POST /api/v1/properties/{propertyId}/payments/razorpay/orders
+      - GET /api/v1/properties/{propertyId}/payments/razorpay/orders?reservationId | /{id}
+      - POST /api/v1/properties/{propertyId}/payments/razorpay/orders/{id}/cancel  (reason required)
       - POST /api/v1/webhooks/razorpay  (no auth; HMAC signature)
+      - GET /api/v1/pay/{token}; POST /api/v1/pay/{token}/callback  (guest page, no auth; token)
+    screens: [online payment links on /reservations/:id, /pay/:token (guest page, no sign-in)]
     external: [Razorpay Orders API, Razorpay Payments API, Razorpay webhooks]
   tasks:
-    - "IPaymentGateway + RazorpayPaymentGateway (HttpClient, retries with jitter, timeouts)"
-    - "Webhook: verify X-Razorpay-Signature over the raw body; dedupe on event id (webhook_events unique); process in a transaction"
-    - "Browser callback only shows status; it never marks a payment captured"
-    - "Fake Razorpay server for tests (tests/fakes)"
+    - "[done] IPaymentGateway + RazorpayPaymentGateway (HttpClient, retries with jitter, timeouts)"
+    - "[done] Webhook: verify X-Razorpay-Signature over the raw body; dedupe on event id (webhook_events unique); process in a transaction"
+    - "[done] Browser callback only shows status; it never marks a payment captured"
+    - "[done] Fake Razorpay server for tests (tests/fakes)"
   tests:
     - Payment webhook — duplicate delivery processed once
     - Payment webhook — bad signature → 401, nothing stored
@@ -1016,6 +1045,27 @@ sprints:
     - "Use ngrok/cloudflared to expose /api/v1/webhooks/razorpay to Razorpay test mode. Never point test webhooks at production."
   demo:
     - Pay with a Razorpay test card → webhook → reservation confirmed
+  handbook:
+    highlights:
+      - "Staff send a payment link from a booking; the guest pays on their phone with UPI or a card through Razorpay, with no sign-in"
+      - "Only Razorpay's signed notification records a payment; it goes on the bill and confirms a pending booking by itself"
+      - "A notification sent twice, or out of order, is recorded once; every one is kept with what it did"
+      - "A declined try is shown with the bank's reason and the link stays open; links can be cancelled with a reason"
+      - "Online payments are refunded back through Razorpay; card details never reach Resort OS"
+      - "Without Razorpay keys the app uses a built-in test Razorpay, so everything can be tried before the account is set up"
+    design:
+      ui: "On a booking, Online payment links shows what is owed and the links sent: Send payment link (amount checked against what is owed, copied for WhatsApp or SMS), Cancel with a reason, and History with each notification from Razorpay. The guest's page (/pay/…) has no staff menu: the property, the booking, the amount and Pay, which opens Razorpay Checkout; it says confirming, paid, declined (with the reason) or cancelled in words. A payment's page shows how it was paid online, and Refund sends the money back through Razorpay."
+      api: "POST /properties/{id}/payments/razorpay/orders (Idempotency-Key) creates the Razorpay order and the link; GET lists a booking's links, GET /{id} shows one with its webhook events, POST /{id}/cancel stops it. POST /webhooks/razorpay (no sign-in) checks the HMAC over the raw body, claims the event id once, asks Razorpay for the payment and applies it in one transaction. /pay/{token} serves the guest's page; its callback only shows status."
+      database: "Migration V013 adds payment_gateway_orders (one row per link; what it is for never changes) and webhook_events (unique on Razorpay's event id; only a failed event can be retried). Payments get method ONLINE, unique on Razorpay's payment id; refunds get ONLINE with Razorpay's refund id."
+    diagrams:
+      - {file: tools/handbooks/assets/razorpay-flow.png, caption: "A payment link, and how Razorpay's webhook is verified, deduplicated and applied in order"}
+    screenshots:
+      - {file: docs/sprints/sprint-11-screens/01-send-link.png, caption: "Sending a payment link for an advance"}
+      - {file: docs/sprints/sprint-11-screens/03-pay-page.png, caption: "The guest's page on a phone, no sign-in"}
+      - {file: docs/sprints/sprint-11-screens/04-declined.png, caption: "A declined try says why; the link stays open"}
+      - {file: docs/sprints/sprint-11-screens/05-paid.png, caption: "Paid: recorded by Razorpay's webhook"}
+      - {file: docs/sprints/sprint-11-screens/06-booking-confirmed.png, caption: "The booking confirmed by the payment, with what Razorpay sent"}
+      - {file: docs/sprints/sprint-11-screens/07-online-refund.png, caption: "A refund sent back through Razorpay"}
 
 - id: 12
   title: GST invoices, credit/debit notes, receipts

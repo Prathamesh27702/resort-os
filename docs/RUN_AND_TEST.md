@@ -101,7 +101,7 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
 | 01–10 | Accepted: on `develop` and `main` | `develop` |
-| 11 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
+| 11 | In review: pull request into `develop` from `claude/sprint-11-razorpay-r65lmt` | `claude/sprint-11-razorpay-r65lmt` |
 
 ```powershell
 cd D:\resort-os
@@ -474,6 +474,52 @@ for a manager*. As the owner, **Payments** → **Approve**. How it works:
 By hand: [REVIEWING.md → Sprint 10](sprints/REVIEWING.md#sprint-10--payments-refunds-and-the-cash-drawer).
 Screenshots: [sprint-10-screens/](sprints/sprint-10-screens/).
 
+### Sprint 11: Razorpay
+
+**New:** on a booking, **Online payment links**: what the booking still owes, **Send payment link** for an amount (at
+most what is owed, less links already open; ₹1 or more), the link copied to send by WhatsApp or SMS, **Cancel** with a
+reason, and **History**: every notification Razorpay sent and what it did. The guest opens the link on their phone with
+no sign-in (`/pay/…`) and pays with UPI or a card in Razorpay Checkout. Only Razorpay's signed webhook records the
+payment: it goes on the bill (method *Online (Razorpay)*), the link is *Paid* and a *Pending* booking is *Confirmed*.
+A declined try says why and the link stays open. Online payments are refunded back through Razorpay and can't be voided.
+**No keys needed to try it:** with the three `Razorpay__…` values empty in `.env`, the API uses a built-in test Razorpay
+and the guest's page shows *Pay (test)* and *Fail the payment (test)*. For the real test-mode demo (a Razorpay test card
+and a real webhook) follow [RAZORPAY.md → Setting it up](RAZORPAY.md#setting-it-up-test-mode): test keys and the webhook
+secret in `.env`, and `cloudflared tunnel --url http://localhost:5180` so Razorpay can reach your PC. No new demo data:
+R00003 (pending, "Will send the advance by UPI") is the booking to send a link for. Restart the API and watch for
+`Applying migration V013__razorpay`.
+
+```powershell
+# Backend (24 tests: RazorpayTests and RazorpayUnitTests; includes the same webhook delivered twice at once, a bad
+# signature (401, nothing stored), captured before authorised, retries and timeouts, and online refunds)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Razorpay"
+
+# Frontend unit tests (Razorpay helpers, the send-link dialog, the guest's page)
+cd frontend
+npm run test:ci
+
+# Browser (6 steps, S11-01 … S11-06; S11-01 … S11-04 are the demo: send a link, a declined try, pay, the booking
+# confirmed; S11-05 refunds ₹500 through Razorpay)
+npm run e2e -- e2e/sprint-11.spec.ts
+cd ..
+
+# API checks: the Sprint 11 block must be all PASS (it sends a ₹1 link for R00003 and cancels it)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6, 7 and 10 must return no rows)
+Get-Content database/queries/check-sprint-11.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (no keys): **Reservations → R00003** → *Online payment links* → **Send payment link** *2000* →
+open the copied link in a private window → **Fail the payment (test)** (the reason is shown) → **Pay ₹2,000.00 (test)** →
+*Paid*. Back on R00003 (refresh): *Confirmed*, the link *Paid* with its payment, and **History** lists what Razorpay
+sent. With test keys and the tunnel, the same page shows **Pay**, which opens Razorpay Checkout: pay with card
+4111 1111 1111 1111 (any future expiry, any CVV) or UPI `success@razorpay`. How it works:
+[system-design.md → 4.21](architecture/system-design.md#421-razorpay-the-webhook-is-the-only-writer).
+
+By hand: [REVIEWING.md → Sprint 11](sprints/REVIEWING.md#sprint-11--razorpay).
+Screenshots: [sprint-11-screens/](sprints/sprint-11-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -486,7 +532,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 316 backend passed, 72 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: BACKEND_TOTAL backend passed, 81 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -494,7 +540,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–10 (expected: 90 passed, about 13 minutes)
+# 3. Every browser test, Sprints 01–11 (expected: 96 passed, about 14 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -509,13 +555,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–10:
+Expected totals for Sprints 01–11:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 316 passed, 0 failed |
-| Frontend unit tests | 72 of 72 SUCCESS |
-| Browser tests | 90 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7 + 7) |
+| Backend tests | BACKEND_TOTAL passed, 0 failed |
+| Frontend unit tests | 81 of 81 SUCCESS |
+| Browser tests | 96 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7 + 7 + 6) |
 | API checks | 0 failed |
 
 Other useful commands:

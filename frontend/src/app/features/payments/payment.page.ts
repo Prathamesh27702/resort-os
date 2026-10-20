@@ -10,10 +10,10 @@ import { Payment } from '../../core/models';
 import { PropertyContext, inZone } from '../../core/property-context';
 import { rupeesExact } from '../settings/rates/rates.api';
 import { AllocateDialog, RefundDialog, VoidPaymentDialog } from './payment-dialogs';
-import { PaymentsApi, methodLabel, paymentStatusClass, paymentStatusLabel } from './payments.api';
+import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, paymentStatusLabel } from './payments.api';
 
 /**
- * One payment (Sprint 10): how it was paid, the bills it is on, what is still on account, its refunds and, if it was
+ * One payment (Sprint 10; online payments Sprint 11): how it was paid, the bills it is on, what is still on account, its refunds and, if it was
  * entered by mistake, its void. Nothing is edited or deleted: a refund and a void are new records with their reasons.
  */
 @Component({
@@ -48,7 +48,11 @@ import { PaymentsApi, methodLabel, paymentStatusClass, paymentStatusLabel } from
           <div><span>Can still be refunded</span><b class="num">{{ money(p.refundable) }}</b></div>
         </div>
         <dl class="facts">
-          @if (p.paymentReference) { <dt>Reference</dt><dd>{{ p.paymentReference }}</dd> }
+          @if (p.method === 'ONLINE') {
+            <dt>Paid</dt><dd data-testid="online">{{ onlineText(p.gatewayMethod) }}, on the guest's payment link. Recorded by Razorpay's webhook.</dd>
+            @if (p.paymentReference) { <dt>Razorpay payment</dt><dd class="num">{{ p.paymentReference }}</dd> }
+            @if (p.status === 'AUTHORIZED') { <dt>Waiting</dt><dd class="mute">Razorpay has authorised it; it counts once Razorpay captures it.</dd> }
+          } @else if (p.paymentReference) { <dt>Reference</dt><dd>{{ p.paymentReference }}</dd> }
           @if (p.note) { <dt>Note</dt><dd>{{ p.note }}</dd> }
           @if (p.method === 'CASH') { <dt>Cash drawer</dt><dd>Taken into the drawer shift open at the time</dd> }
           @if (!p.canVoid && p.cantVoidReason && p.status !== 'CANCELLED') { <dt>Void</dt><dd class="mute">{{ p.cantVoidReason }}</dd> }
@@ -77,7 +81,10 @@ import { PaymentsApi, methodLabel, paymentStatusClass, paymentStatusLabel } from
               <thead><tr><th>Refund</th><th class="hide-sm">From</th><th class="right">Amount</th></tr></thead>
               <tbody>
                 @for (r of p.refunds; track r.id) {
-                  <tr [attr.data-refund]="r.id"><td><b>{{ r.reason }}</b><br /><small class="mute">{{ methodLabel(r.method) }} · {{ time(r.refundedAt) }}
+                  <tr [attr.data-refund]="r.id"><td><b>{{ r.reason }}</b>
+                    @if (r.status === 'PENDING') { <span class="chip wait">Waiting for Razorpay</span> }
+                    @if (r.status === 'FAILED') { <span class="chip off">Razorpay couldn't send it; money back on the payment</span> }
+                    <br /><small class="mute">{{ methodLabel(r.method) }} · {{ time(r.refundedAt) }}
                     @if (r.refundedByName) { · {{ r.refundedByName }} }@if (r.reference) { · {{ r.reference }} }</small></td>
                     <td class="hide-sm">{{ r.folioNumber ?? 'On account' }}</td>
                     <td class="right num bad">− {{ money(r.amount) }}</td></tr>
@@ -135,6 +142,7 @@ export class PaymentPage {
 
   money = rupeesExact;
   methodLabel = methodLabel;
+  onlineText = onlineMethodText;
   statusLabel = paymentStatusLabel;
   statusClass = paymentStatusClass;
   private pid = () => this.props.current()!.id;

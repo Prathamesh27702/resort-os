@@ -973,5 +973,36 @@
   <text class="s" x="46" y="580"><tspan class="b">Balances are sums:</tspan> a bill's paid = its allocations − refunds off it; the booking's balance (check-out) also counts money on account.</text>
   <text class="s" x="46" y="602"><tspan class="b">Idempotency-Key</tspan> on taking and refunding money: a double click or a retry never moves money twice.</text>
 </svg>
+<svg id="razorpay-flow" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 11: Razorpay. The guest pays on a link; only Razorpay's signed webhook records the payment, once, whatever the order</text>
+  <rect class="lane" x="30" y="56" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="82">A payment link (payment.create, Idempotency-Key): staff ask, the guest pays, the browser only waits</text>
+  <rect class="step" x="46" y="98" width="200" height="78" rx="8"/><text class="s" x="58" y="122">1. Send payment link</text><text class="xs" x="58" y="144">amount ≤ owed − open links;</text><text class="xs" x="58" y="162">≥ ₹1 (Razorpay's minimum)</text>
+  <rect class="step" x="266" y="98" width="200" height="78" rx="8"/><text class="s" x="278" y="122">2. Razorpay order</text><text class="xs" x="278" y="144">POST /orders in paise; retries</text><text class="xs" x="278" y="162">with jitter, 10 s timeout</text>
+  <rect class="step" x="486" y="98" width="200" height="78" rx="8"/><text class="s" x="498" y="122">3. Guest opens /pay/…</text><text class="xs" x="498" y="144">no sign-in: a 32-byte random</text><text class="xs" x="498" y="162">token is the proof</text>
+  <rect class="step" x="706" y="98" width="210" height="78" rx="8"/><text class="s" x="718" y="122">4. Razorpay Checkout</text><text class="xs" x="718" y="144">UPI, cards: details go to</text><text class="xs" x="718" y="162">Razorpay, never to us</text>
+  <rect class="ask" x="936" y="98" width="220" height="78" rx="8"/><text class="s b" x="948" y="122">5. Browser callback</text><text class="xs" x="948" y="144">signature checked; the page says</text><text class="xs" x="948" y="162">"confirming", records nothing</text>
+  <path class="arrow" d="M246,137 L264,137"/><path class="arrow" d="M466,137 L484,137"/><path class="arrow" d="M686,137 L704,137"/><path class="arrow" d="M916,137 L934,137"/>
+  <text class="xs" x="46" y="204">A declined try is noted on the link (attempts, the bank's reason) and the link stays open. A cancelled link still records money that arrives anyway.</text>
+  <text class="xs" x="46" y="224">Without keys (development, browser tests) the built-in fake Razorpay answers the same HTTP calls and sends signed webhooks; refused in production.</text>
+  <rect class="lane" x="30" y="276" width="1140" height="250" rx="10"/>
+  <text class="t b" x="46" y="302">POST /api/v1/webhooks/razorpay: verify, claim the event id, ask Razorpay, then move forward only</text>
+  <rect class="lose" x="46" y="318" width="200" height="78" rx="8"/><text class="s b" x="58" y="342">1. HMAC-SHA256</text><text class="xs" x="58" y="362">raw body + webhook secret,</text><text class="xs" x="58" y="380">constant time. Wrong: 401</text>
+  <rect class="step" x="266" y="318" width="200" height="78" rx="8"/><text class="s" x="278" y="342">2. Claim the event id</text><text class="xs" x="278" y="362">INSERT webhook_events … ON</text><text class="xs" x="278" y="380">CONFLICT: a repeat stops here</text>
+  <rect class="step" x="486" y="318" width="200" height="78" rx="8"/><text class="s" x="498" y="342">3. Verify then trust</text><text class="xs" x="498" y="362">GET /payments/{id}: Razorpay's</text><text class="xs" x="498" y="380">status, order, amount now</text>
+  <rect class="step" x="706" y="318" width="210" height="78" rx="8"/><text class="s" x="718" y="342">4. Forward only</text><text class="xs" x="718" y="362">rank: none &lt; authorised &lt;</text><text class="xs" x="718" y="380">failed &lt; captured; never back</text>
+  <rect class="win" x="936" y="318" width="220" height="78" rx="8"/><text class="s b" x="948" y="342">5. One transaction</text><text class="xs" x="948" y="362">P… CAPTURED, link PAID, on the</text><text class="xs" x="948" y="380">bill, PENDING → CONFIRMED</text>
+  <path class="arrow" d="M246,357 L264,357"/><path class="arrow" d="M466,357 L484,357"/><path class="arrow" d="M686,357 L704,357"/><path class="arrow" d="M916,357 L934,357"/>
+  <rect class="win" x="46" y="410" width="640" height="44" rx="8"/><text class="xs" x="58" y="430">Same event twice (or at once): the unique (provider, event_id) row lets one in; the other gets 200 "already processed".</text><text class="xs" x="58" y="446">A payment can't be recorded twice either: payments are unique on Razorpay's payment id.</text>
+  <rect class="ask" x="706" y="410" width="450" height="44" rx="8"/><text class="xs" x="718" y="430">Captured before authorised: step 3 already sees captured, so the late</text><text class="xs" x="718" y="446">authorised event "changes nothing" and is stored IGNORED.</text>
+  <text class="xs" x="46" y="482">Our own error: the event is stored FAILED with the reason, the transaction rolls back and Razorpay gets 500, so it retries; the retry takes the FAILED row over.</text>
+  <text class="xs" x="46" y="502">Every event is kept (PROCESSED, IGNORED or FAILED) with what it did, shown under History on the booking's payment links. Card, contact and UPI id are stripped first.</text>
+  <rect class="zone" x="30" y="544" width="1140" height="98" rx="8"/>
+  <text class="s" x="46" y="566"><tspan class="b">The webhook is the only writer:</tspan> nothing the browser says marks a payment paid; method ONLINE can't be typed in at the desk.</text>
+  <text class="s" x="46" y="588"><tspan class="b">Refunds go back through Razorpay:</tspan> PENDING until refund.processed; refund.failed puts the money back on the payment. Online payments can't be voided.</text>
+  <text class="s" x="46" y="610"><tspan class="b">Amounts:</tspan> paise at the Razorpay boundary, rupees numeric(12,2) inside. <tspan class="b">Keys:</tspan> Razorpay__KeyId, __KeySecret, __WebhookSecret in .env, never in git.</text>
+</svg>
 </body>
 </html>

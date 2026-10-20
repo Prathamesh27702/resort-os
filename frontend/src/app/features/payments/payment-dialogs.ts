@@ -164,6 +164,7 @@ export interface RefundData { propertyId: string; payment: Payment; }
             @for (m of methods; track m) { <mat-option [value]="m">{{ methodLabel(m) }}</mat-option> }
           </mat-select>
           @if (form.controls.method.value === 'CASH') { <mat-hint>Comes out of the open cash drawer</mat-hint> }
+          @if (form.controls.method.value === 'ONLINE') { <mat-hint>Razorpay sends it back to the guest's card or UPI</mat-hint> }
           <mat-error>{{ err('method') }}</mat-error>
         </mat-form-field>
       </div>
@@ -184,11 +185,16 @@ export interface RefundData { propertyId: string; payment: Payment; }
         <input matInput formControlName="reason" maxlength="500" placeholder="e.g. Guest cancelled the airport transfer" />
         <mat-error>{{ err('reason') || 'Say why the money is refunded (at least 3 characters), e.g. Guest cancelled the airport transfer.' }}</mat-error>
       </mat-form-field>
+      @if (form.controls.method.value === 'ONLINE') {
+        <p class="hint" data-online-refund>The refund shows as pending until Razorpay confirms it has sent the money (usually within minutes;
+          the guest's bank can take 5–7 working days to show it). If Razorpay can't send it, the money goes back on the payment.</p>
+      } @else {
       <mat-form-field appearance="outline" class="full">
         <mat-label>Refund reference</mat-label>
         <input matInput formControlName="reference" maxlength="100" placeholder="Optional: UTR or terminal approval code" autocomplete="off" />
         <mat-error>{{ err('reference') || cardMessage }}</mat-error>
       </mat-form-field>
+      }
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
     </form>
     <div mat-dialog-actions align="end">
@@ -210,7 +216,8 @@ export class RefundDialog {
   private ref = inject(MatDialogRef<RefundDialog, Payment>);
   private api = inject(PaymentsApi);
   private key = newKey();
-  methods = METHODS;
+  /** An online payment can go back through Razorpay (the default) or be paid back at the desk. */
+  methods: PaymentMethod[] = this.data.payment.method === 'ONLINE' ? ['ONLINE', ...METHODS] : METHODS;
   methodLabel = methodLabel;
   money = rupeesExact;
   cardMessage = CARD_MESSAGE;
@@ -234,7 +241,8 @@ export class RefundDialog {
     const v = this.form.getRawValue();
     this.busy.set(true);
     this.api.refund(this.data.propertyId, this.data.payment.id, {
-      amount: Number(v.amount), reason: v.reason.trim(), method: v.method, folioId: v.folioId || null, reference: v.reference.trim() || null,
+      amount: Number(v.amount), reason: v.reason.trim(), method: v.method, folioId: v.folioId || null,
+      reference: v.method === 'ONLINE' ? null : v.reference.trim() || null,
     }, this.key).subscribe({
       next: p => this.ref.close(p),
       error: e => { this.busy.set(false); apiError(this.form, e, f => this.serverErrors.set(f), m => this.error.set(m)); },

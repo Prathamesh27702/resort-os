@@ -200,7 +200,7 @@ public sealed class RazorpayWebhookService(
         // captured: the money is in. Mark the payment, put it on the bill, mark the link paid, confirm a pending booking.
         payment.Status = PaymentStatuses.Captured;
         payment.CapturedAt = now;
-        var said = new List<string> { $"{payment.Number} ({p.Id}, {Money.Rupees(payment.Amount)} by {p.Method ?? "online"}) captured" };
+        var said = new List<string> { $"{payment.Number} ({p.Id}, {Money.Rupees(payment.Amount)} by {MethodWords(p.Method)}) captured" };
         if (link.PaymentId is null)
         {
             link.Status = GatewayOrderStatuses.Paid;
@@ -363,4 +363,15 @@ public sealed class RazorpayWebhookService(
         e is { } x && x.ValueKind == JsonValueKind.Object && x.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
 
     private static string Cut(string text, int max = 1000) => text.Length <= max ? text : text[..(max - 1)] + "…";
+
+    /// <summary>How the guest paid, in words: "UPI", "card", "net banking".</summary>
+    internal static string MethodWords(string? method) => method switch
+    {
+        null or "" => "online",
+        "upi" => "UPI",
+        "netbanking" => "net banking",
+        "emi" => "EMI",
+        "paylater" => "pay later",
+        _ => method,
+    };
 }

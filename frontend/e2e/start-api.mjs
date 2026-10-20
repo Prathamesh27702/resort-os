@@ -32,6 +32,12 @@ const api = spawn('dotnet', [join('bin', 'Release', 'net10.0', 'Resort.Api.dll')
     Bootstrap__OwnerEmail: OWNER_EMAIL,
     Bootstrap__OwnerPassword: password,
     DevSeed__Enabled: 'true',
+    // Sprint 11: always the built-in fake Razorpay, even when .env has your test keys (environment variables win over
+    // .env), so the browser tests never call Razorpay and the guest's page shows its test buttons.
+    Razorpay__Mode: 'Fake',
+    Razorpay__KeyId: 'rzp_test_fake',
+    Razorpay__KeySecret: 'fake-key-secret',
+    Razorpay__WebhookSecret: 'fake-webhook-secret',
   },
 });
 const stop = () => { if (!api.killed) api.kill(); };
