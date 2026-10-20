@@ -121,6 +121,7 @@ export class Shell {
     { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },
     { label: 'Rates', icon: 'sell', link: '/settings/rates', perm: 'rate.read' },
     { label: 'Packages', icon: 'redeem', link: '/settings/packages', perm: 'rate.read' },
+    { label: 'GST', icon: 'percent', link: '/settings/gst', perm: 'tax.read' },
     { label: 'Properties', icon: 'holiday_village', link: '/settings/properties', perm: 'property.read' },
     { label: 'Staff accounts', icon: 'badge', link: '/users', perm: 'user.read' },
     { label: 'Roles & permissions', icon: 'shield_person', link: '/roles', perm: 'role.read' },

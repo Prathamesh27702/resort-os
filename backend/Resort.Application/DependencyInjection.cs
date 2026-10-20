@@ -4,6 +4,7 @@ using Resort.Application.Accommodation;
 using Resort.Application.Audit;
 using Resort.Application.Common;
 using Resort.Application.Folios;
+using Resort.Application.Tax;
 using Resort.Application.FrontDesk;
 using Resort.Application.Guests;
 using Resort.Application.Identity;
@@ -37,6 +38,8 @@ public static class DependencyInjection
         services.AddScoped<ReservationService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<FrontDeskService>();
+        services.AddScoped<TaxCalculator>();
+        services.AddScoped<TaxService>();
         services.AddScoped<FolioPosting>();
         services.AddScoped<FolioService>();
         services.AddScoped<RoomChargeRun>();

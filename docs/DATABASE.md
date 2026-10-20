@@ -13,7 +13,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 5 — reservations](database/schema-sprint-05.md) (reservations, held rooms and beds with the double-booking guard, nightly prices, status history, idempotency keys, demo bookings) ·
   [Sprint 6 — reservation calendar](database/schema-sprint-06.md) (calendar index, room moves as superseded rows, demo maintenance block) ·
   [Sprint 7 — front desk](database/schema-sprint-07.md) (check-in/out times, room cleaning state and its history, demo in-house guests) ·
-  [Sprint 8 — folio](database/schema-sprint-08.md) (folios, immutable bill lines and reversals, the room-night guard, demo charges)
+  [Sprint 8 — folio](database/schema-sprint-08.md) (folios, immutable bill lines and reversals, the room-night guard, demo charges) ·
+  [Sprint 9 — GST](database/schema-sprint-09.md) (GST registrations, tax categories, dated tax rules and their slabs, the seeded rules, tax on bill lines)
 
 ## Conventions (every table)
 
@@ -45,7 +46,8 @@ database/migrations/
   V008__reservation_calendar.sql
   V009__front_desk.sql
   V010__folio.sql
-  V011__<next>.sql   ← you add this
+  V011__tax.sql
+  V012__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
   S002__guests.sql          ← 20 demo guests; Development only
@@ -54,6 +56,7 @@ database/seed/dev/
   S005__calendar.sql        ← Room 106 blocked for maintenance from tomorrow (calendar demo); Development only
   S006__front_desk.sql      ← R00007/R00008 in house, Room 101 dirty (front desk demo); Development only
   S007__folios.sql          ← main folios, room nights, dinner/pick-up on R00008, laundry on R00007; Development only
+  S008__gst.sql             ← the demo property's GST registration (Goa); Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.

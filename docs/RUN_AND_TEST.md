@@ -388,6 +388,48 @@ balance is back. Nothing can be deleted. How it works:
 By hand: [REVIEWING.md → Sprint 08](sprints/REVIEWING.md#sprint-08--folio).
 Screenshots: [sprint-08-screens/](sprints/sprint-08-screens/).
 
+### Sprint 09: GST and the tax engine
+
+**New:** **GST** (menu, after Packages): the property's GST registration (GSTIN, state, from/to), what is taxed
+(Accommodation, SAC 996311, and Restaurant service, SAC 996331) and each one's rules with their dates, rates and the
+notification they come from. **No GST rate is in the code**: an accountant adds a rule from a future date (**Add rule**)
+and the running one is ended the day before, with no deployment. **Try a charge** shows the GST of any amount on any
+day (CGST + SGST inside the state, IGST across states). Every charge posted to a bill now carries its GST, stored with
+the rule and rate used, so a later rule never changes it; the bill shows *amount + GST*. Seeded rules are marked *not
+verified* until someone presses **Verify**. Demo data: the demo property is registered in Goa (made-up GSTIN
+30AABCT1234C1Z9); the demo charges from Sprint 8 were posted before this and keep no GST. Nothing new to install and no
+new keys; reset the database before the review, restart the API and watch for `Applying migration V011__tax` and
+`Dev seed S008__gst`.
+
+```powershell
+# Backend (47 tests: TaxTests, TaxUnitTests and the GST dev seed test; includes the ₹7,500.00 / ₹7,500.01 slab
+# boundary, the same room night at 12% and 5% either side of 22 Sep 2025, and a rule change that leaves posted charges alone)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Tax|FullyQualifiedName~Dev_seed_registers"
+
+# Frontend unit tests (GST helpers: dates, rates in words, a bill line's GST)
+cd frontend
+npm run test:ci
+
+# Browser (7 steps, S09-01 … S09-07; S09-02 is the demo: the same charge before and after a rule change date,
+# S09-03 the acceptance: the accountant adds next month's rule)
+npm run e2e -- e2e/sprint-09.spec.ts
+cd ..
+
+# API checks: the Sprint 09 block must be all PASS (read-only: it adds no rule)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6, 7 and 9 must return no rows)
+Get-Content database/queries/check-sprint-09.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: **GST** → **Add rule** → *Restaurant service*, from the 1st of next month, 18%, *With input
+tax credit*, a source → **Add rule**: *The rule before it now ends on …*. Then **Try a charge**: Food ₹1,000 today is
+₹1,050.00, on the 1st of next month ₹1,180.00. Worked examples: [GST.md](GST.md#worked-examples). How it works:
+[system-design.md → 4.19](architecture/system-design.md#419-gst-rules-as-data-the-tax-engine).
+
+By hand: [REVIEWING.md → Sprint 09](sprints/REVIEWING.md#sprint-09--gst-and-the-tax-engine).
+Screenshots: [sprint-09-screens/](sprints/sprint-09-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -400,7 +442,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 232 backend passed, 63 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 278 backend passed, 67 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -408,7 +450,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–08 (expected: 76 passed, about 10 minutes)
+# 3. Every browser test, Sprints 01–09 (expected: 83 passed, about 12 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -423,13 +465,13 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–08:
+Expected totals for Sprints 01–09:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 232 passed, 0 failed |
-| Frontend unit tests | 63 of 63 SUCCESS |
-| Browser tests | 76 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7) |
+| Backend tests | 278 passed, 0 failed |
+| Frontend unit tests | 67 of 67 SUCCESS |
+| Browser tests | 83 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7) |
 | API checks | 0 failed |
 
 Other useful commands:

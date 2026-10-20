@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Resort.Contracts;
 using Microsoft.Extensions.DependencyInjection;
@@ -168,5 +169,30 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
 
         var settings = await owner.GetJsonAsync<List<PropertySettingDto>>($"/api/v1/properties/{pid}/settings");
         Assert.True(settings.Single(x => x.Key == "frontdesk.allow_checkout_with_balance").Value.GetBoolean());
+    }
+
+    /// <summary>Sprint 9: the demo property is registered for GST in Goa, so a new charge would carry GST; the Sprint 8 demo
+    /// charges were posted before the tax engine and keep none.</summary>
+    [Fact]
+    public async Task Dev_seed_registers_the_demo_property_for_GST_so_new_charges_are_taxed_and_old_ones_stay_as_posted()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var reg = Assert.Single(await owner.GetJsonAsync<List<GstRegistrationDto>>($"/api/v1/properties/{pid}/gst-registrations"));
+        Assert.Equal(("30AABCT1234C1Z9", "30", "REGULAR", true), (reg.Gstin, reg.StateCode, reg.RegistrationType, reg.Current));
+
+        var inHouse = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios");
+        var folioId = inHouse.Items.Single(f => f.Reference == "R00008").Id;
+        var before = await owner.GetJsonAsync<FolioDto>($"/api/v1/properties/{pid}/folios/{folioId}");
+        Assert.Equal(0m, before.Items.Single(i => i.Description == "Dinner at the beach shack").TaxAmount);
+
+        // a breakfast posted now would carry 5% GST (a preview, so the other demo checks keep their bills as seeded)
+        var res = await owner.PostAsync("/api/v1/tax/calculate", new TaxCalculationRequest(pid, null, "FOOD", null, 600m));
+        Assert.Equal(System.Net.HttpStatusCode.OK, res.StatusCode);
+        var tax = (await res.Content.ReadFromJsonAsync<TaxCalculationDto>())!;
+        Assert.Equal((true, 30m, 630m, "30AABCT1234C1Z9"), (tax.Taxed, tax.Tax, tax.Total, tax.Gstin));
     }
 }

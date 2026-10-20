@@ -10,6 +10,7 @@ using Resort.Domain.Identity;
 using Resort.Domain.Organizations;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
+using Resort.Domain.Tax;
 
 namespace Resort.Application.Common;
 
@@ -58,6 +59,10 @@ public interface IAppDbContext
     DbSet<Folio> Folios { get; }
     DbSet<FolioItem> FolioItems { get; }
     DbSet<FolioItemTax> FolioItemTaxes { get; }
+    DbSet<GstRegistration> GstRegistrations { get; }
+    DbSet<TaxCategory> TaxCategories { get; }
+    DbSet<TaxRule> TaxRules { get; }
+    DbSet<TaxRuleSlab> TaxRuleSlabs { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

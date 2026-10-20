@@ -254,10 +254,12 @@ export interface FolioItem {
   unitPrice: number; amount: number; taxAmount: number; total: number; source: 'MANUAL' | 'ROOM_NIGHT' | 'PACKAGE';
   packageId: string | null; packageName: string | null; groupId: string | null; reversesItemId: string | null;
   reversedByItemId: string | null; reason: string | null; reversalReason: string | null; movedFrom: string | null; movedTo: string | null;
-  postedAt: string; postedByName: string | null; live: boolean;
+  postedAt: string; postedByName: string | null; live: boolean; taxes: FolioItemTax[];
 }
+/** One tax on a bill line, as calculated when it was posted (Sprint 9): CGST 2.5% on ₹1,450 = ₹36.25. */
+export interface FolioItemTax { code: TaxCode; rate: number; taxableValue: number; amount: number; taxRuleId: string | null; }
 export interface FolioSummary { id: string; number: string; name: string; isPrimary: boolean; total: number; balance: number; }
-/** A bill: total = sum of lines (tax 0 until Sprint 9); balance = total − payments (payments arrive in Sprint 10). */
+/** A bill: total = sum of lines, GST included (Sprint 9); balance = total − payments (payments arrive in Sprint 10). */
 export interface Folio {
   id: string; number: string; name: string; isPrimary: boolean; reservationId: string; reference: string; reservationStatus: ReservationStatus;
   guestId: string; guestName: string; billToGuestId: string | null; billToName: string | null; checkIn: string; checkOut: string; rooms: string;
@@ -267,4 +269,34 @@ export interface Folio {
 export interface FolioListItem {
   id: string; number: string; name: string; isPrimary: boolean; reservationId: string; reference: string; reservationStatus: ReservationStatus;
   guestName: string; checkIn: string; checkOut: string; rooms: string; lines: number; total: number; balance: number; currency: string;
+}
+
+// ---------------------------------------------------------------- GST and the tax engine (Sprint 9)
+export type TaxCode = 'CGST' | 'SGST' | 'IGST' | 'CESS';
+export type RegistrationType = 'REGULAR' | 'COMPOSITION';
+export type TaxRuleType = 'FLAT' | 'SLAB';
+/** A GSTIN a property bills under; effectiveTo null = until further notice; current = it covers today. */
+export interface GstRegistration {
+  id: string; propertyId: string; gstin: string; legalName: string; tradeName: string | null; stateCode: string; stateName: string;
+  registrationType: RegistrationType; effectiveFrom: string; effectiveTo: string | null; current: boolean;
+}
+/** A rate of a rule: values up to upTo (included; null = no limit) pay rate percent. */
+export interface TaxSlab { upTo: number | null; rate: number; inputTaxCredit: boolean; }
+/** A category's rule from effectiveFrom to effectiveTo (both included). state: by today's date in India. */
+export interface TaxRule {
+  id: string; taxCategoryId: string; categoryName: string; effectiveFrom: string; effectiveTo: string | null; ruleType: TaxRuleType;
+  slabs: TaxSlab[]; source: string; notes: string | null; state: 'PAST' | 'CURRENT' | 'FUTURE';
+  verifiedAt: string | null; verifiedByName: string | null; createdAt: string; createdByName: string | null;
+}
+/** What is taxed; chargeCategory = the bill charges it covers. */
+export interface TaxCategory {
+  id: string; code: string; name: string; hsnSac: string; chargeCategory: ChargeCategory | null; description: string | null; rules: number;
+  currentRule: TaxRule | null;
+}
+export interface TaxComponent { code: TaxCode; rate: number; taxableValue: number; amount: number; }
+/** A tax preview. taxed false → noTaxReason says why. */
+export interface TaxCalculation {
+  date: string; amount: number; unitValue: number; taxed: boolean; noTaxReason: string | null; gstin: string | null; supplierState: string | null;
+  placeOfSupply: string | null; intraState: boolean; category: TaxCategory | null; rule: TaxRule | null; slab: TaxSlab | null;
+  components: TaxComponent[]; tax: number; total: number;
 }

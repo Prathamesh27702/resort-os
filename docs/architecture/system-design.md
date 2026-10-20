@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–08 built and accepted (October 2026); Sprint 09 (GST and tax engine) in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–08 built and accepted (October 2026); Sprint 09 (GST and tax engine) built, in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -71,7 +71,7 @@ backend/
   Resort.Contracts       Request/response records (what the API accepts and returns)
   Resort.Application     One service per use case group, validators, permission codes, shared helpers
                          Common/ (errors, idempotency, concurrency, protection), Identity/, Properties/,
-                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Folios/, Audit/, Validation/
+                         Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Folios/, Tax/, Audit/, Validation/
   Resort.Infrastructure  AppDbContext (EF Core, snake_case), SQL migrator, audit interceptor,
                          JWT + password hashing (Identity/Security.cs), field encryption, file store, dev seeder
   Resort.Api             Program.cs (pipeline), Endpoints/*.cs (one file per module),
@@ -246,6 +246,27 @@ flowchart LR
   who posted it, reversed lines struck through with the reason; Post charge, Move lines, Reverse for managers),
   plus a Bill button on the booking page and on the front desk lists. [4.18](#418-folios-the-bill-of-a-stay)
   explains the rules.
+
+### Sprint 09: GST configuration and the tax engine
+
+![GST as data with dates](../../tools/handbooks/assets/tax-flow.png)
+
+- Migration V011: `gst_registrations` (the GSTIN a property bills under, from/to a date), `tax_categories` (what is
+  taxed, its SAC code and the folio charge category it covers), `tax_rules` (a category's rule with dates and its
+  source) and `tax_rule_slabs` (rates by value). EXCLUDE constraints stop overlapping periods; triggers refuse deletes,
+  freeze slabs and let a rule change only its end date and verification. `fn_seed_tax_defaults` seeds accommodation and
+  restaurant GST for every organisation, unverified. Details: [schema-sprint-09.md](../database/schema-sprint-09.md).
+- `Domain/Tax/Tax.cs`: the entities, `TaxMath` (slab lookup, CGST/SGST or IGST split, rounding, a line made of parts)
+  and `Gstin` (format and check digit with a reason in words), unit-tested.
+- `Application/Tax/TaxCalculator.cs`: **the one tax engine**. Given a property, a charge category, a day and the
+  line's parts, it finds the registration, category and rule of that day and returns the tax rows, or why there is no
+  GST. `TaxService.cs`: registrations, categories, rules (auto-closing the running one), Verify and the preview.
+- Hooks into earlier code: `FolioPosting.ChargeAsync` asks the engine for every new charge (room nights, manual
+  charges, package parts) and stores `folio_item_taxes`; `FolioService` returns each line's taxes. Reversals and
+  splits already copied tax rows (Sprint 8).
+- Screens: `/settings/gst` (registration, categories with their rules, Add rule, Verify, Try a charge); the bill shows
+  *amount + GST* under each line. [4.19](#419-gst-rules-as-data-the-tax-engine) explains the rules; worked examples in
+  [GST.md](../GST.md#worked-examples).
 
 ---
 
@@ -553,6 +574,37 @@ Diagram: section 3 (Sprint 08). Tests: `FolioTests`, `FolioUnitTests`.
 Limit, on purpose: a booking isn't linked to a package yet, so selling a package with a room part on top of the room
 nights would charge the room twice; staff sell packages for extras until bookings carry their package.
 
+### 4.19 GST: rules as data, the tax engine
+
+Code: `Application/Tax/`, `Domain/Tax/Tax.cs`, `database/migrations/V011__tax.sql`, `features/settings/gst/`.
+Diagram: section 3 (Sprint 09). Tests: `TaxTests`, `TaxUnitTests`. Examples: [GST.md](../GST.md#worked-examples).
+
+1. **No rate in the code.** GST changes by notification, often mid-year (accommodation went from 12% to 5% on
+   22 Sep 2025). Every rate, slab limit and SAC code is a row with `effective_from` / `effective_to`, so an accountant
+   changes GST from a date in Settings → GST and nothing is deployed. The code only knows how to apply a rule.
+2. **One rule per category per day, enforced by the database.** `EXCLUDE USING gist (tax_category_id WITH =,
+   daterange(from, to, '[]') WITH &&)`; the same for a property's registrations. The service locks the category's row
+   while adding a rule, ends the running rule the day before the new one starts and turns any other overlap into a
+   field error naming the rule it clashes with.
+3. **History never moves.** A new rule starts today (India time) or later; rules are never deleted, slabs never change,
+   and a trigger lets a rule change only its end date and "verified". A posted line stores each tax with its rate and
+   `tax_rule_id`, and reversals copy those rows, so a bill (and, from Sprint 12, an invoice) always shows what was
+   charged at the time.
+4. **The slab goes by the unit, not the line.** Accommodation GST depends on the value of one room or bed for one
+   night. A night line of several rooms is passed to the engine as parts (one per booked room or bed row, with its price
+   per unit), so a ₹6,000 room and a ₹9,000 suite on one line are taxed at 5% and 18%, not both at 18%. "Up to ₹7,500"
+   includes ₹7,500.00.
+5. **Splitting and rounding.** Inside the property's state the rate is split evenly into CGST and SGST; elsewhere it is
+   IGST. Each tax is rounded to the paisa, half away from zero, once per rate on a line. The rate must be a multiple
+   of 0.02% so the halves are whole hundredths (checked by the validator and the database).
+6. **No GST is a decision, not a gap.** No registration on the day, a COMPOSITION registration, or a charge category
+   no tax category covers means no GST, and the preview says which. But a registered property with a taxed category
+   and no rule for the day refuses the charge (422 `TAX_RULE_MISSING`, in words) rather than posting it untaxed.
+7. **One engine, tenant-safe without a user.** `TaxCalculator` filters by the property's organisation itself (it
+   ignores the request's tenant filter), because the nightly room-charge job posts with no one signed in.
+8. **Seeded rules are flagged.** V011 enters the current rules from public notifications with their source and marks
+   them unverified; the GST page counts them until the accountant presses Verify.
+
 ## 5. Changing the system safely
 
 | You want to | Do this |
@@ -581,6 +633,7 @@ secrets and vulnerable-package scan.
 | Frontend structure and conventions | [frontend.md](frontend.md) |
 | Business lifecycles (booking, guest, payment …) | [lifecycles.md](lifecycles.md) |
 | Decisions and open questions | [decisions.md](decisions.md), [risks-and-open-questions.md](risks-and-open-questions.md) |
+| GST rules and worked examples | [GST.md](../GST.md) |
 | Running and testing everything | [RUN_AND_TEST.md](../RUN_AND_TEST.md), [TESTING.md](../TESTING.md) |
 | Each sprint's files, results, screenshots | [docs/sprints/](../sprints/README.md) |
 
@@ -604,3 +657,4 @@ request:
 | 06 | Reservation calendar (read model, drag-and-drop), room-move diagram; system design 4.16 Moving a guest to another room (accepted 17 Oct 2026) |
 | 07 | Front desk (lists, check-in/out, walk-ins, room readiness), check-in flow diagram; system design 4.17 The front desk (accepted 18 Oct 2026) |
 | 08 | Folio (bills, immutable lines, reversals, room nights, split), folio flow diagram; system design 4.18 Folios (accepted 18 Oct 2026) |
+| 09 | GST configuration and the tax engine (registrations, categories, dated rules, slabs, tax on bills), tax flow diagram; system design 4.19 GST: rules as data (in review) |

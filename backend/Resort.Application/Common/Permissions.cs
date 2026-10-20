@@ -44,6 +44,9 @@ public static class Perm
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
 
+    public const string TaxRead = "tax.read";
+    public const string TaxManage = "tax.manage";
+
     public const string AuditRead = "audit.read";
     public const string SystemSettings = "system.settings";
 
@@ -56,6 +59,7 @@ public static class Perm
         ReservationRead, ReservationCreate, ReservationUpdate, ReservationCancel,
         FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate,
         FolioRead, FolioPostCharge, FolioAdjust,
+        TaxRead, TaxManage,
         AuditRead, SystemSettings,
     ];
 }

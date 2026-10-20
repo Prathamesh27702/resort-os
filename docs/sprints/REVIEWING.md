@@ -247,6 +247,37 @@ S08-07). Database checks: `database/queries/check-sprint-08.sql`. How it stays s
 | 11 | As a **housekeeper** | No **Folios** in the menu |
 | 12 | Phone width (390 px) → a bill | The balance, sums and lines fit the screen |
 
+### Sprint 09 — GST and the tax engine
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V011__tax` and
+`Dev seed S008__gst`). The demo property is now registered for GST in Goa (made-up GSTIN *30AABCT1234C1Z9*), and every
+organisation has the accommodation and restaurant rules as data. Sign in as the **owner** (or an accountant: the
+*Accountant* role has the GST permissions for the whole organisation). Screenshots: [sprint-09-screens/](sprint-09-screens/).
+The browser tests do all of this for you: `cd frontend; npm run e2e:headed -- e2e/sprint-09.spec.ts` (names S09-01 …
+S09-07). Database checks: `database/queries/check-sprint-09.sql`. Worked examples: [GST.md](../GST.md#worked-examples).
+How it works: [system-design.md → 4.19](../architecture/system-design.md#419-gst-rules-as-data-the-tax-engine).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **GST** (new in the menu, after Packages) | *Registration*: 30AABCT1234C1Z9, Goa (30), Regular, from 1 Jul 2017. *What is taxed*: **Accommodation** (SAC 996311, room charges) with two rules, *Up to ₹7,500: 12% with ITC · Above ₹7,500: 18% with ITC* until 21 Sep 2025 and *Up to ₹7,500: 5% · Above ₹7,500: 18% with ITC* from 22 Sep 2025 (chip *Now*); **Restaurant service** (SAC 996331, food) 5% from 15 Nov 2017. Each rule shows its notification. A note says *2 rules are not verified yet* |
+| 2 | **The demo, before.** *Try a charge*: What *Room*, Day *2025-09-21*, Amount *3500* → **Calculate** | *12%*: CGST 6% ₹210.00, SGST 6% ₹210.00, total ₹3,920.00, with the rule it used |
+| 3 | **The demo, after.** Same, Day *2025-09-22* | *5%*: CGST 2.5% ₹87.50, SGST 2.5% ₹87.50, total ₹3,675.00, *Same state: CGST + SGST* |
+| 4 | Amount *7500* then *7500.01* (Day today) | ₹7,500.00 is still 5% (₹375.00); ₹7,500.01 is 18% (₹1,350.00) |
+| 5 | What *Food*, Amount *1000*, Place of supply *Maharashtra (27)* | IGST 5% ₹50.00 instead of CGST + SGST. Set it back to *This property's state* |
+| 6 | What *Transport*, Amount *1200* | *Transport charges carry no GST: no tax category covers them.* |
+| 7 | **The acceptance test.** **Add rule** → *Restaurant service*, Applies from = the 1st of next month, rate *18*, tick *With input tax credit*, leave *Source* empty → **Add rule** | Under *Source*: *Say where the rule comes from …* Nothing is saved |
+| 8 | Rate *0.25*, Source *Accountant's note: restaurant now in specified premises* → **Add rule** | Under the rate: *The rate is split evenly into CGST and SGST, so it must be a multiple of 0.02% (e.g. 5, 18 or 0.1).* |
+| 9 | Rate *18* → **Add rule** | *The rule before it now ends on* the last day of this month. Restaurant service shows the new rule with chip *Upcoming*, and the 2017 rule now has that end date. No deployment |
+| 10 | *Try a charge*: Food, Amount 1000, today, then the 1st of next month | Today ₹1,050.00 (5%); next month ₹1,180.00 (18%) |
+| 11 | **Add rule** with *Applies from* yesterday | Under the field: *A new rule can start today (…) or later. Charges already posted keep the GST they were posted with …* |
+| 12 | **Verify** on the Accommodation rule from 22 Sep 2025 | *Verified: Accommodation …*; the rule shows *✓* and your name; the note now counts one rule fewer |
+| 13 | **Folios** → a guest in house → **Post charge**: *Food · Seafood thali · 1 × 1450* | The line shows *₹1,450.00 + GST 5% ₹72.50* and a total of ₹1,522.50; *Tax* in the sums goes up by ₹72.50. Room nights posted from now show their GST (5% or 18% by the room's nightly price). The demo lines posted before this sprint keep no GST |
+| 14 | **Reverse** that dinner (as the owner) | The reversal line carries GST 5% −₹72.50: the same tax rows, copied, not recalculated |
+| 15 | **Add registration** → GSTIN *30AABCT1234C1Z8* → **Save registration** | Under the GSTIN: *The last character (check digit) should be 9 for this GSTIN; check it for a typing mistake.* **Cancel** |
+| 16 | As a **receptionist** | No **GST** in the menu (the bill still shows the GST of each line) |
+| 17 | Phone width (390 px) → GST | Registration, rules and *Try a charge* fit the screen |
+| 18 | **Before go-live** (not part of the review) | Your accountant checks every seeded rule against its notification and presses **Verify**; the notification numbers and dates were entered from public sources and must be confirmed |
+
 ## Part C — Decide
 
 ### Accept

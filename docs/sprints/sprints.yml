@@ -827,20 +827,46 @@ sprints:
   depends: [8]
   goal: GST as a first-class, versioned, configurable domain (brief §23, §86).
   client: "GST is calculated automatically and correctly for each item (CGST/SGST or IGST), with rates kept up to date by configuration, not code."
+  progress:
+    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    done:
+      - "Migration V011: gst_registrations (GSTIN per property with dates, REGULAR or COMPOSITION), tax_categories (SAC/HSN, the folio charge category covered), tax_rules (dates, FLAT or SLAB, source, verified by) and tax_rule_slabs (up to, rate, input tax credit); EXCLUDE constraints stop overlapping periods; rules and slabs never deleted, slabs never changed, a rule changes only its end date and verification (trigger)"
+      - "Seeded as data for every organisation (and every new one, by trigger), unverified: Accommodation 996311 (18 Jul 2022 – 21 Sep 2025 up to ₹7,500 12%, above 18%; from 22 Sep 2025 up to ₹7,500 5% without ITC, above 18%) and Restaurant service 996331 (5% from 15 Nov 2017), each with its notification"
+      - "One tax engine (TaxCalculator): the registration, category and rule of the service day; slab by the value of one unit for one night; CGST + SGST inside the state, IGST across; rounded per tax to the paisa; no GST without a registration, under composition or for an untaxed category; 422 TAX_RULE_MISSING when a taxed charge has no rule"
+      - "Every new folio charge (room nights room by room, manual charges, package parts) stores its tax rows with the rule id and rate; reversals and moved lines copy them"
+      - "API: registrations, categories, rules (start today or later; the running rule is ended the day before; other overlaps refused under the field), Verify, and the calculate preview; tax.read / tax.manage"
+      - "Screens: GST (/settings/gst: registration, what is taxed with every rule and its source, Add registration / category / rule, Verify, Try a charge); the bill shows amount + GST on each line"
+      - "Dev seed S008: the demo property registered in Goa (made-up GSTIN 30AABCT1234C1Z9)"
+      - "[done] Docs: GST.md worked examples, schema-sprint-09.md, API.md, system design 4.19 and the tax flow diagram, RUN_AND_TEST, REVIEWING"
+    files:
+      - "database/migrations/V011__tax.sql; database/seed/dev/S008__gst.sql; database/queries/check-sprint-09.sql"
+      - "backend/Resort.Domain/Tax/Tax.cs"
+      - "backend/Resort.Contracts/TaxContracts.cs, FolioContracts.cs"
+      - "backend/Resort.Application/ — Tax/TaxCalculator.cs, Tax/TaxService.cs, Validation/TaxValidators.cs, Folios/FolioPosting.cs, Folios/FolioService.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs"
+      - "backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/Endpoints/TaxEndpoints.cs + Program.cs"
+      - "backend/Resort.Tests/ — Integration/TaxTests.cs, Unit/TaxUnitTests.cs, Integration/DevSeedTests.cs"
+      - "frontend/src/app/ — features/settings/gst/ (gst.page.ts, gst-dialogs.ts, gst.api.ts, gst.spec.ts), features/folios/folio.page.ts, folio-dialogs.ts, core/models.ts, app.routes.ts, layout/shell.ts"
+      - "frontend/e2e/sprint-09.spec.ts (and sprint-08.spec.ts: dinner now carries 5% GST); scripts/check-api.mjs (Sprint 09 checks)"
+      - "docs/GST.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-09.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-09-screens/; tools/handbooks/diagrams (tax-flow)"
+    results:
+      - "Backend: 278 passed, 0 failed on real PostgreSQL 16 (46 new: TaxTests with the same room night at 12% and 5% either side of 22 Sep 2025, a rule change that leaves a posted charge and its reversal alone, the accountant's next-month rule closing the running one, IGST, unregistered and composition properties, rooms of one night in different slabs, packages, TAX_RULE_MISSING, field errors, permissions and tenancy; TaxUnitTests with the ₹7,500.00 / ₹7,500.01 boundary, rounding per tax and GSTIN check digits; the GST dev seed check)"
+      - "Frontend: 67 of 67 unit tests passed (4 new for the GST helpers); ESLint clean; production build OK"
+      - "Browser tests: 83 of 83 passed (Sprints 01–08 plus the 7 new Sprint 09 steps: the GST page, the same charge before and after the rule change date, next month's rule with field errors, Verify, GST on a bill, a wrong GSTIN and permissions, phone); API checks 114 of 114 (14 new); database checks clean; screenshots in docs/sprints/sprint-09-screens"
   scope:
     tables: [gst_registrations, tax_categories, tax_rules, tax_rule_slabs]
     api:
       - GET|POST /api/v1/properties/{propertyId}/gst-registrations
       - GET|POST /api/v1/tax/categories
       - GET|POST /api/v1/tax/rules  (effective_from/effective_to)
+      - POST /api/v1/tax/rules/{id}/verify
       - POST /api/v1/tax/calculate  (preview)
     screens: [/settings/gst]
   tasks:
-    - "No GST percentage in code. Rules keyed by HSN/SAC category, effective dates and (for accommodation) value slabs"
-    - "CGST+SGST when place of supply = supplier state, else IGST"
-    - "Every folio_item_tax row stores the rule id + rate used (historical invoices never change)"
-    - "Seed: current accommodation and restaurant rules as DATA, with source and effective date recorded; owner/accountant must verify before go-live"
-    - "Docs: GST.md worked examples"
+    - "[done] No GST percentage in code. Rules keyed by HSN/SAC category, effective dates and (for accommodation) value slabs"
+    - "[done] CGST+SGST when place of supply = supplier state, else IGST"
+    - "[done] Every folio_item_tax row stores the rule id + rate used (historical invoices never change)"
+    - "[done] Seed: current accommodation and restaurant rules as DATA, with source and effective date recorded; owner/accountant must verify before go-live"
+    - "[done] Docs: GST.md worked examples"
   tests:
     - Unit — slab boundaries (value exactly at threshold)
     - Unit — intra- vs inter-state split, rounding per line

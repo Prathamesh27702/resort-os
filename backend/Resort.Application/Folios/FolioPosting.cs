@@ -1,9 +1,12 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
+using Resort.Application.Tax;
 using Resort.Domain.Folios;
 using Resort.Domain.Organizations;
+using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
+using Resort.Domain.Tax;
 
 namespace Resort.Application.Folios;
 
@@ -15,7 +18,7 @@ namespace Resort.Application.Folios;
 /// Queries here filter by reservation id and ignore the tenant filter on purpose: the nightly job runs with no
 /// signed-in user (so no organisation), and every caller has already loaded the reservation it passes in.
 /// </summary>
-public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProvider clock)
+public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProvider clock, TaxCalculator tax)
 {
     /// <summary>Statuses whose folio takes charges. A cancelled or no-show booking's folio is closed (refunds and
     /// cancellation fees come with payments, Sprint 10).</summary>
@@ -109,7 +112,8 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
                 .Select(u => u.BedId is { } b ? $"{units[u.UnitId].Name} bed {units[u.UnitId].Beds.First(x => x.Id == b).Code}" : units[u.UnitId].Name)
                 .Distinct().ToList();
             var price = night.Sum(n => n.Total);
-            Add(folio, new FolioItem
+            // GST slabs go by the value of one room (or bed) for one night, so each room of the night is a part
+            await ChargeAsync(folio, new FolioItem
             {
                 Category = ChargeCategories.Room,
                 Description = Trim($"Room night: {string.Join(", ", places)}"),
@@ -117,7 +121,7 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
                 Quantity = 1,
                 UnitPrice = price,
                 Source = FolioItemSources.RoomNight,
-            });
+            }, night.Select(n => new TaxablePart(n.Total, TaxMath.Round(n.Total / n.Units))).ToList(), ct);
             posted++;
         }
         if (posted > 0) await db.SaveChangesAsync(ct);
@@ -179,7 +183,28 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
         return reversal;
     }
 
-    /// <summary>Adds a charge to <paramref name="folio"/>: fills the folio, booking, amount and total, who and when. Not saved.</summary>
+    /// <summary>
+    /// Adds a new charge with its GST (Sprint 9): the tax engine finds the rule effective on the service date, and the
+    /// rule id and rate are stored with the line (folio_item_taxes), so a later rule change never alters it.
+    /// <paramref name="parts"/>: how the line splits for the slab (default: the whole amount at the price of one item).
+    /// Refused when the property is registered and the category is taxed but no rule covers the day. Not saved.
+    /// </summary>
+    public async Task<FolioItem> ChargeAsync(Folio folio, FolioItem item, IReadOnlyList<TaxablePart>? parts, CancellationToken ct)
+    {
+        var amount = FolioMath.LineAmount(item.Quantity, item.UnitPrice);
+        var outcome = await tax.CalculateAsync(folio.PropertyId, item.Category, null, item.ServiceDate,
+            parts ?? [new TaxablePart(amount, item.UnitPrice)], null, ct);
+        if (outcome.RuleMissing)
+            throw new BusinessRuleAppException("TAX_RULE_MISSING",
+                $"{outcome.NoTaxReason} Until then {ChargeCategories.Words(item.Category).ToLowerInvariant()} charges dated {QuoteEngine.Day(item.ServiceDate)} can't be posted.");
+        item.TaxAmount = outcome.Total;
+        Add(folio, item);
+        foreach (var row in TaxCalculator.Rows(outcome, item, item.PostedAt)) db.FolioItemTaxes.Add(row);
+        return item;
+    }
+
+    /// <summary>Adds a charge to <paramref name="folio"/>: fills the folio, booking, amount and total, who and when. Not saved.
+    /// The tax is what <see cref="FolioItem.TaxAmount"/> already holds: use <see cref="ChargeAsync"/> for a new charge.</summary>
     public FolioItem Add(Folio folio, FolioItem item)
     {
         item.OrganizationId = folio.OrganizationId;
