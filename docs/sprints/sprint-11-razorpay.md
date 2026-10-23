@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
+| 🟢 Done | Phase 3 — Folio, payments, Razorpay, GST, invoices | M | [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
 
 **Goal:** Online payments where the server-verified webhook is authoritative (brief §22).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review: pull request into develop, waiting for the owner's acceptance.
+**Now:** Accepted by the owner on 23 Oct 2026 and released to main (tag sprint-11).
 
 **Done so far**
 
