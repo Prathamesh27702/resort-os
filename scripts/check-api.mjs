@@ -575,8 +575,8 @@ await expectCall('Invoices, newest first, with their status (demo: one per check
 const r7 = (await call('GET', `${P}/reservations?q=R00007`, { token: T }))?.json?.items?.find?.(x => x.reference === 'R00007');
 const f7 = r7 ? (await call('GET', `${P}/reservations/${r7.id}/folios`, { token: T }))?.json?.find?.(f => f.isPrimary) : undefined;
 if (f7) {
-  await expectCall('Invoice preview of R00007’s bill: tax invoice, lines with SAC, totals; or already invoiced', 'GET', `${P}/folios/${f7.id}/invoice-preview`, 200, { token: T },
-    b => (b.documentType === 'INVOICE' && (b.invoiceId ? /already|is on invoice|invoice/.test(b.cantIssueReason ?? '') : b.lines.every(l => l.hsnSac)
+  await expectCall('Invoice preview of R00007’s bill: tax invoice, the room night with SAC 996311, totals; or already invoiced', 'GET', `${P}/folios/${f7.id}/invoice-preview`, 200, { token: T },
+    b => (b.documentType === 'INVOICE' && (b.invoiceId ? /already|is on invoice|invoice/.test(b.cantIssueReason ?? '') : b.lines.some(l => l.category === 'ROOM' && l.hsnSac === '996311')
       && Math.abs(b.taxableValue + b.taxTotal - b.total) < 0.005)) || JSON.stringify(b).slice(0, 300));
   await expectCall('Issuing without an Idempotency-Key → 400', 'POST', `${P}/folios/${f7.id}/invoice`, 400, { token: T, body: {} });
   await expectCall('A GSTIN with a typing mistake → 400 under CustomerGstin, saying the right check digit', 'POST', `${P}/folios/${f7.id}/invoice`, 400,

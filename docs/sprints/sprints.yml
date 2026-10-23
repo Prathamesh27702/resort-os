@@ -1100,9 +1100,9 @@ sprints:
       - "frontend/e2e/sprint-12.spec.ts; scripts/check-api.mjs (Sprint 12 checks)"
       - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-12.md, docs/GST.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-12-screens/; tools/handbooks/diagrams (invoice-flow)"
     results:
-      - "RESULTS_BACKEND"
-      - "RESULTS_FRONTEND"
-      - "RESULTS_E2E"
+      - "Backend: 381 passed, 0 failed on real PostgreSQL 16 (41 new: InvoiceTests with the demo (check-out issues the invoice, receipt and PDFs; cancel and re-issue B2B), 20 parallel invoices numbered 1–20 with no gap or repeat, B2B intra- and inter-state, the database refusing UPDATE and DELETE of totals, REDUCE and debit notes, a wrong GSTIN at check-out, receipts and idempotency, permissions; InvoiceUnitTests with the financial year, prefixes within 16 characters, amounts in words, part credits and what is printed)"
+      - "Frontend: 88 of 88 unit tests passed (7 new: invoice helpers, PDF names, the credit tax estimate, invoiced charges off the reverse/move list); ESLint clean; production build OK"
+      - "Browser tests: 101 of 101 passed (Sprints 01–11 plus the 5 new Sprint 12 steps: check-out issues invoice and receipt, a debit note, a part credit note with too much refused under the amount, cancel and re-issue B2B with a GSTIN typo caught, the Invoices screen and a receipt download); API checks 159 of 159 (13 new); database checks clean (no gaps, totals add up, no IGST, the database refuses edits); screenshots in docs/sprints/sprint-12-screens"
   scope:
     tables: [invoice_series, invoices, invoice_items, invoice_item_taxes, credit_notes, credit_note_items, credit_note_item_taxes, debit_notes, debit_note_items, debit_note_item_taxes, receipts, einvoice_records]
     api:
