@@ -30,3 +30,6 @@
 - version: "1.10"
   date: 2026-10-20
   change: "Sprint 10 (Payments, refunds, cash drawer) accepted: cash, UPI, card and bank payments on the bill or on account, refunds with a reason that can never exceed the payment, voids, the cash drawer opened and closed against a count with manager approval of a shortfall, no card data stored, real balances at check-out. Payment flow diagram. Sprint 11 (Razorpay) started."
+- version: "1.11"
+  date: 2026-10-23
+  change: "Sprint 11 (Razorpay) accepted: payment links sent from a booking, the guest pays on their phone with UPI or a card through Razorpay with no sign-in, only Razorpay's signed webhook records the payment (once, whatever the order) and confirms a pending booking, declined tries shown with the reason, online refunds back through Razorpay, a built-in test Razorpay when no keys are set. Razorpay flow diagram. Sprint 12 started."

@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-11] — Unreleased — Razorpay (in review)
+## [sprint-11] — 2026-10-23 — Razorpay (accepted)
 
 ### Added
 - Migration V013: `payment_gateway_orders` (a payment link: a Razorpay order for a booking and an amount, the guest's

@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 3 — Folio, payments, Razorpay, GST, invoices | L | [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md), [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
+| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | L | [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md), [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
 
 **Goal:** Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 09, Sprint 10 are accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 
