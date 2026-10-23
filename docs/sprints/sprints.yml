@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 11
+current: 12
 
 sprints:
 
@@ -988,7 +988,7 @@ sprints:
 - id: 11
   title: Razorpay
   phase: 3
-  status: in-progress
+  status: done
   size: M
   module: Payments
   feature: payments
@@ -996,7 +996,7 @@ sprints:
   goal: Online payments where the server-verified webhook is authoritative (brief §22).
   client: "Guests pay online with UPI and cards through Razorpay; payment links can be sent before arrival."
   progress:
-    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    now: "Accepted by the owner on 23 Oct 2026 and released to main (tag sprint-11)."
     done:
       - "Migration V013: payment_gateway_orders (a payment link: Razorpay order, amount, the guest's private token, CREATED / PAID / CANCELLED, declined tries) and webhook_events (every verified delivery, unique on Razorpay's event id, with what it did); payments get method ONLINE (unique on Razorpay's payment id) and refunds ONLINE with Razorpay's refund id; nothing can be deleted"
       - "IPaymentGateway + RazorpayPaymentGateway over HttpClient: a 10 s timeout per try, up to 3 tries with exponential backoff and jitter when safe (a refund is never retried on an unclear failure); a built-in fake Razorpay (same HTTP calls, signed webhooks) for tests and for development without keys, never in production"

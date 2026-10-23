@@ -833,5 +833,5 @@ request:
 | 08 | Folio (bills, immutable lines, reversals, room nights, split), folio flow diagram; system design 4.18 Folios (accepted 18 Oct 2026) |
 | 09 | GST configuration and the tax engine (registrations, categories, dated rules, slabs, tax on bills), tax flow diagram; system design 4.19 GST: rules as data (accepted 20 Oct 2026) |
 | 10 | Payments, refunds and the cash drawer (status machine, allocations, on account, drawer ledger, variance approval), payment flow diagram; system design 4.20 Refunds that can't overspend (accepted 20 Oct 2026) |
-| 11 | Razorpay (payment links, the guest's page, webhook verify / dedupe / order, online refunds, the fake Razorpay), Razorpay flow diagram; system design 4.21 The webhook is the only writer (in review) |
+| 11 | Razorpay (payment links, the guest's page, webhook verify / dedupe / order, online refunds, the fake Razorpay), Razorpay flow diagram; system design 4.21 The webhook is the only writer (accepted 23 Oct 2026) |
 | 12 | GST invoices, credit and debit notes, receipts (gap-free series, copied taxes, CANCEL / REDUCE, debit notes, PDFs), invoice flow diagram; system design 4.22 Gap-free numbers and corrections only by note (in review) |
