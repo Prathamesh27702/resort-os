@@ -25,6 +25,9 @@ public static class FolioItemTypes
     public const string Charge = "CHARGE";
     /// <summary>Cancels a charge: negative quantity and amount, the charge's id in ReversesItemId, a reason.</summary>
     public const string Reversal = "REVERSAL";
+    /// <summary>Takes part (or all) of a charge off the bill because a credit note reduced its invoice (Sprint 12):
+    /// quantity −1, the credited value as the unit price, the charge's id in AdjustsItemId and the note's in CreditNoteId.</summary>
+    public const string Credit = "CREDIT";
 }
 
 /// <summary>How a line was posted.</summary>
@@ -91,6 +94,10 @@ public class FolioItem : Entity, IPropertyScoped, IAudited
     public Guid? ReversesItemId { get; set; }
     /// <summary>The line on another folio this one was moved from (split).</summary>
     public Guid? TransferredFromItemId { get; set; }
+    /// <summary>The charge a CREDIT line reduces (Sprint 12).</summary>
+    public Guid? AdjustsItemId { get; set; }
+    /// <summary>The credit note that put a CREDIT line here (Sprint 12).</summary>
+    public Guid? CreditNoteId { get; set; }
     public string? Reason { get; set; }
     public DateTimeOffset PostedAt { get; set; }
     public Guid? PostedBy { get; set; }
