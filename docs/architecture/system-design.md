@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–10 built and accepted (October 2026); Sprint 11 (Razorpay) in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–10 built and accepted (October 2026); Sprint 11 (Razorpay) built, in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -73,7 +73,8 @@ backend/
                          Common/ (errors, idempotency, concurrency, protection), Identity/, Properties/,
                          Accommodation/, Guests/, Rates/, Reservations/, FrontDesk/, Folios/, Tax/, Payments/, Audit/, Validation/
   Resort.Infrastructure  AppDbContext (EF Core, snake_case), SQL migrator, audit interceptor,
-                         JWT + password hashing (Identity/Security.cs), field encryption, file store, dev seeder
+                         JWT + password hashing (Identity/Security.cs), field encryption, file store, dev seeder,
+                         external adapters (Payments/RazorpayPaymentGateway.cs and its FakeRazorpayServer)
   Resort.Api             Program.cs (pipeline), Endpoints/*.cs (one file per module),
                          Infrastructure/ (authorisation, problems/error mapping, current user, security headers)
   Resort.Tests           Unit tests + integration tests against a real PostgreSQL (one database per test class)
@@ -288,6 +289,31 @@ flowchart LR
 - Screens: `/payments` (totals by method, filters, search, the drawer panel) and `/payments/:id` (Refund, Void, Put on
   a bill); **Take payment** and the payments list on the bill (`/folios/:id`); the cash drawer panel on the front desk.
   [4.20](#420-refunds-that-cant-overspend-and-a-cash-drawer-that-balances) explains the rules.
+
+---
+
+### Sprint 11: Razorpay (payment links, the webhook, online refunds)
+
+![Razorpay: the webhook is the only writer](../../tools/handbooks/assets/razorpay-flow.png)
+
+- Migration V013: `payment_gateway_orders` (a payment link: Razorpay order, amount, the guest's private token, status
+  CREATED / PAID / CANCELLED, declined tries) and `webhook_events` (each verified Razorpay delivery, unique on the event
+  id, with what it did). `payments` gets method `ONLINE`, the link it came through and how the guest paid, unique on
+  Razorpay's `pay_…` id; `refunds` gets `ONLINE` with Razorpay's `rfnd_…` id. Details:
+  [schema-sprint-11.md](../database/schema-sprint-11.md).
+- `Application/Payments/PaymentGateway.cs`: the `IPaymentGateway` port (create order, fetch payment, refund, the two
+  signature checks). `Infrastructure/Payments/RazorpayPaymentGateway.cs` implements it over `HttpClient` with a timeout
+  per try and retries with jitter; `FakeRazorpayServer.cs` answers the same HTTP calls in memory and signs webhooks, for
+  tests and for development without keys (`DependencyInjection.AddRazorpay` chooses).
+- `PaymentLinkService.cs`: send, list, cancel links and the guest's page (by token, no sign-in; `SystemActor` lets an
+  anonymous request act for the link's organisation). `RazorpayWebhookService.cs`: verify, dedupe, fetch, apply.
+  `PaymentService` refunds online payments through the gateway; `ReservationService.ConfirmLockedAsync` confirms a pending
+  booking inside the webhook's transaction.
+- Endpoints: `RazorpayEndpoints.cs` (staff links under the property, `POST /api/v1/webhooks/razorpay`, `/api/v1/pay/{token}`).
+- Screens: the **Online payment links** panel on a booking (`/reservations/:id`: Send payment link, copy / WhatsApp /
+  open, cancel, History of what Razorpay sent), the guest's page `/pay/:token` outside the staff shell (Razorpay Checkout,
+  or test buttons with the fake), online details and Razorpay refunds on `/payments/:id`.
+  [4.21](#421-razorpay-the-webhook-is-the-only-writer) explains the rules.
 
 ---
 
@@ -695,6 +721,41 @@ Code: `Application/Payments/`, `Domain/Payments/Payments.cs`, `database/migratio
 7. **A retried click moves money once.** Taking and refunding money need an `Idempotency-Key`
    ([4.8](#48-idempotency-a-retried-click-never-books-twice)).
 
+### 4.21 Razorpay: the webhook is the only writer
+
+Code: `Application/Payments/RazorpayWebhookService.cs`, `PaymentLinkService.cs`, `Infrastructure/Payments/`,
+`database/migrations/V013__razorpay.sql`, `features/pay/`, `features/payments/payment-links-panel.ts`. Diagram: section 3
+(Sprint 11). Tests: `RazorpayTests`, `RazorpayUnitTests`. Setup and rules for operators: [RAZORPAY.md](../RAZORPAY.md).
+
+1. **The browser can't mark anything paid.** Checkout's success handler posts to `/pay/{token}/callback`; the API checks
+   its signature and stores only *when* the guest said they paid, so the page can show "confirming". Only Razorpay's
+   webhook creates a payment row, and the desk can't type method `ONLINE`.
+2. **Verify, then trust Razorpay, not the message.** The webhook's HMAC-SHA256 is computed over the raw bytes (before
+   any JSON parsing) with the webhook secret and compared in constant time; a mismatch is 401 and nothing is written.
+   Then the API fetches the payment from Razorpay and uses *its* current status, order and amount. A forged or stale
+   body can't move money even with a leaked secret, short of also faking Razorpay's API.
+3. **Each event once.** Inside the transaction the API claims the event id with `INSERT … ON CONFLICT DO UPDATE …
+   WHERE status = 'FAILED' RETURNING id`: a second delivery (even at the same moment) finds the row and returns 200
+   "already processed". The unique index on Razorpay's payment id is a second guard: two different events for one
+   payment can't make two rows.
+4. **Order doesn't matter.** Events are applied by rank (none < authorised < failed < captured) and never move a payment
+   backwards. Because step 2 reads the live status, `payment.authorized` arriving after capture already sees "captured";
+   the later events are stored `IGNORED` with "changes nothing", and the History on the booking shows why.
+5. **One transaction for the money.** Lock the booking, then the link (same order as everything else that touches
+   money), create or capture the payment, mark the link `PAID`, allocate to the main bill up to what it owes (the rest on
+   account), confirm a `PENDING` booking with the reason "Paid online: P… ₹… (Razorpay pay_…)". Any error rolls it all
+   back, stores the event `FAILED` with the reason and answers 500, so Razorpay retries and the retry takes the row over.
+6. **Refunds wait for Razorpay.** An online refund calls Razorpay first (not retried when the answer is unclear, because
+   it may have gone through), then stores the refund `PENDING` with `rfnd_…`; `refund.processed` makes it `PROCESSED`,
+   `refund.failed` makes it `FAILED` and recomputes the payment's status, which is why V013 allows `REFUNDED →
+   CAPTURED` for online payments only. Online payments can't be voided: the money really came in.
+7. **The guest's page is public but narrow.** The token is 32 random bytes (unguessable); the page shows the property,
+   booking reference, first name, dates and amount, nothing else. Links are created with an `Idempotency-Key` and capped
+   at what the booking owes less open links, so two clicks can't ask the guest twice.
+8. **Tests run against a fake that speaks HTTP.** `FakeRazorpayServer` plugs in as the `HttpClient`'s handler, so the
+   real adapter (auth, retries, timeouts, parsing) and the real webhook code run in every test; it can fail or hang the
+   next call to prove the retry rules. Without keys the development app uses it too, and production never does.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -715,3 +776,4 @@ request:
 | 08 | Folio (bills, immutable lines, reversals, room nights, split), folio flow diagram; system design 4.18 Folios (accepted 18 Oct 2026) |
 | 09 | GST configuration and the tax engine (registrations, categories, dated rules, slabs, tax on bills), tax flow diagram; system design 4.19 GST: rules as data (accepted 20 Oct 2026) |
 | 10 | Payments, refunds and the cash drawer (status machine, allocations, on account, drawer ledger, variance approval), payment flow diagram; system design 4.20 Refunds that can't overspend (accepted 20 Oct 2026) |
+| 11 | Razorpay (payment links, the guest's page, webhook verify / dedupe / order, online refunds, the fake Razorpay), Razorpay flow diagram; system design 4.21 The webhook is the only writer (in review) |

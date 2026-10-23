@@ -5,7 +5,9 @@ using Npgsql;
 using Resort.Application.Common;
 using Resort.Application.Guests;
 using Resort.Application.Identity;
+using Resort.Application.Payments;
 using Resort.Infrastructure.Identity;
+using Resort.Infrastructure.Payments;
 using Resort.Infrastructure.Persistence;
 using Resort.Infrastructure.Protection;
 
@@ -13,7 +15,8 @@ namespace Resort.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
+    /// <param name="production">True in production: the fake Razorpay is refused there.</param>
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config, bool production = false)
     {
         var cs = ResolveConnectionString(config);
 
@@ -42,10 +45,34 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasherService, PasswordHasherService>();
         services.AddSingleton<IUserAccessService, UserAccessService>();
 
+        AddRazorpay(services, config, production);
+
         services.AddSingleton<DatabaseMigrator>();
         services.AddScoped<Bootstrapper>();
         services.AddSingleton<DevSeeder>();
         return services;
+    }
+
+    /// <summary>
+    /// Razorpay (Sprint 11): the real adapter over HttpClient, pointed at api.razorpay.com, or at the built-in fake when
+    /// no keys are set outside production (see <see cref="RazorpayOptions"/>).
+    /// </summary>
+    private static void AddRazorpay(IServiceCollection services, IConfiguration config, bool production)
+    {
+        services.Configure<RazorpayOptions>(config.GetSection(RazorpayOptions.Section));
+        var options = config.GetSection(RazorpayOptions.Section).Get<RazorpayOptions>() ?? new RazorpayOptions();
+        var client = services.AddHttpClient<IPaymentGateway, RazorpayPaymentGateway>((sp, http) =>
+        {
+            var o = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RazorpayOptions>>().Value;
+            http.BaseAddress = new Uri(o.BaseUrl.EndsWith('/') ? o.BaseUrl : o.BaseUrl + "/");
+            http.Timeout = Timeout.InfiniteTimeSpan;   // each try has its own timeout (RazorpayOptions.TimeoutSeconds)
+        });
+        if (options.UseFake(production))
+        {
+            services.PostConfigure<RazorpayOptions>(o => o.WithFakeDefaults());
+            services.AddSingleton<FakeRazorpayServer>();
+            client.ConfigurePrimaryHttpMessageHandler(sp => new FakeRazorpayHandler(sp.GetRequiredService<FakeRazorpayServer>()));
+        }
     }
 
     /// <summary>

@@ -21,10 +21,13 @@ namespace Resort.Application.Payments;
 /// balance can't change under the check-out rule), then the payment row, then the cash drawer session. Two refunds of the
 /// same payment therefore run one after the other, and the second sees the first; the database checks the same limit
 /// under its own lock on the payment row (V012).
+///
+/// Sprint 11: online payments (method ONLINE) are created only by Razorpay's webhook (<see cref="RazorpayWebhookService"/>).
+/// They are refunded like any other, and by default back through Razorpay; they are never voided (the money really came).
 /// </summary>
 public sealed class PaymentService(
     IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations,
-    CashDrawerService drawers, PaymentLedger ledger)
+    CashDrawerService drawers, PaymentLedger ledger, IPaymentGateway gateway)
 {
     /// <summary>Booking statuses that take money on account. A folio takes payments while it takes charges.</summary>
     public static readonly string[] TakesPayments =
@@ -168,18 +171,13 @@ public sealed class PaymentService(
                     : $"{folio.Number} owes {Money.Rupees(owed)}, so it can take at most that. Take {Money.Rupees(owed)}, or record the rest on account for the booking.");
         }
 
-        var number = (await db.Database.SqlQuery<long>(
-            $"""
-             INSERT INTO property_counters (property_id, name, last_value) VALUES ({propertyId}, 'payment', 1)
-             ON CONFLICT (property_id, name) DO UPDATE SET last_value = property_counters.last_value + 1
-             RETURNING last_value AS "Value"
-             """).ToListAsync(ct)).Single();
+        var number = await NextNumberAsync(propertyId, ct);
         var now = clock.GetUtcNow();
         var payment = new Payment
         {
             OrganizationId = reservation.OrganizationId,
             PropertyId = propertyId,
-            Number = $"P{number:D5}",
+            Number = number,
             ReservationId = reservation.Id,
             GuestId = folio?.BillToGuestId ?? reservation.PrimaryGuestId,
             Method = method,
@@ -313,6 +311,10 @@ public sealed class PaymentService(
         }
 
         var method = string.IsNullOrWhiteSpace(r.Method) ? payment.Method : r.Method.Trim().ToUpperInvariant();
+        if (method == PaymentMethods.Online && payment.Method != PaymentMethods.Online)
+            throw ReservationService.Field(nameof(r.Method),
+                $"{payment.Number} was paid {PaymentMethods.Words(payment.Method).ToLowerInvariant()}, not online, so it can't go back through Razorpay. " +
+                $"Choose {string.Join(", ", PaymentMethods.Desk.Select(PaymentMethods.Words))}.");
         CashDrawerSession? session = null;
         if (method == PaymentMethods.Cash)
         {
@@ -325,10 +327,17 @@ public sealed class PaymentService(
 
         var reservation = await db.Reservations.AsNoTracking().SingleAsync(x => x.Id == payment.ReservationId, ct);
         var now = clock.GetUtcNow();
-        foreach (var (folioId, amount) in parts)
+        var ids = parts.Select(_ => Guid.CreateVersion7()).ToList();
+        GatewayRefund? online = null;
+        if (method == PaymentMethods.Online)
+            online = await RefundOnlineAsync(payment, r.Amount, ids[0], reason, ct);
+        foreach (var ((folioId, amount), refundId) in parts.Zip(ids))
         {
             var refund = new Refund
             {
+                Id = refundId,
+                Status = online is null ? RefundStatuses.Processed : online.Status == "processed" ? RefundStatuses.Processed : RefundStatuses.Pending,
+                GatewayRefundId = online?.Id,
                 OrganizationId = payment.OrganizationId,
                 PropertyId = payment.PropertyId,
                 PaymentId = payment.Id,
@@ -354,6 +363,43 @@ public sealed class PaymentService(
         await Idempotency.CompleteAsync(db, orgId, scope, key, 200, dto, payment.Id, ct);
         await tx.CommitAsync(ct);
         return (dto, false);
+    }
+
+    /// <summary>Sends the money back through Razorpay (one Razorpay refund, however many rows it is split into here). Our
+    /// first refund row's id is the receipt. A clear refusal means nothing went back; an unclear failure (no answer) might
+    /// have refunded, so the message says to check Razorpay's dashboard before trying again.</summary>
+    private async Task<GatewayRefund> RefundOnlineAsync(Payment payment, decimal amount, Guid receipt, string reason, CancellationToken ct)
+    {
+        try
+        {
+            var refund = await gateway.RefundAsync(payment.Reference!, PaymentMath.ToPaise(amount), receipt.ToString("N"),
+                new Dictionary<string, string> { ["payment"] = payment.Number, ["reason"] = reason.Length > 200 ? reason[..200] : reason }, ct);
+            if (refund.Status == "failed")
+                throw new BusinessRuleAppException("GATEWAY_REFUND_FAILED",
+                    $"Razorpay refused to refund {Money.Rupees(amount)} of {payment.Number}, so nothing was refunded. Refund by another method, or try again later.");
+            return refund;
+        }
+        catch (PaymentGatewayException ex) when (ex.StatusCode is null or >= 500)
+        {
+            throw new BusinessRuleAppException("GATEWAY_REFUND_UNCLEAR",
+                $"{ex.Message} The refund may or may not have gone through: look at {payment.Reference} in Razorpay's dashboard before trying again. Nothing was recorded here.");
+        }
+        catch (PaymentGatewayException ex)
+        {
+            throw new BusinessRuleAppException("GATEWAY_REFUND_FAILED", $"{ex.Message} Nothing was refunded.");
+        }
+    }
+
+    /// <summary>The property's next payment number: P00001, P00002 … (a counter row, so two at once get different ones).</summary>
+    internal async Task<string> NextNumberAsync(Guid propertyId, CancellationToken ct)
+    {
+        var number = (await db.Database.SqlQuery<long>(
+            $"""
+             INSERT INTO property_counters (property_id, name, last_value) VALUES ({propertyId}, 'payment', 1)
+             ON CONFLICT (property_id, name) DO UPDATE SET last_value = property_counters.last_value + 1
+             RETURNING last_value AS "Value"
+             """).ToListAsync(ct)).Single();
+        return $"P{number:D5}";
     }
 
     // ------------------------------------------------------------------ void
@@ -424,6 +470,8 @@ public sealed class PaymentService(
             return $"{p.Number} was already voided at {CashDrawerService.When(property, p.VoidedAt!.Value)}{(who is null ? "" : $" by {who}")} " +
                    $"(reason: {p.VoidReason}). Reload to see it.";
         }
+        if (p.Method == PaymentMethods.Online)
+            return $"{p.Number} was paid online through Razorpay, so the money really came in and it can't be voided. Refund it instead.";
         if (p.Status != PaymentStatuses.Captured)
             return p.Status is PaymentStatuses.PartiallyRefunded or PaymentStatuses.Refunded
                 ? $"Part of {p.Number} has been refunded, so it can't be voided. Refund the rest instead."
@@ -451,7 +499,7 @@ public sealed class PaymentService(
         return PaymentMath.OnAccount(p.Amount, allocated, fromAccount);
     }
 
-    private PaymentAllocation Allocation(Payment payment, Guid folioId, decimal amount, DateTimeOffset at) => new()
+    internal PaymentAllocation Allocation(Payment payment, Guid folioId, decimal amount, DateTimeOffset at) => new()
     {
         OrganizationId = payment.OrganizationId,
         PropertyId = payment.PropertyId,
@@ -523,6 +571,7 @@ public sealed class PaymentService(
             }).ToList(),
             refunds.Select(r => new RefundDto(r.Id, p.Id, p.Number, r.FolioId, r.FolioId is { } fid ? numbers[fid].Number : null, r.Amount, r.Method,
                 r.Status, r.Reason, r.Reference, r.RefundedAt, Name(r.RefundedBy))).ToList(),
-            folios.Select(f => new PaymentFolioDto(f.Id, f.Number, f.Name, f.IsPrimary, balances[f.Id])).ToList());
+            folios.Select(f => new PaymentFolioDto(f.Id, f.Number, f.Name, f.IsPrimary, balances[f.Id])).ToList(),
+            p.GatewayMethod, p.GatewayOrderId);
     }
 }

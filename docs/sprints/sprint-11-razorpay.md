@@ -10,28 +10,36 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built and in review: pull request into develop, waiting for the owner's acceptance.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V013: payment_gateway_orders (a payment link: Razorpay order, amount, the guest's private token, CREATED / PAID / CANCELLED, declined tries) and webhook_events (every verified delivery, unique on Razorpay's event id, with what it did); payments get method ONLINE (unique on Razorpay's payment id) and refunds ONLINE with Razorpay's refund id; nothing can be deleted
+- IPaymentGateway + RazorpayPaymentGateway over HttpClient: a 10 s timeout per try, up to 3 tries with exponential backoff and jitter when safe (a refund is never retried on an unclear failure); a built-in fake Razorpay (same HTTP calls, signed webhooks) for tests and for development without keys, never in production
+- Webhook: HMAC-SHA256 over the raw body (wrong → 401, nothing stored); the event id is claimed once inside the transaction (duplicates, even at the same moment, change nothing); the payment is fetched from Razorpay and only moves forward, so captured-before-authorised is handled; our errors are stored FAILED and retried by Razorpay
+- One transaction: the payment is recorded, the link marked paid, the money put on the main bill (the rest on account) and a pending booking confirmed
+- Browser callback only checks the signature and shows "confirming"; it never records a payment. Online payments can't be voided; refunds go back through Razorpay and wait for refund.processed (refund.failed puts the money back)
+- Screens: Online payment links on a booking (send with the amount checked against what is owed, copy, WhatsApp, cancel with a reason, History of what Razorpay sent); the guest's page /pay/:token without sign-in (Razorpay Checkout, or test buttons with the fake); online details and Razorpay refunds on a payment
+- No new dev seed: a link needs a real order in Razorpay; the seeded pending booking R00003 is the demo booking
+- [done] Docs: RAZORPAY.md, API.md, DATABASE.md, schema-sprint-11.md, system design Sprint 11 and 4.21 with the Razorpay flow diagram, RUN_AND_TEST, REVIEWING
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__payments.sql — new tables (next free number)
-- backend/Resort.Domain/Payments/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Payments/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Infrastructure/Payments/ — external API adapter + fake server for tests
-- backend/Resort.Api/Endpoints/PaymentsEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/PaymentsTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/payments/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-11.md, this guide, CHANGELOG.md
+- database/migrations/V013__razorpay.sql; database/queries/check-sprint-11.sql
+- backend/Resort.Domain/Payments/Payments.cs
+- backend/Resort.Contracts/PaymentContracts.cs
+- backend/Resort.Application/ — Payments/PaymentGateway.cs, Payments/PaymentLinkService.cs, Payments/RazorpayWebhookService.cs, Payments/PaymentService.cs, Validation/PaymentValidators.cs, Reservations/ReservationService.cs, Common/SystemActor.cs, Common/Errors.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/ — Payments/RazorpayPaymentGateway.cs, Payments/FakeRazorpayServer.cs, Persistence/AppDbContext.cs, DependencyInjection.cs; backend/Resort.Api/ — Endpoints/RazorpayEndpoints.cs, Infrastructure/CurrentUser.cs, Program.cs
+- backend/Resort.Tests/ — Integration/RazorpayTests.cs, Unit/RazorpayUnitTests.cs, Support/RazorpayFactory.cs
+- frontend/src/app/ — features/pay/pay.page.ts, features/payments/ (payment-links-panel.ts, payments.api.ts, payment-dialogs.ts, payment.page.ts, payments.page.ts, payment-links.spec.ts), features/reservations/reservation.page.ts, core/models.ts, app.routes.ts
+- frontend/e2e/sprint-11.spec.ts; scripts/check-api.mjs (Sprint 11 checks); .env.example
+- docs/RAZORPAY.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-11.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-11-screens/; tools/handbooks/diagrams (razorpay-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 340 passed, 0 failed on real PostgreSQL 16 (24 new: RazorpayTests with the demo, duplicate delivery processed once (also two at the same moment), bad signature → 401 with nothing stored, captured before authorised, a declined try, a cancelled link paid anyway, the guest page and fake checkout, link limits and idempotency, permissions and tenants, retries and timeouts, online refunds processed and failed, the database refusing edits and deletes; RazorpayUnitTests with HMAC vectors, paise and the forward-only rank)
+- Frontend: 81 of 81 unit tests passed (9 new: Razorpay helpers, the send-link dialog's limits and card-number check, the guest page's test buttons, polling while confirming and an invalid link); ESLint clean; production build OK
+- Browser tests: 96 of 96 passed (Sprints 01–10 plus the 6 new Sprint 11 steps: send a link with the amount checked, the guest page on a phone with a declined try, pay, the booking confirmed with the webhook history, a ₹500 refund through Razorpay, a bad signature and a cancelled link); API checks 147 of 147 (16 new); database checks clean; screenshots in docs/sprints/sprint-11-screens. Real Razorpay test mode is for the owner's review (needs their test keys and a tunnel)
 
 **Outcome**
 
@@ -49,7 +57,16 @@ Expected when accepted:
 **API endpoints**
 
 - `POST /api/v1/properties/{propertyId}/payments/razorpay/orders`
+- `GET /api/v1/properties/{propertyId}/payments/razorpay/orders?reservationId | /{id}`
+- `POST /api/v1/properties/{propertyId}/payments/razorpay/orders/{id}/cancel  (reason required)`
 - `POST /api/v1/webhooks/razorpay  (no auth; HMAC signature)`
+- `GET /api/v1/pay/{token}; POST /api/v1/pay/{token}/callback  (guest page, no auth; token)`
+
+**Screens / routes**
+
+- `online payment links on /reservations/:id`
+- `/pay/:token (guest page`
+- `no sign-in)`
 
 **External APIs used**
 
@@ -63,10 +80,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] IPaymentGateway + RazorpayPaymentGateway (HttpClient, retries with jitter, timeouts)
-- [ ] Webhook: verify X-Razorpay-Signature over the raw body; dedupe on event id (webhook_events unique); process in a transaction
-- [ ] Browser callback only shows status; it never marks a payment captured
-- [ ] Fake Razorpay server for tests (tests/fakes)
+- [x] IPaymentGateway + RazorpayPaymentGateway (HttpClient, retries with jitter, timeouts)
+- [x] Webhook: verify X-Razorpay-Signature over the raw body; dedupe on event id (webhook_events unique); process in a transaction
+- [x] Browser callback only shows status; it never marks a payment captured
+- [x] Fake Razorpay server for tests (tests/fakes)
 
 ## How to run this sprint
 

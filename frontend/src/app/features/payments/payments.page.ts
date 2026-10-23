@@ -15,7 +15,7 @@ import { PropertyContext, inZone } from '../../core/property-context';
 import { addDays } from '../rooms/rooms.api';
 import { rupeesExact } from '../settings/rates/rates.api';
 import { CashDrawerPanel } from './cash-drawer-panel';
-import { METHODS, PaymentsApi, methodLabel, paymentStatusClass, paymentStatusLabel } from './payments.api';
+import { ALL_METHODS, PaymentsApi, methodLabel, paymentStatusClass, paymentStatusLabel } from './payments.api';
 
 type Period = 'today' | 'yesterday' | 'week' | 'all';
 
@@ -138,7 +138,7 @@ export class PaymentsPage {
   loading = signal(true);
   error = signal('');
 
-  methods = METHODS;
+  methods = ALL_METHODS;
   methodLabel = methodLabel;
   statusLabel = paymentStatusLabel;
   statusClass = paymentStatusClass;

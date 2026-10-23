@@ -70,6 +70,8 @@ public interface IAppDbContext
     DbSet<CashDrawer> CashDrawers { get; }
     DbSet<CashDrawerSession> CashDrawerSessions { get; }
     DbSet<CashDrawerMovement> CashDrawerMovements { get; }
+    DbSet<PaymentGatewayOrder> PaymentGatewayOrders { get; }
+    DbSet<WebhookEvent> WebhookEvents { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

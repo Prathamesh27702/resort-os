@@ -15,7 +15,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 7 — front desk](database/schema-sprint-07.md) (check-in/out times, room cleaning state and its history, demo in-house guests) ·
   [Sprint 8 — folio](database/schema-sprint-08.md) (folios, immutable bill lines and reversals, the room-night guard, demo charges) ·
   [Sprint 9 — GST](database/schema-sprint-09.md) (GST registrations, tax categories, dated tax rules and their slabs, the seeded rules, tax on bill lines) ·
-  [Sprint 10 — payments](database/schema-sprint-10.md) (payments and their status machine, allocations to bills, refunds that can't overspend, cash drawer shifts and their ledger, demo payments)
+  [Sprint 10 — payments](database/schema-sprint-10.md) (payments and their status machine, allocations to bills, refunds that can't overspend, cash drawer shifts and their ledger, demo payments) ·
+  [Sprint 11 — Razorpay](database/schema-sprint-11.md) (payment links as Razorpay orders, webhook events deduplicated by event id, online payments and refunds)
 
 ## Conventions (every table)
 
@@ -49,7 +50,8 @@ database/migrations/
   V010__folio.sql
   V011__tax.sql
   V012__payments.sql
-  V013__<next>.sql   ← you add this
+  V013__razorpay.sql
+  V014__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
   S002__guests.sql          ← 20 demo guests; Development only

@@ -24,12 +24,13 @@ import { deskStayOf, stayAction } from '../front-desk/front-desk.api';
 import { Observable } from 'rxjs';
 import { FoliosApi } from '../folios/folios.api';
 import { FolioListItem } from '../../core/models';
+import { PaymentLinksPanel } from '../payments/payment-links-panel';
 
 /** One booking: stay, rooms, the price night by night, guests, notes and every status change. */
 @Component({
   selector: 'app-reservation',
   imports: [RouterLink, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
-            MatSnackBarModule, CanDirective],
+            MatSnackBarModule, CanDirective, PaymentLinksPanel],
   template: `
     <div class="page">
       @if (r(); as r) {
@@ -92,6 +93,10 @@ import { FolioListItem } from '../../core/models';
             }
           </section>
         </div>
+
+        @if (auth.can('payment.read', pid)) {
+          <app-payment-links-panel [reservationId]="r.id" (changed)="reload()" />
+        }
 
         <section class="panel card wide">
           <h2>Rooms</h2>
@@ -227,6 +232,8 @@ export class ReservationPage implements OnInit {
   phone = formatPhone;
 
   ngOnInit() { this.load(); }
+  /** Sprint 11: a payment link was sent, cancelled or paid (paying one can confirm a pending booking). */
+  reload() { this.load(); }
 
   private load() {
     this.api.get(this.pid, this.id()).subscribe({

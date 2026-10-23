@@ -2,6 +2,45 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-11] — Unreleased — Razorpay (in review)
+
+### Added
+- Migration V013: `payment_gateway_orders` (a payment link: a Razorpay order for a booking and an amount, the guest's
+  private token, `CREATED` → `PAID` or `CANCELLED`, declined tries and the bank's reason; what it is for never changes;
+  never deleted) and `webhook_events` (each verified Razorpay delivery, unique on `(provider, event_id)`, `PROCESSED`,
+  `IGNORED` or `FAILED` with what it did; only a failed one can be retried; card, contact and UPI id never stored).
+  `payments` gets method `ONLINE`, `gateway_order_id`, `gateway_method` and a unique index on Razorpay's payment id;
+  `refunds` gets `ONLINE` with `gateway_refund_id`; new status moves (authorised on creation; back from refunded after a
+  failed gateway refund) for `ONLINE` only.
+- `IPaymentGateway` and `RazorpayPaymentGateway` (HttpClient; a timeout per try; up to 3 tries with exponential backoff
+  and jitter where safe; a refund is never retried on an unclear failure), and `FakeRazorpayServer`, which answers the
+  same HTTP calls and signs webhooks, used by the tests and by development without keys (never production).
+- API: `POST|GET /properties/{id}/payments/razorpay/orders` (send a link with an `Idempotency-Key`, amount at most what
+  the booking owes less open links; a booking's links), `GET …/orders/{id}` (with its webhook events),
+  `POST …/orders/{id}/cancel` (reason); `POST /api/v1/webhooks/razorpay` (no sign-in: HMAC-SHA256 over the raw body,
+  event id claimed once, payment fetched from Razorpay, applied in one transaction, never backwards); the guest's page
+  `GET /api/v1/pay/{token}`, `POST …/callback` (signature checked; shows "confirming", records nothing) and
+  `POST …/fake-checkout` (fake Razorpay only).
+- A captured online payment goes on the main bill (the rest on account), marks the link paid and confirms a pending
+  booking, in one transaction. Refunds of online payments go back through Razorpay and wait for `refund.processed`;
+  `refund.failed` puts the money back on the payment.
+- Staff app: **Online payment links** on a booking (send, copy, WhatsApp, open, cancel, History of what Razorpay sent);
+  the guest's page `/pay/:token` outside the staff app (Razorpay Checkout, or test buttons with the fake); online
+  details and Razorpay refunds on a payment; *Online (Razorpay)* in the payments filter.
+- Tests: backend `RazorpayTests` (the demo, duplicate delivery including two at once, bad signature → 401 with nothing
+  stored, captured before authorised, a declined try, a cancelled link paid anyway, retries and timeouts, online refunds,
+  permissions and tenants, database immutability) and `RazorpayUnitTests`; frontend `payment-links.spec.ts`; browser
+  steps S11-01 … S11-06; `check-api.mjs` Sprint 11 block; `database/queries/check-sprint-11.sql`.
+- Docs: RAZORPAY.md (setup in test mode with a tunnel), API.md, DATABASE.md, schema-sprint-11.md, system design Sprint 11
+  and 4.21 with the Razorpay flow diagram, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- `POST /payments` refuses method `ONLINE` under `Method` (only Razorpay records online payments). Online payments can't
+  be voided. `PaymentDto` adds `gatewayMethod` and `paymentLinkId`.
+- An anonymous request (webhook, guest page) acts for the link's organisation through `SystemActor`, so the tenant
+  filters still apply.
+- `.env.example`: the Razorpay keys are Sprint 11; leave them empty to use the fake Razorpay.
+
 ## [sprint-10] — 2026-10-20 — Payments, refunds, cash drawer (accepted)
 
 ### Added
