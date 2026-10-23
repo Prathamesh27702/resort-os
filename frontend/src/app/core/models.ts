@@ -310,7 +310,8 @@ export interface TaxCalculation {
 
 // ---------------------------------------------------------------- payments and the cash drawer (Sprint 10)
 
-export type PaymentMethod = 'CASH' | 'UPI' | 'CARD' | 'BANK_TRANSFER';
+/** ONLINE: paid through Razorpay (Sprint 11); recorded only by Razorpay's webhook, never typed in. */
+export type PaymentMethod = 'CASH' | 'UPI' | 'CARD' | 'BANK_TRANSFER' | 'ONLINE';
 export type PaymentStatus = 'PENDING' | 'AUTHORIZED' | 'CAPTURED' | 'FAILED' | 'REFUNDED' | 'PARTIALLY_REFUNDED' | 'CANCELLED';
 
 /** A payment with what became of it: on folios (allocated), on account (an advance), refunded, or voided (CANCELLED). */
@@ -320,6 +321,8 @@ export interface Payment {
   paymentReference: string | null; note: string | null; cashDrawerSessionId: string | null; receivedAt: string; receivedByName: string | null;
   voidedAt: string | null; voidedByName: string | null; voidReason: string | null; canVoid: boolean; cantVoidReason: string | null;
   allocations: PaymentAllocation[]; refunds: Refund[]; folios: PaymentFolio[];
+  /** ONLINE only: how the guest paid in Razorpay (upi, card, netbanking, wallet) and the payment link it came through. */
+  gatewayMethod: string | null; paymentLinkId: string | null;
 }
 export interface PaymentAllocation {
   id: string; folioId: string; folioNumber: string; folioName: string; amount: number; refunded: number; allocatedAt: string; allocatedByName: string | null;
@@ -348,4 +351,29 @@ export interface CashDrawerMovement {
   id: string; movementType: 'OPENING_FLOAT' | 'PAYMENT' | 'REFUND' | 'VOID' | 'PAY_IN' | 'PAY_OUT'; amount: number; description: string;
   paymentId: string | null; paymentNumber: string | null; reference: string | null; movedAt: string; byName: string | null;
 }
+// ---------------------------------------------------------------- Razorpay payment links (Sprint 11)
+
+export type PaymentLinkStatus = 'CREATED' | 'PAID' | 'CANCELLED';
+/** A Razorpay webhook as received: PROCESSED, IGNORED (nothing to do) or FAILED (Razorpay retries it). */
+export interface WebhookEvent { id: string; eventId: string; eventType: string; status: 'PROCESSED' | 'IGNORED' | 'FAILED'; outcome: string | null; attempts: number; receivedAt: string; }
+/** A payment link: a Razorpay order the guest pays on their own page (payPath, relative to the app). */
+export interface PaymentLink {
+  id: string; reservationId: string; reference: string; guestName: string; gatewayOrderId: string; amount: number; currency: string;
+  status: PaymentLinkStatus; payPath: string; note: string | null; attempts: number; lastError: string | null; callbackAt: string | null;
+  paymentId: string | null; paymentNumber: string | null; paymentStatus: PaymentStatus | null; paidAt: string | null; createdAt: string;
+  createdByName: string | null; cancelledAt: string | null; cancelledByName: string | null; cancelReason: string | null; events: WebhookEvent[] | null;
+}
+/** A booking's links and what it owes. fake: the server uses the built-in fake Razorpay (no keys). */
+export interface BookingPaymentLinks {
+  reservationId: string; reference: string; due: number; paid: number; owed: number; open: number; canCreate: boolean;
+  cantCreateReason: string | null; fake: boolean; links: PaymentLink[];
+}
+export type PayPageStatus = 'AWAITING_PAYMENT' | 'CONFIRMING' | 'PAID' | 'CANCELLED' | 'CLOSED';
+/** The guest's pay page (no sign-in). */
+export interface PayPage {
+  propertyName: string; bookingReference: string; guestName: string; checkIn: string; checkOut: string; amount: number; currency: string;
+  status: PayPageStatus; message: string; keyId: string | null; gatewayOrderId: string | null; fake: boolean; lastError: string | null;
+  paymentNumber: string | null; paidAt: string | null;
+}
+
 export interface CashDrawer { id: string; name: string; current: CashDrawerSession | null; pendingApproval: CashDrawerSession[]; recent: CashDrawerSession[]; }

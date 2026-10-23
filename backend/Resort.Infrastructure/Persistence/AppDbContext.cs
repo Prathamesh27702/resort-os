@@ -77,6 +77,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<PaymentAllocation> PaymentAllocations => Set<PaymentAllocation>();
     public DbSet<Refund> Refunds => Set<Refund>();
+    public DbSet<PaymentGatewayOrder> PaymentGatewayOrders => Set<PaymentGatewayOrder>();
+    public DbSet<WebhookEvent> WebhookEvents => Set<WebhookEvent>();
     public DbSet<CashDrawer> CashDrawers => Set<CashDrawer>();
     public DbSet<CashDrawerSession> CashDrawerSessions => Set<CashDrawerSession>();
     public DbSet<CashDrawerMovement> CashDrawerMovements => Set<CashDrawerMovement>();
@@ -352,6 +354,21 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.HasOne<Payment>().WithMany().HasForeignKey(x => x.PaymentId);
             e.HasOne<Refund>().WithMany().HasForeignKey(x => x.RefundId);
             e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+
+        // ---- Sprint 11: Razorpay payment links and webhooks (database/migrations/V013__razorpay.sql)
+        b.Entity<PaymentGatewayOrder>(e =>
+        {
+            e.ToTable("payment_gateway_orders");
+            // Declared so EF inserts the webhook's new payment before it marks the link paid.
+            e.HasOne<Payment>().WithMany().HasForeignKey(x => x.PaymentId);
+            e.Property(x => x.Currency).HasColumnType("char(3)");
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<WebhookEvent>(e =>
+        {
+            e.ToTable("webhook_events");
+            e.Property(x => x.Payload).HasColumnType("jsonb");
         });
 
         foreach (var entity in b.Model.GetEntityTypes())

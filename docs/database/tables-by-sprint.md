@@ -58,18 +58,18 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `cash_drawers` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
 | `cash_drawer_sessions` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
 | `cash_drawer_movements` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
-| `payment_gateway_orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🔵 In progress |
-| `webhook_events` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🔵 In progress |
-| `invoice_series` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `invoice_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `invoice_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `credit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `credit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `debit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `payment_gateway_orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `webhook_events` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `invoice_series` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `invoice_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `invoice_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `credit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `credit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `debit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |

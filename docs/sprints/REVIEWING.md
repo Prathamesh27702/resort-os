@@ -312,6 +312,39 @@ Screenshots: [sprint-10-screens/](sprint-10-screens/). The browser tests do the 
 | 19 | A payment entered by mistake: take ₹1 by UPI on account, open it → **Void** → a reason | *Voided*; it counts for nothing on the bill. After a refund, or once its cash shift is closed, **Void** is gone and the page says why |
 | 20 | Phone width (390 px) → Payments and a payment | Totals, rows and buttons fit the screen |
 
+### Sprint 11 — Razorpay
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V013__razorpay`). There
+is no new demo data: R00003 (arriving in 3 days, *Pending*, note *Will send the advance by UPI*) is the booking to send a
+link for. Steps 1–12 need **no Razorpay account**: with the `Razorpay__…` values empty in `.env` the API uses a built-in
+test Razorpay and the guest's page shows test buttons. Steps 13–15 are the real test-mode demo; set it up first with
+[RAZORPAY.md → Setting it up](../RAZORPAY.md#setting-it-up-test-mode) (test keys and webhook secret in `.env`, a
+cloudflared tunnel for the webhook). Sign in as a **receptionist** for steps 1–9, then as the **owner**.
+Screenshots: [sprint-11-screens/](sprint-11-screens/). The browser tests do steps 1–11 for you:
+`cd frontend; npm run e2e:headed -- e2e/sprint-11.spec.ts` (names S11-01 … S11-06). Database checks:
+`database/queries/check-sprint-11.sql`. How it works:
+[system-design.md → 4.21](../architecture/system-design.md#421-razorpay-the-webhook-is-the-only-writer).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Reservations** → **R00003** | A new panel *Online payment links*: *Owes ₹8,400.00 of ₹8,400.00*, *Test mode: no Razorpay keys are set …*, *No links sent*, and **Send payment link** |
+| 2 | **Send payment link** → Amount *9000* → **Create link** | Under *Amount*: *The link can be for at most ₹8,400.00: what R00003 still owes, less open links.* Nothing is sent |
+| 3 | Amount *2000*, Note *Advance to hold your booking* → **Create link** | *Link for ₹2,000.00 created and copied. Send it to the guest.*; the link *Waiting for the guest*, with your name and the note; *links ask for ₹2,000.00* |
+| 4 | **Send payment link** again → Amount *7000* | Under *Amount*: at most ₹6,400.00 (what is owed less the open link). **Cancel** |
+| 5 | Paste the copied link in a **private window** (or on your phone if it can reach your PC) | The guest's page, no sign-in and no staff menu: *Palm Grove Beach Resort*, **₹2,000.00**, *Booking R00003 · Ananya*, the dates, and a *Test mode* note with *UPI / Card* and two buttons |
+| 6 | *Card* → **Fail the payment (test)** | In red: *… Your last try didn't go through: Payment was declined by the bank (test). Try another card or UPI app.* The **Pay** button is still there |
+| 7 | Back on R00003 → refresh (↻) | The link shows *Last try failed (1 so far): Payment was declined …*; still *Waiting for the guest* |
+| 8 | **The demo.** Guest's page: *UPI* → **Pay ₹2,000.00 (test)** | *Paid. Thank you, Ananya: Palm Grove Beach Resort has received ₹2,000 for booking R00003.* Reload: still paid, no Pay button |
+| 9 | **The acceptance test.** R00003 → refresh the page | Status **Confirmed** (it was Pending); the link *Paid* with its payment number; *Owes ₹6,400.00*; in *History* (the booking's): *Pending → Confirmed “Paid online: P… ₹2,000 (Razorpay pay_…)”* |
+| 10 | The link's **History** | What Razorpay sent: *payment.failed* (Done, the bank's reason), *payment.authorized* (Done: *P… captured; R00003 confirmed …*), *payment.captured* and *order.paid* (*Nothing to do: … changes nothing*): each notification is used once |
+| 11 | Click the payment number | *Received*, *Paid: Online (Razorpay), by UPI, on the guest's payment link*, the Razorpay payment id; no **Void** (*… paid online through Razorpay, so the money really came in and it can't be voided. Refund it instead.*) |
+| 12 | **As the owner** → **Refund** → Amount *500*, Reason *Guest changed to a smaller room* | *Paid back by: Online (Razorpay)* is chosen, with a note that Razorpay sends it back to the guest's card or UPI. **Refund** → *Refunded. ₹1,500.00 can still be refunded*; *Part refunded* |
+| 13 | **Real test mode.** Keys and webhook secret in `.env`, tunnel running, API restarted → R00003's open link, or a new one on another pending booking (Reservations → New, status *Pending*) | The panel no longer says *Test mode* |
+| 14 | Open the link → **Pay ₹…** | Razorpay Checkout opens. Pay with card *4111 1111 1111 1111*, any future expiry, any CVV (or UPI *success@razorpay*) → the page says *confirming* and turns *Paid* within seconds |
+| 15 | The booking | **Confirmed**; History shows the events Razorpay sent to your tunnel; in Razorpay's dashboard (Test mode) the payment is *Captured* |
+| 16 | Cancel a link: send one for *1000*, then **Cancel** → **Cancel link** with no reason, then *Guest will pay at the desk* | First under *Reason*: *Say why the link is cancelled (at least 3 characters) …*; then the link is *Cancelled* with the reason, and its page tells the guest it was cancelled |
+| 17 | Phone width (390 px) → the guest's page | Everything fits; the buttons are full width |
+
 ## Part C — Decide
 
 ### Accept

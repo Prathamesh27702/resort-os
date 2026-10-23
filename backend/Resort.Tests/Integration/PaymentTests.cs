@@ -372,7 +372,7 @@ public class PaymentTests(FolioFactory app) : IClassFixture<FolioFactory>
         Assert.Equal((2000m, 200m, 1800m), (list.Received, list.RefundedTotal, list.Net));
         Assert.All(list.Items, i => Assert.Equal(folio.Number, i.Folios));
         Assert.Single((await owner.GetJsonAsync<PaymentListDto>($"/api/v1/properties/{pid}/payments?q={booking.Reference}&method=CARD")).Items);
-        Assert.Equal("'cheque' isn't a payment method. Use CASH, UPI, CARD, BANK_TRANSFER.",
+        Assert.Equal("'cheque' isn't a payment method. Use CASH, UPI, CARD, BANK_TRANSFER, ONLINE.",
             await FieldErrorAsync(await owner.GetAsync($"/api/v1/properties/{pid}/payments?method=cheque"), "Method"));
 
         var hk = await StaffAsync("HOUSEKEEPER", pid);

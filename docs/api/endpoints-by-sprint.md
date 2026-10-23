@@ -87,13 +87,16 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `GET /api/v1/properties/{propertyId}/cash-drawer` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/cash-drawer/open | close` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/cash-drawer/sessions/{id}/approve-variance` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
-| `POST /api/v1/properties/{propertyId}/payments/razorpay/orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🔵 In progress |
-| `POST /api/v1/webhooks/razorpay  (no auth; HMAC signature)` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🔵 In progress |
-| `POST /api/v1/properties/{propertyId}/folios/{id}/invoice` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `GET /api/v1/properties/{propertyId}/invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `GET /api/v1/properties/{propertyId}/invoices/{id}  (+ /pdf)` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `POST /api/v1/properties/{propertyId}/invoices/{id}/credit-notes  (reason required)` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
-| `GET /api/v1/properties/{propertyId}/receipts/{id}/pdf` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | ⚪ Planned |
+| `POST /api/v1/properties/{propertyId}/payments/razorpay/orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `GET /api/v1/properties/{propertyId}/payments/razorpay/orders?reservationId | /{id}` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/payments/razorpay/orders/{id}/cancel  (reason required)` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `POST /api/v1/webhooks/razorpay  (no auth; HMAC signature)` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `GET /api/v1/pay/{token}; POST /api/v1/pay/{token}/callback  (guest page, no auth; token)` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
+| `POST /api/v1/properties/{propertyId}/folios/{id}/invoice` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/invoices/{id}  (+ /pdf)` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `POST /api/v1/properties/{propertyId}/invoices/{id}/credit-notes  (reason required)` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `GET /api/v1/properties/{propertyId}/receipts/{id}/pdf` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `GET /api/v1/properties/{propertyId}/housekeeping/board` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `POST /api/v1/properties/{propertyId}/housekeeping/tasks/{id}/assign | start | finish | inspect` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
 | `GET|POST /api/v1/properties/{propertyId}/maintenance/tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |

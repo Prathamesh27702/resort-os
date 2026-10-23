@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–10: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–11: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -17,6 +17,9 @@
 //   - Sprint 09 changes nothing: it reads the GST settings and asks the tax engine for previews
 //   - Sprint 10: a ₹1 UPI payment on account for the demo booking R00002, voided straight away (payments are never
 //     deleted, so it stays as a voided payment that counts for nothing); every other check is a read or a refusal
+//   - Sprint 11: a ₹1 Razorpay payment link for the demo booking R00003, cancelled straight away (links are never deleted,
+//     so it stays as a cancelled link). With Razorpay keys in .env this also creates a ₹1 order in your Razorpay test
+//     account (orders that are never paid expire there); without keys the built-in fake Razorpay is used
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -73,7 +76,7 @@ function record(name, ok, note) {
   console.log(`${ok ? ' PASS' : ' FAIL'}  ${name}${ok ? '' : `\n       ${note}`}`);
 }
 /** Shows ids as {propertyId} / {id} so the printed URLs read like the API docs. */
-const short = path => path.replace(/\/properties\/[0-9a-f-]{36}/, '/properties/{propertyId}').replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, '{id}');
+const short = path => path.replace(/\/pay\/[A-Za-z0-9_-]{20,}/, '/pay/{token}').replace(/\/properties\/[0-9a-f-]{36}/, '/properties/{propertyId}').replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, '{id}');
 const title = t => { section = t; console.log(`\n=== ${t} ===`); };
 
 // ---------------------------------------------------------------- Sprint 01
@@ -519,6 +522,48 @@ if (closed) {
 await expectCall('Receptionist can read the drawer', 'GET', `${P}/cash-drawer`, 200, { token: R });
 await expectCall('Receptionist can’t approve a variance → 403', 'POST', `${P}/cash-drawer/sessions/${closed?.id ?? '00000000-0000-0000-0000-000000000000'}/approve-variance`, 403,
   { token: R, body: { note: 'API check' } });
+
+// ---------------------------------------------------------------- Sprint 11 — Razorpay
+title('Sprint 11 — Razorpay payment links, the guest page and the webhook');
+const r3 = (await call('GET', `${P}/reservations?q=R00003`, { token: T }))?.json?.items?.find?.(x => x.reference === 'R00003');
+if (r3) {
+  const linksUrl = `${P}/payments/razorpay/orders`;
+  await expectCall('R00003’s payment links and what it owes', 'GET', `${linksUrl}?reservationId=${r3.id}`, 200, { token: T },
+    b => (b?.reference === 'R00003' && typeof b.owed === 'number' && Array.isArray(b.links)) || JSON.stringify(b).slice(0, 200));
+  await expectCall('Listing links without a booking → 400 under ReservationId', 'GET', linksUrl, 400, { token: T },
+    b => !!b.details?.ReservationId?.[0] || JSON.stringify(b.details));
+  const body = { reservationId: r3.id, amount: 1, note: 'API check' };
+  await expectCall('A link without an Idempotency-Key → 400', 'POST', linksUrl, 400, { token: T, body });
+  await expectCall('A link for less than ₹1 → 400 under Amount (Razorpay’s smallest payment)', 'POST', linksUrl, 400,
+    { token: T, headers: key(), body: { ...body, amount: 0.5 } }, b => /at least ₹1/.test(b.details?.Amount?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('A link for more than the booking owes → 400 under Amount, saying the most', 'POST', linksUrl, 400,
+    { token: T, headers: key(), body: { ...body, amount: 9999999 } }, b => /at most|nothing to ask/.test(b.details?.Amount?.[0] ?? '') || JSON.stringify(b.details));
+  const link = await expectCall('₹1 link for R00003 (a Razorpay order; status CREATED, a /pay/… page)', 'POST', linksUrl, 201, { token: T, headers: key(), body },
+    b => (b.status === 'CREATED' && /^order_/.test(b.gatewayOrderId) && /^\/pay\//.test(b.payPath)) || JSON.stringify(b).slice(0, 200));
+  if (link?.json?.id) {
+    const token = link.json.payPath.split('/').pop();
+    await expectCall('The guest’s page (no sign-in) asks for ₹1 and has what Checkout needs', 'GET', `/api/v1/pay/${token}`, 200, {},
+      b => (b.status === 'AWAITING_PAYMENT' && b.amount === 1 && b.gatewayOrderId === link.json.gatewayOrderId && !!b.keyId) || JSON.stringify(b).slice(0, 200));
+    await expectCall('A made-up browser callback is refused (signature checked) and records nothing', 'POST', `/api/v1/pay/${token}/callback`, 400,
+      { body: { razorpayPaymentId: 'pay_apicheck', razorpayOrderId: link.json.gatewayOrderId, razorpaySignature: 'bad' } });
+    await expectCall('Cancel the link without a reason → 400 under Reason', 'POST', `${linksUrl}/${link.json.id}/cancel`, 400, { token: T, body: {} },
+      b => !!b.details?.Reason?.[0] || JSON.stringify(b.details));
+    await expectCall('Cancel it with a reason → CANCELLED', 'POST', `${linksUrl}/${link.json.id}/cancel`, 200,
+      { token: T, body: { reason: 'API check: made by the check script' } }, b => b.status === 'CANCELLED' || JSON.stringify(b).slice(0, 200));
+    await expectCall('Cancelling it twice → 409 LINK_ALREADY_CANCELLED', 'POST', `${linksUrl}/${link.json.id}/cancel`, 409,
+      { token: T, body: { reason: 'API check again' } }, b => b.code === 'LINK_ALREADY_CANCELLED' || b.code);
+    await expectCall('The guest’s page now says the link was cancelled', 'GET', `/api/v1/pay/${token}`, 200, {},
+      b => (b.status === 'CANCELLED' && !b.gatewayOrderId) || JSON.stringify(b).slice(0, 200));
+  }
+  await expectCall('Receptionist can see the links', 'GET', `${linksUrl}?reservationId=${r3.id}`, 200, { token: R });
+} else record('Payment link checks', false, 'no R00003 among current bookings (dev seed S004 adds it; reset the database)');
+await expectCall('A pay page with a made-up token → 404 saying the link isn’t valid', 'GET', '/api/v1/pay/not-a-real-token', 404, {},
+  b => /isn't valid|isn’t valid/.test(b.message ?? '') || b.message);
+const hook = JSON.stringify({ event: 'payment.captured', payload: {} });
+await expectCall('Webhook with a wrong signature → 401 BAD_SIGNATURE, nothing stored', 'POST', '/api/v1/webhooks/razorpay', 401,
+  { body: JSON.parse(hook), headers: { 'X-Razorpay-Signature': '0'.repeat(64), 'X-Razorpay-Event-Id': `evt_apicheck_${randomBytes(4).toString('hex')}` } },
+  b => b.code === 'BAD_SIGNATURE' || b.code);
+await expectCall('Webhook with no signature → 401', 'POST', '/api/v1/webhooks/razorpay', 401, { body: JSON.parse(hook) });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

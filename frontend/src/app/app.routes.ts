@@ -8,6 +8,8 @@ import { anonymousGuard, permissionGuard, signedInGuard } from './core/access';
  */
 export const routes: Routes = [
   { path: 'login', canActivate: [anonymousGuard], loadComponent: () => import('./features/auth/login.page').then(m => m.LoginPage) },
+  // The guest's payment link page (Sprint 11): no sign-in and no staff menu; the token in the link is the proof.
+  { path: 'pay/:token', title: 'Pay for your booking', loadComponent: () => import('./features/pay/pay.page').then(m => m.PayPageComponent) },
   {
     path: '',
     canActivate: [signedInGuard],

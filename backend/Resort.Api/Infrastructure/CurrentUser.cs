@@ -4,7 +4,7 @@ using Resort.Infrastructure.Identity;
 
 namespace Resort.Api.Infrastructure;
 
-public sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
+public sealed class HttpCurrentUser(IHttpContextAccessor accessor, SystemActor actor) : ICurrentUser
 {
     private HttpContext? Ctx => accessor.HttpContext;
 
@@ -12,8 +12,10 @@ public sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentUse
 
     public Guid? UserId => IsAuthenticated && Guid.TryParse(Ctx!.User.FindFirst("sub")?.Value, out var id) ? id : null;
 
+    /// <summary>The signed-in user's organisation; for an anonymous call (Razorpay's webhook, the guest's pay page) the one
+    /// it acts for once it has matched a payment link (<see cref="SystemActor"/>).</summary>
     public Guid? OrganizationId =>
-        IsAuthenticated && Guid.TryParse(Ctx!.User.FindFirst(ResortClaims.Organization)?.Value, out var id) ? id : null;
+        IsAuthenticated ? Guid.TryParse(Ctx!.User.FindFirst(ResortClaims.Organization)?.Value, out var id) ? id : null : actor.OrganizationId;
 
     public IPAddress? IpAddress => Ctx?.Connection.RemoteIpAddress;
 

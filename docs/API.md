@@ -624,6 +624,56 @@ paymentId, paymentNumber, refundId, kind: PAYMENT | REFUND, method, amount (refu
 refunds, so money on account counts too. The calendar's `paymentStatus` is `NONE`, `PARTIAL` or `PAID` from the same
 numbers.
 
+## Built endpoints (Sprint 11 — Razorpay)
+
+Guests pay online with UPI, cards, net banking or wallets through Razorpay. Staff send a **payment link** for a booking
+and an amount: a Razorpay order plus a private page in the app (`/pay/<token>`, no sign-in; the token is 32 random bytes)
+that opens Razorpay Checkout. **Razorpay's signed webhook is the only thing that records a payment**: what the guest's
+browser says only changes what their page shows. The payment (method `ONLINE`, reference = Razorpay's `pay_…` id, at most
+one per Razorpay payment) goes on the booking's main bill up to what it owes (the rest on account), the link becomes
+`PAID`, and a `PENDING` booking is confirmed, all in one transaction. Staff need `payment.create` to send or cancel a link
+and `payment.read` to see links; there are no new permissions. Keys: `Razorpay__KeyId`, `Razorpay__KeySecret`,
+`Razorpay__WebhookSecret` (`.env`, test mode outside production). With no keys outside production the API uses a built-in
+fake Razorpay (links say so: `fake: true`); production never uses it (`Razorpay__Mode=Fake` stops it starting, and with no keys sending a link says the keys are missing). How it works:
+[RAZORPAY.md](RAZORPAY.md) and [system-design.md → 4.21](architecture/system-design.md#421-razorpay-the-webhook-is-the-only-writer).
+
+**Staff** (under `/api/v1/properties/{propertyId}`):
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `POST /payments/razorpay/orders` | Send a payment link: creates the Razorpay order (amount in paise, receipt = our link id) and the guest's page. Amount: ₹1 or more, at most what the booking owes less what open links already ask for | `payment.create` + `Idempotency-Key` | `CreatePaymentLinkRequest` | 201 `PaymentLinkDto` | 400 `Amount` ("The amount must be at least ₹1, Razorpay's smallest payment."; "R00003 still owes ₹8,400 and open links already ask for ₹2,000, so a new link can be for at most ₹6,400. Cancel an open link to ask for more."; paid in full), `ReservationId`, `Note` (≤ 500, no card numbers), `Idempotency-Key` missing; 403, 404; 422 `BOOKING_CLOSED` ("R00006 is cancelled, so no payment link can be sent for it."), **`GATEWAY_UNAVAILABLE`** (Razorpay's reason, e.g. "Razorpay didn't answer within 10 seconds, so it couldn't create the payment order (tried 3 times). No link was created; try again in a minute."), `IDEMPOTENCY_KEY_REUSED` | INSERT payment_gateway_orders |
+| `GET /payments/razorpay/orders?reservationId` | A booking's links, newest first, with what it owes (`due`, `paid`, `owed`, `open`) and whether a new link can be sent (`canCreate`, `cantCreateReason`) | `payment.read` | — | `BookingPaymentLinksDto` | 400 `ReservationId`; 403 | — |
+| `GET /payments/razorpay/orders/{id}` | One link with every webhook Razorpay sent for it (`events`: what each did, or why it changed nothing) | `payment.read` | — | `PaymentLinkDto` | 403, 404 | — |
+| `POST /payments/razorpay/orders/{id}/cancel` | Stop a link being offered, with a reason. If the guest pays it anyway, the money is still recorded | `payment.create` | `{ reason }` | `PaymentLinkDto` | 400 `Reason` ("Say why the link is cancelled (at least 3 characters), e.g. Guest will pay at the desk."); 403, 404; **409 `LINK_ALREADY_PAID`** ("The guest already paid this link (P00004, ₹2,000), so it can't be cancelled. Refund the payment instead."), **`LINK_ALREADY_CANCELLED`** | UPDATE the link, with the reason |
+
+**Razorpay and the guest** (no sign-in):
+
+| Method & URL | Purpose | Request | Response | Errors |
+|---|---|---|---|---|
+| `POST /api/v1/webhooks/razorpay` | Razorpay's events (`payment.authorized`, `payment.captured`, `payment.failed`, `order.paid`, `refund.processed`, `refund.failed`). Checks `X-Razorpay-Signature` (HMAC-SHA256 of the **raw** body with the webhook secret), claims `X-Razorpay-Event-Id` once (a repeat gets 200 and changes nothing), fetches the payment from Razorpay and uses its status, then applies it in one transaction. Out-of-order events never move a payment backwards | raw JSON, ≤ 256 kB | 200 `{ status: processed \| ignored, message }` | **401 `BAD_SIGNATURE`** (nothing stored); 400 (not JSON, no event name, no event id header); 413; **500 `WEBHOOK_FAILED`** (our error: stored as `FAILED` with the reason, Razorpay retries and the retry takes it over) |
+| `GET /api/v1/pay/{token}` | The guest's page: property, booking, dates, amount, status (`AWAITING_PAYMENT`, `CONFIRMING`, `PAID`, `CANCELLED`, `CLOSED`) and a message in words; while payable, what Checkout needs (`keyId`, `gatewayOrderId`) | — | `PayPageDto` | 404 ("This payment link isn't valid. Check you opened the whole link, or ask the resort for a new one.") |
+| `POST /api/v1/pay/{token}/callback` | What Checkout hands the browser after paying. The signature (HMAC of `order_id\|payment_id` with the key secret) is checked, and the page shows "confirming" until the webhook arrives. **Records nothing** | `{ razorpayPaymentId, razorpayOrderId, razorpaySignature }` | `PayPageDto` | 400 `RazorpaySignature`, 404 |
+| `POST /api/v1/pay/{token}/fake-checkout` | Fake Razorpay only (no keys, never production): pays (`succeed: true`) or declines the link as a test and delivers the fake's signed webhooks through the same code | `{ succeed, method? (upi \| card) }` | `PayPageDto` | 404 (real Razorpay in use), 422 `NOT_PAYABLE` |
+
+`CreatePaymentLinkRequest = { reservationId, amount, note? }`. `PaymentLinkDto = { id, reservationId, reference,
+guestName, gatewayOrderId, amount, currency, status: CREATED | PAID | CANCELLED, payPath ("/pay/<token>"), note,
+attempts (declined tries), lastError, callbackAt, paymentId, paymentNumber, paymentStatus, paidAt, createdAt,
+createdByName, cancelledAt, cancelledByName, cancelReason, events?: [{ id, eventId, eventType, status: PROCESSED |
+IGNORED | FAILED, outcome, attempts, receivedAt }] }`. `BookingPaymentLinksDto = { reservationId, reference, due, paid,
+owed, open, canCreate, cantCreateReason, fake, links }`. `PayPageDto = { propertyName, bookingReference, guestName (first
+name), checkIn, checkOut, amount, currency, status, message, keyId, gatewayOrderId, fake, lastError, paymentNumber, paidAt }`.
+
+**Changes to Sprint 10 endpoints.** Payment method `ONLINE` ("Online (Razorpay)") appears in lists, filters and totals,
+but `POST /payments` refuses it under `Method` ("Online payments are recorded by Razorpay when the guest pays. Send the
+guest a payment link from the booking instead."). `PaymentDto` adds `gatewayMethod` (upi, card, netbanking, wallet) and
+`paymentLinkId`. An online payment can't be voided ("…was paid online through Razorpay, so the money really came in and it
+can't be voided. Refund it instead."). A refund of an online payment with `method: ONLINE` (the default for it) goes back
+through Razorpay: the refund is `PENDING` until `refund.processed` (immediately `PROCESSED` when Razorpay says so at once);
+`refund.failed` makes it `FAILED` and the money counts on the payment again. 422 `GATEWAY_REFUND_FAILED` (Razorpay said
+no; nothing was refunded) or `GATEWAY_REFUND_UNCLEAR` (no answer: check Razorpay's dashboard before trying again; a refund
+POST is never retried automatically). `method: ONLINE` for a desk payment is refused under `Method`. Online refunds can
+also be paid back at the desk (cash, UPI …), as before.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

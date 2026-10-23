@@ -280,6 +280,23 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         return await ToDtoAsync(reservation, ct);
     }
 
+    /// <summary>
+    /// Confirms a PENDING booking inside the caller's transaction, with the reservation already locked by the caller
+    /// (Sprint 11: Razorpay's webhook, when an online payment is captured). A pending booking already holds its rooms, so
+    /// only the status, its history and the main folio change. No user: the audit trail shows the system and the reason.
+    /// </summary>
+    internal async Task ConfirmLockedAsync(Reservation reservation, string reason, CancellationToken ct)
+    {
+        if (reservation.Status != ReservationStatuses.Pending)
+            throw new InvalidOperationException($"{reservation.Reference} is {reservation.Status}, not pending.");
+        audit.Reason = reason;
+        reservation.Status = ReservationStatuses.Confirmed;
+        reservation.StatusChangedAt = clock.GetUtcNow();
+        AddHistory(reservation, ReservationStatuses.Pending, ReservationStatuses.Confirmed, reason);
+        await db.SaveChangesAsync(ct);
+        await folios.EnsureMainFolioAsync(reservation, ct);
+    }
+
     // ------------------------------------------------------------------ move to another room (Sprint 6)
 
     /// <summary>

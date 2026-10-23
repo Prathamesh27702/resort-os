@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
 
         services.AddScoped<CallerAccess>();
+        services.AddScoped<SystemActor>();
         services.AddScoped<AuditContext>();
         services.AddScoped<AccommodationService>();
         services.AddScoped<BlockService>();
@@ -48,6 +49,8 @@ public static class DependencyInjection
         services.AddScoped<PaymentLedger>();
         services.AddScoped<CashDrawerService>();
         services.AddScoped<PaymentService>();
+        services.AddScoped<PaymentLinkService>();
+        services.AddScoped<RazorpayWebhookService>();
         return services;
     }
 }
