@@ -71,6 +71,9 @@ export const routes: Routes = [
       // /payments (Sprint 10)
       { path: 'payments', canActivate: [permissionGuard('payment.read')], loadComponent: () => import('./features/payments/payments.page').then(m => m.PaymentsPage) },
       { path: 'payments/:id', canActivate: [permissionGuard('payment.read')], loadComponent: () => import('./features/payments/payment.page').then(m => m.PaymentPage) },
+      // /invoices (Sprint 12)
+      { path: 'invoices', canActivate: [permissionGuard('invoice.read')], loadComponent: () => import('./features/invoices/invoices.page').then(m => m.InvoicesPage) },
+      { path: 'invoices/:id', canActivate: [permissionGuard('invoice.read')], loadComponent: () => import('./features/invoices/invoice.page').then(m => m.InvoicePage) },
 
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

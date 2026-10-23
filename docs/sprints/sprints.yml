@@ -1070,37 +1070,89 @@ sprints:
 - id: 12
   title: GST invoices, credit/debit notes, receipts
   phase: 3
-  status: planned
+  status: in-progress
   size: L
   module: Invoicing
   feature: invoices
   depends: [9, 10]
   goal: Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
   client: "Legally numbered GST invoices are produced from the bill; corrections are made only through credit and debit notes."
+  progress:
+    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    done:
+      - "Migration V014: invoice_series (one gap-free counter per property, document type and financial year), invoices, invoice_items, invoice_item_taxes, credit_notes (CANCEL or REDUCE), debit_notes, their lines and taxes, receipts (one per payment), einvoice_records (for Sprint 25); every document refuses UPDATE and DELETE and its totals are checked against its lines at commit; folio_items gets CREDIT lines"
+      - "Numbers BEACH/2627/00001 (invoice), BEACH/C2627/0001 (credit note), BEACH/D2627/0001 (debit note), BEACH/R2627/00001 (receipt), ≤ 16 characters; taken with one upsert inside the issuing transaction, so 20 invoices at once are numbered 1–20 with no gap or repeat"
+      - "Check-out issues the invoice of each folio (to the bill-to guest on file; company and GSTIN make it B2B) and a receipt for each payment; a folio that can't be invoiced doesn't stop the check-out and a booking note says why"
+      - "Taxes copied from the folio lines, never recalculated; place of supply = the property's state (CGST + SGST for every hotel stay); GSTIN validated with its check digit; composition scheme → bill of supply"
+      - "Credit notes: CANCEL (whole invoice; its charges can be invoiced again, e.g. B2B) and REDUCE (lines or part of them, GST at each line's rate, a CREDIT line on the bill); debit notes for charges posted after the invoice; billed charges can't be reversed or moved"
+      - "A4 PDFs for invoices, notes and receipts drawn on the server with PDFsharp/MigraDoc 6.2 (MIT; pinned below the AGPL 6.5) and an embedded font with ₹"
+      - "Screens: Invoices list and invoice page (credit and debit note dialogs, PDFs); Issue invoice on the bill with a preview; billed charges marked on the bill; invoice links on the booking; Receipt on a payment"
+      - "No new dev seed: invoices take real numbers, so the demo issues them by checking out R00007 (departing today)"
+      - "[done] Docs: API.md, DATABASE.md, schema-sprint-12.md, GST.md, system design Sprint 12 and 4.22 with the invoice flow diagram, RUN_AND_TEST, REVIEWING"
+    files:
+      - "database/migrations/V014__invoicing.sql; database/queries/check-sprint-12.sql"
+      - "backend/Resort.Domain/Invoicing/Invoicing.cs; backend/Resort.Domain/Folios/Folios.cs"
+      - "backend/Resort.Contracts/InvoiceContracts.cs; backend/Resort.Contracts/FolioContracts.cs"
+      - "backend/Resort.Application/ — Invoicing/ (InvoiceService.cs, FolioBilling.cs, ReceiptService.cs, InvoicePrinter.cs, Printing.cs), Validation/InvoiceValidators.cs, Folios/FolioPosting.cs, Folios/FolioService.cs, FrontDesk/FrontDeskService.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs"
+      - "backend/Resort.Infrastructure/ — Documents/PdfRenderer.cs, Documents/Fonts/ (DejaVu Sans + licence), Persistence/AppDbContext.cs, DependencyInjection.cs, Resort.Infrastructure.csproj; Directory.Packages.props; backend/Resort.Api/ — Endpoints/InvoiceEndpoints.cs, Program.cs"
+      - "backend/Resort.Tests/ — Integration/InvoiceTests.cs, Unit/InvoiceUnitTests.cs"
+      - "frontend/src/app/ — features/invoices/ (invoices.page.ts, invoice.page.ts, invoice-dialogs.ts, invoices.api.ts, invoices.spec.ts), features/folios/ (folio.page.ts, folios.api.ts, folios.spec.ts), features/payments/payment.page.ts, features/reservations/reservation.page.ts, features/front-desk/front-desk-dialogs.ts, core/models.ts, app.routes.ts, layout/shell.ts"
+      - "frontend/e2e/sprint-12.spec.ts; scripts/check-api.mjs (Sprint 12 checks)"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-12.md, docs/GST.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-12-screens/; tools/handbooks/diagrams (invoice-flow)"
+    results:
+      - "RESULTS_BACKEND"
+      - "RESULTS_FRONTEND"
+      - "RESULTS_E2E"
   scope:
-    tables: [invoice_series, invoices, invoice_items, invoice_item_taxes, credit_notes, credit_note_items, debit_notes, debit_note_items, receipts, einvoice_records]
+    tables: [invoice_series, invoices, invoice_items, invoice_item_taxes, credit_notes, credit_note_items, credit_note_item_taxes, debit_notes, debit_note_items, debit_note_item_taxes, receipts, einvoice_records]
     api:
+      - GET /api/v1/properties/{propertyId}/folios/{id}/invoice-preview
       - POST /api/v1/properties/{propertyId}/folios/{id}/invoice
       - GET /api/v1/properties/{propertyId}/invoices
       - GET /api/v1/properties/{propertyId}/invoices/{id}  (+ /pdf)
       - POST /api/v1/properties/{propertyId}/invoices/{id}/credit-notes  (reason required)
+      - POST /api/v1/properties/{propertyId}/invoices/{id}/debit-notes  (reason required)
+      - GET /api/v1/properties/{propertyId}/credit-notes/{id}/pdf; GET …/debit-notes/{id}/pdf
+      - POST /api/v1/properties/{propertyId}/payments/{id}/receipt
       - GET /api/v1/properties/{propertyId}/receipts/{id}/pdf
-    screens: [/invoices]
+    screens: [/invoices, /invoices/:id, Issue invoice on /folios/:id, Receipt on /payments/:id]
   tasks:
-    - "Gap-free numbering per series and financial year (row lock on invoice_series)"
-    - "B2B (customer GSTIN validated) and B2C; place of supply"
-    - "Invoice copies tax rule ids/rates from folio lines — never recalculates"
-    - "PDF generation (QuestPDF or similar, server-side)"
-    - "e-invoice fields stored (IRN, ack no/date, signed QR) for Sprint 25 integration"
+    - "[done] Gap-free numbering per series and financial year (row lock on invoice_series)"
+    - "[done] B2B (customer GSTIN validated) and B2C; place of supply"
+    - "[done] Invoice copies tax rule ids/rates from folio lines — never recalculates"
+    - "[done] PDF generation (PDFsharp/MigraDoc, server-side)"
+    - "[done] e-invoice fields stored (IRN, ack no/date, signed QR) for Sprint 25 integration"
   tests:
     - Concurrency — 20 parallel invoices → numbers 1..20 with no gaps or duplicates
     - Invoice — B2B intra-state and inter-state totals
     - Integration — invoice DELETE/UPDATE of totals rejected
   acceptance:
     - Checkout produces a GST invoice and receipt PDF
-  debug: []
+  debug:
+    - "A number is taken only after every check passes; if an invoice is refused, the response says why and no number is used. database/queries/check-sprint-12.sql block 4 lists any series with a gap (there should be none)."
+    - "PDFsharp must stay on 6.2.x: 6.5 is AGPL and throws a licence error at runtime."
   demo:
     - Check out → invoice PDF → credit note
+  handbook:
+    highlights:
+      - "Checking a guest out issues the GST invoice and a receipt for each payment by itself"
+      - "Invoice numbers run without gaps for each financial year, even when several are issued at the same moment"
+      - "Company guests get a B2B invoice with their GSTIN; a typing mistake in a GSTIN is caught before anything is issued"
+      - "An invoice is never edited: a credit note takes something off or cancels it, and a debit note bills a late charge"
+      - "Invoices, credit notes, debit notes and receipts download as PDFs ready to print or send"
+    design:
+      ui: "Invoices (menu) lists every invoice with its customer, GST and what was credited; search by number, booking, company or GSTIN. An invoice's page shows supplier and customer with their GSTINs, the place of supply, each line with its SAC and taxes, and buttons for PDF, Credit note (reduce lines, or cancel the invoice) and Debit note. On a bill, Issue invoice shows a preview and who it is billed to; billed charges carry the invoice number and can no longer be reversed. A payment's page has Receipt."
+      api: "GET /folios/{id}/invoice-preview and POST /folios/{id}/invoice (Idempotency-Key) issue a folio's invoice; GET /invoices, /invoices/{id} and /pdf read them; POST /invoices/{id}/credit-notes (CANCEL or REDUCE, a reason) and /debit-notes correct them; POST /payments/{id}/receipt and GET /receipts/{id}/pdf print receipts. Check-out issues invoices and receipts in its own transaction."
+      database: "Migration V014 adds invoice_series (the gap-free counter), invoices, credit_notes and debit_notes with their lines and taxes, receipts and einvoice_records. Documents can't be updated or deleted; totals must add up to their lines. Folio lines get type CREDIT for amounts a credit note took off."
+    diagrams:
+      - {file: tools/handbooks/assets/invoice-flow.png, caption: "Issuing an invoice with a gap-free number, and correcting it only with credit and debit notes"}
+    screenshots:
+      - {file: docs/sprints/sprint-12-screens/02-invoice.png, caption: "The GST invoice issued at check-out"}
+      - {file: docs/sprints/sprint-12-screens/03-bill-invoiced.png, caption: "On the bill, each charge shows its invoice"}
+      - {file: docs/sprints/sprint-12-screens/05-credit-note.png, caption: "A credit note for part of a line"}
+      - {file: docs/sprints/sprint-12-screens/07-cancelled.png, caption: "An invoice cancelled by a credit note"}
+      - {file: docs/sprints/sprint-12-screens/08-issue-b2b.png, caption: "Issuing a B2B invoice with the company's GSTIN"}
+      - {file: docs/sprints/sprint-12-screens/10-invoices.png, caption: "The Invoices screen"}
 
 - id: 13
   title: Housekeeping and maintenance (mobile-first)

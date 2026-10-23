@@ -2,6 +2,44 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-12] — Unreleased — GST invoices, credit/debit notes, receipts (in review)
+
+### Added
+- Migration V014: `invoice_series` (one gap-free counter per property, document type and financial year; only ever +1),
+  `invoices`, `invoice_items`, `invoice_item_taxes`, `credit_notes` (`CANCEL` or `REDUCE`), `credit_note_items`,
+  `credit_note_item_taxes`, `debit_notes`, `debit_note_items`, `debit_note_item_taxes`, `receipts` (one per payment) and
+  `einvoice_records` (for Sprint 25). Documents refuse UPDATE and DELETE; header totals must equal their lines (checked at
+  commit); a line can't be credited for more than is left. `folio_items` gets type `CREDIT` (`adjusts_item_id`,
+  `credit_note_id`).
+- Numbers `BEACH/2627/00001` (invoice), `BEACH/B2627/0001` (bill of supply), `BEACH/C2627/0001` (credit note),
+  `BEACH/D2627/0001` (debit note), `BEACH/R2627/00001` (receipt): at most 16 characters (rule 46(b)), taken by one
+  upsert inside the issuing transaction, so they are consecutive with no gaps under concurrency.
+- Check-out issues the GST invoice of each folio (to the bill-to guest on file; a company with a GSTIN makes it B2B)
+  and a receipt for each payment, in the check-out transaction (property setting `invoice.issue_at_checkout`, default
+  on). A folio that can't be invoiced doesn't stop the check-out: a booking note says why.
+- API: `GET /folios/{id}/invoice-preview`, `POST /folios/{id}/invoice` (Idempotency-Key), `GET /invoices`,
+  `GET /invoices/{id}` (+ `/pdf`), `POST /invoices/{id}/credit-notes` (CANCEL or REDUCE, reason), `POST
+  /invoices/{id}/debit-notes` (reason), `GET /credit-notes/{id}/pdf`, `GET /debit-notes/{id}/pdf`, `POST
+  /payments/{id}/receipt`, `GET /receipts/{id}/pdf`. Taxes are copied from the folio lines, never recalculated; place of
+  supply is the property's state; customer GSTINs are validated with their check digit; a composition property issues a
+  bill of supply.
+- A4 PDFs drawn on the server with PDFsharp/MigraDoc 6.2.4 (MIT) and an embedded DejaVu Sans font (with ₹).
+- Staff app: **Invoices** (`/invoices`, `/invoices/:id` with Credit note and Debit note dialogs and PDFs); **Issue
+  invoice** on a bill with a preview of the lines and the customer; billed charges marked with their invoice on the bill;
+  the booking links to its invoices; **Receipt** on a payment.
+- Tests: backend `InvoiceTests` (the demo, 20 parallel invoices numbered 1–20, B2B intra- and inter-state, the database
+  refusing edits and deletes, REDUCE, debit notes, a wrong GSTIN at check-out, receipts, idempotency, permissions) and
+  `InvoiceUnitTests`; frontend `invoices.spec.ts`; browser steps S12-01 … S12-05; `check-api.mjs` Sprint 12 block;
+  `database/queries/check-sprint-12.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-12.md, GST.md (invoices, notes, open questions for the accountant), system
+  design Sprint 12 and 4.22 with the invoice flow diagram, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- A folio charge on an invoice that stands, or one a credit note reduced, can't be reversed or moved (422 `INVOICED`,
+  saying which invoice and to issue a credit note). `FolioItemDto` adds `invoiceNumber` and `adjustable`;
+  `FolioDto.reversals` includes credit lines.
+- `System.Security.Cryptography.Pkcs` pinned to 10.0.13 (PDFsharp brought in a version with known vulnerabilities).
+
 ## [sprint-11] — Unreleased — Razorpay (in review)
 
 ### Added

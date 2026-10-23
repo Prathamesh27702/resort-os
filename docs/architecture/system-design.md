@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–10 built and accepted (October 2026); Sprint 11 (Razorpay) built, in review. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–11 built and accepted (October 2026); Sprint 12 (GST invoices) built, in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -314,6 +314,29 @@ flowchart LR
   open, cancel, History of what Razorpay sent), the guest's page `/pay/:token` outside the staff shell (Razorpay Checkout,
   or test buttons with the fake), online details and Razorpay refunds on `/payments/:id`.
   [4.21](#421-razorpay-the-webhook-is-the-only-writer) explains the rules.
+
+### Sprint 12: GST invoices, credit and debit notes, receipts
+
+![GST invoices: gap-free numbers, corrections only by note](../../tools/handbooks/assets/invoice-flow.png)
+
+- Migration V014: `invoice_series` (one gap-free counter per property, document type and financial year), `invoices`,
+  `invoice_items`, `invoice_item_taxes`, `credit_notes` (CANCEL or REDUCE), `debit_notes`, their lines and taxes,
+  `receipts` (one per payment) and `einvoice_records` (for Sprint 25). Every document table refuses UPDATE and DELETE;
+  totals are checked against the lines when the transaction commits. `folio_items` gets `CREDIT` lines (a REDUCE credit
+  note taking money off the bill). Details: [schema-sprint-12.md](../database/schema-sprint-12.md).
+- `Domain/Invoicing/Invoicing.cs`: the entities and `InvoiceMath` (financial year, number format, amount in words with
+  lakh and crore, the tax a part credit takes off). `Application/Invoicing/FolioBilling.cs`: what on a folio is already
+  billed or still unbilled, and `NextNumberAsync` (the series upsert). `InvoiceService.cs`: preview, issue (also at
+  check-out from `FrontDeskService.CheckOutAsync`), credit and debit notes, PDFs. `ReceiptService.cs`: receipts.
+  `InvoicePrinter.cs` turns a document into a `PrintDocument`; `Infrastructure/Documents/PdfRenderer.cs` draws it with
+  PDFsharp/MigraDoc 6.2 (MIT) and the embedded DejaVu Sans font. `FolioPosting.RequireNotInvoicedAsync` stops reversing or
+  moving a billed charge.
+- Endpoints: `InvoiceEndpoints.cs` (preview and issue under a folio, invoices with their PDFs, credit and debit notes,
+  a payment's receipt, note and receipt PDFs).
+- Screens: **Invoices** (`/invoices`: search, status, period) and one invoice (`/invoices/:id`: parties, lines, tax
+  totals, Credit note and Debit note dialogs, notes and receipts with PDFs); on the bill, **Issue invoice** (or the
+  invoice's number), each billed charge marked with its invoice and no Reverse; the booking links to its invoices; a
+  payment has **Receipt**. [4.22](#422-gst-invoices-gap-free-numbers-and-corrections-only-by-note) explains the rules.
 
 ---
 
@@ -756,6 +779,40 @@ Code: `Application/Payments/RazorpayWebhookService.cs`, `PaymentLinkService.cs`,
    real adapter (auth, retries, timeouts, parsing) and the real webhook code run in every test; it can fail or hang the
    next call to prove the retry rules. Without keys the development app uses it too, and production never does.
 
+### 4.22 GST invoices: gap-free numbers, and corrections only by note
+
+Code: `Application/Invoicing/` (`InvoiceService.cs`, `FolioBilling.cs`, `ReceiptService.cs`, `InvoicePrinter.cs`),
+`Domain/Invoicing/Invoicing.cs`, `Infrastructure/Documents/PdfRenderer.cs`, `database/migrations/V014__invoicing.sql`,
+`features/invoices/`. Diagram: section 3 (Sprint 12). Tests: `InvoiceTests`, `InvoiceUnitTests`. Tax rules for
+accountants: [GST.md → Invoices](../GST.md#invoices-credit-and-debit-notes-sprint-12).
+
+1. **A number is taken inside the transaction that uses it.** `FolioBilling.NextNumberAsync` runs `INSERT INTO
+   invoice_series … ON CONFLICT (property_id, document_type, financial_year) DO UPDATE SET last_number = last_number + 1
+   RETURNING …`. The row stays locked until the invoice commits, so a second invoice waits and gets the next number; if
+   anything fails the number rolls back with it. That is why every check (registration, GSTIN, nothing to invoice) runs
+   *before* the number is taken. `fn_invoice_series_guard` refuses any change other than +1.
+2. **Lock order.** Booking, then folio (`ReservationService.LockAsync`, the same order as posting charges, payments and
+   check-out), then the series row. Check-out issues its invoices inside its own transaction, after housekeeping.
+3. **Copy, don't recalculate.** Each line is one folio charge with its `folio_item_taxes` copied (rule, rate, amount), so
+   a tax rule changed since never changes an invoice, and the invoice always matches the bill. Supplier name, address and
+   GSTIN are copied too.
+4. **What is billed is derived.** A charge is billed when it is on an invoice or debit note of an invoice with no CANCEL
+   note (`FolioBilling.BilledAsync`). Cancelling therefore "releases" the charges without touching them, and the next
+   invoice picks them up, showing any REDUCE credits as a discount. The folio API refuses reversing or moving a billed
+   charge (`INVOICED`), and the database refuses reversing one a credit note reduced.
+5. **Credits never overshoot.** A REDUCE line takes tax at each tax row's own rate on the part credited, rounded per
+   tax; crediting what is left takes exactly what is left (`InvoiceMath.CreditTaxes`), so a line credits to the paisa.
+   `fn_credit_note_items_limit` and `ck_folio_items_credit` check the same limits in SQL.
+6. **Nothing issued changes.** Every document table has the reject-UPDATE/DELETE triggers; header totals must equal
+   their lines (deferred constraint triggers, checked at commit). Status (issued, partly credited, credited, cancelled)
+   is computed from the notes, never stored.
+7. **Check-out never blocks on paperwork.** If a folio can't be invoiced (a wrong GSTIN on the guest's profile) the
+   error is caught, a booking note says why, and reception issues it from the bill with the right details. Receipts are
+   get-or-create on the payment (unique), so asking twice prints the same one.
+8. **PDFs are the same everywhere.** MigraDoc lays out an A4 page from a `PrintDocument`; the font is embedded in the
+   assembly (DejaVu Sans has ₹), so containers without fonts render identically. PDFsharp is pinned to 6.2.x: 6.5 changed
+   to AGPL and refuses to run without a licence.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -777,3 +834,4 @@ request:
 | 09 | GST configuration and the tax engine (registrations, categories, dated rules, slabs, tax on bills), tax flow diagram; system design 4.19 GST: rules as data (accepted 20 Oct 2026) |
 | 10 | Payments, refunds and the cash drawer (status machine, allocations, on account, drawer ledger, variance approval), payment flow diagram; system design 4.20 Refunds that can't overspend (accepted 20 Oct 2026) |
 | 11 | Razorpay (payment links, the guest's page, webhook verify / dedupe / order, online refunds, the fake Razorpay), Razorpay flow diagram; system design 4.21 The webhook is the only writer (in review) |
+| 12 | GST invoices, credit and debit notes, receipts (gap-free series, copied taxes, CANCEL / REDUCE, debit notes, PDFs), invoice flow diagram; system design 4.22 Gap-free numbers and corrections only by note (in review) |
