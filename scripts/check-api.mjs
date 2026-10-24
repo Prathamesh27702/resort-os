@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–11: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–12: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -20,6 +20,8 @@
 //   - Sprint 11: a ₹1 Razorpay payment link for the demo booking R00003, cancelled straight away (links are never deleted,
 //     so it stays as a cancelled link). With Razorpay keys in .env this also creates a ₹1 order in your Razorpay test
 //     account (orders that are never paid expire there); without keys the built-in fake Razorpay is used
+//   - Sprint 12: the receipt of the demo payment P00001 (issued the first time, the same one after that; receipts are never
+//     deleted). Every other check is a read, a preview or a refusal: no invoice or note is issued, so no number is used up
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -564,6 +566,51 @@ await expectCall('Webhook with a wrong signature → 401 BAD_SIGNATURE, nothing 
   { body: JSON.parse(hook), headers: { 'X-Razorpay-Signature': '0'.repeat(64), 'X-Razorpay-Event-Id': `evt_apicheck_${randomBytes(4).toString('hex')}` } },
   b => b.code === 'BAD_SIGNATURE' || b.code);
 await expectCall('Webhook with no signature → 401', 'POST', '/api/v1/webhooks/razorpay', 401, { body: JSON.parse(hook) });
+
+// ---------------------------------------------------------------- Sprint 12 — GST invoices, notes, receipts
+title('Sprint 12 — GST invoices, credit and debit notes, receipts');
+const NONE = '00000000-0000-0000-0000-000000000000';
+await expectCall('Invoices, newest first, with their status (demo: one per checked-out stay)', 'GET', `${P}/invoices?pageSize=20`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.items.every(i => /^[A-Z0-9]{1,5}\/B?\d{4}\/\d{5}$/.test(i.number) && i.status)) || JSON.stringify(b).slice(0, 200));
+const r7 = (await call('GET', `${P}/reservations?q=R00007`, { token: T }))?.json?.items?.find?.(x => x.reference === 'R00007');
+const f7 = r7 ? (await call('GET', `${P}/reservations/${r7.id}/folios`, { token: T }))?.json?.find?.(f => f.isPrimary) : undefined;
+if (f7) {
+  await expectCall('Invoice preview of R00007’s bill: tax invoice, the room night with SAC 996311, totals; or already invoiced', 'GET', `${P}/folios/${f7.id}/invoice-preview`, 200, { token: T },
+    b => (b.documentType === 'INVOICE' && (b.invoiceId ? /already|is on invoice|invoice/.test(b.cantIssueReason ?? '') : b.lines.some(l => l.category === 'ROOM' && l.hsnSac === '996311')
+      && Math.abs(b.taxableValue + b.taxTotal - b.total) < 0.005)) || JSON.stringify(b).slice(0, 300));
+  await expectCall('Issuing without an Idempotency-Key → 400', 'POST', `${P}/folios/${f7.id}/invoice`, 400, { token: T, body: {} });
+  await expectCall('A GSTIN with a typing mistake → 400 under CustomerGstin, saying the right check digit', 'POST', `${P}/folios/${f7.id}/invoice`, 400,
+    { token: T, headers: key(), body: { customerName: 'API Check Pvt Ltd', customerGstin: '27AAPFU0939F1ZX' } },
+    b => /check digit\) should be V/.test(b.details?.CustomerGstin?.[0] ?? '') || JSON.stringify(b.details));
+  await expectCall('Receptionist can preview the invoice', 'GET', `${P}/folios/${f7.id}/invoice-preview`, 200, { token: R });
+} else record('Invoice preview checks', false, 'no R00007 bill (dev seed S006/S007 add it; reset the database)');
+await expectCall('A credit note without a reason → 400 under Reason', 'POST', `${P}/invoices/${NONE}/credit-notes`, 400,
+  { token: T, headers: key(), body: { type: 'REDUCE', lines: [] } }, b => /Say why/.test(b.details?.Reason?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A credit note of an unknown type → 400 under Type, naming CANCEL and REDUCE', 'POST', `${P}/invoices/${NONE}/credit-notes`, 400,
+  { token: T, headers: key(), body: { type: 'EDIT', reason: 'API check' } }, b => /CANCEL.*REDUCE/.test(b.details?.Type?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A debit note on an invoice that doesn’t exist → 404', 'POST', `${P}/invoices/${NONE}/debit-notes`, 404,
+  { token: T, headers: key(), body: { reason: 'API check' } });
+await expectCall('Receptionist can’t issue a credit note → 403', 'POST', `${P}/invoices/${NONE}/credit-notes`, 403,
+  { token: R, headers: key(), body: { type: 'REDUCE', reason: 'API check' } });
+const p1 = (await call('GET', `${P}/payments?q=P00001`, { token: T }))?.json?.items?.find?.(x => x.number === 'P00001');
+if (p1) {
+  const receipt = await expectCall('Receipt of P00001 (issued once; asking again gives the same one)', 'POST', `${P}/payments/${p1.id}/receipt`, 200, { token: T, body: {} },
+    b => (/^[A-Z0-9]{1,5}\/R\d{4}\/\d{5}$/.test(b.number) && b.paymentNumber === 'P00001' && b.amount === p1.amount) || JSON.stringify(b).slice(0, 200));
+  if (receipt?.json?.id) {
+    const again = await call('POST', `${P}/payments/${p1.id}/receipt`, { token: T, body: {} });
+    record('Asking again returns the same receipt number', again.json?.number === receipt.json.number, `got ${again.json?.number}`);
+    const pdf = await call('GET', `${P}/receipts/${receipt.json.id}/pdf`, { token: R });
+    record('Receipt PDF (receptionist): application/pdf named after the number',
+      pdf.status === 200 && /application\/pdf/.test(pdf.headers.get('content-type') ?? '') && String(pdf.json).startsWith('%PDF')
+      && (pdf.headers.get('content-disposition') ?? '').includes(receipt.json.number.replace(/\//g, '-')),
+      `got ${pdf.status} ${pdf.headers.get('content-type')} ${pdf.headers.get('content-disposition')}`);
+  }
+} else record('Receipt checks', false, 'no P00001 (dev seed S009 adds it; reset the database)');
+const voided = (await call('GET', `${P}/payments?pageSize=100`, { token: T }))?.json?.items?.find?.(x => x.status === 'CANCELLED');
+if (voided) {
+  await expectCall(`A voided payment (${voided.number}) gets no receipt → 422 NO_RECEIPT_FOR_PAYMENT, saying why`, 'POST', `${P}/payments/${voided.id}/receipt`, 422,
+    { token: T, body: {} }, b => (b.code === 'NO_RECEIPT_FOR_PAYMENT' && /was voided/.test(b.message)) || b.code);
+}
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

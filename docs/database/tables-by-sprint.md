@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-149 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+151 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -66,8 +66,10 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `invoice_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `credit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `credit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `credit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `debit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
+| `debit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
 | `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |

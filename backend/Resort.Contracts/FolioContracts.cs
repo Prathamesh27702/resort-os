@@ -3,7 +3,7 @@ namespace Resort.Contracts;
 // ---------------------------------------------------------------- folios (Sprint 8)
 
 /// <summary>A bill with every line, its totals by category and its balance. Lines are never edited or deleted: a
-/// correction is a REVERSAL line. Total = sum of the lines, GST included (Sprint 9); Payments = what the folio has been
+/// correction is a REVERSAL line (or a CREDIT line from a credit note; both are summed in Reversals). Total = sum of the lines, GST included (Sprint 9); Payments = what the folio has been
 /// paid (allocations of payments that count, minus refunds from it; Sprint 10); Balance = Total − Payments (negative: in
 /// credit). PaymentLines: those payments and refunds, oldest first. CanPost: the booking is in a state that takes charges
 /// (confirmed, checked in or checked out); CantPostReason says why not otherwise.</summary>
@@ -14,15 +14,18 @@ public sealed record FolioDto(
     decimal Charges, decimal Reversals, decimal Tax, decimal Total, decimal Payments, decimal Balance,
     IReadOnlyList<FolioSummaryDto> Folios, bool CanPost, string? CantPostReason, IReadOnlyList<FolioPaymentDto> PaymentLines);
 
-/// <summary>One line. ItemType CHARGE or REVERSAL; Source MANUAL, ROOM_NIGHT or PACKAGE. ReversedBy / ReversalReason:
-/// the reversal that cancelled this charge. MovedFrom / MovedTo: the folio number a line was split from or to.
-/// Live: a charge that still counts (not reversed). Taxes: the GST on the line as calculated when it was posted (Sprint 9),
-/// with the rule and rate used; a reversal or a moved line carries the same taxes as its charge.</summary>
+/// <summary>One line. ItemType CHARGE, REVERSAL or CREDIT (a credit note took part of a charge off; Sprint 12); Source
+/// MANUAL, ROOM_NIGHT or PACKAGE. ReversedBy / ReversalReason: the reversal that cancelled this charge. MovedFrom / MovedTo:
+/// the folio number a line was split from or to. Live: a charge that still counts (not reversed). Taxes: the GST on the
+/// line as calculated when it was posted (Sprint 9), with the rule and rate used; a reversal or a moved line carries the
+/// same taxes as its charge. InvoiceNumber: the invoice (or debit note) the charge is billed on (Sprint 12). Adjustable:
+/// the charge can still be reversed or moved (live, not billed, not reduced by a credit note).</summary>
 public sealed record FolioItemDto(
     Guid Id, string ItemType, string Category, string Description, DateOnly ServiceDate, decimal Quantity, decimal UnitPrice,
     decimal Amount, decimal TaxAmount, decimal Total, string Source, Guid? PackageId, string? PackageName, Guid? GroupId,
     Guid? ReversesItemId, Guid? ReversedByItemId, string? Reason, string? ReversalReason, string? MovedFrom, string? MovedTo,
-    DateTimeOffset PostedAt, string? PostedByName, bool Live, IReadOnlyList<FolioItemTaxDto> Taxes);
+    DateTimeOffset PostedAt, string? PostedByName, bool Live, IReadOnlyList<FolioItemTaxDto> Taxes, string? InvoiceNumber = null,
+    bool Adjustable = false);
 
 /// <summary>One tax on a line: CGST 2.5% on ₹1,450.00 = ₹36.25, under rule TaxRuleId.</summary>
 public sealed record FolioItemTaxDto(string Code, decimal Rate, decimal TaxableValue, decimal Amount, Guid? TaxRuleId);

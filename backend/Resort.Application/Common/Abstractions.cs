@@ -7,6 +7,7 @@ using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
+using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
 using Resort.Domain.Rates;
@@ -72,6 +73,18 @@ public interface IAppDbContext
     DbSet<CashDrawerMovement> CashDrawerMovements { get; }
     DbSet<PaymentGatewayOrder> PaymentGatewayOrders { get; }
     DbSet<WebhookEvent> WebhookEvents { get; }
+    DbSet<InvoiceSeries> InvoiceSeries { get; }
+    DbSet<Invoice> Invoices { get; }
+    DbSet<InvoiceItem> InvoiceItems { get; }
+    DbSet<InvoiceItemTax> InvoiceItemTaxes { get; }
+    DbSet<CreditNote> CreditNotes { get; }
+    DbSet<CreditNoteItem> CreditNoteItems { get; }
+    DbSet<CreditNoteItemTax> CreditNoteItemTaxes { get; }
+    DbSet<DebitNote> DebitNotes { get; }
+    DbSet<DebitNoteItem> DebitNoteItems { get; }
+    DbSet<DebitNoteItemTax> DebitNoteItemTaxes { get; }
+    DbSet<Receipt> Receipts { get; }
+    DbSet<EInvoiceRecord> EInvoiceRecords { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

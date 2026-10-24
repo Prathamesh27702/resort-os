@@ -116,6 +116,7 @@ export class Shell {
     { label: 'Calendar', icon: 'calendar_month', link: '/reservations/calendar', perm: 'reservation.read' },
     { label: 'Folios', icon: 'receipt_long', link: '/folios', perm: 'folio.read' },
     { label: 'Payments', icon: 'payments', link: '/payments', perm: 'payment.read' },
+    { label: 'Invoices', icon: 'request_quote', link: '/invoices', perm: 'invoice.read' },
     { label: 'Guests', icon: 'group', link: '/guests', perm: 'guest.read' },
     { label: 'Rooms', icon: 'bed', link: '/rooms', perm: 'accommodation.read', exact: true },
     { label: 'Room status', icon: 'grid_view', link: '/rooms/status', perm: 'accommodation.read' },

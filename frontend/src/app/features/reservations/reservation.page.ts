@@ -23,7 +23,8 @@ import { DeskActions } from '../front-desk/desk-actions';
 import { deskStayOf, stayAction } from '../front-desk/front-desk.api';
 import { Observable } from 'rxjs';
 import { FoliosApi } from '../folios/folios.api';
-import { FolioListItem } from '../../core/models';
+import { FolioListItem, InvoiceListItem } from '../../core/models';
+import { InvoicesApi } from '../invoices/invoices.api';
 import { PaymentLinksPanel } from '../payments/payment-links-panel';
 
 /** One booking: stay, rooms, the price night by night, guests, notes and every status change. */
@@ -45,6 +46,9 @@ import { PaymentLinksPanel } from '../payments/payment-links-panel';
           <div class="head-actions">
             @if (folio(); as fo) {
               <a mat-stroked-button [routerLink]="['/folios', fo.id]" data-testid="bill"><mat-icon>receipt_long</mat-icon>Bill · {{ rupeesExact(fo.balance) }}</a>
+            }
+            @for (inv of invoices(); track inv.id) {
+              <a mat-stroked-button [routerLink]="['/invoices', inv.id]" data-testid="invoice"><mat-icon>request_quote</mat-icon>Invoice {{ inv.number }}</a>
             }
             @if (deskAction() === 'check-in' && auth.can('frontdesk.checkin', pid)) {
               <button mat-flat-button (click)="checkIn()" [disabled]="busy()"><mat-icon>login</mat-icon>Check in</button>
@@ -206,6 +210,9 @@ export class ReservationPage implements OnInit {
   r = signal<Reservation | null>(null);
   folio = signal<FolioListItem | null>(null);
   private folios = inject(FoliosApi);
+  /** Sprint 12: the stay's invoices that stand (not cancelled), issued at check-out or from a bill. */
+  invoices = signal<InvoiceListItem[]>([]);
+  private invoicesApi = inject(InvoicesApi);
   error = signal('');
   busy = signal(false);
   noteForm = inject(FormBuilder).nonNullable.group({ note: ['', [Validators.maxLength(2000)]] });
@@ -247,6 +254,9 @@ export class ReservationPage implements OnInit {
   private loadFolio() {
     if (!this.auth.can('folio.read', this.pid)) return;
     this.folios.forReservation(this.pid, this.id()).subscribe({ next: list => this.folio.set(list.find(f => f.isPrimary) ?? null) });
+    if (!this.auth.can('invoice.read', this.pid)) return;
+    this.invoicesApi.list(this.pid, { reservationId: this.id(), pageSize: 10 })
+      .subscribe({ next: r => this.invoices.set(r.items.filter(i => i.status !== 'CANCELLED')) });
   }
 
   can(s: ReservationStatus) { return this.r()?.nextStatuses.includes(s) ?? false; }

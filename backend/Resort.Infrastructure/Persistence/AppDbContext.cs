@@ -10,6 +10,7 @@ using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Identity;
+using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
 using Resort.Domain.Rates;
@@ -79,6 +80,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<Refund> Refunds => Set<Refund>();
     public DbSet<PaymentGatewayOrder> PaymentGatewayOrders => Set<PaymentGatewayOrder>();
     public DbSet<WebhookEvent> WebhookEvents => Set<WebhookEvent>();
+    public DbSet<InvoiceSeries> InvoiceSeries => Set<InvoiceSeries>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<InvoiceItemTax> InvoiceItemTaxes => Set<InvoiceItemTax>();
+    public DbSet<CreditNote> CreditNotes => Set<CreditNote>();
+    public DbSet<CreditNoteItem> CreditNoteItems => Set<CreditNoteItem>();
+    public DbSet<CreditNoteItemTax> CreditNoteItemTaxes => Set<CreditNoteItemTax>();
+    public DbSet<DebitNote> DebitNotes => Set<DebitNote>();
+    public DbSet<DebitNoteItem> DebitNoteItems => Set<DebitNoteItem>();
+    public DbSet<DebitNoteItemTax> DebitNoteItemTaxes => Set<DebitNoteItemTax>();
+    public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<EInvoiceRecord> EInvoiceRecords => Set<EInvoiceRecord>();
     public DbSet<CashDrawer> CashDrawers => Set<CashDrawer>();
     public DbSet<CashDrawerSession> CashDrawerSessions => Set<CashDrawerSession>();
     public DbSet<CashDrawerMovement> CashDrawerMovements => Set<CashDrawerMovement>();
@@ -285,6 +298,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.HasOne<Folio>().WithMany().HasForeignKey(x => x.FolioId);
             e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.ReversesItemId);
             e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.TransferredFromItemId);
+            // A credit note before the CREDIT lines it puts on the folio (Sprint 12).
+            e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.AdjustsItemId);
+            e.HasOne<CreditNote>().WithMany().HasForeignKey(x => x.CreditNoteId);
             e.Property(x => x.Quantity).HasColumnType("numeric(12,3)");
             foreach (var m in new[] { nameof(FolioItem.UnitPrice), nameof(FolioItem.Amount), nameof(FolioItem.TaxAmount), nameof(FolioItem.Total) })
                 e.Property(m).HasColumnType("numeric(12,2)");
@@ -371,6 +387,65 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.Property(x => x.Payload).HasColumnType("jsonb");
         });
 
+        // ---- Sprint 12: invoices, credit and debit notes, receipts (database/migrations/V014__invoicing.sql)
+        b.Entity<InvoiceSeries>().ToTable("invoice_series");
+        b.Entity<Invoice>(e =>
+        {
+            e.ToTable("invoices");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.InvoiceId);
+            Document(e);
+            foreach (var m in new[] { nameof(Invoice.SupplierGstin), nameof(Invoice.CustomerGstin) }) e.Property(m).HasColumnType("char(15)");
+            foreach (var m in new[] { nameof(Invoice.SupplierStateCode), nameof(Invoice.CustomerStateCode), nameof(Invoice.PlaceOfSupply) })
+                e.Property(m).HasColumnType("char(2)");
+        });
+        b.Entity<InvoiceItem>(e =>
+        {
+            e.ToTable("invoice_items");
+            e.HasMany(x => x.Taxes).WithOne().HasForeignKey(x => x.InvoiceItemId);
+            Line(e);
+        });
+        b.Entity<InvoiceItemTax>(e => { e.ToTable("invoice_item_taxes"); Tax(e); });
+        b.Entity<DebitNote>(e =>
+        {
+            e.ToTable("debit_notes");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.DebitNoteId);
+            Document(e);
+        });
+        b.Entity<DebitNoteItem>(e =>
+        {
+            e.ToTable("debit_note_items");
+            e.HasMany(x => x.Taxes).WithOne().HasForeignKey(x => x.DebitNoteItemId);
+            Line(e);
+        });
+        b.Entity<DebitNoteItemTax>(e => { e.ToTable("debit_note_item_taxes"); Tax(e); });
+        b.Entity<CreditNote>(e =>
+        {
+            e.ToTable("credit_notes");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.CreditNoteId);
+            Document(e);
+        });
+        b.Entity<CreditNoteItem>(e =>
+        {
+            e.ToTable("credit_note_items");
+            e.HasMany(x => x.Taxes).WithOne().HasForeignKey(x => x.CreditNoteItemId);
+            // Declared so EF inserts the folio's CREDIT line before the note line that points to it.
+            e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.FolioCreditItemId);
+            foreach (var m in new[] { nameof(CreditNoteItem.TaxableValue), nameof(CreditNoteItem.TaxAmount), nameof(CreditNoteItem.Total) })
+                e.Property(m).HasColumnType("numeric(12,2)");
+        });
+        b.Entity<CreditNoteItemTax>(e => { e.ToTable("credit_note_item_taxes"); Tax(e); });
+        b.Entity<Receipt>(e =>
+        {
+            e.ToTable("receipts");
+            e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
+            e.Property(x => x.Currency).HasColumnType("char(3)");
+        });
+        b.Entity<EInvoiceRecord>(e =>
+        {
+            e.ToTable("einvoice_records");
+            e.Property(x => x.Irn).HasColumnType("char(64)");
+        });
+
         foreach (var entity in b.Model.GetEntityTypes())
         {
             var clr = entity.ClrType;
@@ -391,6 +466,29 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         }
 
         ApplySnakeCase(b);
+    }
+
+    private static void Document<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> e) where T : class, IDocumentTotals
+    {
+        foreach (var m in new[] { nameof(IDocumentTotals.TaxableValue), nameof(IDocumentTotals.Cgst), nameof(IDocumentTotals.Sgst),
+                     nameof(IDocumentTotals.Igst), nameof(IDocumentTotals.Cess), nameof(IDocumentTotals.TaxTotal), nameof(IDocumentTotals.Total) })
+            e.Property(m).HasColumnType("numeric(12,2)");
+        e.Property("Currency").HasColumnType("char(3)");
+    }
+
+    private static void Line<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> e) where T : BilledLine
+    {
+        e.Property(x => x.Quantity).HasColumnType("numeric(12,3)");
+        foreach (var m in new[] { nameof(BilledLine.UnitPrice), nameof(BilledLine.GrossAmount), nameof(BilledLine.Discount),
+                     nameof(BilledLine.TaxableValue), nameof(BilledLine.TaxAmount), nameof(BilledLine.Total) })
+            e.Property(m).HasColumnType("numeric(12,2)");
+    }
+
+    private static void Tax<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> e) where T : DocumentTax
+    {
+        e.Property(x => x.Rate).HasColumnType("numeric(5,2)");
+        e.Property(x => x.TaxableValue).HasColumnType("numeric(12,2)");
+        e.Property(x => x.Amount).HasColumnType("numeric(12,2)");
     }
 
     private static readonly MethodInfo TenantFilterMethod =
