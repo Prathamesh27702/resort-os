@@ -31,20 +31,24 @@ export interface IssueInvoiceData { propertyId: string; preview: InvoicePreview;
   template: `
     <h2 mat-dialog-title>Issue the {{ title.toLowerCase() }} for <span class="num">{{ p.folioNumber }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="invoice-form">
-      <table class="lines" aria-label="Lines on the invoice">
-        <thead><tr><th>Line</th><th class="right">Taxable</th><th class="right">GST</th><th class="right">Total</th></tr></thead>
-        <tbody>
-          @for (l of p.lines; track l.folioItemId) {
-            <tr><td>{{ l.description }} <small class="mute">· {{ shortDate(l.serviceDate) }}@if (l.hsnSac) { · SAC {{ l.hsnSac }} }</small>
-                  @if (l.discount) { <br /><small class="mute">{{ money(l.grossAmount) }} less {{ money(l.discount) }} credited</small> }</td>
-              <td class="right num">{{ money(l.taxableValue) }}</td>
-              <td class="right num">{{ money(l.taxAmount) }}@if (l.taxes.length) { <br /><small class="mute">{{ taxText(l) }}</small> }</td>
-              <td class="right num">{{ money(l.total) }}</td></tr>
-          }
-        </tbody>
-        <tfoot><tr><td><b>Total</b></td><td class="right num">{{ money(p.taxableValue) }}</td><td class="right num">{{ money(p.taxTotal) }}</td>
-          <td class="right num"><b data-testid="invoice-total">{{ money(p.total) }}</b></td></tr></tfoot>
-      </table>
+      <div class="preview">
+        <table class="lines" aria-label="Lines on the invoice">
+          <thead><tr><th>Line</th><th class="right">Taxable</th><th class="right">GST</th><th class="right">Total</th></tr></thead>
+          <tbody>
+            @for (l of p.lines; track l.folioItemId) {
+              <tr>
+                <td>{{ l.description }}<small class="mute">{{ shortDate(l.serviceDate) }}@if (l.hsnSac) { · SAC {{ l.hsnSac }} }
+                  @if (l.discount) { · {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited }</small></td>
+                <td class="right num">{{ money(l.taxableValue) }}</td>
+                <td class="right num">{{ money(l.taxAmount) }}<small class="mute">{{ taxText(l) || 'No GST' }}</small></td>
+                <td class="right num">{{ money(l.total) }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot><tr><td>Total</td><td class="right num">{{ money(p.taxableValue) }}</td><td class="right num">{{ money(p.taxTotal) }}</td>
+            <td class="right num" data-testid="invoice-total">{{ money(p.total) }}</td></tr></tfoot>
+        </table>
+      </div>
 
       <h3>Bill to</h3>
       <mat-form-field appearance="outline" class="full">
@@ -80,7 +84,7 @@ export interface IssueInvoiceData { propertyId: string; preview: InvoicePreview;
         <input matInput formControlName="notes" maxlength="500" placeholder="e.g. Company booking via Acme" />
         <mat-error>{{ err('notes') }}</mat-error>
       </mat-form-field>
-      <p class="hint">Place of supply is {{ supplyState() }}, where the resort is, so a hotel stay is charged CGST and SGST even
+      <p class="info">Place of supply is {{ supplyState() }}, where the resort is, so a hotel stay is charged CGST and SGST even
         for a company from another state. Once issued, the invoice can't be changed: correct it with a credit note.</p>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
     </form>
@@ -90,18 +94,23 @@ export interface IssueInvoiceData { propertyId: string; preview: InvoicePreview;
     </div>
   `,
   styles: `
-    form { min-width: min(620px, 86vw); display: flex; flex-direction: column; }
-    h3 { margin: 16px 0 8px; font-size: 1rem; }
-    .lines { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-    .lines th { text-align: left; color: #5b6b6e; font-weight: 500; font-size: .85rem; padding: 4px 6px; border-bottom: 1px solid #d9e0de; }
-    .lines td { padding: 6px; border-bottom: 1px solid #edf1f0; vertical-align: top; }
-    .lines tfoot td { border-bottom: 0; border-top: 2px solid #d9e0de; }
+    form { display: flex; flex-direction: column; gap: 8px; }
+    form > * { flex-shrink: 0; }
+    h3 { margin: 12px 0 4px; font-size: 1rem; font-weight: 500; }
+    .preview { border: 1px solid #d9e0de; border-radius: 10px; overflow-x: auto; }
+    .lines { width: 100%; border-collapse: collapse; }
+    .lines th { text-align: left; color: #5b6b6e; font-weight: 500; font-size: .8rem; padding: 8px 12px; background: #f6f8f7;
+                border-bottom: 1px solid #d9e0de; white-space: nowrap; }
+    .lines td { padding: 8px 12px; border-bottom: 1px solid #edf1f0; vertical-align: top; }
+    .lines td small { display: block; margin-top: 2px; font-size: .78rem; }
+    .lines td.num { white-space: nowrap; }
+    .lines tfoot td { border-bottom: 0; font-weight: 600; background: #f6f8f7; }
     .right { text-align: right !important; }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
     .upper { text-transform: uppercase; }
-    .hint, .mute { color: #5b6b6e; }
-    .hint { margin: 4px 0 8px; font-size: .9rem; }
+    .mute { color: #5b6b6e; }
+    .info { margin: 4px 0 0; padding: 10px 12px; border-radius: 8px; background: #eef4f3; color: #33474a; font-size: .88rem; line-height: 1.4; }
     .err { color: #b3261e; }
     @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
   `,
@@ -213,7 +222,7 @@ export interface CreditNoteData { propertyId: string; invoice: Invoice; canCance
               <mat-checkbox formControlName="on">{{ l.description }}@if (l.debitNoteNumber) { <small class="mute"> · {{ l.debitNoteNumber }}</small> }
                 <br /><small class="mute">{{ money(l.creditable) }} of {{ money(l.taxableValue) }} left · {{ taxText(l) || 'no GST' }}</small></mat-checkbox>
               @if (lineOn(k)) {
-                <mat-form-field appearance="outline" class="amt">
+                <mat-form-field appearance="outline" class="amt" subscriptSizing="dynamic">
                   <mat-label>Amount (₹)</mat-label>
                   <input matInput type="number" formControlName="amount" min="0.01" [max]="l.creditable" step="0.01" />
                   <mat-error>{{ lineError(k) || 'Enter ₹0.01 to ' + money(l.creditable) + '.' }}</mat-error>
@@ -239,11 +248,14 @@ export interface CreditNoteData { propertyId: string; invoice: Invoice; canCance
     </div>
   `,
   styles: `
-    form { min-width: min(560px, 86vw); display: flex; flex-direction: column; }
+    form { display: flex; flex-direction: column; }
     .mode { margin-bottom: 12px; align-self: flex-start; }
-    .lines { display: flex; flex-direction: column; gap: 4px; max-height: 300px; overflow: auto; margin-bottom: 8px; }
-    .line { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .amt { width: 150px; }
+    .lines { display: flex; flex-direction: column; max-height: 320px; overflow: auto; margin-bottom: 12px; border: 1px solid #d9e0de;
+             border-radius: 10px; }
+    .line { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 56px;
+            padding: 6px 12px 6px 4px; border-bottom: 1px solid #edf1f0; }
+    .line:last-child { border-bottom: 0; }
+    .amt { width: 150px; padding-top: 6px; }
     .full { width: 100%; }
     .hint, .mute { color: #5b6b6e; }
     .hint { margin: 0 0 8px; }

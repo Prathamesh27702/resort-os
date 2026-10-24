@@ -50,6 +50,14 @@ export class InvoicesApi {
       catchError((e: unknown) => from(jsonError(e)).pipe(switchMap(err => throwError(() => err)))),
     );
   }
+
+  /** Prints a document's PDF: loads it into a hidden frame and opens the browser's print dialog on it. */
+  print(pid: string, kind: PdfKind, id: string): Observable<void> {
+    return this.http.get(`${this.base(pid)}/${kind}/${id}/pdf`, { responseType: 'blob' }).pipe(
+      map(blob => printPdf(blob)),
+      catchError((e: unknown) => from(jsonError(e)).pipe(switchMap(err => throwError(() => err)))),
+    );
+  }
 }
 
 /** The file name in a Content-Disposition header (filename*=UTF-8''… or filename=…). */
@@ -73,6 +81,20 @@ function save(blob: Blob, name: string) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function printPdf(blob: Blob) {
+  const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+  const frame = document.createElement('iframe');
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  frame.src = url;
+  frame.onload = () => {
+    frame.contentWindow?.focus();
+    frame.contentWindow?.print();
+    // the print dialog blocks until closed in most browsers; keep the frame a while for those where it doesn't
+    setTimeout(() => { frame.remove(); URL.revokeObjectURL(url); }, 60_000);
+  };
+  document.body.appendChild(frame);
 }
 
 /** A failed blob request carries the API's JSON error as a Blob: read it back so toProblem shows the real reason. */

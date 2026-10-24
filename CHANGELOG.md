@@ -23,7 +23,8 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
   /payments/{id}/receipt`, `GET /receipts/{id}/pdf`. Taxes are copied from the folio lines, never recalculated; place of
   supply is the property's state; customer GSTINs are validated with their check digit; a composition property issues a
   bill of supply.
-- A4 PDFs drawn on the server with PDFsharp/MigraDoc 6.2.4 (MIT) and an embedded DejaVu Sans font (with ₹).
+- A4 PDFs drawn on the server with PDFsharp/MigraDoc 6.2.4 (MIT) and an embedded DejaVu Sans font (with ₹). Each invoice,
+  note and receipt has **PDF** (download) and **Print** (the browser's print dialog on the same PDF).
 - Staff app: **Invoices** (`/invoices`, `/invoices/:id` with Credit note and Debit note dialogs and PDFs); **Issue
   invoice** on a bill with a preview of the lines and the customer; billed charges marked with their invoice on the bill;
   the booking links to its invoices; **Receipt** on a payment.

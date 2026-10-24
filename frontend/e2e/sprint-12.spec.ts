@@ -181,8 +181,8 @@ test('S12-04 The company wants the invoice: cancel it with a credit note, then i
   await expect(m.getByTestId('customer')).toHaveText('Acme Travels Pvt Ltd');
   await expect(m.getByTestId('customer-gstin')).toHaveText('GSTIN 27AAPFU0939F1ZV');
   await expect(m.locator('.parties')).toContainText('Goa (30)');
-  await expect(m.locator('tfoot')).toContainText('CGST');
-  await expect(m.locator('tfoot')).not.toContainText('IGST');
+  await expect(m.getByTestId('totals')).toContainText('CGST');
+  await expect(m.getByTestId('totals')).not.toContainText('IGST');
   await expect(m.locator('[data-line^="Dinner"]')).toContainText(`less ${money(600)} credited before`);
   await shot(m, '09-b2b-invoice');
 });

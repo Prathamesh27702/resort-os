@@ -36,6 +36,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
           </div>
           <div class="head-actions">
             <button mat-flat-button (click)="pdf('invoices', i.id, i.number)" [disabled]="busy()"><mat-icon>download</mat-icon>PDF</button>
+            <button mat-stroked-button (click)="print('invoices', i.id)" [disabled]="busy()"><mat-icon>print</mat-icon>Print</button>
             @if (canCredit() && i.status !== 'CANCELLED' && i.outstanding > 0) {
               <button mat-stroked-button (click)="credit()" [disabled]="busy()"><mat-icon>remove_circle_outline</mat-icon>Credit note</button>
             }
@@ -82,17 +83,17 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
                 </tr>
               }
             </tbody>
-            <tfoot>
-              <tr><td colspan="3" class="right">Taxable value</td><td class="right num">{{ money(i.taxableValue) }}</td><td class="hide-sm"></td><td></td></tr>
-              @if (i.cgst) { <tr><td colspan="3" class="right">CGST</td><td></td><td class="hide-sm"></td><td class="right num">{{ money(i.cgst) }}</td></tr> }
-              @if (i.sgst) { <tr><td colspan="3" class="right">SGST</td><td></td><td class="hide-sm"></td><td class="right num">{{ money(i.sgst) }}</td></tr> }
-              @if (i.igst) { <tr><td colspan="3" class="right">IGST</td><td></td><td class="hide-sm"></td><td class="right num">{{ money(i.igst) }}</td></tr> }
-              <tr class="grand"><td colspan="3" class="right"><b>Invoice total</b></td><td></td><td class="hide-sm"></td>
-                <td class="right num"><b data-testid="invoice-total">{{ money(i.total) }}</b></td></tr>
-            </tfoot>
           </table>
-          <p class="words">{{ i.amountInWords }}</p>
-          @if (i.notes) { <p class="mute words">{{ i.notes }}</p> }
+          <div class="foot">
+            <div class="words"><span>Amount in words</span>{{ i.amountInWords }}@if (i.notes) { <p class="mute">{{ i.notes }}</p> }</div>
+            <dl class="totals" data-testid="totals">
+              <div><dt>Taxable value</dt><dd class="num">{{ money(i.taxableValue) }}</dd></div>
+              @if (i.cgst) { <div><dt>CGST</dt><dd class="num">{{ money(i.cgst) }}</dd></div> }
+              @if (i.sgst) { <div><dt>SGST</dt><dd class="num">{{ money(i.sgst) }}</dd></div> }
+              @if (i.igst) { <div><dt>IGST</dt><dd class="num">{{ money(i.igst) }}</dd></div> }
+              <div class="grand"><dt>Invoice total</dt><dd class="num" data-testid="invoice-total">{{ money(i.total) }}</dd></div>
+            </dl>
+          </div>
         </div>
 
         @if (i.creditNotes.length || i.debitNotes.length) {
@@ -116,8 +117,9 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
                     <td class="hide-sm">@for (l of n.lines; track l.lineNo) { <div>{{ l.description }} <small class="mute num">{{ money(l.total) }}</small></div> }</td>
                     <td class="right num"><b [class.bad]="n.kind === 'CREDIT_NOTE'">{{ n.kind === 'CREDIT_NOTE' ? '− ' : '' }}{{ money(n.total) }}</b>
                       <br /><small class="mute">GST {{ money(n.taxTotal) }}</small></td>
-                    <td class="right"><button mat-button (click)="pdf(n.kind === 'CREDIT_NOTE' ? 'credit-notes' : 'debit-notes', n.id, n.number)"
-                      [attr.aria-label]="'PDF of ' + n.number"><mat-icon>download</mat-icon>PDF</button></td>
+                    <td class="right doc-actions"><button mat-button (click)="pdf(noteKind(n), n.id, n.number)"
+                      [attr.aria-label]="'PDF of ' + n.number"><mat-icon>download</mat-icon>PDF</button>
+                      <button mat-icon-button (click)="print(noteKind(n), n.id)" [attr.aria-label]="'Print ' + n.number"><mat-icon>print</mat-icon></button></td>
                   </tr>
                 }
               </tbody>
@@ -136,7 +138,8 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
                   <td class="hide-sm"><a [routerLink]="['/payments', r.paymentId]" class="num">{{ r.paymentNumber }}</a> · {{ methodLabel(r.method) }}
                     @if (r.paymentReference) { <small class="mute"> · {{ r.paymentReference }}</small> }</td>
                   <td class="right num"><b>{{ money(r.amount) }}</b></td>
-                  <td class="right"><button mat-button (click)="pdf('receipts', r.id, r.number)" [attr.aria-label]="'PDF of ' + r.number"><mat-icon>download</mat-icon>PDF</button></td>
+                  <td class="right doc-actions"><button mat-button (click)="pdf('receipts', r.id, r.number)" [attr.aria-label]="'PDF of ' + r.number"><mat-icon>download</mat-icon>PDF</button>
+                    <button mat-icon-button (click)="print('receipts', r.id)" [attr.aria-label]="'Print ' + r.number"><mat-icon>print</mat-icon></button></td>
                 </tr>
               } @empty {
                 <tr><td colspan="4" class="empty">No receipt yet. A receipt is issued for each payment on the booking at check-out, or from the payment.</td></tr>
@@ -154,6 +157,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .wide { max-width: 1100px; }
     h2 { margin: 20px 0 8px; }
     .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .doc-actions { white-space: nowrap; }
     .note { background: #fbefd8; color: #6b4600; border-radius: 8px; padding: 10px 12px; }
     .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: #fff; border: 1px solid #d9e0de; border-radius: 10px;
                padding: 14px 16px; margin-bottom: 16px; }
@@ -163,7 +167,18 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .sums > div { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 10px 14px; min-width: 140px; }
     .sums span { color: #5b6b6e; font-size: .8rem; }
     .sums b { font-size: 1.2rem; color: #0e3b43; }
-    .words { padding: 8px 16px 12px; margin: 0; font-style: italic; }
+    .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 14px 16px 16px;
+            border-top: 1px solid #d9e0de; }
+    .words { font-style: italic; color: #33474a; max-width: 460px; }
+    .words span { display: block; font-style: normal; color: #5b6b6e; text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; margin-bottom: 2px; }
+    .words p { margin: 8px 0 0; font-style: normal; }
+    .totals { margin: 0; min-width: 280px; }
+    .totals > div { display: flex; justify-content: space-between; gap: 24px; padding: 3px 0; }
+    .totals dt { color: #5b6b6e; }
+    .totals dd { margin: 0; text-align: right; }
+    .totals .grand { border-top: 2px solid #d9e0de; margin-top: 6px; padding-top: 8px; font-size: 1.1rem; }
+    .totals .grand dt { color: #1b2a2e; font-weight: 600; }
+    .totals .grand dd { font-weight: 700; color: #0e3b43; }
     .mute { color: #5b6b6e; }
     .why { color: #8a2449; }
     .bad, .sums b.bad { color: #b3261e; }
@@ -176,10 +191,10 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .chip.off { background: #eceff0; color: #5b6b6e; }
     .chip.wait { background: #fbefd8; color: #8a5a00; }
     tr.reversed b { text-decoration: line-through; color: #7a8a8c; }
-    tfoot td { border-bottom: 0; padding-top: 4px; padding-bottom: 4px; }
-    tfoot tr.grand td { border-top: 2px solid #d9e0de; padding-top: 10px; }
     @media (max-width: 760px) {
       .parties { grid-template-columns: 1fr; }
+      .foot { flex-direction: column-reverse; }
+      .totals { width: 100%; min-width: 0; }
       table.data td, table.data th { padding: 10px 8px; }
     }
   `,
@@ -239,8 +254,20 @@ export class InvoicePage {
     });
   }
 
+  noteKind(n: InvoiceNote): PdfKind { return n.kind === 'CREDIT_NOTE' ? 'credit-notes' : 'debit-notes'; }
+
+  /** Opens the browser's print dialog on the same PDF the download gives. */
+  print(kind: PdfKind, id: string) {
+    this.error.set('');
+    this.busy.set(true);
+    this.api.print(this.pid(), kind, id).subscribe({
+      next: () => this.busy.set(false),
+      error: e => { this.busy.set(false); this.error.set(toProblem(e).detail); },
+    });
+  }
+
   credit() {
-    this.dialog.open(CreditNoteDialog, { data: { propertyId: this.pid(), invoice: this.i()!, canCancel: this.canCancel() }, autoFocus: 'first-tabbable' })
+    this.dialog.open(CreditNoteDialog, { data: { propertyId: this.pid(), invoice: this.i()!, canCancel: this.canCancel() }, width: '640px', maxWidth: '95vw', autoFocus: 'first-tabbable' })
       .afterClosed().subscribe((r: Invoice | undefined) => {
         if (!r) return;
         this.i.set(r);

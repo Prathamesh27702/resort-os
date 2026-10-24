@@ -105,9 +105,11 @@ public sealed class PdfRenderer : IPdfRenderer
         if (d.Totals.Count > 0)
         {
             var totals = section.AddTable();
-            totals.AddColumn(Unit.FromCentimeter(12.5));
-            totals.AddColumn(Unit.FromCentimeter(3));
-            totals.AddColumn(Unit.FromCentimeter(2.5));
+            totals.AddColumn(Unit.FromCentimeter(11));
+            totals.AddColumn(Unit.FromCentimeter(4.2));
+            totals.AddColumn(Unit.FromCentimeter(2.8));
+            totals.RightPadding = Unit.FromPoint(3);
+            totals.TopPadding = totals.BottomPadding = Unit.FromPoint(1.5);
             foreach (var (label, value, bold) in d.Totals)
             {
                 var row = totals.AddRow();
@@ -159,7 +161,7 @@ public sealed class PdfRenderer : IPdfRenderer
         table.Borders.Color = Rule;
         table.Borders.Width = 0.5;
         table.LeftPadding = table.RightPadding = Unit.FromPoint(3);
-        table.TopPadding = table.BottomPadding = Unit.FromPoint(2);
+        table.TopPadding = table.BottomPadding = Unit.FromPoint(3);
         foreach (var c in t.Columns)
         {
             var col = table.AddColumn(Unit.FromCentimeter(c.Width));

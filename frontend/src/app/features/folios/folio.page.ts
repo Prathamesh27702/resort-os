@@ -239,7 +239,7 @@ export class FolioPage {
       next: preview => {
         this.preview.set(preview);
         if (preview.cantIssueReason) { this.error.set(preview.cantIssueReason); return; }
-        this.dialog.open(IssueInvoiceDialog, { data: { propertyId: this.pid(), preview }, autoFocus: 'first-tabbable' })
+        this.dialog.open(IssueInvoiceDialog, { data: { propertyId: this.pid(), preview }, width: '720px', maxWidth: '95vw', autoFocus: 'first-tabbable' })
           .afterClosed().subscribe((i: Invoice | undefined) => {
             if (!i) return;
             this.load(f.id);

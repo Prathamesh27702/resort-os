@@ -57,7 +57,7 @@ type Period = 'today' | 'week' | 'month' | 'all';
           <tbody>
             @for (i of result()?.items ?? []; track i.id) {
               <tr class="clickable" (click)="open(i.id)" tabindex="0" (keydown.enter)="open(i.id)" [attr.data-invoice]="i.number">
-                <td><b class="num">{{ i.number }}</b> <span [class]="'chip ' + statusClass(i.status)">{{ statusLabel(i.status) }}</span>
+                <td><b class="num">{{ i.number }}</b><span [class]="'chip status ' + statusClass(i.status)">{{ statusLabel(i.status) }}</span>
                   <br /><small class="mute">{{ shortDate(i.invoiceDate) }}@if (i.documentType !== 'INVOICE') { · {{ docLabel(i.documentType) }} }
                   @if (i.creditNotes) { · {{ i.creditNotes }} credit note{{ i.creditNotes === 1 ? '' : 's' }} }
                   @if (i.debitNotes) { · {{ i.debitNotes }} debit note{{ i.debitNotes === 1 ? '' : 's' }} }</small></td>
@@ -98,6 +98,7 @@ type Period = 'today' | 'week' | 'month' | 'all';
     .bad { color: #b3261e; }
     .right { text-align: right; }
     .void { text-decoration: line-through; color: #7a8a8c; }
+    .chip.status { margin-left: 8px; }
     .chip.ok { background: #e1f2e8; color: #1d5b36; }
     .chip.back { background: #f6e3ec; color: #8a2449; }
     .chip.off { background: #eceff0; color: #5b6b6e; }

@@ -103,7 +103,7 @@ public sealed class InvoicePrinter
     private static PrintTable LinesTable(IReadOnlyList<DocumentLineDto> lines, bool supply)
     {
         var discount = lines.Any(l => l.Discount != 0);
-        var columns = new List<PrintColumn> { new("#", 0.7), new("Description", (supply ? 7.3 : 4.3) + (discount ? 0 : 1.6)), new("HSN/SAC", 1.6), new("Qty", 0.9, true), new("Rate ₹", 1.8, true) };
+        var columns = new List<PrintColumn> { new("#", 0.7), new("Description", (supply ? 7.0 : 4.0) + (discount ? 0 : 1.6)), new("HSN/SAC", 1.9), new("Qty", 0.9, true), new("Rate ₹", 1.8, true) };
         if (discount) columns.Add(new("Disc. ₹", 1.6, true));
         columns.Add(new("Taxable ₹", 1.9, true));
         if (!supply) columns.Add(new("GST", 3.3));
