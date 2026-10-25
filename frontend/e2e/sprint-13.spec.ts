@@ -45,8 +45,9 @@ test.beforeAll(async ({ browser }: { browser: Browser }) => {
   await createStaff(api, fixer.email, fixer.name, 'MAINTENANCE', pid, pw);
 
   // A guest stays one night from today, pays, and is checked out by the front desk (Sprint 7, not what this test is about).
-  // The room must be free for three nights: S13-05 takes it out of order until the day after tomorrow.
-  const avail = await (await api.get(`/api/v1/properties/${pid}/availability?from=${today}&to=${addDays(today, 3)}&adults=2&children=0`)).json();
+  // S13-05 takes this room out of order for tonight only, so it needs to be free tonight and nothing more (earlier sprints'
+  // tests book most rooms on later nights).
+  const avail = await (await api.get(`/api/v1/properties/${pid}/availability?from=${today}&to=${addDays(today, 1)}&adults=2&children=0`)).json();
   const type = (avail.types as { inventoryMode: string; accommodationTypeId: string; freeRooms: { id: string }[] }[])
     .find(t => t.inventoryMode === 'UNIT' && t.freeRooms.length >= 1)!;
   unitId = type.freeRooms[type.freeRooms.length - 1].id;
@@ -166,6 +167,7 @@ test('S13-05 The housekeeper reports a broken AC with a photo and takes the room
   await hk.getByRole('option', { name: 'High' }).click();
   await hk.getByRole('switch', { name: /out of order/ }).click();
   await expect(hk.getByLabel('Usable again on')).toHaveValue(addDays(today, 2));
+  await hk.getByLabel('Usable again on').fill(addDays(today, 1));
   await hk.getByTestId('photo-input').setInputFiles({ name: 'ac.png', mimeType: 'image/png', buffer: PNG });
   await expect(hk.locator('figure img')).toHaveCount(1);
   await shot(hk, '06-report-problem');
