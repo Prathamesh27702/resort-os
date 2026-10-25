@@ -23,7 +23,7 @@ namespace Resort.Application.Folios;
 /// </summary>
 public sealed class FolioService(
     IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, FolioPosting posting,
-    Payments.PaymentLedger ledger)
+    Payments.PaymentLedger ledger, Invoicing.FolioBilling billing)
 {
     public const int MaxQuantity = 9999;
     public const int MaxPackageQuantity = 50;
@@ -177,7 +177,11 @@ public sealed class FolioService(
         if (item.ItemType == FolioItemTypes.Reversal)
             throw new BusinessRuleAppException("NOT_REVERSIBLE",
                 $"\"{item.Description}\" is itself a reversal, so it can't be reversed. Post the charge again instead.");
+        if (item.ItemType == FolioItemTypes.Credit)
+            throw new BusinessRuleAppException("NOT_REVERSIBLE",
+                $"\"{item.Description}\" comes from a credit note, so it can't be reversed. Credit notes are never undone.");
         await RequireNotReversedAsync(item, ct);
+        await posting.RequireNotInvoicedAsync(item, ct);
 
         audit.Reason = reason;
         await posting.ReverseAsync(folio, item, reason, ct);
@@ -221,9 +225,14 @@ public sealed class FolioService(
         var items = await db.FolioItems.AsNoTracking().Where(i => ids.Contains(i.Id) && i.FolioId == from.Id).ToListAsync(ct);
         if (items.Count != ids.Count)
             throw ReservationService.Field(nameof(r.ItemIds), $"Some of the chosen lines aren't on {from.Number}. Reload the folio and choose again.");
-        if (items.FirstOrDefault(i => i.ItemType == FolioItemTypes.Reversal) is { } rev)
-            throw ReservationService.Field(nameof(r.ItemIds), $"\"{rev.Description}\" is a reversal; only charges can be moved.");
-        foreach (var item in items) await RequireNotReversedAsync(item, ct, nameof(r.ItemIds));
+        if (items.FirstOrDefault(i => i.ItemType != FolioItemTypes.Charge) is { } rev)
+            throw ReservationService.Field(nameof(r.ItemIds),
+                $"\"{rev.Description}\" is a {(rev.ItemType == FolioItemTypes.Credit ? "credit note line" : "reversal")}; only charges can be moved.");
+        foreach (var item in items)
+        {
+            await RequireNotReversedAsync(item, ct, nameof(r.ItemIds));
+            await posting.RequireNotInvoicedAsync(item, ct, nameof(r.ItemIds));
+        }
 
         var reason = $"Moved to {to.Number} ({to.Name})";
         audit.Reason = reason;
@@ -344,6 +353,8 @@ public sealed class FolioService(
             .Where(u => u.ReservationId == reservation.Id && u.SupersededAt == null && u.EndDate == reservation.CheckOut).ToListAsync(ct);
         var rooms = ReservationService.RoomsText(units, await reservations.RoomNamesAsync(units.Select(u => u.UnitId), ct));
 
+        var billed = await billing.BilledAsync([folio.Id], ct);
+        var creditedIds = items.Where(i => i.AdjustsItemId != null).Select(i => i.AdjustsItemId!.Value).ToHashSet();
         var itemIds = items.Select(i => i.Id).ToList();
         var taxes = (await db.FolioItemTaxes.AsNoTracking().Where(t => itemIds.Contains(t.FolioItemId)).ToListAsync(ct))
             .OrderBy(t => t.Rate).ThenBy(t => Array.IndexOf(TaxCodeOrder, t.TaxCode))
@@ -357,7 +368,8 @@ public sealed class FolioService(
                 i.TransferredFromItemId is { } src && byId.TryGetValue(src, out var o) ? numbers[o.FolioId] : null,
                 movedTo.GetValueOrDefault(i.Id),
                 i.PostedAt, i.PostedBy is { } u ? users.GetValueOrDefault(u) : null,
-                i.ItemType == FolioItemTypes.Charge && reversal is null, taxes[i.Id].ToList());
+                i.ItemType == FolioItemTypes.Charge && reversal is null, taxes[i.Id].ToList(), billed.GetValueOrDefault(i.Id),
+                i.ItemType == FolioItemTypes.Charge && reversal is null && !billed.ContainsKey(i.Id) && !creditedIds.Contains(i.Id));
         }).ToList();
         var categories = ChargeCategories.All
             .Select(c => new FolioCategoryTotalDto(c, items.Where(i => i.Category == c).Sum(i => i.Total)))
@@ -376,7 +388,7 @@ public sealed class FolioService(
             folio.BillToGuestId is { } b ? guests.GetValueOrDefault(b) : null, reservation.CheckIn, reservation.CheckOut, rooms, folio.Currency,
             lines, categories,
             Charges: items.Where(i => i.ItemType == FolioItemTypes.Charge).Sum(i => i.Total),
-            Reversals: items.Where(i => i.ItemType == FolioItemTypes.Reversal).Sum(i => i.Total),
+            Reversals: items.Where(i => i.ItemType != FolioItemTypes.Charge).Sum(i => i.Total),
             Tax: items.Sum(i => i.TaxAmount), Total: total, Payments: paid[folio.Id], Balance: total - paid[folio.Id],
             summaries, CanPost: CantPost(folio, reservation) is null, CantPostReason: CantPost(folio, reservation),
             PaymentLines: await ledger.FolioLinesAsync(folio.Id, ct));

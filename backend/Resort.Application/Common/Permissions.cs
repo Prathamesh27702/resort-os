@@ -54,6 +54,11 @@ public static class Perm
     public const string TaxRead = "tax.read";
     public const string TaxManage = "tax.manage";
 
+    public const string InvoiceRead = "invoice.read";
+    public const string InvoiceCreate = "invoice.create";
+    public const string InvoiceCancel = "invoice.cancel";
+    public const string CreditNoteCreate = "credit_note.create";
+
     public const string AuditRead = "audit.read";
     public const string SystemSettings = "system.settings";
 
@@ -68,6 +73,7 @@ public static class Perm
         FolioRead, FolioPostCharge, FolioAdjust,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,
+        InvoiceRead, InvoiceCreate, InvoiceCancel, CreditNoteCreate,
         AuditRead, SystemSettings,
     ];
 }

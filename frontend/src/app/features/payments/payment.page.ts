@@ -9,12 +9,14 @@ import { toProblem } from '../../core/http';
 import { Payment } from '../../core/models';
 import { PropertyContext, inZone } from '../../core/property-context';
 import { rupeesExact } from '../settings/rates/rates.api';
+import { map, switchMap } from 'rxjs';
+import { InvoicesApi, pdfName } from '../invoices/invoices.api';
 import { AllocateDialog, RefundDialog, VoidPaymentDialog } from './payment-dialogs';
 import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, paymentStatusLabel } from './payments.api';
 
 /**
  * One payment (Sprint 10; online payments Sprint 11): how it was paid, the bills it is on, what is still on account, its refunds and, if it was
- * entered by mistake, its void. Nothing is edited or deleted: a refund and a void are new records with their reasons.
+ * entered by mistake, its void. Sprint 12: its receipt as a PDF. Nothing is edited or deleted: a refund and a void are new records with their reasons.
  */
 @Component({
   selector: 'app-payment',
@@ -31,6 +33,9 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
               taken {{ time(p.receivedAt) }}@if (p.receivedByName) { by {{ p.receivedByName }} }</p>
           </div>
           <div class="head-actions">
+            @if (canReceipt() && receiptable()) {
+              <button mat-stroked-button (click)="receipt()" [disabled]="busy()"><mat-icon>receipt</mat-icon>Receipt</button>
+            }
             @if (canCreate() && p.onAccount > 0 && hasOwedFolio()) { <button mat-flat-button (click)="allocate()" [disabled]="busy()">Put on a bill</button> }
             @if (canRefund() && p.refundable > 0) { <button mat-stroked-button (click)="refund()" [disabled]="busy()"><mat-icon>undo</mat-icon>Refund</button> }
             @if (canVoid() && p.canVoid) { <button mat-button color="warn" (click)="voidIt()" [disabled]="busy()">Void</button> }
@@ -138,6 +143,10 @@ export class PaymentPage {
   canCreate = computed(() => { this.auth.me(); return this.auth.can('payment.create', this.props.current()?.id); });
   canRefund = computed(() => { this.auth.me(); return this.auth.can('payment.refund', this.props.current()?.id); });
   canVoid = computed(() => { this.auth.me(); return this.auth.can('payment.void', this.props.current()?.id); });
+  /** Sprint 12: a receipt (PDF) for a payment that counts; issued the first time, the same one after that. */
+  canReceipt = computed(() => { this.auth.me(); return this.auth.can('invoice.create', this.props.current()?.id); });
+  receiptable = computed(() => !['CANCELLED', 'FAILED', 'PENDING'].includes(this.p()?.status ?? 'CANCELLED'));
+  private invoices = inject(InvoicesApi);
   hasOwedFolio = computed(() => (this.p()?.folios ?? []).some(f => f.balance > 0));
 
   money = rupeesExact;
@@ -158,6 +167,17 @@ export class PaymentPage {
   private load(id: string) {
     this.error.set('');
     this.api.get(this.pid(), id).subscribe({ next: p => this.p.set(p), error: e => this.error.set(toProblem(e).detail) });
+  }
+
+  receipt() {
+    this.error.set('');
+    this.busy.set(true);
+    this.invoices.receipt(this.pid(), this.p()!.id).pipe(
+      switchMap(r => this.invoices.pdf(this.pid(), 'receipts', r.id, pdfName(r.number)).pipe(map(() => r))),
+    ).subscribe({
+      next: r => { this.busy.set(false); this.snack.open(`Receipt ${r.number} downloaded`, undefined, { duration: 3000 }); },
+      error: e => { this.busy.set(false); this.error.set(toProblem(e).detail); },
+    });
   }
 
   refund() { this.after(this.dialog.open(RefundDialog, { data: { propertyId: this.pid(), payment: this.p()! } }), p => `Refunded. ${rupeesExact(p.refundable)} can still be refunded`); }

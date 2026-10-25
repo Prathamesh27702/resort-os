@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | L | [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md), [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
+| 🟢 Done | Phase 3 — Folio, payments, Razorpay, GST, invoices | L | [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md), [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
 
 **Goal:** Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
 
@@ -10,27 +10,38 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Accepted by the owner on 25 Oct 2026 and released to main (tag sprint-12).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V014: invoice_series (one gap-free counter per property, document type and financial year), invoices, invoice_items, invoice_item_taxes, credit_notes (CANCEL or REDUCE), debit_notes, their lines and taxes, receipts (one per payment), einvoice_records (for Sprint 25); every document refuses UPDATE and DELETE and its totals are checked against its lines at commit; folio_items gets CREDIT lines
+- Numbers BEACH/2627/00001 (invoice), BEACH/C2627/0001 (credit note), BEACH/D2627/0001 (debit note), BEACH/R2627/00001 (receipt), ≤ 16 characters; taken with one upsert inside the issuing transaction, so 20 invoices at once are numbered 1–20 with no gap or repeat
+- Check-out issues the invoice of each folio (to the bill-to guest on file; company and GSTIN make it B2B) and a receipt for each payment; a folio that can't be invoiced doesn't stop the check-out and a booking note says why
+- Taxes copied from the folio lines, never recalculated; place of supply = the property's state (CGST + SGST for every hotel stay); GSTIN validated with its check digit; composition scheme → bill of supply
+- Credit notes: CANCEL (whole invoice; its charges can be invoiced again, e.g. B2B) and REDUCE (lines or part of them, GST at each line's rate, a CREDIT line on the bill); debit notes for charges posted after the invoice; billed charges can't be reversed or moved
+- A4 PDFs for invoices, notes and receipts drawn on the server with PDFsharp/MigraDoc 6.2 (MIT; pinned below the AGPL 6.5) and an embedded font with ₹
+- Screens: Invoices list and invoice page (credit and debit note dialogs, PDFs); Issue invoice on the bill with a preview; billed charges marked on the bill; invoice links on the booking; Receipt on a payment
+- No new dev seed: invoices take real numbers, so the demo issues them by checking out R00007 (departing today)
+- [done] Docs: API.md, DATABASE.md, schema-sprint-12.md, GST.md, system design Sprint 12 and 4.22 with the invoice flow diagram, RUN_AND_TEST, REVIEWING
+- After the owner's first look (24 Oct 2026): the issue-invoice, credit note and invoice screens tidied (dialog widths, totals block beside the amount in words), and a Print button next to PDF on the invoice, its notes and receipts
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__invoicing.sql — new tables (next free number)
-- backend/Resort.Domain/Invoicing/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Invoicing/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/InvoicingEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/InvoicingTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/invoices/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-12.md, this guide, CHANGELOG.md
+- database/migrations/V014__invoicing.sql; database/queries/check-sprint-12.sql
+- backend/Resort.Domain/Invoicing/Invoicing.cs; backend/Resort.Domain/Folios/Folios.cs
+- backend/Resort.Contracts/InvoiceContracts.cs; backend/Resort.Contracts/FolioContracts.cs
+- backend/Resort.Application/ — Invoicing/ (InvoiceService.cs, FolioBilling.cs, ReceiptService.cs, InvoicePrinter.cs, Printing.cs), Validation/InvoiceValidators.cs, Folios/FolioPosting.cs, Folios/FolioService.cs, FrontDesk/FrontDeskService.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/ — Documents/PdfRenderer.cs, Documents/Fonts/ (DejaVu Sans + licence), Persistence/AppDbContext.cs, DependencyInjection.cs, Resort.Infrastructure.csproj; Directory.Packages.props; backend/Resort.Api/ — Endpoints/InvoiceEndpoints.cs, Program.cs
+- backend/Resort.Tests/ — Integration/InvoiceTests.cs, Unit/InvoiceUnitTests.cs
+- frontend/src/app/ — features/invoices/ (invoices.page.ts, invoice.page.ts, invoice-dialogs.ts, invoices.api.ts, invoices.spec.ts), features/folios/ (folio.page.ts, folios.api.ts, folios.spec.ts), features/payments/payment.page.ts, features/reservations/reservation.page.ts, features/front-desk/front-desk-dialogs.ts, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-12.spec.ts; scripts/check-api.mjs (Sprint 12 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-12.md, docs/GST.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-12-screens/; tools/handbooks/diagrams (invoice-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 381 passed, 0 failed on real PostgreSQL 16 (41 new: InvoiceTests with the demo (check-out issues the invoice, receipt and PDFs; cancel and re-issue B2B), 20 parallel invoices numbered 1–20 with no gap or repeat, B2B intra- and inter-state, the database refusing UPDATE and DELETE of totals, REDUCE and debit notes, a wrong GSTIN at check-out, receipts and idempotency, permissions; InvoiceUnitTests with the financial year, prefixes within 16 characters, amounts in words, part credits and what is printed)
+- Frontend: 88 of 88 unit tests passed (7 new: invoice helpers, PDF names, the credit tax estimate, invoiced charges off the reverse/move list); ESLint clean; production build OK
+- Browser tests: 101 of 101 passed (Sprints 01–11 plus the 5 new Sprint 12 steps: check-out issues invoice and receipt, a debit note, a part credit note with too much refused under the amount, cancel and re-issue B2B with a GSTIN typo caught, the Invoices screen and a receipt download); API checks 159 of 159 (13 new); database checks clean (no gaps, totals add up, no IGST, the database refuses edits); screenshots in docs/sprints/sprint-12-screens
 
 **Outcome**
 
@@ -48,22 +59,31 @@ Expected when accepted:
 - `invoice_item_taxes`
 - `credit_notes`
 - `credit_note_items`
+- `credit_note_item_taxes`
 - `debit_notes`
 - `debit_note_items`
+- `debit_note_item_taxes`
 - `receipts`
 - `einvoice_records`
 
 **API endpoints**
 
+- `GET /api/v1/properties/{propertyId}/folios/{id}/invoice-preview`
 - `POST /api/v1/properties/{propertyId}/folios/{id}/invoice`
 - `GET /api/v1/properties/{propertyId}/invoices`
 - `GET /api/v1/properties/{propertyId}/invoices/{id}  (+ /pdf)`
 - `POST /api/v1/properties/{propertyId}/invoices/{id}/credit-notes  (reason required)`
+- `POST /api/v1/properties/{propertyId}/invoices/{id}/debit-notes  (reason required)`
+- `GET /api/v1/properties/{propertyId}/credit-notes/{id}/pdf; GET …/debit-notes/{id}/pdf`
+- `POST /api/v1/properties/{propertyId}/payments/{id}/receipt`
 - `GET /api/v1/properties/{propertyId}/receipts/{id}/pdf`
 
 **Screens / routes**
 
 - `/invoices`
+- `/invoices/:id`
+- `Issue invoice on /folios/:id`
+- `Receipt on /payments/:id`
 
 Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABASE.md). Update both in this sprint.
 
@@ -71,11 +91,11 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Gap-free numbering per series and financial year (row lock on invoice_series)
-- [ ] B2B (customer GSTIN validated) and B2C; place of supply
-- [ ] Invoice copies tax rule ids/rates from folio lines — never recalculates
-- [ ] PDF generation (QuestPDF or similar, server-side)
-- [ ] e-invoice fields stored (IRN, ack no/date, signed QR) for Sprint 25 integration
+- [x] Gap-free numbering per series and financial year (row lock on invoice_series)
+- [x] B2B (customer GSTIN validated) and B2C; place of supply
+- [x] Invoice copies tax rule ids/rates from folio lines — never recalculates
+- [x] PDF generation (PDFsharp/MigraDoc, server-side)
+- [x] e-invoice fields stored (IRN, ack no/date, signed QR) for Sprint 25 integration
 
 ## How to run this sprint
 
@@ -94,6 +114,11 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- A number is taken only after every check passes; if an invoice is refused, the response says why and no number is used. database/queries/check-sprint-12.sql block 4 lists any series with a gap (there should be none).
+- PDFsharp must stay on 6.2.x: 6.5 is AGPL and throws a licence error at runtime.
 
 ## How to test
 

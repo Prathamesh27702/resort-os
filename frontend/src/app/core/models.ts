@@ -247,14 +247,16 @@ export interface RoomOption {
 
 // ---------------------------------------------------------------- folios (Sprint 8)
 export type ChargeCategory = 'ROOM' | 'FOOD' | 'BEVERAGE' | 'ACTIVITY' | 'TRANSPORT' | 'EQUIPMENT' | 'LAUNDRY' | 'OTHER';
-/** One bill line. Lines are never edited or deleted: a correction is a REVERSAL (negative) line. live = a charge that still
- *  counts; reversedByItemId / reversalReason = what cancelled it; movedFrom / movedTo = folio numbers of a split. */
+/** One bill line. Lines are never edited or deleted: a correction is a REVERSAL (negative) line, or a CREDIT line from a
+ *  credit note (Sprint 12). live = a charge that still counts; reversedByItemId / reversalReason = what cancelled it;
+ *  movedFrom / movedTo = folio numbers of a split. invoiceNumber = the invoice or debit note the charge is billed on;
+ *  adjustable = it can still be reversed or moved (live, not billed, not reduced by a credit note). */
 export interface FolioItem {
-  id: string; itemType: 'CHARGE' | 'REVERSAL'; category: ChargeCategory; description: string; serviceDate: string; quantity: number;
+  id: string; itemType: 'CHARGE' | 'REVERSAL' | 'CREDIT'; category: ChargeCategory; description: string; serviceDate: string; quantity: number;
   unitPrice: number; amount: number; taxAmount: number; total: number; source: 'MANUAL' | 'ROOM_NIGHT' | 'PACKAGE';
   packageId: string | null; packageName: string | null; groupId: string | null; reversesItemId: string | null;
   reversedByItemId: string | null; reason: string | null; reversalReason: string | null; movedFrom: string | null; movedTo: string | null;
-  postedAt: string; postedByName: string | null; live: boolean; taxes: FolioItemTax[];
+  postedAt: string; postedByName: string | null; live: boolean; taxes: FolioItemTax[]; invoiceNumber: string | null; adjustable: boolean;
 }
 /** One tax on a bill line, as calculated when it was posted (Sprint 9): CGST 2.5% on ₹1,450 = ₹36.25. */
 export interface FolioItemTax { code: TaxCode; rate: number; taxableValue: number; amount: number; taxRuleId: string | null; }
@@ -377,3 +379,56 @@ export interface PayPage {
 }
 
 export interface CashDrawer { id: string; name: string; current: CashDrawerSession | null; pendingApproval: CashDrawerSession[]; recent: CashDrawerSession[]; }
+
+// ---------------------------------------------------------------- GST invoices, credit and debit notes, receipts (Sprint 12)
+
+export type DocumentType = 'INVOICE' | 'BILL_OF_SUPPLY' | 'CREDIT_NOTE' | 'DEBIT_NOTE' | 'RECEIPT';
+/** Worked out from the credit notes, never stored: CANCELLED = a CANCEL credit note (its charges can be invoiced again). */
+export type InvoiceStatus = 'ISSUED' | 'PARTLY_CREDITED' | 'CREDITED' | 'CANCELLED';
+export type CreditNoteType = 'CANCEL' | 'REDUCE';
+/** A supplier or customer as printed. stateName: "Goa (30)". */
+export interface DocumentParty { name: string; tradeName: string | null; gstin: string | null; address: string | null; stateCode: string | null; stateName: string | null; }
+export interface DocumentTax { code: TaxCode; rate: number; taxableValue: number; amount: number; }
+/** A billed line: one folio charge. discount = what credit notes took off the charge before it was billed; credited /
+ *  creditable = taxable value credited since, and what is left to credit. id is null on a preview. */
+export interface DocumentLine {
+  id: string | null; lineNo: number; folioItemId: string; category: ChargeCategory; description: string; hsnSac: string | null; serviceDate: string;
+  quantity: number; unitPrice: number; grossAmount: number; discount: number; taxableValue: number; taxAmount: number; total: number;
+  taxes: DocumentTax[]; credited: number; creditable: number; debitNoteNumber: string | null;
+}
+export interface TaxSummary { hsnSac: string | null; code: TaxCode; rate: number; taxableValue: number; amount: number; }
+export interface NoteLine { lineNo: number; description: string; hsnSac: string | null; taxableValue: number; taxAmount: number; total: number; taxes: DocumentTax[]; }
+/** A credit note (kind CREDIT_NOTE, noteType CANCEL or REDUCE) or a debit note (kind DEBIT_NOTE). */
+export interface InvoiceNote {
+  id: string; kind: 'CREDIT_NOTE' | 'DEBIT_NOTE'; number: string; noteType: CreditNoteType | null; noteDate: string; reason: string;
+  taxableValue: number; taxTotal: number; total: number; issuedAt: string; issuedByName: string | null; lines: NoteLine[];
+}
+/** A payment receipt. voided: the payment was voided after the receipt was issued. */
+export interface Receipt {
+  id: string; number: string; receiptDate: string; paymentId: string; paymentNumber: string; reservationId: string; reference: string;
+  receivedFrom: string; amount: number; method: PaymentMethod; paymentReference: string | null; receivedAt: string; paymentStatus: PaymentStatus;
+  voided: boolean; issuedAt: string; issuedByName: string | null;
+}
+export interface EInvoice { status: string; irn: string | null; ackNo: string | null; ackDate: string | null; lastError: string | null; }
+/** An invoice with its notes and receipts. billed = invoice + debit notes; credited = credit notes; outstanding = the difference.
+ *  unbilledCharges / unbilledAmount: charges posted after it, for a debit note. */
+export interface Invoice {
+  id: string; number: string; documentType: DocumentType; title: string; financialYear: string; invoiceDate: string; folioId: string;
+  folioNumber: string; reservationId: string; reference: string; supplier: DocumentParty; customer: DocumentParty; isB2B: boolean;
+  placeOfSupply: string; placeOfSupplyName: string; items: DocumentLine[]; taxSummary: TaxSummary[]; taxableValue: number; cgst: number;
+  sgst: number; igst: number; cess: number; taxTotal: number; total: number; amountInWords: string; currency: string; notes: string | null;
+  issuedAt: string; issuedByName: string | null; status: InvoiceStatus; billed: number; credited: number; outstanding: number;
+  creditNotes: InvoiceNote[]; debitNotes: InvoiceNote[]; receipts: Receipt[]; eInvoice: EInvoice | null; unbilledCharges: number; unbilledAmount: number;
+}
+export interface InvoiceListItem {
+  id: string; number: string; documentType: DocumentType; invoiceDate: string; folioId: string; folioNumber: string; reservationId: string;
+  reference: string; customerName: string; customerGstin: string | null; taxableValue: number; taxTotal: number; total: number; credited: number;
+  status: InvoiceStatus; creditNotes: number; debitNotes: number; currency: string;
+}
+/** What issuing a folio's invoice would produce. cantIssueReason: why it can't be issued now; gstinProblem: the GSTIN on file is wrong. */
+export interface InvoicePreview {
+  folioId: string; folioNumber: string; reservationId: string; reference: string; documentType: DocumentType; supplier: DocumentParty | null;
+  billToGuestId: string | null; customerName: string; customerGstin: string | null; customerAddress: string | null; customerStateCode: string | null;
+  gstinProblem: string | null; lines: DocumentLine[]; taxableValue: number; taxTotal: number; total: number; invoiceId: string | null;
+  invoiceNumber: string | null; cantIssueReason: string | null;
+}

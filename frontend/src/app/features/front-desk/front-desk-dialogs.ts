@@ -254,7 +254,7 @@ export interface CheckOutData { propertyId: string; stay: DeskStay; today: strin
           <dt>Balance</dt><dd [class.owed]="s.balance > 0" class="num">{{ s.balance > 0 ? rupees(s.balance) + ' still owed' : 'Nothing owed' }}</dd>
         }
       </dl>
-      <p class="hint">The {{ s.rooms.length === 1 ? 'room is' : 'rooms are' }} marked dirty for housekeeping.</p>
+      <p class="hint">The {{ s.rooms.length === 1 ? 'room is' : 'rooms are' }} marked dirty for housekeeping, and the bill's GST invoice is issued with a receipt for each payment.</p>
       @if (early) {
         <p class="warn">The guest is booked until {{ dayLabel(s.checkOut) }}. The nights left are released so the room can be sold again.</p>
         <mat-form-field appearance="outline" class="full">

@@ -100,8 +100,8 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
-| 01–11 | Accepted: on `develop` and `main` | `develop` |
-| 12 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
+| 01–12 | Accepted: on `develop` and `main` | `develop` |
+| 13 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
 
 ```powershell
 cd D:\resort-os
@@ -520,6 +520,49 @@ sent. With test keys and the tunnel, the same page shows **Pay**, which opens Ra
 By hand: [REVIEWING.md → Sprint 11](sprints/REVIEWING.md#sprint-11--razorpay).
 Screenshots: [sprint-11-screens/](sprints/sprint-11-screens/).
 
+### Sprint 12: GST invoices, credit and debit notes, receipts
+
+**New:** checking a guest out now issues the **GST tax invoice** of their bill and a **receipt** for each payment, by
+itself. **Invoices** (menu) lists them; an invoice's page shows both parties with their GSTINs, the place of supply, each
+line with its SAC and CGST/SGST, and buttons for **PDF**, **Credit note** (take lines, or part of them, off; or cancel the
+whole invoice so it can be issued again, e.g. in a company's name) and **Debit note** (charges posted after the invoice).
+On a bill, **Issue invoice** shows a preview and who it is billed to (type a company's GSTIN for a B2B invoice; a typing
+mistake is caught under the field); charges on an invoice carry its number and can no longer be reversed. A payment has
+**Receipt**. Numbers run without gaps per financial year: `BEACH/2627/00001`, credit notes `BEACH/C2627/0001`. No new
+demo data: **R00007** (leaving today, with ₹500 cash P00001 on its bill) is the stay to check out. Restart the API and
+watch for `Applying migration V014__invoicing`.
+
+```powershell
+# Backend (InvoiceTests and InvoiceUnitTests; includes 20 invoices at the same moment numbered 1–20 with no gap, B2B
+# inside and across states, the database refusing to edit or delete an invoice, credit and debit notes, receipts)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Invoice"
+
+# Frontend unit tests (invoice helpers, the bill's reverse/move list without invoiced charges)
+cd frontend
+npm run test:ci
+
+# Browser (5 steps, S12-01 … S12-05: check-out issues invoice and receipt, a debit note, a part credit note, cancel and
+# re-issue B2B with a GSTIN typo caught, the Invoices screen and a receipt download)
+npm run e2e -- e2e/sprint-12.spec.ts
+cd ..
+
+# API checks: the Sprint 12 block must be all PASS (it issues P00001's receipt once; nothing else is issued)
+node scripts/check-api.mjs
+
+# Database checks (blocks 4, 6, 7 and 8 must return no rows; block 9's "differs" column all false)
+Get-Content database/queries/check-sprint-12.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: on R00007's bill post a *Food* charge of ₹1,450 (the demo room night and laundry predate GST,
+so they carry none) → **Front desk → Departures → R00007 → Check out** → **Reservations → R00007** → **Invoice
+BEACH/2627/00001** (total ₹5,342.50, CGST and SGST ₹36.25 each, receipt BEACH/R2627/00001 for the ₹500 payment) → **PDF**
+→ **Credit note** → tick the dinner, amount *450*, a reason → *Partly credited*, ₹472.50 credited. How it works:
+[system-design.md → 4.22](architecture/system-design.md#422-gst-invoices-gap-free-numbers-and-corrections-only-by-note);
+the tax rules: [GST.md → Invoices](GST.md#invoices-credit-and-debit-notes-sprint-12).
+
+By hand: [REVIEWING.md → Sprint 12](sprints/REVIEWING.md#sprint-12--gst-invoices-credit-and-debit-notes-receipts).
+Screenshots: [sprint-12-screens/](sprints/sprint-12-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -532,7 +575,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 340 backend passed, 81 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 381 backend passed, 88 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -540,7 +583,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–11 (expected: 96 passed, about 14 minutes)
+# 3. Every browser test, Sprints 01–12 (expected: 101 passed, about 14 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..

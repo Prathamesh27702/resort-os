@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
+using Resort.Application.Reservations;
 using Resort.Application.Tax;
 using Resort.Domain.Folios;
 using Resort.Domain.Organizations;
@@ -18,7 +19,7 @@ namespace Resort.Application.Folios;
 /// Queries here filter by reservation id and ignore the tenant filter on purpose: the nightly job runs with no
 /// signed-in user (so no organisation), and every caller has already loaded the reservation it passes in.
 /// </summary>
-public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProvider clock, TaxCalculator tax)
+public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProvider clock, TaxCalculator tax, Invoicing.FolioBilling billing)
 {
     /// <summary>Statuses whose folio takes charges. A cancelled or no-show booking's folio is closed (refunds and
     /// cancellation fees come with payments, Sprint 10).</summary>
@@ -154,6 +155,7 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
     /// and total negated) and its negated tax rows. Not saved.</summary>
     public async Task<FolioItem> ReverseAsync(Folio folio, FolioItem charge, string reason, CancellationToken ct)
     {
+        await RequireNotInvoicedAsync(charge, ct);
         var (quantity, amount, tax, total) = FolioMath.Negate(charge);
         var reversal = new FolioItem
         {
@@ -237,6 +239,22 @@ public sealed class FolioPosting(IAppDbContext db, ICurrentUser caller, TimeProv
                 Amount = sign * t.Amount,
                 CreatedAt = clock.GetUtcNow(),
             });
+    }
+
+    /// <summary>
+    /// A charge on an invoice (or debit note) that stands, or one a credit note has reduced, is corrected only by a credit
+    /// note (Sprint 12, brief §25): reversing or moving it on the folio would make the bill and the invoice disagree.
+    /// </summary>
+    public async Task RequireNotInvoicedAsync(FolioItem charge, CancellationToken ct, string? field = null)
+    {
+        string? message = null;
+        if ((await billing.BilledAsync([charge.FolioId], ct)).TryGetValue(charge.Id, out var number))
+            message = $"\"{charge.Description}\" is on invoice {number}, so it can't be reversed or moved. Issue a credit note on {number} instead.";
+        else if (await db.FolioItems.IgnoreQueryFilters().AnyAsync(i => i.AdjustsItemId == charge.Id, ct))
+            message = $"\"{charge.Description}\" was reduced by a credit note, so it can't be reversed or moved. Correct it with another credit note.";
+        if (message is null) return;
+        if (field is not null) throw ReservationService.Field(field, message);
+        throw new BusinessRuleAppException("INVOICED", message);
     }
 
     /// <summary>What the booking's folios add up to: the sum of every line, before payments.</summary>

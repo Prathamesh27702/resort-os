@@ -9,6 +9,7 @@ using Resort.Application.Tax;
 using Resort.Application.FrontDesk;
 using Resort.Application.Guests;
 using Resort.Application.Identity;
+using Resort.Application.Invoicing;
 using Resort.Application.Properties;
 using Resort.Application.Rates;
 using Resort.Application.Reservations;
@@ -51,6 +52,10 @@ public static class DependencyInjection
         services.AddScoped<PaymentService>();
         services.AddScoped<PaymentLinkService>();
         services.AddScoped<RazorpayWebhookService>();
+        services.AddScoped<FolioBilling>();
+        services.AddScoped<InvoiceService>();
+        services.AddScoped<ReceiptService>();
+        services.AddSingleton<InvoicePrinter>();
         return services;
     }
 }
