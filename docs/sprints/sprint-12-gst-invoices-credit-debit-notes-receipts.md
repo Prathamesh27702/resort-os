@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 3 — Folio, payments, Razorpay, GST, invoices | L | [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md), [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
+| 🟢 Done | Phase 3 — Folio, payments, Razorpay, GST, invoices | L | [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md), [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
 
 **Goal:** Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review: pull request into develop, waiting for the owner's acceptance.
+**Now:** Accepted by the owner on 25 Oct 2026 and released to main (tag sprint-12).
 
 **Done so far**
 
@@ -23,6 +23,7 @@
 - Screens: Invoices list and invoice page (credit and debit note dialogs, PDFs); Issue invoice on the bill with a preview; billed charges marked on the bill; invoice links on the booking; Receipt on a payment
 - No new dev seed: invoices take real numbers, so the demo issues them by checking out R00007 (departing today)
 - [done] Docs: API.md, DATABASE.md, schema-sprint-12.md, GST.md, system design Sprint 12 and 4.22 with the invoice flow diagram, RUN_AND_TEST, REVIEWING
+- After the owner's first look (24 Oct 2026): the issue-invoice, credit note and invoice screens tidied (dialog widths, totals block beside the amount in words), and a Print button next to PDF on the invoice, its notes and receipts
 
 **Files added / changed**
 

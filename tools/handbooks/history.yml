@@ -33,3 +33,6 @@
 - version: "1.11"
   date: 2026-10-23
   change: "Sprint 11 (Razorpay) accepted: payment links sent from a booking, the guest pays on their phone with UPI or a card through Razorpay with no sign-in, only Razorpay's signed webhook records the payment (once, whatever the order) and confirms a pending booking, declined tries shown with the reason, online refunds back through Razorpay, a built-in test Razorpay when no keys are set. Razorpay flow diagram. Sprint 12 started."
+- version: "1.12"
+  date: 2026-10-25
+  change: "Sprint 12 (GST invoices, credit/debit notes, receipts) accepted: check-out issues a legally numbered GST invoice and a receipt for each payment by itself, numbers run with no gap per property and financial year, an issued invoice is never edited (a credit note cancels or reduces it, a debit note bills late charges), B2B invoices with the company's GSTIN checked under the field, place of supply is the resort's state, A4 PDFs to download or print. Invoice flow diagram. Sprint 13 started."

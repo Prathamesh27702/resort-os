@@ -60,25 +60,25 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `cash_drawer_movements` | [Sprint 10](../sprints/sprint-10-payments-refunds-cash-drawer.md) | 🟢 Done |
 | `payment_gateway_orders` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
 | `webhook_events` | [Sprint 11](../sprints/sprint-11-razorpay.md) | 🟢 Done |
-| `invoice_series` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `invoice_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `invoice_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `credit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `credit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `credit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `debit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `debit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🔵 In progress |
-| `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
-| `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
-| `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
-| `maintenance_assets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
-| `maintenance_tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
-| `maintenance_comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
-| `maintenance_attachments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | ⚪ Planned |
+| `invoice_series` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `invoices` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `invoice_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `invoice_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `credit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `credit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `credit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `debit_notes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `debit_note_items` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `debit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
+| `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
+| `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
+| `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
+| `maintenance_assets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
+| `maintenance_tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
+| `maintenance_comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
+| `maintenance_attachments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
 | `menu_categories` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
 | `menu_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
 | `menu_item_variants` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |

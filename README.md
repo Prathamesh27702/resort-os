@@ -3,7 +3,7 @@
 India-first resort operating system: reservations, rooms and dorm beds, front desk, folio, GST invoicing, payments,
 housekeeping, restaurant, inventory, staff, activities, transport and reporting, in one modular monolith.
 
-> **Current sprint: [Sprint 12 — GST invoices, credit/debit notes, receipts](docs/sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md)** (🔵 in progress) · Sprints 01–11 accepted (tags `sprint-01` … `sprint-11`) · New here? Read [how the system works](docs/architecture/system-design.md)
+> **Current sprint: [Sprint 13 — Housekeeping and maintenance (mobile-first)](docs/sprints/sprint-13-housekeeping-and-maintenance-mobile.md)** (🔵 in progress) · Sprints 01–12 accepted (tags `sprint-01` … `sprint-12`) · New here? Read [how the system works](docs/architecture/system-design.md)
 > All sprints and their status: [docs/sprints](docs/sprints/README.md) · GitHub *Milestones* show the same.
 
 | | |

@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-12] — Unreleased — GST invoices, credit/debit notes, receipts (in review)
+## [sprint-12] — 2026-10-25 — GST invoices, credit/debit notes, receipts (accepted)
 
 ### Added
 - Migration V014: `invoice_series` (one gap-free counter per property, document type and financial year; only ever +1),

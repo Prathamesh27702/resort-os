@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 12
+current: 13
 
 sprints:
 
@@ -1070,7 +1070,7 @@ sprints:
 - id: 12
   title: GST invoices, credit/debit notes, receipts
   phase: 3
-  status: in-progress
+  status: done
   size: L
   module: Invoicing
   feature: invoices
@@ -1078,7 +1078,7 @@ sprints:
   goal: Legally-numbered GST invoices from folios; cancellations only via credit notes (brief §24, §25).
   client: "Legally numbered GST invoices are produced from the bill; corrections are made only through credit and debit notes."
   progress:
-    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    now: "Accepted by the owner on 25 Oct 2026 and released to main (tag sprint-12)."
     done:
       - "Migration V014: invoice_series (one gap-free counter per property, document type and financial year), invoices, invoice_items, invoice_item_taxes, credit_notes (CANCEL or REDUCE), debit_notes, their lines and taxes, receipts (one per payment), einvoice_records (for Sprint 25); every document refuses UPDATE and DELETE and its totals are checked against its lines at commit; folio_items gets CREDIT lines"
       - "Numbers BEACH/2627/00001 (invoice), BEACH/C2627/0001 (credit note), BEACH/D2627/0001 (debit note), BEACH/R2627/00001 (receipt), ≤ 16 characters; taken with one upsert inside the issuing transaction, so 20 invoices at once are numbered 1–20 with no gap or repeat"
@@ -1089,6 +1089,7 @@ sprints:
       - "Screens: Invoices list and invoice page (credit and debit note dialogs, PDFs); Issue invoice on the bill with a preview; billed charges marked on the bill; invoice links on the booking; Receipt on a payment"
       - "No new dev seed: invoices take real numbers, so the demo issues them by checking out R00007 (departing today)"
       - "[done] Docs: API.md, DATABASE.md, schema-sprint-12.md, GST.md, system design Sprint 12 and 4.22 with the invoice flow diagram, RUN_AND_TEST, REVIEWING"
+      - "After the owner's first look (24 Oct 2026): the issue-invoice, credit note and invoice screens tidied (dialog widths, totals block beside the amount in words), and a Print button next to PDF on the invoice, its notes and receipts"
     files:
       - "database/migrations/V014__invoicing.sql; database/queries/check-sprint-12.sql"
       - "backend/Resort.Domain/Invoicing/Invoicing.cs; backend/Resort.Domain/Folios/Folios.cs"
@@ -1157,7 +1158,7 @@ sprints:
 - id: 13
   title: Housekeeping and maintenance (mobile-first)
   phase: 4
-  status: planned
+  status: in-progress
   size: M
   module: Housekeeping
   feature: housekeeping

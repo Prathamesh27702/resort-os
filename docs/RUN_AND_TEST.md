@@ -100,8 +100,8 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
-| 01–11 | Accepted: on `develop` and `main` | `develop` |
-| 12 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
+| 01–12 | Accepted: on `develop` and `main` | `develop` |
+| 13 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
 
 ```powershell
 cd D:\resort-os

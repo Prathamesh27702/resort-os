@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 4 — Housekeeping, maintenance | M | [Sprint 07](sprint-07-front-desk.md) |
+| 🔵 In progress — **current sprint** | Phase 4 — Housekeeping, maintenance | M | [Sprint 07](sprint-07-front-desk.md) |
 
 **Goal:** Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 07 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 
