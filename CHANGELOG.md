@@ -2,6 +2,45 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-13] — Unreleased — Housekeeping and maintenance, mobile-first (in review)
+
+### Added
+- Migration V015: `housekeeping_tasks` (one per DIRTY state change, `source_change_id` UNIQUE; at most one open task per
+  room or dorm bed; never deleted), `housekeeping_checklist_templates` and `housekeeping_checklist_items` (one active per
+  property, kind of cleaning and room type; every property gets a 7-line "Departure clean"), `maintenance_assets`,
+  `maintenance_tickets` (`M00001` …; where = room, bed, equipment or place; out of order needs a room and a date),
+  `maintenance_comments` and `maintenance_attachments` (append-only). Rooms already dirty get their task.
+  `unit_housekeeping_history.source` adds `HOUSEKEEPING` and `MAINTENANCE`.
+- Check-out, room move and the front desk's "dirty" create the room's cleaning task in the same transaction; three
+  check-outs of the same guest at once make one task.
+- Two taps for a housekeeper (Start, Done with every line ticked); a supervisor marks the room READY or sends it back with
+  what to redo (property setting `housekeeping.inspection_required`, default on). Assigning, tasks by hand (stay-over,
+  deep clean) and checklist editing for supervisors.
+- Maintenance tickets: report with photos (shrunk on the phone, checked by their bytes, at most 2 MB and 6 per ticket,
+  encrypted in the file store); Out of order blocks the room from tonight to the expected date (at most 90 days; refused
+  when a guest is booked in it, naming the booking); assign, in progress / on hold, resolve (releases the block and sends
+  the room to cleaning), close; a timeline of every change. Reporters without `maintenance.read` see their own tickets.
+- API: `GET /housekeeping/board`, `/staff`, `POST /housekeeping/tasks`, `GET /housekeeping/tasks/{id}`, `POST
+  /housekeeping/tasks/{id}/assign | start | finish | inspect`, `GET|POST /housekeeping/checklists`, `PUT
+  /housekeeping/checklists/{id}`; `GET|POST /maintenance/tickets` (Idempotency-Key optional), `GET
+  /maintenance/tickets/{id}`, `POST /maintenance/tickets/{id}/assign | progress | resolve | close | comments | photos`,
+  `GET /maintenance/tickets/{id}/photos/{photoId}`, `GET /maintenance/staff`, `GET|POST /maintenance/assets`, `PUT
+  /maintenance/assets/{id}`.
+- Staff app, built for a 360 px phone: **Housekeeping** (`/housekeeping`: one card per room, rush rooms first, one big
+  button; task sheet with checklist, assign, send back, report a problem), **Checklists**, **Maintenance**
+  (`/maintenance`), **Report a problem** (`/maintenance/new`), a ticket's page (`/maintenance/:id`).
+- Dev seed S010: departure checklist, Room 101's task, equipment AC-101, GEYSER-106, POOL-PUMP, tickets M00001 (pool pump)
+  and M00002 (tap in Room 104).
+- Tests: backend `HousekeepingTests`, `MaintenanceTests`, `HousekeepingUnitTests`; frontend `housekeeping.spec.ts`; browser
+  steps S13-01 … S13-07 on a 360 px phone; `check-api.mjs` Sprint 13 block; `database/queries/check-sprint-13.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-13.md, system design Sprint 13 and 4.23 with the housekeeping flow diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- `GET /rooms/status` adds today's cleaning state (`housekeeping`) and `openRepairs` to each room; the Room status screen
+  shows them. The front desk labels CLEAN as "To inspect" and INSPECTION as "Inspecting".
+- `BlockService` shares `AddAsync` and `Release` with maintenance, so out-of-order blocks follow the Sprint 2 rules.
+
 ## [sprint-12] — 2026-10-25 — GST invoices, credit/debit notes, receipts (accepted)
 
 ### Added

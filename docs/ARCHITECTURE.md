@@ -110,8 +110,8 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 7 | Folio | folios, folio_items, folio_item_taxes | 8 | built |
 | 8 | Payments | payments, payment_allocations, refunds, cash_drawers, cash_drawer_sessions, cash_drawer_movements (Sprint 10); payment_gateway_orders, webhook_events (Sprint 11) | 10–11 | built (desk payments, cash drawer, Razorpay links and webhook) |
 | 9 | GST / invoicing | gst_registrations, tax_categories, tax_rules, tax_rule_slabs (Sprint 9); invoice_series, invoices, credit_notes, debit_notes, receipts, einvoice_records (Sprint 12) | 9, 12 | built (tax engine, GST invoices, credit and debit notes, receipts); e-invoice IRN in Sprint 25 |
-| 10 | Housekeeping | housekeeping_tasks, unit_housekeeping_status | 13 | planned |
-| 11 | Maintenance | maintenance_assets, maintenance_tickets | 13 | planned |
+| 10 | Housekeeping | housekeeping_tasks, housekeeping_checklist_templates, housekeeping_checklist_items (cleaning states stay in unit_housekeeping_status) | 13 | built (tasks made by check-out, inspection, checklists, phone board) |
+| 11 | Maintenance | maintenance_assets, maintenance_tickets, maintenance_comments, maintenance_attachments (out of order via unit_blocks) | 13 | built (tickets with photos, out-of-order rooms) |
 | 12 | Restaurant / POS | restaurant_tables, orders, order_items, kots | 14 | planned |
 | 13 | Menu | menu_categories, menu_items, modifiers | 14 | planned |
 | 14 | Inventory | inventory_items, stock_movements, recipes | 15 | planned |
