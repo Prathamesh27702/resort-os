@@ -4,6 +4,7 @@ using Resort.Application.Accommodation;
 using Resort.Application.Common;
 using Resort.Application.Folios;
 using Resort.Application.Guests;
+using Resort.Application.Housekeeping;
 using Resort.Application.Reservations;
 using Resort.Application.Validation;
 using Resort.Contracts;
@@ -25,7 +26,7 @@ namespace Resort.Application.FrontDesk;
 /// </summary>
 public sealed class FrontDeskService(
     IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, GuestService guests,
-    CallerAccess access, IFolioBalances folios, FolioPosting posting, Invoicing.InvoiceService invoicing)
+    CallerAccess access, IFolioBalances folios, FolioPosting posting, Invoicing.InvoiceService invoicing, HousekeepingState housekeeping)
 {
     public const string AllowCheckoutWithBalance = "frontdesk.allow_checkout_with_balance";
     public const string AllowCheckinWhenNotReady = "frontdesk.allow_checkin_when_not_ready";
@@ -240,10 +241,13 @@ public sealed class FrontDeskService(
                     throw ReservationService.Field(nameof(r.Reason), $"{name} isn't ready; say why the guest goes there anyway (at least 3 characters).");
             }, ct);
 
-        // The guest has used the old room: it needs cleaning.
+        // The guest has used the old room: it needs cleaning (a housekeeping task, Sprint 13).
         if (inHouse)
-            await SetHousekeepingCoreAsync(reservation.OrganizationId, propertyId, moved.Old.UnitId, moved.Old.BedId, HousekeepingStatuses.Dirty,
-                HousekeepingSources.RoomMove, reservation.Id, $"Guest moved to {moved.TargetName}", ct);
+        {
+            await housekeeping.LockRoomAsync(propertyId, moved.Old.UnitId, ct);
+            await housekeeping.ChangeAsync(property, moved.Old.UnitId, moved.Old.BedId, HousekeepingStatuses.Dirty,
+                HousekeepingSources.RoomMove, reservation.Id, null, $"Guest moved to {moved.TargetName}", ct);
+        }
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await reservations.ToDtoAsync(reservation, ct);
@@ -397,10 +401,14 @@ public sealed class FrontDeskService(
         reservation.StatusChangedAt = now;
         reservation.CheckedOutAt = now;
 
-        // The rooms the guest leaves need cleaning: this is the event Sprint 13 turns into a housekeeping task.
-        foreach (var (unitId, bedId) in leaving)
-            await SetHousekeepingCoreAsync(reservation.OrganizationId, propertyId, unitId, bedId, HousekeepingStatuses.Dirty,
-                HousekeepingSources.CheckOut, reservation.Id, $"Checked out of {reservation.Reference}", ct);
+        // The rooms the guest leaves need cleaning: each DIRTY change becomes a housekeeping task in this transaction
+        // (Sprint 13). Rooms are locked in id order, as booking does.
+        foreach (var (unitId, bedId) in leaving.OrderBy(l => l.UnitId).ThenBy(l => l.BedId))
+        {
+            await housekeeping.LockRoomAsync(propertyId, unitId, ct);
+            await housekeeping.ChangeAsync(property, unitId, bedId, HousekeepingStatuses.Dirty,
+                HousekeepingSources.CheckOut, reservation.Id, null, $"Checked out of {reservation.Reference}", ct);
+        }
         await db.SaveChangesAsync(ct);
 
         // The bill becomes a GST invoice, and every payment gets a receipt (Sprint 12).
@@ -460,14 +468,14 @@ public sealed class FrontDeskService(
 
     // ------------------------------------------------------------------ housekeeping state
 
-    /// <summary>Sets a room's (or dorm bed's) cleaning state by hand, e.g. housekeeping reports Room 101 ready.</summary>
+    /// <summary>Sets a room's (or dorm bed's) cleaning state by hand, e.g. housekeeping reports Room 101 ready. The room's
+    /// housekeeping task follows (Sprint 13): DIRTY opens one, READY closes it.</summary>
     public async Task<FrontDeskBoardRoomDto> SetHousekeepingAsync(Guid propertyId, Guid unitId, SetHousekeepingRequest r, CancellationToken ct)
     {
-        var orgId = caller.RequireOrganizationId();
+        var property = await LoadPropertyAsync(propertyId, ct);
         var status = r.Status.Trim().ToUpperInvariant();
         await using var tx = await db.Database.BeginTransactionAsync(ct);
-        await db.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM accommodation_units WHERE id = {unitId} AND property_id = {propertyId} AND organization_id = {orgId} FOR UPDATE", ct);
+        await housekeeping.LockRoomAsync(propertyId, unitId, ct);
         var unit = await db.AccommodationUnits.AsNoTracking().Include(u => u.Type).Include(u => u.Beds)
                        .SingleOrDefaultAsync(u => u.Id == unitId && u.PropertyId == propertyId, ct)
                    ?? throw new NotFoundAppException("Room", unitId);
@@ -482,44 +490,10 @@ public sealed class FrontDeskService(
             throw ReservationService.Field(nameof(r.BedId), $"{unit.Name} is a private room; it has no beds to choose.");
 
         audit.Reason = ReservationService.Clean(r.Reason);
-        await SetHousekeepingCoreAsync(orgId, propertyId, unit.Id, bed?.Id, status, HousekeepingSources.Manual, null, audit.Reason, ct);
+        await housekeeping.ChangeAsync(property, unit.Id, bed?.Id, status, HousekeepingSources.Manual, null, null, audit.Reason, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return new FrontDeskBoardRoomDto(unit.Id, unit.Code, unit.Name, bed?.Id, bed?.Code, unit.Type.Name, "", status, null, null, null, null);
-    }
-
-    /// <summary>Upserts the cleaning state and appends the change. A check-out is always recorded (it is the event that
-    /// becomes a cleaning task in Sprint 13); other changes only when the state actually changes.</summary>
-    private async Task SetHousekeepingCoreAsync(Guid orgId, Guid propertyId, Guid unitId, Guid? bedId, string status, string source,
-        Guid? reservationId, string? reason, CancellationToken ct)
-    {
-        var now = clock.GetUtcNow();
-        var row = await db.UnitHousekeepingStatus.SingleOrDefaultAsync(h => h.UnitId == unitId && h.BedId == bedId, ct);
-        var from = row?.Status ?? HousekeepingStatuses.Ready;
-        if (from == status && source != HousekeepingSources.CheckOut) return;
-        if (row is null)
-        {
-            row = new UnitHousekeepingStatus { OrganizationId = orgId, PropertyId = propertyId, UnitId = unitId, BedId = bedId };
-            db.UnitHousekeepingStatus.Add(row);
-        }
-        row.Status = status;
-        row.Reason = reason;
-        row.ChangedAt = now;
-        row.ChangedBy = caller.UserId;
-        db.UnitHousekeepingHistory.Add(new UnitHousekeepingChange
-        {
-            OrganizationId = orgId,
-            PropertyId = propertyId,
-            UnitId = unitId,
-            BedId = bedId,
-            FromStatus = from,
-            ToStatus = status,
-            Source = source,
-            ReservationId = reservationId,
-            Reason = reason,
-            ChangedAt = now,
-            ChangedBy = caller.UserId,
-        });
     }
 
     // ------------------------------------------------------------------ read helpers
@@ -580,21 +554,8 @@ public sealed class FrontDeskService(
                 "Ask housekeeping to mark the room ready, or choose a ready room.");
     }
 
-    /// <summary>A boolean property setting, or <paramref name="fallback"/> when it isn't set.</summary>
-    private async Task<bool> SettingAsync(Guid propertyId, string key, bool fallback, CancellationToken ct)
-    {
-        var json = await db.PropertySettings.AsNoTracking().Where(s => s.PropertyId == propertyId && s.Key == key).Select(s => s.Value)
-            .SingleOrDefaultAsync(ct);
-        if (json is null) return fallback;
-        using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            JsonValueKind.Object when doc.RootElement.TryGetProperty("enabled", out var e) && e.ValueKind is JsonValueKind.True or JsonValueKind.False => e.GetBoolean(),
-            _ => fallback,
-        };
-    }
+    private Task<bool> SettingAsync(Guid propertyId, string key, bool fallback, CancellationToken ct) =>
+        PropertySettingsReader.BoolAsync(db, propertyId, key, fallback, ct);
 
     /// <summary>" at 14:05 by Asha Rao" (property time), from the status history.</summary>
     private async Task<string> WhoAndWhenAsync(Reservation reservation, string status, Property property, CancellationToken ct)

@@ -9,6 +9,7 @@ using Resort.Domain.Common;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
+using Resort.Domain.Housekeeping;
 using Resort.Domain.Identity;
 using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
@@ -95,6 +96,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<CashDrawer> CashDrawers => Set<CashDrawer>();
     public DbSet<CashDrawerSession> CashDrawerSessions => Set<CashDrawerSession>();
     public DbSet<CashDrawerMovement> CashDrawerMovements => Set<CashDrawerMovement>();
+    public DbSet<HousekeepingTask> HousekeepingTasks => Set<HousekeepingTask>();
+    public DbSet<HousekeepingChecklistTemplate> HousekeepingChecklistTemplates => Set<HousekeepingChecklistTemplate>();
+    public DbSet<HousekeepingChecklistItem> HousekeepingChecklistItems => Set<HousekeepingChecklistItem>();
+    public DbSet<MaintenanceAsset> MaintenanceAssets => Set<MaintenanceAsset>();
+    public DbSet<MaintenanceTicket> MaintenanceTickets => Set<MaintenanceTicket>();
+    public DbSet<MaintenanceComment> MaintenanceComments => Set<MaintenanceComment>();
+    public DbSet<MaintenanceAttachment> MaintenanceAttachments => Set<MaintenanceAttachment>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -444,6 +452,39 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         {
             e.ToTable("einvoice_records");
             e.Property(x => x.Irn).HasColumnType("char(64)");
+        });
+
+        // ---- Sprint 13: housekeeping and maintenance (database/migrations/V015__housekeeping.sql)
+        b.Entity<HousekeepingChecklistTemplate>(e =>
+        {
+            e.ToTable("housekeeping_checklist_templates");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.TemplateId);
+        });
+        b.Entity<HousekeepingChecklistItem>().ToTable("housekeeping_checklist_items");
+        b.Entity<HousekeepingTask>(e =>
+        {
+            e.ToTable("housekeeping_tasks");
+            e.Property(x => x.Checklist).HasColumnType("jsonb");
+            // Declared so EF inserts the DIRTY change (and a new ticket) before the task that points to it.
+            e.HasOne<UnitHousekeepingChange>().WithMany().HasForeignKey(x => x.SourceChangeId);
+            e.HasOne<MaintenanceTicket>().WithMany().HasForeignKey(x => x.MaintenanceTicketId);
+        });
+        b.Entity<MaintenanceAsset>().ToTable("maintenance_assets");
+        b.Entity<MaintenanceTicket>(e =>
+        {
+            e.ToTable("maintenance_tickets");
+            // A new out-of-order block before the ticket that points to it.
+            e.HasOne<UnitBlock>().WithMany().HasForeignKey(x => x.BlockId);
+        });
+        b.Entity<MaintenanceComment>(e =>
+        {
+            e.ToTable("maintenance_comments");
+            e.HasOne<MaintenanceTicket>().WithMany().HasForeignKey(x => x.TicketId);
+        });
+        b.Entity<MaintenanceAttachment>(e =>
+        {
+            e.ToTable("maintenance_attachments");
+            e.HasOne<MaintenanceTicket>().WithMany().HasForeignKey(x => x.TicketId);
         });
 
         foreach (var entity in b.Model.GetEntityTypes())
