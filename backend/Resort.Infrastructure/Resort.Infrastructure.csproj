@@ -7,6 +7,9 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <!-- Invoice and receipt PDFs (Sprint 12). MIT-licensed. -->
+    <PackageReference Include="PDFsharp-MigraDoc" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Resort.Tests" />
@@ -16,5 +19,7 @@
     <EmbeddedResource Include="..\..\database\migrations\*.sql" LogicalName="migrations/%(Filename)%(Extension)" />
     <!-- Development-only demo data, applied by DevSeeder -->
     <EmbeddedResource Include="..\..\database\seed\dev\*.sql" LogicalName="seed/dev/%(Filename)%(Extension)" />
+    <!-- The font printed on PDFs (DejaVu Sans: free licence in Documents/Fonts/LICENSE.txt) -->
+    <EmbeddedResource Include="Documents\Fonts\*.ttf" LogicalName="fonts/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

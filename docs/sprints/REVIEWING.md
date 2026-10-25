@@ -345,6 +345,36 @@ Screenshots: [sprint-11-screens/](sprint-11-screens/). The browser tests do step
 | 16 | Cancel a link: send one for *1000*, then **Cancel** → **Cancel link** with no reason, then *Guest will pay at the desk* | First under *Reason*: *Say why the link is cancelled (at least 3 characters) …*; then the link is *Cancelled* with the reason, and its page tells the guest it was cancelled |
 | 17 | Phone width (390 px) → the guest's page | Everything fits; the buttons are full width |
 
+### Sprint 12 — GST invoices, credit and debit notes, receipts
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V014__invoicing`). There
+is no new demo data: **R00007** (Ishita Banerjee, Room 105, leaving today, ₹500 cash P00001 on her bill F00004) is the
+stay to check out. Its room night and laundry were put on the bill by the demo data before GST existed (Sprint 9), so
+they carry no tax; step 1 adds a dinner that does. Sign in as the **owner** (credit notes need the accountant's
+permissions). Screenshots: [sprint-12-screens/](sprint-12-screens/). The browser tests do the same on their own stay:
+`cd frontend; npm run e2e:headed -- e2e/sprint-12.spec.ts` (names S12-01 … S12-05). Database checks:
+`database/queries/check-sprint-12.sql`. How it works:
+[system-design.md → 4.22](../architecture/system-design.md#422-gst-invoices-gap-free-numbers-and-corrections-only-by-note).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | **Reservations** → **R00007** → **Bill** → **Post charge**: *Food*, *Dinner at the beach shack*, price *1450* | The line ₹1,522.50 (₹1,450.00 + CGST 2.5% SGST 2.5% ₹72.50). At the top, a new **Issue invoice** button |
+| 2 | **Front desk** → **Departures** → R00007 → **Check out** | The dialog says the bill's GST invoice is issued with a receipt for each payment. **Check out** → *Checked out* |
+| 3 | **The acceptance test.** **Reservations** → **R00007** | Next to **Bill**, **Invoice BEACH/2627/00001**. Click it: *Tax invoice*, *Issued*; supplier *Demo Resorts Pvt Ltd*, GSTIN 30AABCT1234C1Z9, Goa (30); billed to *Ishita Banerjee*, *Unregistered (B2C)*, West Bengal (19); place of supply **Goa (30)**; lines Room night ₹3,500.00 (SAC 996311), Laundry ₹320.00, Dinner ₹1,450.00 + ₹72.50; CGST ₹36.25, SGST ₹36.25, **Invoice total ₹5,342.50**, *Rupees Five Thousand Three Hundred Forty Two and Fifty Paise Only*; under *Receipts* **BEACH/R2627/00001** for P00001, ₹500.00 |
+| 4 | **PDF** (top), then **PDF** on the receipt. Then **Print** (top) | `BEACH-2627-00001.pdf`: an A4 *TAX INVOICE* with both parties, each line with its SAC and taxes, a tax summary, *Payments received* with the receipt number, the amount in words and *For Demo Resorts Pvt Ltd · Authorised signatory*. `BEACH-R2627-00001.pdf`: a *RECEIPT* for ₹500.00 cash. **Print** opens the browser's print dialog on the same A4 invoice |
+| 5 | Click **F00004** (the bill) | Each charge has a small *BEACH/2627/00001* tag and no **Reverse** button. **Invoice BEACH/2627/00001** at the top instead of Issue invoice |
+| 6 | Back on the invoice → **Credit note** → tick *Dinner at the beach shack* → Amount *2000* → Reason *One main course was not served* → **Issue credit note** | Under the amount: *Enter ₹0.01 to ₹1,450.00.* Nothing is issued |
+| 7 | Amount *450* → **Issue credit note** | Before issuing: *Credits ₹450.00 + GST ₹22.50 = ₹472.50*. Then *Credit note BEACH/C2627/0001 issued: ₹472.50*; status **Partly credited**; *Billed ₹5,342.50 · Credited ₹472.50 · Stands at ₹4,870.00*; the dinner line says *₹450.00 credited*. On the bill: a line *Credit note BEACH/C2627/0001: Dinner …* −₹472.50 with the reason; the balance drops by ₹472.50 |
+| 8 | On the bill → **Post charge**: *Beverage*, *Minibar found after check-out*, *400* → open the invoice | A note: *1 charge was posted to F00004 after this invoice (₹400.00)* and a **Debit note** button. **Debit note** → **Issue debit note** with no reason: *Say why the debit note is issued …*; with *Minibar found after check-out* → *Debit note BEACH/D2627/0001 issued: ₹400.00*; the minibar line says *on debit note BEACH/D2627/0001* |
+| 9 | **Credit note** → **Cancel the invoice** → Reason *Company asked for the invoice in its name* → **Issue credit note** | *BEACH/C2627/0002*; status **Cancelled**: *Cancelled by credit note BEACH/C2627/0002 … Its charges can be invoiced again from the bill.* No more Credit or Debit note buttons |
+| 10 | The bill → **Issue invoice** → Customer name *Acme Travels Pvt Ltd*, GSTIN *27AAPFU0939F1ZX*, Address *Baner Road, Pune* → **Issue tax invoice** | A preview of the lines first (the dinner *₹1,450.00 less ₹450.00 credited*). Under the GSTIN: *The last character (check digit) should be V for this GSTIN; check it for a typing mistake.* Nothing is issued |
+| 11 | Change the last letter to **V** | *Customer's state* turns to *Maharashtra (27)* by itself. **Issue tax invoice** → *Tax invoice BEACH/2627/00002 issued: ₹5,270.00* → **Open** |
+| 12 | The new invoice | Billed to *Acme Travels Pvt Ltd*, *GSTIN 27AAPFU0939F1ZV*, Maharashtra (27), **B2B**; place of supply still **Goa (30)**, so **CGST ₹25.00 + SGST ₹25.00, no IGST**; the minibar is on it; total ₹5,270.00 |
+| 13 | **Invoices** (menu) → **All** | BEACH/2627/00002 (Issued, Acme, its GSTIN) and BEACH/2627/00001 (Cancelled, struck through, *− ₹5,742.50 credited*, 2 credit notes · 1 debit note). Search *27AAPFU0939F1ZV* finds only the B2B one |
+| 14 | **Payments** → **P00001** → **Receipt** | `BEACH-R2627-00001.pdf` again: the same number as at check-out (a payment gets one receipt) |
+| 15 | Sign in as a **receptionist** → the invoice | **PDF** and **Print** only: no Credit note or Debit note (accountants and managers above them issue those) |
+| 16 | Phone width (390 px) → **Invoices** and an invoice | Everything fits; the parties stack under each other |
+
 ## Part C — Decide
 
 ### Accept

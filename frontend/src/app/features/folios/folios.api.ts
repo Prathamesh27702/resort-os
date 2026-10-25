@@ -49,10 +49,11 @@ export function quantityText(i: Pick<FolioItem, 'quantity' | 'unitPrice'>, money
 export function lineNote(i: FolioItem): string {
   if (i.movedTo) return `Moved to ${i.movedTo}`;
   if (i.reversedByItemId) return `Reversed: ${i.reversalReason ?? ''}`.trim();
-  if (i.itemType === 'REVERSAL' && i.reason) return i.reason;
+  if ((i.itemType === 'REVERSAL' || i.itemType === 'CREDIT') && i.reason) return i.reason;
   if (i.movedFrom) return `Moved from ${i.movedFrom}`;
   return '';
 }
 
-/** Lines that can be reversed or moved: charges that still count. */
-export function liveCharges(items: FolioItem[]): FolioItem[] { return items.filter(i => i.live); }
+/** Lines that can be reversed or moved: charges that still count and aren't on an invoice or reduced by a credit note
+ *  (Sprint 12: those are corrected with a credit note instead). */
+export function liveCharges(items: FolioItem[]): FolioItem[] { return items.filter(i => i.live && i.adjustable); }

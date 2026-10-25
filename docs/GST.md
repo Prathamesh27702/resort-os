@@ -132,33 +132,65 @@ A rule can't start in the past and can't be edited once saved; a mistake is fixe
 | Laundry (no tax category covers LAUNDRY) | No GST until a category and a rule are added |
 | Registered, FOOD is taxed, but no rule covers the day | The charge is **refused** with "There is no GST rule for Restaurant service on … Until then food charges dated … can't be posted." |
 
-## Invoice lifecycle (brief §91 L)
+## Invoices, credit and debit notes (Sprint 12)
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Draft: checkout / manual
-  Draft --> Issued: number allocated (gap-free, per series + FY)
-  Issued --> CreditNoted: credit note (full) — reason required
-  Issued --> PartiallyCredited: credit note (partial)
-  Issued --> DebitNoted: debit note (extra charge)
-  Issued --> EInvoiced: IRN received (B2B, when applicable)
-  EInvoiced --> CreditNoted
-  CreditNoted --> [*]
+  [*] --> Issued: check-out, or Issue invoice on the bill (number taken, gap-free per series + FY)
+  Issued --> PartlyCredited: REDUCE credit note (some lines or part of them; reason)
+  PartlyCredited --> PartlyCredited: more REDUCE notes
+  PartlyCredited --> Credited: nothing left on it
+  Issued --> Cancelled: CANCEL credit note (reason; its charges can be invoiced again)
+  PartlyCredited --> Cancelled: CANCEL credit note
+  Issued --> Issued: debit note (charges posted after it)
+  Cancelled --> [*]
 ```
 
-- Invoices are never deleted or edited after issue (DB triggers). Cancellation = credit note.
-- Numbering: `invoice_series` row per property + document type + financial year (April–March), incremented under a
-  row lock, so numbers are gap-free and unique even under concurrency.
-- B2B: customer GSTIN validated (format + checksum), legal name, state. B2C: name and state.
+- **Issued once, never edited or deleted** (database triggers). There is no draft: the invoice preview on the bill shows
+  what will be issued. Status is worked out from the credit notes, never stored.
+- **Check-out issues it**: the invoice of every folio of the booking that has charges not yet billed, to the bill-to
+  guest on file (their company and GSTIN make it B2B), plus a receipt for each payment. A property can switch this off
+  (`property_settings` key `invoice.issue_at_checkout` = `false`); without a GST registration nothing is issued. If one
+  folio can't be invoiced (a wrong GSTIN on the guest's profile) the check-out still goes through and a note on the
+  booking says why; reception issues it from the bill.
+- **Numbering**: an `invoice_series` row per property, document type and financial year, taken with
+  `INSERT … ON CONFLICT DO UPDATE last_number + 1 RETURNING` in the issuing transaction (the row stays locked until
+  commit), so numbers are consecutive, unique and gap-free under concurrency. Format: up to 5 letters and digits of the
+  property code, a letter for the type (none for invoices; `B` bill of supply, `C` credit note, `D` debit note, `R`
+  receipt), the year (`2627`) and the number: `BEACH/2627/00001`, `BEACH/C2627/0001`. At most 16 characters of
+  `A-Z 0-9 / -` (rule 46(b)).
+- **Taxes are copied, never recalculated**: each line carries the rule, rate and amount posted on the folio (Sprint 9).
+  A credit note takes tax off at each line's own rates, rounded per tax; crediting what is left of a line takes exactly
+  what is left, so a line always credits to the paisa.
+- **Place of supply** for accommodation (and the food and services of the stay) is where the property is (IGST Act
+  s.12(3)): CGST + SGST even for a company from another state. The customer's state is still printed.
+- **B2B**: the customer's GSTIN is validated (format, state code, PAN, check digit); its state must match the state
+  given. **B2C**: name, and address and state if known.
+- **Composition scheme**: a **bill of supply** with no GST and the line "Composition taxable person, not eligible to
+  collect tax on supplies." A taxed charge on such a folio has to be reversed and posted again first.
+- **Corrections**: `REDUCE` credit notes take chosen lines, or part of them, off the invoice and add a `CREDIT` line on
+  the folio so the guest owes less; `CANCEL` credits everything left and leaves the bill as it is, so a new invoice can be
+  issued (e.g. in a company's name), which shows earlier REDUCE credits as a discount. Charges posted after the invoice go
+  on a **debit note** of it. A charge on an invoice that stands can't be reversed or moved on the folio.
+- **PDFs** are drawn on the server with PDFsharp/MigraDoc **6.2.x** (MIT; it must stay below 6.5, which changed to AGPL)
+  and the embedded DejaVu Sans font (it has the ₹ sign), so they look the same on any machine.
 - e-Invoice: when the organisation's turnover makes it mandatory, B2B invoices are sent to the IRP through the
-  accounting/e-invoicing provider (Zoho or a GSP). We store IRN, Ack No, Ack Date, signed QR and status, with retry
-  and daily reconciliation (Sprint 25).
+  accounting/e-invoicing provider (Zoho or a GSP). `einvoice_records` already holds IRN, Ack No, Ack Date, signed QR and
+  status (empty until Sprint 25, which adds retry and daily reconciliation).
+
+**Open questions for the owner's accountant** (defaults chosen so the sprint could be built; each can change later):
+GST on advances received before the stay (a receipt voucher with tax under s.31(3)(d)) is not issued: the receipt has no
+tax; refunds of advances (refund vouchers) are not numbered documents yet; one series per property (not per GSTIN or per
+counter); invoices of a stay are dated on the day they are issued (check-out), not per night.
 
 ## Fields printed on an invoice
 
-Invoice number and date, supplier GSTIN/legal name/address/state, customer name (+ GSTIN for B2B), place of supply,
-per line: description, HSN/SAC, quantity, unit price, discount, taxable value, CGST/SGST/IGST rate and amount; totals,
-rounding, grand total in figures and words, payment reference, IRN + QR when e-invoiced.
+Title (TAX INVOICE or BILL OF SUPPLY), number and date, supplier legal and trade name, address, GSTIN and state, customer
+name (+ GSTIN for B2B, else "Unregistered (B2C)"), address and state, place of supply, reverse charge (No), booking and
+folio; per line: description, service date, HSN/SAC, quantity, rate, discount, taxable value, each tax with its rate and
+amount, total; a tax summary by SAC and rate; payments received with their receipt numbers; taxable value, CGST, SGST,
+IGST, cess and the invoice total in figures and words (lakh and crore); notes; "For <legal name> · Authorised
+signatory"; CANCELLED across a cancelled one. IRN and QR follow in Sprint 25.
 
 ## Tests
 
@@ -166,4 +198,9 @@ rounding, grand total in figures and words, payment reference, IRN + QR when e-i
   tax, several parts on one line, the 0.02% rule, GSTIN check digits. `TaxTests` — a rule change doesn't change an
   already-posted charge or its reversal, the next-month rule closes the running one, a rule can't start in the past or
   overlap, TAX_RULE_MISSING, unregistered and composition properties, permissions, specific field errors.
-- **Sprint 12:** gap-free numbering under 20 parallel requests, credit note totals.
+- **Sprint 12 (built):** `InvoiceUnitTests` — financial year, series prefixes within 16 characters, amounts in words
+  (lakh and crore), part credits at each tax's rate and the exact remainder, totals with CGST/SGST and IGST, what is
+  printed (B2B, B2C, cancelled, bill of supply). `InvoiceTests` — the demo (check-out issues invoice, receipt and PDFs;
+  cancel and re-issue B2B), 20 parallel invoices numbered 1–20 with no gap or repeat, B2B intra- and inter-state, the
+  database refusing UPDATE and DELETE of totals, REDUCE and debit notes, a wrong GSTIN at check-out, receipts,
+  idempotency and permissions.

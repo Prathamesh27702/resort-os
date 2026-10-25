@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth.service';
 import { toProblem } from '../../core/http';
-import { Folio, FolioItem, FolioPaymentLine, Payment } from '../../core/models';
+import { Folio, FolioItem, FolioPaymentLine, Invoice, InvoicePreview, Payment } from '../../core/models';
 import { PropertyContext, inZone } from '../../core/property-context';
 import { statusClass, statusLabel } from '../reservations/reservations.api';
 import { shortDate } from '../rooms/rooms.api';
@@ -14,6 +14,8 @@ import { pct, taxText } from '../settings/gst/gst.api';
 import { dayLabel, rupeesExact } from '../settings/rates/rates.api';
 import { TakePaymentDialog } from '../payments/payment-dialogs';
 import { methodLabel } from '../payments/payments.api';
+import { IssueInvoiceDialog } from '../invoices/invoice-dialogs';
+import { InvoicesApi } from '../invoices/invoices.api';
 import { PostChargeDialog, ReverseChargeDialog, SplitFolioDialog, SplitResult } from './folio-dialogs';
 import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from './folios.api';
 
@@ -21,7 +23,8 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
  * One bill (Sprint 8): every line in date order, what it adds up to by category, and the balance. Lines are never edited
  * or deleted: a reversed charge stays on the bill, struck through, next to its reversal and the reason. Staff post
  * charges and move lines to another folio; managers (folio.adjust) reverse. Sprint 10: payments and refunds on the bill
- * are listed under it, and the balance is what is still owed after them.
+ * are listed under it, and the balance is what is still owed after them. Sprint 12: the bill's GST invoice (or Issue invoice),
+ * each invoiced charge marked with its invoice number; an invoiced charge is corrected with a credit note, not reversed.
  */
 @Component({
   selector: 'app-folio',
@@ -38,6 +41,13 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
               {{ dayLabel(f.checkIn) }} – {{ dayLabel(f.checkOut) }}@if (!f.isPrimary) { · {{ f.name }} }</p>
           </div>
           <div class="head-actions">
+            @if (preview(); as pv) {
+              @if (pv.invoiceId) {
+                <a mat-stroked-button [routerLink]="['/invoices', pv.invoiceId]" data-testid="invoice"><mat-icon>request_quote</mat-icon>Invoice {{ pv.invoiceNumber }}</a>
+              } @else if (canInvoice() && !pv.cantIssueReason) {
+                <button mat-flat-button (click)="issue()" [disabled]="busy()"><mat-icon>request_quote</mat-icon>Issue invoice</button>
+              }
+            }
             @if (canPay()) { <button mat-flat-button (click)="pay()" [disabled]="busy()"><mat-icon>payments</mat-icon>Take payment</button> }
             @if (canPost() && f.canPost) { <button mat-flat-button (click)="post()" [disabled]="busy()"><mat-icon>add</mat-icon>Post charge</button> }
             @if (canPost() && f.canPost && live().length) {
@@ -78,19 +88,20 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
             <thead><tr><th>Day</th><th>Line</th><th class="hide-sm">For</th><th class="right">Amount</th><th class="right">&nbsp;</th></tr></thead>
             <tbody>
               @for (i of f.items; track i.id) {
-                <tr [class.reversed]="!i.live && i.itemType === 'CHARGE'" [class.reversal]="i.itemType === 'REVERSAL'" [attr.data-line]="i.description">
+                <tr [class.reversed]="!i.live && i.itemType === 'CHARGE'" [class.reversal]="i.itemType !== 'CHARGE'" [attr.data-line]="i.description">
                   <td class="num">{{ shortDate(i.serviceDate) }}</td>
                   <td>
                     <span class="desc">{{ i.description }}</span>
                     @if (qty(i)) { <small class="mute num"> · {{ qty(i) }}</small> }
+                    @if (i.invoiceNumber) { <small class="chip inv num" [attr.title]="'Billed on ' + i.invoiceNumber">{{ i.invoiceNumber }}</small> }
                     <br /><small class="mute">{{ i.postedByName ?? 'System' }} at {{ time(i.postedAt) }}</small>
-                    @if (note(i); as n) { <br /><small [class]="i.itemType === 'REVERSAL' || i.reversedByItemId ? 'why' : 'mute'">{{ n }}</small> }
+                    @if (note(i); as n) { <br /><small [class]="i.itemType !== 'CHARGE' || i.reversedByItemId ? 'why' : 'mute'">{{ n }}</small> }
                   </td>
                   <td class="hide-sm"><span class="chip cat">{{ label(i.category) }}</span></td>
                   <td class="right num"><b>{{ money(i.total) }}</b>
                     @if (i.taxes.length) { <br /><small class="mute" [attr.title]="taxTitle(i)">{{ money(i.amount) }} + {{ tax(i.taxes) }} {{ money(i.taxAmount) }}</small> }</td>
                   <td class="right">
-                    @if (canReverse() && i.live) {
+                    @if (canReverse() && i.live && i.adjustable) {
                       <button mat-button (click)="reverse(i)" [disabled]="busy()" [attr.aria-label]="'Reverse ' + i.description">Reverse</button>
                     }
                   </td>
@@ -149,6 +160,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
     dd { margin: 0; text-align: right; }
     .cats { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip.cat { background: #eef3f2; color: #24423f; }
+    .chip.inv { background: #e6eef8; color: #1f3f6b; margin-left: 6px; font-size: .72rem; }
     .chip.ok { background: #e1f2e8; color: #1d5b36; }
     .chip.wait { background: #fbefd8; color: #8a5a00; }
     .mute { color: #5b6b6e; }
@@ -181,6 +193,10 @@ export class FolioPage {
   canPost = computed(() => { this.auth.me(); return this.auth.can('folio.post_charge', this.props.current()?.id); });
   canPay = computed(() => { this.auth.me(); return this.auth.can('payment.create', this.props.current()?.id); });
   canReverse = computed(() => { this.auth.me(); return this.auth.can('folio.adjust', this.props.current()?.id); });
+  canInvoice = computed(() => { this.auth.me(); return this.auth.can('invoice.create', this.props.current()?.id); });
+  /** Sprint 12: the folio's invoice, or what issuing one would give (for staff who can see invoices). */
+  preview = signal<InvoicePreview | null>(null);
+  private invoices = inject(InvoicesApi);
 
   money = rupeesExact;
   methodLabel = methodLabel;
@@ -209,6 +225,30 @@ export class FolioPage {
   private load(id: string) {
     this.error.set('');
     this.api.get(this.pid(), id).subscribe({ next: f => this.f.set(f), error: e => this.error.set(toProblem(e).detail) });
+    this.loadPreview(id);
+  }
+
+  private loadPreview(id: string) {
+    if (!this.auth.can('invoice.read', this.pid())) return;
+    this.invoices.preview(this.pid(), id).subscribe({ next: p => this.preview.set(p), error: () => this.preview.set(null) });
+  }
+
+  issue() {
+    const f = this.f()!;
+    this.invoices.preview(this.pid(), f.id).subscribe({
+      next: preview => {
+        this.preview.set(preview);
+        if (preview.cantIssueReason) { this.error.set(preview.cantIssueReason); return; }
+        this.dialog.open(IssueInvoiceDialog, { data: { propertyId: this.pid(), preview }, width: '720px', maxWidth: '95vw', autoFocus: 'first-tabbable' })
+          .afterClosed().subscribe((i: Invoice | undefined) => {
+            if (!i) return;
+            this.load(f.id);
+            this.snack.open(`${i.title} ${i.number} issued: ${rupeesExact(i.total)}`, 'Open', { duration: 5000 })
+              .onAction().subscribe(() => this.router.navigate(['/invoices', i.id]));
+          });
+      },
+      error: e => this.error.set(toProblem(e).detail),
+    });
   }
 
   post() {
@@ -217,6 +257,7 @@ export class FolioPage {
       .afterClosed().subscribe((r: Folio | undefined) => {
         if (!r) return;
         this.f.set(r);
+        this.loadPreview(r.id);
         this.snack.open(`Posted to ${r.number}. Balance ${rupeesExact(r.balance)}`, undefined, { duration: 3000 });
       });
   }

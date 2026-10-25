@@ -25,7 +25,7 @@ namespace Resort.Application.FrontDesk;
 /// </summary>
 public sealed class FrontDeskService(
     IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, GuestService guests,
-    CallerAccess access, IFolioBalances folios, FolioPosting posting)
+    CallerAccess access, IFolioBalances folios, FolioPosting posting, Invoicing.InvoiceService invoicing)
 {
     public const string AllowCheckoutWithBalance = "frontdesk.allow_checkout_with_balance";
     public const string AllowCheckinWhenNotReady = "frontdesk.allow_checkin_when_not_ready";
@@ -401,6 +401,10 @@ public sealed class FrontDeskService(
         foreach (var (unitId, bedId) in leaving)
             await SetHousekeepingCoreAsync(reservation.OrganizationId, propertyId, unitId, bedId, HousekeepingStatuses.Dirty,
                 HousekeepingSources.CheckOut, reservation.Id, $"Checked out of {reservation.Reference}", ct);
+        await db.SaveChangesAsync(ct);
+
+        // The bill becomes a GST invoice, and every payment gets a receipt (Sprint 12).
+        await invoicing.IssueAtCheckOutAsync(property, reservation, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await reservations.ToDtoAsync(reservation, ct);

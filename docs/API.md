@@ -674,6 +674,76 @@ no; nothing was refunded) or `GATEWAY_REFUND_UNCLEAR` (no answer: check Razorpay
 POST is never retried automatically). `method: ONLINE` for a desk payment is refused under `Method`. Online refunds can
 also be paid back at the desk (cash, UPI …), as before.
 
+## Built endpoints (Sprint 12 — GST invoices, credit and debit notes, receipts)
+
+All under `/api/v1/properties/{propertyId}`. A folio becomes a **GST tax invoice** (or a **bill of supply** when the
+property is under the composition scheme) with a gap-free number from the property's series for the financial year
+(April–March): `BEACH/2627/00001` for invoices, `BEACH/C2627/0001` credit notes, `BEACH/D2627/0001` debit notes,
+`BEACH/R2627/00001` receipts (at most 16 characters, letters, digits, `/` and `-`, as GST rule 46(b) asks; the prefix is
+up to 5 letters and digits of the property code). The invoice **copies** each folio charge's taxes as they were posted
+(Sprint 9: rule, rate, taxable value); it never recalculates. **Place of supply** for a hotel stay is the property's state
+(IGST Act s.12(3)), so even a company from another state is charged CGST + SGST. With a valid customer GSTIN the invoice is
+**B2B**, otherwise **B2C**. **Nothing issued is ever edited or deleted** (the database refuses it): an invoice is
+corrected with a **credit note** (`CANCEL` the whole invoice, so its charges can be invoiced again, e.g. in a company's
+name; or `REDUCE` chosen lines or part of them, which also puts a `CREDIT` line on the folio), and charges posted after
+it go on a **debit note**. Check-out issues the invoice by itself (setting `invoice.issue_at_checkout`, default on) plus a
+receipt for each payment on the booking (nothing is issued when the property has no GST registration); if a folio can't be
+invoiced (a wrong GSTIN on the guest's profile …) the check-out still goes through and a note on the booking says why. Issuing needs `invoice.create` and an
+`Idempotency-Key`; reading `invoice.read`; credit and debit notes `credit_note.create` and an `Idempotency-Key`;
+cancelling an invoice also `invoice.cancel` (role defaults in V002: receptionists and managers read and issue; the
+accountant, general manager and owner also issue notes and cancel). How the numbering lock works:
+[system-design.md → 4.22](architecture/system-design.md#422-gst-invoices-gap-free-numbers-and-corrections-only-by-note).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /folios/{id}/invoice-preview` | What issuing the folio's invoice would give: the customer it defaults to (the bill-to guest, else the booking's guest; their company and GSTIN make it B2B), the lines and totals, the folio's invoice if it has one, and why it can't be issued now (`cantIssueReason`) | `invoice.read` | — | `InvoicePreviewDto` | 403, 404 | — |
+| `POST /folios/{id}/invoice` | Issue the folio's invoice. An empty `customerName` bills the guest on file; with `customerName` the customer is exactly what is sent | `invoice.create` + `Idempotency-Key` | `IssueInvoiceRequest` | 201 `InvoiceDto` | 400 under the field (below), `Idempotency-Key` missing; 403, 404; **409 `ALREADY_INVOICED`** ("F00012 already has invoice BEACH/2627/00007. Charges posted after it go on a debit note: open BEACH/2627/00007 and issue one."); 422 `FOLIO_CLOSED` ("R00005 is cancelled, so F00009 can't be invoiced."), `NOTHING_TO_INVOICE` ("F00012 has no charges yet, so there is nothing to invoice."), `NO_GST_REGISTRATION` ("Palm Grove Beach Resort has no GST registration on Fri 23 Oct 2026, so it can't issue a GST invoice. Add its GSTIN in Settings → GST."), `TAXED_UNDER_COMPOSITION`, `IDEMPOTENCY_KEY_REUSED` | INSERT invoice (+ items, taxes), series +1 |
+| `GET /invoices?q&from&to&reservationId&status&page&pageSize` | Invoices and bills of supply, newest first. `q`: invoice number, booking reference, folio number, GSTIN or customer name; `status`: `ISSUED`, `PARTLY_CREDITED`, `CREDITED`, `CANCELLED` (worked out from the credit notes) | `invoice.read` | — | `PagedResult<InvoiceListItemDto>` | 400 `To` (before `From`), `Status` ("'X' isn't an invoice status. Use issued, partly-credited, credited or cancelled."), 403 | — |
+| `GET /invoices/{id}` | One invoice as printed, with its credit notes, debit notes, receipts, what each line has had credited and can still be, and the charges posted to the folio after it | `invoice.read` | — | `InvoiceDto` | 403, 404 | — |
+| `GET /invoices/{id}/pdf` | The invoice as an A4 PDF (`TAX INVOICE` or `BILL OF SUPPLY`, a `CANCELLED` mark once cancelled), named `BEACH-2627-00001.pdf` | `invoice.read` | — | `application/pdf` | 403, 404 | — |
+| `POST /invoices/{id}/credit-notes` | Issue a credit note with a reason. `CANCEL`: everything still on the invoice and its debit notes (needs `invoice.cancel` too; `lines` empty). `REDUCE`: the chosen lines (an invoice line or a debit note line), each in full or by a taxable amount; GST comes off at each line's own rate and the folio gets a `CREDIT` line for each | `credit_note.create` + `Idempotency-Key` | `CreateCreditNoteRequest` | 201 `InvoiceDto` | 400 `Type` ("Choose what the credit note does: CANCEL (the whole invoice, to issue it again) or REDUCE (some lines or part of them)."), `Reason`, `Lines` ("Choose at least one line to credit."; "Cancelling credits the whole invoice, so don't choose lines. …"), `Lines[i].Amount` ("\"Dinner for two\" has ₹2,000.00 left to credit (before GST); ₹2,500.00 is more than that."; credited in full), `Lines[i].LineId` (not on this invoice, chosen twice); 403, 404; **409 `INVOICE_CANCELLED`** ("BEACH/2627/00007 was already cancelled by credit note BEACH/C2627/0002 on Fri 23 Oct 2026. Reload to see it."); 422 `NOTHING_TO_CREDIT`, `IDEMPOTENCY_KEY_REUSED` | INSERT credit note (+ items, taxes, folio CREDIT lines), series +1, with the reason |
+| `POST /invoices/{id}/debit-notes` | Bill the charges posted to the folio after the invoice (all, or `folioItemIds`) on a debit note of the invoice, with a reason | `credit_note.create` + `Idempotency-Key` | `CreateDebitNoteRequest` | 201 `InvoiceDto` | 400 `Reason`, `FolioItemIds` ("2 of the chosen charges aren't on F00012 or are already billed. …"); 403, 404; 422 `NOTHING_TO_BILL` ("Every charge on F00012 is already on BEACH/2627/00007 or its debit notes, …"), `INVOICE_CANCELLED` ("… Issue a new invoice for F00012 instead."), `TAXED_UNDER_COMPOSITION` | INSERT debit note (+ items, taxes), series +1, with the reason |
+| `GET /credit-notes/{id}/pdf` · `GET /debit-notes/{id}/pdf` | A note as an A4 PDF, naming the invoice it adjusts and the reason | `invoice.read` | — | `application/pdf` | 403, 404 | — |
+| `POST /payments/{id}/receipt` | The payment's receipt: issued the first time, the same one after that | `invoice.create` | — | `ReceiptDto` | 403, 404; 422 `NO_RECEIPT_FOR_PAYMENT` ("P00003 was voided (Entered twice), so it gets no receipt."; a pending online payment: "the money hasn't arrived …") | INSERT receipt, series +1 |
+| `GET /receipts/{id}/pdf` | A receipt as an A4 PDF (a `VOID` mark if the payment was voided after it was issued) | `invoice.read` | — | `application/pdf` | 403, 404 | — |
+
+`IssueInvoiceRequest = { customerName?, customerGstin?, customerAddress?, customerStateCode?, notes? }`. **Field errors**
+(400, each under its field): `CustomerGstin` (format, state code, PAN, "Character 14 of a GSTIN is always Z.", "The last
+character (check digit) should be V for this GSTIN; check it for a typing mistake."; the guest's GSTIN on file is wrong:
+"The GSTIN on Ravi Kumar's profile (27AAPFU0939F1ZX) isn't valid: … Correct it, or clear it to issue a B2C invoice."),
+`CustomerName` ("Enter the customer's name (the company's legal name for a B2B invoice) with the GSTIN."; ≤ 200),
+`CustomerStateCode` ("99 isn't a GST state code. Choose the state from the list."; "The GSTIN 27… is registered in
+Maharashtra (27), not Karnataka (29). A B2B customer's state is its GSTIN's state."), `CustomerAddress` (≤ 300), `Notes`
+(≤ 500). `CreateCreditNoteRequest = { type: CANCEL | REDUCE, reason, lines?: [{ lineId, amount? (taxable value; empty =
+all that is left) }] }` · `CreateDebitNoteRequest = { reason, folioItemIds? }`. Reasons: 3–500 characters ("Say why the
+credit note is issued (at least 3 characters), e.g. Guest was charged for a dinner they didn't have.").
+
+`InvoiceDto = { id, number, documentType: INVOICE | BILL_OF_SUPPLY, title, financialYear, invoiceDate, folioId,
+folioNumber, reservationId, reference, supplier: DocumentPartyDto, customer: DocumentPartyDto, isB2B, placeOfSupply,
+placeOfSupplyName, items: DocumentLineDto[], taxSummary: [{ hsnSac, code, rate, taxableValue, amount }], taxableValue,
+cgst, sgst, igst, cess, taxTotal, total, amountInWords ("Rupees … Only", lakh and crore), currency, notes, issuedAt,
+issuedByName, status, billed (invoice + debit notes), credited, outstanding, creditNotes: NoteDto[], debitNotes:
+NoteDto[], receipts: ReceiptDto[], eInvoice (Sprint 25), unbilledCharges, unbilledAmount }`.
+`DocumentPartyDto = { name, tradeName, gstin, address, stateCode, stateName }`. `DocumentLineDto = { id, lineNo,
+folioItemId, category, description, hsnSac, serviceDate, quantity, unitPrice, grossAmount, discount (credited off the
+charge before it was billed), taxableValue, taxAmount, total, taxes: [{ code, rate, taxableValue, amount }], credited,
+creditable, debitNoteNumber }` (debit note lines follow the invoice's own). `NoteDto = { id, kind: CREDIT_NOTE |
+DEBIT_NOTE, number, noteType: CANCEL | REDUCE | null, noteDate, reason, taxableValue, taxTotal, total, issuedAt,
+issuedByName, lines: [{ lineNo, description, hsnSac, taxableValue, taxAmount, total, taxes }] }`. `ReceiptDto = { id,
+number, receiptDate, paymentId, paymentNumber, reservationId, reference, receivedFrom, amount, method, paymentReference,
+receivedAt, paymentStatus, voided, issuedAt, issuedByName }`. `InvoiceListItemDto = { id, number, documentType,
+invoiceDate, folioId, folioNumber, reservationId, reference, customerName, customerGstin, taxableValue, taxTotal, total,
+credited, status, creditNotes, debitNotes, currency }`. `InvoicePreviewDto = { folioId, folioNumber, reservationId,
+reference, documentType, supplier, billToGuestId, customerName, customerGstin, customerAddress, customerStateCode,
+gstinProblem, lines, taxableValue, taxTotal, total, invoiceId, invoiceNumber, cantIssueReason }`.
+
+**Changes to earlier endpoints.** A folio charge on an invoice (or debit note) that stands, or one a credit note reduced,
+can't be reversed or moved: 422 `INVOICED` ("\"Dinner for two\" is on invoice BEACH/2627/00007, so it can't be reversed or
+moved. Issue a credit note on BEACH/2627/00007 instead."; under `ItemIds` when moving lines). A `CREDIT` line can't be
+reversed (`NOT_REVERSIBLE`). `FolioItemDto` adds `invoiceNumber` and `adjustable` (it can still be reversed or moved), and
+`itemType` can be `CREDIT` (`reason` = the credit note's reason); `FolioDto.reversals` sums reversal and credit lines.
+`POST /reservations/{id}/check-out` issues the invoice and the receipts in the same transaction (see above).
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
