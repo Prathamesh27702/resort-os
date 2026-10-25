@@ -45,7 +45,8 @@ test.beforeAll(async ({ browser }: { browser: Browser }) => {
   await createStaff(api, fixer.email, fixer.name, 'MAINTENANCE', pid, pw);
 
   // A guest stays one night from today, pays, and is checked out by the front desk (Sprint 7, not what this test is about).
-  const avail = await (await api.get(`/api/v1/properties/${pid}/availability?from=${today}&to=${addDays(today, 1)}&adults=2&children=0`)).json();
+  // The room must be free for three nights: S13-05 takes it out of order until the day after tomorrow.
+  const avail = await (await api.get(`/api/v1/properties/${pid}/availability?from=${today}&to=${addDays(today, 3)}&adults=2&children=0`)).json();
   const type = (avail.types as { inventoryMode: string; accommodationTypeId: string; freeRooms: { id: string }[] }[])
     .find(t => t.inventoryMode === 'UNIT' && t.freeRooms.length >= 1)!;
   unitId = type.freeRooms[type.freeRooms.length - 1].id;

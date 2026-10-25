@@ -141,7 +141,9 @@ public sealed class MaintenanceService(
             {
                 throw new ConflictAppException(ex.Code,
                     $"{place} can't be taken out of order from tonight: {ex.Message.Replace(" Move that booking to another room or cancel it first.", "")} " +
-                    "Move that booking to another room first, or report the problem without taking the room out of order.");
+                    (ex.Code == "BLOCK_OVERLAP"
+                        ? "Release that block in Rooms first (or choose a return date before it), or report the problem without taking the room out of order."
+                        : "Move that booking to another room first, or report the problem without taking the room out of order."));
             }
             foreach (var b in PlacesOf(unit, bed))
                 await housekeeping.ChangeAsync(property, unit.Id, b, HousekeepingStatuses.OutOfOrder, HousekeepingSources.Maintenance, null,

@@ -79,7 +79,7 @@ public class MaintenanceTests(FrontDeskFactory app) : IClassFixture<FrontDeskFac
     public async Task A_room_with_a_guest_tonight_cant_be_taken_out_of_order_and_the_dates_are_checked()
     {
         var (owner, pid) = await OwnerAsync();
-        var stay = await SetupAsync(owner, pid, rooms: 1);
+        var stay = await SetupAsync(owner, pid, rooms: 2);
         var room = stay.Rooms[0];
         var booked = await CreatedAsync(await BookAsync(owner, pid, NewBooking(stay, (await CreateGuestAsync(owner)).Id, await WalkInAsync(owner, pid), Today, Today.AddDays(2))));
         await OkAsync(await owner.PostAsync(CheckInUrl(pid, booked), new CheckInRequest(null)));
@@ -96,6 +96,17 @@ public class MaintenanceTests(FrontDeskFactory app) : IClassFixture<FrontDeskFac
         var ticket = await TicketCreatedAsync(await owner.PostAsync(TicketsUrl(pid), new CreateTicketRequest("Fan broken", null, "ELECTRICAL", "NORMAL", room.Id, null, null, null, false, null)));
         Assert.False(ticket.OutOfOrder);
         Assert.Null(ticket.BlockId);
+
+        // A room already blocked on those nights (say, a planned repair) says so, and what to do instead.
+        var other = stay.Rooms.Single(r => r.Id != room.Id);
+        Assert.Equal(HttpStatusCode.Created, (await owner.PostAsync($"/api/v1/properties/{pid}/blocks",
+            new CreateBlockRequest(other.Id, null, "MAINTENANCE", Today.AddDays(2), Today.AddDays(4), "Repainting"))).StatusCode);
+        res = await owner.PostAsync(TicketsUrl(pid), new CreateTicketRequest("Door lock jammed", null, "FURNITURE", "HIGH", other.Id, null, null, null, true, Today.AddDays(3)));
+        Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
+        (code, message) = await ProblemAsync(res);
+        Assert.Equal("BLOCK_OVERLAP", code);
+        Assert.Contains($"{other.Name} can't be taken out of order from tonight: {other.Name} is already blocked", message);
+        Assert.EndsWith("(Repainting). Release that block in Rooms first (or choose a return date before it), or report the problem without taking the room out of order.", message);
 
         // Field errors say what to fix.
         Assert.Equal("The expected date must be after today: the room is blocked from tonight until that day.",
