@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 4 — Housekeeping, maintenance | M | [Sprint 07](sprint-07-front-desk.md) |
+| 🟢 Done | Phase 4 — Housekeeping, maintenance | M | [Sprint 07](sprint-07-front-desk.md) |
 
 **Goal:** Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review: pull request into develop, waiting for the owner's acceptance.
+**Now:** Accepted by the owner on 26 Oct 2026 and released to main (tag sprint-13).
 
 **Done so far**
 

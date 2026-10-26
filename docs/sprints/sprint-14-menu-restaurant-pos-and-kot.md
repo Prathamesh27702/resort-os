@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | L | [Sprint 08](sprint-08-folio.md), [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md) |
+| 🔵 In progress — **current sprint** | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | L | [Sprint 08](sprint-08-folio.md), [Sprint 09](sprint-09-gst-configuration-and-tax-engine.md) |
 
 **Goal:** Orders, kitchen tickets, and charging to a room folio (brief §35, §55).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 08, Sprint 09 are accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 
