@@ -14,6 +14,7 @@ using Resort.Application.Invoicing;
 using Resort.Application.Properties;
 using Resort.Application.Rates;
 using Resort.Application.Reservations;
+using Resort.Application.Restaurant;
 
 namespace Resort.Application;
 
@@ -60,6 +61,8 @@ public static class DependencyInjection
         services.AddScoped<HousekeepingState>();
         services.AddScoped<HousekeepingService>();
         services.AddScoped<MaintenanceService>();
+        services.AddScoped<MenuService>();
+        services.AddScoped<OrderService>();
         return services;
     }
 }

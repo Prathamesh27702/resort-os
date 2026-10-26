@@ -191,6 +191,7 @@ public sealed class TestClient(HttpClient http)
     public Task<HttpResponseMessage> GetAsync(string url) => SendAsync(HttpMethod.Get, url, null);
     public Task<HttpResponseMessage> PostAsync(string url, object? body = null) => SendAsync(HttpMethod.Post, url, body);
     public Task<HttpResponseMessage> PutAsync(string url, object body) => SendAsync(HttpMethod.Put, url, body);
+    public Task<HttpResponseMessage> DeleteAsync(string url) => SendAsync(HttpMethod.Delete, url, null);
 
     /// <summary>POST with extra headers (e.g. Idempotency-Key).</summary>
     public Task<HttpResponseMessage> PostAsync(string url, object? body, IReadOnlyDictionary<string, string> headers) =>

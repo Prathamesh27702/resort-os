@@ -185,7 +185,8 @@ public sealed class CashDrawerService(IAppDbContext db, ICurrentUser caller, Aud
     }
 
     /// <summary>Adds a line to a session's ledger. Not saved.</summary>
-    internal void AddMovement(CashDrawerSession session, string type, decimal amount, string description, Guid? paymentId, Guid? refundId) =>
+    internal void AddMovement(CashDrawerSession session, string type, decimal amount, string description, Guid? paymentId, Guid? refundId,
+        Guid? orderId = null) =>
         db.CashDrawerMovements.Add(new CashDrawerMovement
         {
             OrganizationId = session.OrganizationId,
@@ -195,10 +196,15 @@ public sealed class CashDrawerService(IAppDbContext db, ICurrentUser caller, Aud
             Amount = amount,
             PaymentId = paymentId,
             RefundId = refundId,
+            OrderId = orderId,
             Description = description.Length <= 200 ? description : description[..197] + "…",
             MovedAt = clock.GetUtcNow(),
             MovedBy = caller.UserId,
         });
+
+    /// <summary>Cash taken for a restaurant bill (Sprint 14). Not saved.</summary>
+    internal void AddSaleMovement(CashDrawerSession session, decimal amount, string description, Guid orderId) =>
+        AddMovement(session, DrawerMovementTypes.PosSale, amount, description, null, null, orderId);
 
     /// <summary>The cash a session should hold now: the sum of its ledger.</summary>
     internal async Task<decimal> ExpectedAsync(Guid sessionId, CancellationToken ct) =>

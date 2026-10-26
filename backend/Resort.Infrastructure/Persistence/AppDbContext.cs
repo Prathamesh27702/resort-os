@@ -10,6 +10,7 @@ using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
 using Resort.Domain.Housekeeping;
+using Resort.Domain.Restaurant;
 using Resort.Domain.Identity;
 using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
@@ -103,6 +104,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<MaintenanceTicket> MaintenanceTickets => Set<MaintenanceTicket>();
     public DbSet<MaintenanceComment> MaintenanceComments => Set<MaintenanceComment>();
     public DbSet<MaintenanceAttachment> MaintenanceAttachments => Set<MaintenanceAttachment>();
+    public DbSet<MenuCategory> MenuCategories => Set<MenuCategory>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<MenuItemVariant> MenuItemVariants => Set<MenuItemVariant>();
+    public DbSet<ModifierGroup> ModifierGroups => Set<ModifierGroup>();
+    public DbSet<Modifier> Modifiers => Set<Modifier>();
+    public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Kot> Kots => Set<Kot>();
+    public DbSet<KotItem> KotItems => Set<KotItem>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -485,6 +496,48 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         {
             e.ToTable("maintenance_attachments");
             e.HasOne<MaintenanceTicket>().WithMany().HasForeignKey(x => x.TicketId);
+        });
+
+        // Restaurant (Sprint 14). The relationships only order the INSERTs of one save (an order before its lines and tickets).
+        b.Entity<MenuCategory>().ToTable("menu_categories");
+        b.Entity<MenuItem>(e =>
+        {
+            e.ToTable("menu_items");
+            e.HasOne<MenuCategory>().WithMany().HasForeignKey(x => x.CategoryId);
+            e.HasMany(x => x.Variants).WithOne().HasForeignKey(x => x.MenuItemId);
+            e.HasMany(x => x.ModifierGroups).WithOne().HasForeignKey(x => x.MenuItemId);
+        });
+        b.Entity<MenuItemVariant>().ToTable("menu_item_variants");
+        b.Entity<ModifierGroup>(e =>
+        {
+            e.ToTable("modifier_groups");
+            e.HasMany(x => x.Modifiers).WithOne().HasForeignKey(x => x.GroupId);
+        });
+        b.Entity<Modifier>().ToTable("modifiers");
+        b.Entity<RestaurantTable>().ToTable("restaurant_tables");
+        b.Entity<Order>(e =>
+        {
+            e.ToTable("orders");
+            // A room charge's folio line is saved before the order that points to it.
+            e.HasOne<FolioItem>().WithMany().HasForeignKey(x => x.FolioItemId);
+        });
+        b.Entity<OrderItem>(e =>
+        {
+            e.ToTable("order_items");
+            e.Property(x => x.Modifiers).HasColumnType("jsonb");
+            e.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId);
+            e.HasOne<Kot>().WithMany().HasForeignKey(x => x.KotId);
+        });
+        b.Entity<Kot>(e =>
+        {
+            e.ToTable("kots");
+            e.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId);
+        });
+        b.Entity<KotItem>(e =>
+        {
+            e.ToTable("kot_items");
+            e.HasOne<Kot>().WithMany().HasForeignKey(x => x.KotId);
+            e.HasOne<OrderItem>().WithMany().HasForeignKey(x => x.OrderItemId);
         });
 
         foreach (var entity in b.Model.GetEntityTypes())

@@ -39,6 +39,8 @@ public static class FolioItemSources
     public const string RoomNight = "ROOM_NIGHT";
     /// <summary>One component of a package sale (lines of one sale share GroupId).</summary>
     public const string Package = "PACKAGE";
+    /// <summary>A restaurant bill charged to the room (Sprint 14): one line per order, its number in the description.</summary>
+    public const string Restaurant = "RESTAURANT";
 }
 
 /// <summary>When a stay's room nights are put on the bill (property setting <c>folio.room_charge_posting</c>).</summary>

@@ -13,6 +13,7 @@ using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
+using Resort.Domain.Restaurant;
 using Resort.Domain.Tax;
 
 namespace Resort.Application.Common;
@@ -93,6 +94,16 @@ public interface IAppDbContext
     DbSet<DebitNoteItemTax> DebitNoteItemTaxes { get; }
     DbSet<Receipt> Receipts { get; }
     DbSet<EInvoiceRecord> EInvoiceRecords { get; }
+    DbSet<MenuCategory> MenuCategories { get; }
+    DbSet<MenuItem> MenuItems { get; }
+    DbSet<MenuItemVariant> MenuItemVariants { get; }
+    DbSet<ModifierGroup> ModifierGroups { get; }
+    DbSet<Modifier> Modifiers { get; }
+    DbSet<RestaurantTable> RestaurantTables { get; }
+    DbSet<Order> Orders { get; }
+    DbSet<OrderItem> OrderItems { get; }
+    DbSet<Kot> Kots { get; }
+    DbSet<KotItem> KotItems { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
