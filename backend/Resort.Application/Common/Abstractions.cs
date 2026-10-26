@@ -6,6 +6,7 @@ using Resort.Domain.Audit;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
+using Resort.Domain.Housekeeping;
 using Resort.Domain.Identity;
 using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
@@ -71,6 +72,13 @@ public interface IAppDbContext
     DbSet<CashDrawer> CashDrawers { get; }
     DbSet<CashDrawerSession> CashDrawerSessions { get; }
     DbSet<CashDrawerMovement> CashDrawerMovements { get; }
+    DbSet<HousekeepingTask> HousekeepingTasks { get; }
+    DbSet<HousekeepingChecklistTemplate> HousekeepingChecklistTemplates { get; }
+    DbSet<HousekeepingChecklistItem> HousekeepingChecklistItems { get; }
+    DbSet<MaintenanceAsset> MaintenanceAssets { get; }
+    DbSet<MaintenanceTicket> MaintenanceTickets { get; }
+    DbSet<MaintenanceComment> MaintenanceComments { get; }
+    DbSet<MaintenanceAttachment> MaintenanceAttachments { get; }
     DbSet<PaymentGatewayOrder> PaymentGatewayOrders { get; }
     DbSet<WebhookEvent> WebhookEvents { get; }
     DbSet<InvoiceSeries> InvoiceSeries { get; }

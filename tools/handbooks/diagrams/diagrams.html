@@ -457,7 +457,7 @@
   <!-- row 2 -->
   <g transform="translate(20,190)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Housekeeping and maintenance</text>
     <text class="s" x="18" y="58">Room status from dirty to inspected, tasks</text><text class="s" x="18" y="76">on staff phones, repair tickets with photos</text><text class="s" x="18" y="94">and asset history</text>
-    <rect class="chip-plan" x="18" y="114" width="110" height="24" rx="12"/><text class="xs" x="30" y="131">Sprint 13</text></g>
+    <rect class="chip-built" x="18" y="114" width="160" height="24" rx="12"/><text class="xs" x="30" y="131" style="fill:#2E6B3C">Built · Sprint 13</text></g>
   <g transform="translate(415,190)"><rect class="tile" width="370" height="150" rx="10"/><text class="tt" x="18" y="32">Restaurant, stock and purchasing</text>
     <text class="s" x="18" y="58">Menu, table orders, kitchen tickets, charge</text><text class="s" x="18" y="76">to room, recipes and food cost, stock ledger,</text><text class="s" x="18" y="94">suppliers, purchase orders, goods received</text>
     <rect class="chip-plan" x="18" y="114" width="150" height="24" rx="12"/><text class="xs" x="30" y="131">Sprints 14–16</text></g>
@@ -1033,6 +1033,36 @@
   <text class="s" x="46" y="566"><tspan class="b">Never edited or deleted:</tspan> invoices, notes, receipts, their lines and taxes refuse UPDATE and DELETE; the series only moves on by one.</text>
   <text class="s" x="46" y="588"><tspan class="b">Taxes are copied, never recalculated:</tspan> each line keeps the rule and rate posted on the folio (Sprint 9). Status is worked out from the notes.</text>
   <text class="s" x="46" y="610"><tspan class="b">PDFs:</tspan> drawn on the server (PDFsharp/MigraDoc 6.2, MIT; DejaVu Sans for ₹). e-invoice IRN and QR fields wait in einvoice_records for Sprint 25.</text>
+</svg>
+<svg id="housekeeping-flow" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 13: housekeeping. A check-out makes exactly one cleaning task; a repair blocks the room and sends it back to cleaning</text>
+  <rect class="lane" x="30" y="56" width="1140" height="250" rx="10"/>
+  <text class="t b" x="46" y="82">From check-out to a room ready to sell (each step: lock the room's row, then the task; the task's version must match)</text>
+  <rect class="step" x="46" y="98" width="200" height="78" rx="8"/><text class="s" x="58" y="122">1. Check-out</text><text class="xs" x="58" y="144">booking locked, then rooms</text><text class="xs" x="58" y="162">in id order; room → DIRTY</text>
+  <rect class="step" x="266" y="98" width="200" height="78" rx="8"/><text class="s" x="278" y="122">2. Task, same transaction</text><text class="xs" x="278" y="144">source_change_id UNIQUE;</text><text class="xs" x="278" y="162">change marked consumed</text>
+  <rect class="step" x="486" y="98" width="200" height="78" rx="8"/><text class="s" x="498" y="122">3. Tap: Start</text><text class="xs" x="498" y="144">housekeeping.update; task</text><text class="xs" x="498" y="162">IN_PROGRESS, room CLEANING</text>
+  <rect class="step" x="706" y="98" width="210" height="78" rx="8"/><text class="s" x="718" y="122">4. Tap: Done</text><text class="xs" x="718" y="144">required lines ticked; task</text><text class="xs" x="718" y="162">CLEANED, room CLEAN</text>
+  <rect class="win" x="936" y="98" width="220" height="78" rx="8"/><text class="s b" x="948" y="122">5. Supervisor: Mark ready</text><text class="xs" x="948" y="144">housekeeping.inspect; task DONE,</text><text class="xs" x="948" y="162">room READY: can be checked into</text>
+  <path class="arrow" d="M246,137 L264,137"/><path class="arrow" d="M466,137 L484,137"/><path class="arrow" d="M686,137 L704,137"/><path class="arrow" d="M916,137 L934,137"/>
+  <rect class="win" x="46" y="190" width="640" height="44" rx="8"/><text class="xs" x="58" y="210">Three people check the same guest out at once: the booking's lock lets one through; the others get ALREADY_CHECKED_OUT.</text><text class="xs" x="58" y="226">Even a retried change can't make a second task (UNIQUE), and a room has at most one open task (ux_hk_tasks_open).</text>
+  <rect class="lose" x="706" y="190" width="450" height="44" rx="8"/><text class="xs" x="718" y="210">Send back (FAIL, a note): room DIRTY again, the same task OPEN for</text><text class="xs" x="718" y="226">the same housekeeper, showing what to redo.</text>
+  <text class="xs" x="46" y="262">Inspection off (housekeeping.inspection_required = false): Done makes the room READY. Two housekeepers starting one room: the room lock lets one; the other is told who.</text>
+  <text class="xs" x="46" y="282">Rooms a guest arrives in today come first on the board (rush). A room move's old room and the front desk's "dirty" make tasks the same way.</text>
+  <rect class="lane" x="30" y="326" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="352">A repair (maintenance.create to report, maintenance.update to fix): the room is never sold broken, and never sold unclean</text>
+  <rect class="ask" x="46" y="368" width="250" height="78" rx="8"/><text class="s b" x="58" y="392">Report, out of order</text><text class="xs" x="58" y="412">photo shrunk on the phone; ticket</text><text class="xs" x="58" y="430">M00003 in the same transaction</text>
+  <rect class="lose" x="316" y="368" width="250" height="78" rx="8"/><text class="s b" x="328" y="392">Block the room</text><text class="xs" x="328" y="412">unit_blocks OUT_OF_ORDER from tonight;</text><text class="xs" x="328" y="430">refused if a guest is booked in it</text>
+  <rect class="step" x="586" y="368" width="270" height="78" rx="8"/><text class="s b" x="598" y="392">Work it</text><text class="xs" x="598" y="412">assign, in progress, on hold;</text><text class="xs" x="598" y="430">every change on the timeline</text>
+  <rect class="win" x="876" y="368" width="280" height="78" rx="8"/><text class="s b" x="888" y="392">Resolve</text><text class="xs" x="888" y="412">block released; room DIRTY with a</text><text class="xs" x="888" y="430">"Clean after repair" task (step 2)</text>
+  <path class="arrow" d="M296,407 L314,407"/><path class="arrow" d="M566,407 L584,407"/><path class="arrow" d="M856,407 L874,407"/>
+  <text class="xs" x="46" y="474">Photos: checked by their first bytes (JPEG, PNG, WebP), at most 2 MB and 6 per ticket, encrypted in the file store; only the key is in the database.</text>
+  <text class="xs" x="46" y="494">A reporter without maintenance.read sees only the tickets they reported. A closed ticket takes no more steps: report a new one if it breaks again.</text>
+  <rect class="zone" x="30" y="544" width="1140" height="98" rx="8"/>
+  <text class="s" x="46" y="566"><tspan class="b">One place for the cleaning state:</tspan> unit_housekeeping_status (Sprint 7); HousekeepingState changes it and keeps the task in step.</text>
+  <text class="s" x="46" y="588"><tspan class="b">Nothing is lost:</tspan> tasks and tickets are never deleted; comments and photos are append-only; every step is in the audit trail.</text>
+  <text class="s" x="46" y="610"><tspan class="b">Built for a phone:</tspan> one card per room, one big button, 360 px wide, no guest names on the housekeeping board.</text>
 </svg>
 </body>
 </html>

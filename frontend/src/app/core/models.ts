@@ -81,10 +81,13 @@ export interface UnitBlock {
 }
 
 export type RoomState = 'AVAILABLE' | 'BLOCKED' | 'PARTLY_BLOCKED' | 'INACTIVE';
-export interface BedStatus { bedId: string; code: string; name: string; isActive: boolean; status: RoomState; blockId: string | null; }
+/** housekeeping: the cleaning state now (Sprint 13), on today's board only (null on other dates). */
+export interface BedStatus { bedId: string; code: string; name: string; isActive: boolean; status: RoomState; blockId: string | null; housekeeping: Housekeeping | null; }
 export interface RoomStatus {
   unitId: string; code: string; name: string; typeName: string; inventoryMode: InventoryMode; isActive: boolean; status: RoomState;
   block: UnitBlock | null; activeBeds: number; blockedBeds: number; beds: BedStatus[];
+  /** Today only: the room's cleaning state (a dormitory: its least ready bed). openRepairs: unresolved tickets on it. */
+  housekeeping: Housekeeping | null; openRepairs: number;
 }
 export interface RoomStatusBoard { date: string; rooms: RoomStatus[]; }
 
@@ -431,4 +434,59 @@ export interface InvoicePreview {
   billToGuestId: string | null; customerName: string; customerGstin: string | null; customerAddress: string | null; customerStateCode: string | null;
   gstinProblem: string | null; lines: DocumentLine[]; taxableValue: number; taxTotal: number; total: number; invoiceId: string | null;
   invoiceNumber: string | null; cantIssueReason: string | null;
+}
+
+// ---------------------------------------------------------------- housekeeping and maintenance (Sprint 13)
+
+export type TaskType = 'DEPARTURE' | 'STAYOVER' | 'DEEP_CLEAN' | 'AFTER_REPAIR';
+export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'CLEANED' | 'DONE' | 'CANCELLED';
+export type TaskAction = 'start' | 'finish' | 'inspect' | 'assign';
+export interface ChecklistLine { id: string; label: string; required: boolean; done: boolean; }
+/** A cleaning task; nextActions = what the signed-in user may do now. */
+export interface HousekeepingTask {
+  id: string; unitId: string; bedId: string | null; place: string; taskType: TaskType; status: TaskStatus; source: string;
+  reservationReference: string | null; assignedTo: string | null; assignedToName: string | null; startedAt: string | null;
+  startedByName: string | null; finishedAt: string | null; finishedByName: string | null; inspectedAt: string | null;
+  inspectedByName: string | null; inspectionNote: string | null; failedInspections: number; note: string | null;
+  checklist: ChecklistLine[]; businessDate: string; createdAt: string; nextActions: TaskAction[]; version: number;
+}
+export interface RepairBrief { ticketId: string; number: string; title: string; outOfOrder: boolean; expectedReadyOn: string | null; }
+/** A room (bedId null) or dorm bed on the board. rush = not ready and a guest arrives today. No guest names. */
+export interface HousekeepingRoom {
+  unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null; typeName: string; place: string;
+  status: Housekeeping; occupied: boolean; departureToday: boolean; arrivalToday: boolean; rush: boolean;
+  task: HousekeepingTask | null; repair: RepairBrief | null;
+}
+export interface HousekeepingSummary { dirty: number; cleaning: number; toInspect: number; ready: number; outOfOrder: number; mine: number; rush: number; }
+export interface HousekeepingBoard { today: string; inspectionRequired: boolean; summary: HousekeepingSummary; rooms: HousekeepingRoom[]; }
+export interface StaffOption { userId: string; name: string; openWork: number; }
+export interface ChecklistItem { id: string; label: string; isRequired: boolean; sortOrder: number; }
+export interface ChecklistTemplate {
+  id: string; name: string; taskType: TaskType; accommodationTypeId: string | null; accommodationTypeName: string | null; isActive: boolean;
+  items: ChecklistItem[];
+}
+
+export type TicketStatus = 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'ON_HOLD' | 'RESOLVED' | 'CLOSED';
+export type TicketPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+export type TicketCategory = 'AC' | 'PLUMBING' | 'ELECTRICAL' | 'FURNITURE' | 'APPLIANCE' | 'POOL' | 'CIVIL' | 'OTHER';
+export type TicketAction = 'assign' | 'progress' | 'resolve' | 'close' | 'comment' | 'photo';
+export interface TicketSummary {
+  id: string; number: string; title: string; category: TicketCategory; priority: TicketPriority; status: TicketStatus; place: string;
+  unitId: string | null; outOfOrder: boolean; expectedReadyOn: string | null; assignedToName: string | null; reportedByName: string | null;
+  photos: number; createdAt: string;
+}
+export interface TicketComment { id: string; kind: 'NOTE' | 'STATUS'; body: string; fromStatus: TicketStatus | null; toStatus: TicketStatus | null; createdAt: string; createdByName: string | null; }
+export interface TicketPhoto { id: string; fileName: string; contentType: string; sizeBytes: number; createdAt: string; createdByName: string | null; }
+export interface Ticket {
+  id: string; number: string; title: string; description: string | null; category: TicketCategory; priority: TicketPriority; status: TicketStatus;
+  place: string; unitId: string | null; unitName: string | null; bedId: string | null; bedCode: string | null; assetId: string | null;
+  assetName: string | null; location: string | null; outOfOrder: boolean; expectedReadyOn: string | null; blockId: string | null;
+  blockActive: boolean; reportedBy: string | null; reportedByName: string | null; assignedTo: string | null; assignedToName: string | null;
+  assignedAt: string | null; startedAt: string | null; resolvedAt: string | null; resolvedByName: string | null; resolution: string | null;
+  closedAt: string | null; closedByName: string | null; createdAt: string; comments: TicketComment[]; photos: TicketPhoto[];
+  nextActions: TicketAction[]; version: number;
+}
+export interface MaintenanceAsset {
+  id: string; code: string; name: string; category: TicketCategory; unitId: string | null; unitName: string | null; location: string | null;
+  isActive: boolean; openTickets: number;
 }

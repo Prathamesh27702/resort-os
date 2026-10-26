@@ -3,7 +3,7 @@ using Resort.Domain.Common;
 namespace Resort.Domain.FrontDesk;
 
 /// <summary>The cleaning state of a room or dorm bed (docs/architecture/lifecycles.md). Sprint 7 uses READY and DIRTY;
-/// Sprint 13 adds the steps between them on the housekeeping board.</summary>
+/// Sprint 13 adds the steps between them on the housekeeping board (Housekeeping.HousekeepingFlow).</summary>
 public static class HousekeepingStatuses
 {
     public const string Dirty = "DIRTY";
@@ -19,8 +19,8 @@ public static class HousekeepingStatuses
     public static string Words(string status) => status switch
     {
         Cleaning => "being cleaned",
-        Clean => "cleaned but not inspected",
-        Inspection => "waiting for inspection",
+        Clean => "cleaned and waiting for inspection",
+        Inspection => "being inspected",
         OutOfOrder => "out of order",
         _ => status.ToLowerInvariant(),
     };
@@ -32,6 +32,10 @@ public static class HousekeepingSources
     public const string CheckOut = "CHECK_OUT";
     public const string RoomMove = "ROOM_MOVE";
     public const string Manual = "MANUAL";
+    /// <summary>A step on the housekeeping board (Sprint 13): start, finish, inspect.</summary>
+    public const string Housekeeping = "HOUSEKEEPING";
+    /// <summary>A repair ticket took the room out of order or gave it back (Sprint 13).</summary>
+    public const string Maintenance = "MAINTENANCE";
 }
 
 /// <summary>The cleaning state of one room (BedId null) or one dorm bed. No row = READY (never used).</summary>
@@ -47,8 +51,8 @@ public class UnitHousekeepingStatus : AuditableEntity, IPropertyScoped, IAudited
     public Guid? ChangedBy { get; set; }
 }
 
-/// <summary>One change of a room's (or bed's) cleaning state. Append-only. A check-out row is the event Sprint 13 turns
-/// into a cleaning task (it sets ConsumedAt).</summary>
+/// <summary>One change of a room's (or bed's) cleaning state. Append-only. A DIRTY row from a check-out, room move or
+/// repair is the event that becomes a cleaning task (housekeeping_tasks.source_change_id); ConsumedAt is set when it does.</summary>
 public class UnitHousekeepingChange : Entity, IPropertyScoped
 {
     public Guid OrganizationId { get; set; }

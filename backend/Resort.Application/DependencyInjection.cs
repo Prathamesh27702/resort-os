@@ -8,6 +8,7 @@ using Resort.Application.Payments;
 using Resort.Application.Tax;
 using Resort.Application.FrontDesk;
 using Resort.Application.Guests;
+using Resort.Application.Housekeeping;
 using Resort.Application.Identity;
 using Resort.Application.Invoicing;
 using Resort.Application.Properties;
@@ -56,6 +57,9 @@ public static class DependencyInjection
         services.AddScoped<InvoiceService>();
         services.AddScoped<ReceiptService>();
         services.AddSingleton<InvoicePrinter>();
+        services.AddScoped<HousekeepingState>();
+        services.AddScoped<HousekeepingService>();
+        services.AddScoped<MaintenanceService>();
         return services;
     }
 }

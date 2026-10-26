@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 13
+current: 14
 
 sprints:
 
@@ -1158,39 +1158,90 @@ sprints:
 - id: 13
   title: Housekeeping and maintenance (mobile-first)
   phase: 4
-  status: in-progress
+  status: done
   size: M
   module: Housekeeping
   feature: housekeeping
   depends: [7]
   goal: Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
   client: "Housekeeping and maintenance staff see their tasks on their phones, update room status, and report repairs with photos."
+  progress:
+    now: "Accepted by the owner on 26 Oct 2026 and released to main (tag sprint-13)."
+    done:
+      - "Migration V015: housekeeping_tasks (one open task per room or dorm bed, one task per state change, never deleted), checklist templates and lines (one active per property, kind of cleaning and room type), maintenance_assets, maintenance_tickets (M00001…), maintenance_comments and maintenance_attachments (append-only); every property gets a 7-line Departure clean checklist; rooms already dirty get their task"
+      - "A check-out, room move or repair makes the room DIRTY and its cleaning task in the same transaction; the task points at the state change (unique), so three people checking the same guest out at once make one task"
+      - "Two taps for a housekeeper: Start, then Done (every line ticked); with inspection on (property setting housekeeping.inspection_required, default on) the room waits as CLEAN until a supervisor marks it READY or sends it back with what to redo"
+      - "Maintenance tickets: report with room, bed, equipment or place, kind and priority; Out of order blocks the room from tonight to the expected date (at most 90 days; refused, saying which booking, when a guest is booked in it); resolving releases the block and sends the room to cleaning (Clean after repair) before it can be sold"
+      - "Photos shrunk on the phone (at most 1600 px, JPEG), checked by their content on the server (JPEG, PNG or WebP, at most 2 MB, 6 per ticket) and stored encrypted through IFileStore"
+      - "Screens for a 360 px phone: Housekeeping board (one card per room, rush rooms first, one big Start/Done/Mark ready button, task sheet with checklist, assign, send back, report a problem), Maintenance list, Report a problem with photos, ticket page with timeline, Checklists editor; Room status shows today's cleaning state and open repairs"
+      - "Dev seed S010: the departure checklist, the task for dirty Room 101, three assets and two open tickets (M00001 pool pump, M00002 tap in Room 104)"
+      - "[done] Docs: API.md, DATABASE.md, schema-sprint-13.md, system design Sprint 13 and 4.23 with the housekeeping flow diagram, RUN_AND_TEST, REVIEWING"
+    files:
+      - "database/migrations/V015__housekeeping.sql; database/seed/dev/S010__housekeeping.sql; database/queries/check-sprint-13.sql"
+      - "backend/Resort.Domain/Housekeeping/ (Housekeeping.cs, Maintenance.cs); backend/Resort.Domain/FrontDesk/FrontDesk.cs"
+      - "backend/Resort.Contracts/HousekeepingContracts.cs; backend/Resort.Contracts/AccommodationContracts.cs"
+      - "backend/Resort.Application/ — Housekeeping/ (HousekeepingState.cs, HousekeepingService.cs, MaintenanceService.cs), Validation/HousekeepingValidators.cs, Accommodation/BlockService.cs, Accommodation/AccommodationService.cs, FrontDesk/FrontDeskService.cs, Common/PropertySettingsReader.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs"
+      - "backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/HousekeepingEndpoints.cs, Program.cs"
+      - "backend/Resort.Tests/ — Integration/HousekeepingTests.cs, Integration/MaintenanceTests.cs, Unit/HousekeepingUnitTests.cs, Integration/FrontDeskTests.cs"
+      - "frontend/src/app/ — features/housekeeping/ (housekeeping.page.ts, task-sheet.ts, checklists.page.ts, housekeeping.api.ts, housekeeping.spec.ts), features/maintenance/ (maintenance.page.ts, report.page.ts, ticket.page.ts, maintenance.api.ts), features/rooms/room-status.page.ts, features/front-desk/front-desk.api.ts, core/models.ts, app.routes.ts, layout/shell.ts"
+      - "frontend/e2e/sprint-13.spec.ts; scripts/check-api.mjs (Sprint 13 checks)"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-13.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-13-screens/; tools/handbooks/diagrams (housekeeping-flow)"
+    results:
+      - "Backend: 417 passed, 0 failed on real PostgreSQL 16 (36 new: HousekeepingTests with check-outs of the same guest at the same moment making one task, the two-tap demo, send back to the same housekeeper, no-inspection mode, two housekeepers starting one room at once (exactly one gets it, 10 times), assigning, required checklist lines and room-type checklists, one open task per room; MaintenanceTests with out of order blocking the room and resolving sending it to cleaning, a guest booked tonight refusing out of order, photos checked by their bytes, encrypted and limited to six, reporters seeing their own tickets, a retried report saved once, equipment codes; HousekeepingUnitTests)"
+      - "Frontend: 95 of 95 unit tests passed (7 new: board filters, the one big button, photo sizing, the property's date for out of order); ESLint clean; production build OK"
+      - "Browser tests: full run of Sprints 01–13 108 of 108 in about 17 minutes (earlier runs found the out-of-order message giving booking advice for a room already blocked, fixed with a backend check, and a test room choice that failed after all earlier sprints, fixed to need the room tonight only); the 7 Sprint 13 steps run on a 360 px phone; API checks 177 of 177 (17 new); database checks clean (one task per change, no dirty room without a task, blocks match open tickets, numbers gap-free); screenshots in docs/sprints/sprint-13-screens"
   scope:
     tables: [housekeeping_tasks, housekeeping_checklist_templates, housekeeping_checklist_items, maintenance_assets, maintenance_tickets, maintenance_comments, maintenance_attachments]
     api:
       - GET /api/v1/properties/{propertyId}/housekeeping/board
+      - GET /api/v1/properties/{propertyId}/housekeeping/staff
+      - POST /api/v1/properties/{propertyId}/housekeeping/tasks; GET …/tasks/{id}
       - POST /api/v1/properties/{propertyId}/housekeeping/tasks/{id}/assign | start | finish | inspect
-      - GET|POST /api/v1/properties/{propertyId}/maintenance/tickets
-      - POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/assign | progress | resolve | close
-    screens: [/housekeeping, /maintenance, /rooms/status]
+      - GET|POST /api/v1/properties/{propertyId}/housekeeping/checklists; PUT …/checklists/{id}
+      - GET|POST /api/v1/properties/{propertyId}/maintenance/tickets; GET …/tickets/{id}
+      - POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/assign | progress | resolve | close | comments
+      - POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/photos; GET …/photos/{photoId}
+      - GET /api/v1/properties/{propertyId}/maintenance/staff; GET|POST …/assets; PUT …/assets/{id}
+    screens: [/housekeeping, /housekeeping/checklists, /maintenance, /maintenance/new, /maintenance/:id, /rooms/status]
   tasks:
-    - "States DIRTY→CLEANING→CLEAN→INSPECTION→READY, OUT_OF_ORDER; check-out event creates the task"
-    - "Out-of-order ticket creates a unit block automatically"
-    - "Photo upload via IFileStore (compressed on device)"
-    - "Housekeeping dashboard (brief §53) usable one-handed on a 360 px phone"
+    - "[done] States DIRTY→CLEANING→CLEAN→INSPECTION→READY, OUT_OF_ORDER; check-out event creates the task"
+    - "[done] Out-of-order ticket creates a unit block automatically"
+    - "[done] Photo upload via IFileStore (compressed on device)"
+    - "[done] Housekeeping dashboard (brief §53) usable one-handed on a 360 px phone"
   tests:
     - Integration — checkout → DIRTY task created once (idempotent on retry)
     - Frontend — housekeeping flow on mobile viewport (Playwright)
   acceptance:
     - Housekeeper finishes a room in 2 taps; supervisor marks READY
-  debug: []
+  debug:
+    - "A room that is dirty but has no task: database/queries/check-sprint-13.sql block 7 lists them (there should be none); block 8 lists state changes never turned into a task."
+    - "An out-of-order room that can't be sold: its block is released only when the ticket is resolved (block 10 checks they agree)."
   demo:
     - Checkout → task → clean → inspect → READY → room available
+  handbook:
+    highlights:
+      - "When a guest checks out, the room appears on the housekeeper's phone by itself"
+      - "A housekeeper finishes a room in two taps; a supervisor marks it ready or sends it back saying what to redo"
+      - "Rooms a guest arrives in today are shown first"
+      - "Staff report a repair with photos from their phone; a broken room can be taken out of order so it isn't sold"
+      - "A repaired room goes back to cleaning before it can be sold again"
+    design:
+      ui: "Housekeeping (menu) shows one card per room or dorm bed with its cleaning state and one big button (Start, Done, Mark ready); tap a card for its checklist, to assign it, send it back or report a problem. Maintenance lists problems, most urgent first; Report a problem takes the room, kind, urgency, photos and Out of order; a ticket's page has its photos, timeline and the next step. Room status shows today's cleaning state and open repairs."
+      api: "GET /housekeeping/board; POST /housekeeping/tasks/{id}/start, finish, inspect (PASS, FAIL with a note, START) and assign, each with the task's version; GET|POST /maintenance/tickets (Idempotency-Key optional) and POST …/assign, progress, resolve, close, comments, photos (multipart)."
+      database: "Migration V015 adds housekeeping_tasks (unique per state change; one open per room or bed), checklist templates and lines, maintenance_assets, maintenance_tickets with their comments and photos (append-only). Out of order uses Sprint 2's unit_blocks; cleaning states stay in Sprint 7's unit_housekeeping_status."
+    diagrams:
+      - {file: tools/handbooks/assets/housekeeping-flow.png, caption: "From check-out to a room ready to sell, and a repair in between"}
+    screenshots:
+      - {file: docs/sprints/sprint-13-screens/01-housekeeper-board.png, caption: "The housekeeper's phone after a check-out"}
+      - {file: docs/sprints/sprint-13-screens/03-send-back-error.png, caption: "The supervisor sends a room back, saying what to redo"}
+      - {file: docs/sprints/sprint-13-screens/05-room-status-ready.png, caption: "Room status with today's cleaning state"}
+      - {file: docs/sprints/sprint-13-screens/06-report-problem.png, caption: "Reporting a broken AC with a photo, room out of order"}
+      - {file: docs/sprints/sprint-13-screens/09-ticket-resolved.png, caption: "A resolved ticket and its timeline"}
 
 - id: 14
   title: Menu, restaurant POS and KOT
   phase: 5
-  status: planned
+  status: in-progress
   size: L
   module: Restaurant
   feature: restaurant

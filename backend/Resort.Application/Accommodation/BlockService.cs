@@ -64,6 +64,19 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
         audit.Reason = reason;
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var block = await AddAsync(propertyId, unit, r.BedId, r.BlockType, r.StartDate, r.EndDate, reason, ct);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+
+        return ToDto(block, unit, bedCode, await UserNameAsync(block.CreatedBy, ct));
+    }
+
+    /// <summary>Adds a block inside the caller's transaction (a repair ticket taking a room out of order uses this too):
+    /// locks the unit row, refuses an overlap with another block or with a booking that holds the room, and adds the block.
+    /// The caller saves.</summary>
+    internal async Task<UnitBlock> AddAsync(Guid propertyId, AccommodationUnit unit, Guid? bedId, string blockType, DateOnly start, DateOnly end,
+        string reason, CancellationToken ct)
+    {
         // Serialise block changes per unit (same lock the database trigger takes).
         var orgId = caller.RequireOrganizationId();
         await db.Database.ExecuteSqlAsync(
@@ -71,9 +84,9 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
 
         var clash = await db.UnitBlocks
             .Where(b => b.UnitId == unit.Id && b.Status == BlockStatuses.Active
-                        && b.StartDate < r.EndDate && r.StartDate < b.EndDate
+                        && b.StartDate < end && start < b.EndDate
                         // whole-unit blocks clash with everything in the unit; bed blocks clash with the same bed
-                        && (r.BedId == null || b.BedId == null || b.BedId == r.BedId))
+                        && (bedId == null || b.BedId == null || b.BedId == bedId))
             .OrderBy(b => b.StartDate)
             .FirstOrDefaultAsync(ct);
         if (clash is not null)
@@ -82,8 +95,8 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
 
         // A block can't take a room (or bed) away from a booking that holds it (V007 trigger enforces the same).
         var booked = await db.ReservationUnits
-            .Where(u => u.UnitId == unit.Id && u.HoldsInventory && u.StartDate < r.EndDate && r.StartDate < u.EndDate
-                        && (r.BedId == null || u.BedId == r.BedId))
+            .Where(u => u.UnitId == unit.Id && u.HoldsInventory && u.StartDate < end && start < u.EndDate
+                        && (bedId == null || u.BedId == bedId))
             .Join(db.Reservations, u => u.ReservationId, res => res.Id, (u, res) => new { res.Reference, u.StartDate, u.EndDate, u.BedId })
             .OrderBy(x => x.StartDate)
             .FirstOrDefaultAsync(ct);
@@ -97,17 +110,14 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
             OrganizationId = unit.OrganizationId,
             PropertyId = propertyId,
             UnitId = unit.Id,
-            BedId = r.BedId,
-            BlockType = r.BlockType,
-            StartDate = r.StartDate,
-            EndDate = r.EndDate,
+            BedId = bedId,
+            BlockType = blockType,
+            StartDate = start,
+            EndDate = end,
             Reason = reason,
         };
         db.UnitBlocks.Add(block);
-        await db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
-
-        return ToDto(block, unit, bedCode, await UserNameAsync(block.CreatedBy, ct));
+        return block;
     }
 
     public async Task<UnitBlockDto> ReleaseAsync(Guid propertyId, Guid blockId, ReleaseBlockRequest r, CancellationToken ct)
@@ -119,12 +129,18 @@ public sealed class BlockService(IAppDbContext db, ICurrentUser caller, AuditCon
 
         var reason = r.Reason.Trim();
         audit.Reason = reason;
+        Release(block, reason);
+        await db.SaveChangesAsync(ct);
+        return (await ToDtosAsync([block], ct))[0];
+    }
+
+    /// <summary>Marks a block released (the caller saves).</summary>
+    internal void Release(UnitBlock block, string reason)
+    {
         block.Status = BlockStatuses.Released;
         block.ReleasedAt = clock.GetUtcNow();
         block.ReleasedBy = caller.UserId;
         block.ReleaseReason = reason;
-        await db.SaveChangesAsync(ct);
-        return (await ToDtosAsync([block], ct))[0];
     }
 
     private async Task<List<UnitBlockDto>> ToDtosAsync(List<UnitBlock> blocks, CancellationToken ct)

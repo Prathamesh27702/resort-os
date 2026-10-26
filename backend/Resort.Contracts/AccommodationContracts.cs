@@ -48,13 +48,14 @@ public sealed record CreateBlockRequest(Guid UnitId, Guid? BedId, string BlockTy
 
 public sealed record ReleaseBlockRequest(string Reason);
 
-// ---------------------------------------------------------------- room status board (read-only in Sprint 2)
+// ---------------------------------------------------------------- room status board (Sprint 2; housekeeping in Sprint 13)
 /// <summary>Status: AVAILABLE, BLOCKED, PARTLY_BLOCKED (some dorm beds blocked) or INACTIVE.
-/// Occupancy and housekeeping states are added by Sprints 5–7 and 13.</summary>
+/// Housekeeping (on today's board only, null on other dates): the room's cleaning state now; for a dormitory the least
+/// ready of its beds. OpenRepairs: maintenance tickets on the room that aren't resolved yet.</summary>
 public sealed record RoomStatusBoardDto(DateOnly Date, IReadOnlyList<RoomStatusDto> Rooms);
 
 public sealed record RoomStatusDto(
     Guid UnitId, string Code, string Name, string TypeName, string InventoryMode, bool IsActive, string Status,
-    UnitBlockDto? Block, int ActiveBeds, int BlockedBeds, IReadOnlyList<BedStatusDto> Beds);
+    UnitBlockDto? Block, int ActiveBeds, int BlockedBeds, IReadOnlyList<BedStatusDto> Beds, string? Housekeeping = null, int OpenRepairs = 0);
 
-public sealed record BedStatusDto(Guid BedId, string Code, string Name, bool IsActive, string Status, Guid? BlockId);
+public sealed record BedStatusDto(Guid BedId, string Code, string Name, bool IsActive, string Status, Guid? BlockId, string? Housekeeping = null);

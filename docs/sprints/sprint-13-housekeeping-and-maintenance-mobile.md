@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 4 — Housekeeping, maintenance | M | [Sprint 07](sprint-07-front-desk.md) |
+| 🟢 Done | Phase 4 — Housekeeping, maintenance | M | [Sprint 07](sprint-07-front-desk.md) |
 
 **Goal:** Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
 
@@ -10,27 +10,36 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Accepted by the owner on 26 Oct 2026 and released to main (tag sprint-13).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V015: housekeeping_tasks (one open task per room or dorm bed, one task per state change, never deleted), checklist templates and lines (one active per property, kind of cleaning and room type), maintenance_assets, maintenance_tickets (M00001…), maintenance_comments and maintenance_attachments (append-only); every property gets a 7-line Departure clean checklist; rooms already dirty get their task
+- A check-out, room move or repair makes the room DIRTY and its cleaning task in the same transaction; the task points at the state change (unique), so three people checking the same guest out at once make one task
+- Two taps for a housekeeper: Start, then Done (every line ticked); with inspection on (property setting housekeeping.inspection_required, default on) the room waits as CLEAN until a supervisor marks it READY or sends it back with what to redo
+- Maintenance tickets: report with room, bed, equipment or place, kind and priority; Out of order blocks the room from tonight to the expected date (at most 90 days; refused, saying which booking, when a guest is booked in it); resolving releases the block and sends the room to cleaning (Clean after repair) before it can be sold
+- Photos shrunk on the phone (at most 1600 px, JPEG), checked by their content on the server (JPEG, PNG or WebP, at most 2 MB, 6 per ticket) and stored encrypted through IFileStore
+- Screens for a 360 px phone: Housekeeping board (one card per room, rush rooms first, one big Start/Done/Mark ready button, task sheet with checklist, assign, send back, report a problem), Maintenance list, Report a problem with photos, ticket page with timeline, Checklists editor; Room status shows today's cleaning state and open repairs
+- Dev seed S010: the departure checklist, the task for dirty Room 101, three assets and two open tickets (M00001 pool pump, M00002 tap in Room 104)
+- [done] Docs: API.md, DATABASE.md, schema-sprint-13.md, system design Sprint 13 and 4.23 with the housekeeping flow diagram, RUN_AND_TEST, REVIEWING
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__housekeeping.sql — new tables (next free number)
-- backend/Resort.Domain/Housekeeping/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Housekeeping/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/HousekeepingEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/HousekeepingTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/housekeeping/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-13.md, this guide, CHANGELOG.md
+- database/migrations/V015__housekeeping.sql; database/seed/dev/S010__housekeeping.sql; database/queries/check-sprint-13.sql
+- backend/Resort.Domain/Housekeeping/ (Housekeeping.cs, Maintenance.cs); backend/Resort.Domain/FrontDesk/FrontDesk.cs
+- backend/Resort.Contracts/HousekeepingContracts.cs; backend/Resort.Contracts/AccommodationContracts.cs
+- backend/Resort.Application/ — Housekeeping/ (HousekeepingState.cs, HousekeepingService.cs, MaintenanceService.cs), Validation/HousekeepingValidators.cs, Accommodation/BlockService.cs, Accommodation/AccommodationService.cs, FrontDesk/FrontDeskService.cs, Common/PropertySettingsReader.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/HousekeepingEndpoints.cs, Program.cs
+- backend/Resort.Tests/ — Integration/HousekeepingTests.cs, Integration/MaintenanceTests.cs, Unit/HousekeepingUnitTests.cs, Integration/FrontDeskTests.cs
+- frontend/src/app/ — features/housekeeping/ (housekeeping.page.ts, task-sheet.ts, checklists.page.ts, housekeeping.api.ts, housekeeping.spec.ts), features/maintenance/ (maintenance.page.ts, report.page.ts, ticket.page.ts, maintenance.api.ts), features/rooms/room-status.page.ts, features/front-desk/front-desk.api.ts, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-13.spec.ts; scripts/check-api.mjs (Sprint 13 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-13.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-13-screens/; tools/handbooks/diagrams (housekeeping-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 417 passed, 0 failed on real PostgreSQL 16 (36 new: HousekeepingTests with check-outs of the same guest at the same moment making one task, the two-tap demo, send back to the same housekeeper, no-inspection mode, two housekeepers starting one room at once (exactly one gets it, 10 times), assigning, required checklist lines and room-type checklists, one open task per room; MaintenanceTests with out of order blocking the room and resolving sending it to cleaning, a guest booked tonight refusing out of order, photos checked by their bytes, encrypted and limited to six, reporters seeing their own tickets, a retried report saved once, equipment codes; HousekeepingUnitTests)
+- Frontend: 95 of 95 unit tests passed (7 new: board filters, the one big button, photo sizing, the property's date for out of order); ESLint clean; production build OK
+- Browser tests: full run of Sprints 01–13 108 of 108 in about 17 minutes (earlier runs found the out-of-order message giving booking advice for a room already blocked, fixed with a backend check, and a test room choice that failed after all earlier sprints, fixed to need the room tonight only); the 7 Sprint 13 steps run on a 360 px phone; API checks 177 of 177 (17 new); database checks clean (one task per change, no dirty room without a task, blocks match open tickets, numbers gap-free); screenshots in docs/sprints/sprint-13-screens
 
 **Outcome**
 
@@ -53,14 +62,22 @@ Expected when accepted:
 **API endpoints**
 
 - `GET /api/v1/properties/{propertyId}/housekeeping/board`
+- `GET /api/v1/properties/{propertyId}/housekeeping/staff`
+- `POST /api/v1/properties/{propertyId}/housekeeping/tasks; GET …/tasks/{id}`
 - `POST /api/v1/properties/{propertyId}/housekeeping/tasks/{id}/assign | start | finish | inspect`
-- `GET|POST /api/v1/properties/{propertyId}/maintenance/tickets`
-- `POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/assign | progress | resolve | close`
+- `GET|POST /api/v1/properties/{propertyId}/housekeeping/checklists; PUT …/checklists/{id}`
+- `GET|POST /api/v1/properties/{propertyId}/maintenance/tickets; GET …/tickets/{id}`
+- `POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/assign | progress | resolve | close | comments`
+- `POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/photos; GET …/photos/{photoId}`
+- `GET /api/v1/properties/{propertyId}/maintenance/staff; GET|POST …/assets; PUT …/assets/{id}`
 
 **Screens / routes**
 
 - `/housekeeping`
+- `/housekeeping/checklists`
 - `/maintenance`
+- `/maintenance/new`
+- `/maintenance/:id`
 - `/rooms/status`
 
 Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABASE.md). Update both in this sprint.
@@ -69,10 +86,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] States DIRTY→CLEANING→CLEAN→INSPECTION→READY, OUT_OF_ORDER; check-out event creates the task
-- [ ] Out-of-order ticket creates a unit block automatically
-- [ ] Photo upload via IFileStore (compressed on device)
-- [ ] Housekeeping dashboard (brief §53) usable one-handed on a 360 px phone
+- [x] States DIRTY→CLEANING→CLEAN→INSPECTION→READY, OUT_OF_ORDER; check-out event creates the task
+- [x] Out-of-order ticket creates a unit block automatically
+- [x] Photo upload via IFileStore (compressed on device)
+- [x] Housekeeping dashboard (brief §53) usable one-handed on a 360 px phone
 
 ## How to run this sprint
 
@@ -91,6 +108,11 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- A room that is dirty but has no task: database/queries/check-sprint-13.sql block 7 lists them (there should be none); block 8 lists state changes never turned into a task.
+- An out-of-order room that can't be sold: its block is released only when the ticket is resolved (block 10 checks they agree).
 
 ## How to test
 

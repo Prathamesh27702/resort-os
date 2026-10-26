@@ -39,6 +39,12 @@ public static class Perm
     public const string FrontDeskCheckOut = "frontdesk.checkout";
     public const string HousekeepingRead = "housekeeping.read";
     public const string HousekeepingUpdate = "housekeeping.update";
+    public const string HousekeepingAssign = "housekeeping.assign";
+    public const string HousekeepingInspect = "housekeeping.inspect";
+    public const string MaintenanceRead = "maintenance.read";
+    public const string MaintenanceCreate = "maintenance.create";
+    public const string MaintenanceUpdate = "maintenance.update";
+    public const string MaintenanceAssign = "maintenance.assign";
 
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
@@ -69,7 +75,8 @@ public static class Perm
         AccommodationRead, AccommodationManage, UnitBlockManage, RateRead, RateManage,
         GuestRead, GuestCreate, GuestUpdate, GuestDelete, GuestDocumentRead,
         ReservationRead, ReservationCreate, ReservationUpdate, ReservationCancel,
-        FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate,
+        FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate, HousekeepingAssign, HousekeepingInspect,
+        MaintenanceRead, MaintenanceCreate, MaintenanceUpdate, MaintenanceAssign,
         FolioRead, FolioPostCharge, FolioAdjust,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,

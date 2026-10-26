@@ -200,9 +200,11 @@ public class FrontDeskTests(FrontDeskFactory app) : IClassFixture<FrontDeskFacto
 
         Assert.Equal("DIRTY", await ScalarAsync($"SELECT status FROM unit_housekeeping_status WHERE unit_id = '{stay.Rooms[0].Id}'"));
         var events = await RowsAsync(
-            $"SELECT from_status, to_status, source, reservation_id, consumed_at FROM unit_housekeeping_history WHERE unit_id = '{stay.Rooms[0].Id}'");
+            $"SELECT from_status, to_status, source, reservation_id, consumed_at IS NOT NULL FROM unit_housekeeping_history WHERE unit_id = '{stay.Rooms[0].Id}'");
         var e = Assert.Single(events);
-        Assert.Equal(new object?[] { "READY", "DIRTY", "CHECK_OUT", booked.Id, null }, e);
+        // Sprint 13: the event became a housekeeping task in the same transaction, so it is consumed.
+        Assert.Equal(new object?[] { "READY", "DIRTY", "CHECK_OUT", booked.Id, true }, e);
+        Assert.Equal(1L, await ScalarAsync($"SELECT count(*) FROM housekeeping_tasks WHERE unit_id = '{stay.Rooms[0].Id}' AND status = 'OPEN'"));
 
         var again = await owner.PostAsync(CheckOutUrl(pid, booked), new CheckOutRequest(null));
         Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);

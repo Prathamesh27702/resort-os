@@ -22,6 +22,8 @@
 //     account (orders that are never paid expire there); without keys the built-in fake Razorpay is used
 //   - Sprint 12: the receipt of the demo payment P00001 (issued the first time, the same one after that; receipts are never
 //     deleted). Every other check is a read, a preview or a refusal: no invoice or note is issued, so no number is used up
+//   - Sprint 13 changes nothing: it reads the housekeeping board, checklists and tickets, and checks refusals (a photo that
+//     isn't a picture, a report without a title, a step someone may not take); no task or ticket is changed
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -611,6 +613,54 @@ if (voided) {
   await expectCall(`A voided payment (${voided.number}) gets no receipt → 422 NO_RECEIPT_FOR_PAYMENT, saying why`, 'POST', `${P}/payments/${voided.id}/receipt`, 422,
     { token: T, body: {} }, b => (b.code === 'NO_RECEIPT_FOR_PAYMENT' && /was voided/.test(b.message)) || b.code);
 }
+
+// ---------------------------------------------------------------- Sprint 13 — housekeeping and maintenance
+title('Sprint 13 — housekeeping tasks, inspection, maintenance tickets');
+const HK = `${P}/housekeeping`, MT = `${P}/maintenance`;
+await expectCall('Housekeeping board: every room or dorm bed with its cleaning state, no guest names', 'GET', `${HK}/board`, 200, { token: T },
+  b => (Array.isArray(b?.rooms) && b.rooms.length > 0 && typeof b.summary?.rush === 'number'
+    && b.rooms.every(r => ['DIRTY', 'CLEANING', 'CLEAN', 'INSPECTION', 'READY', 'OUT_OF_ORDER'].includes(r.status))
+    && !JSON.stringify(b).includes('guestName')) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can see the board', 'GET', `${HK}/board`, 200, { token: R });
+await expectCall('Receptionist can’t start a cleaning task → 403', 'POST', `${HK}/tasks/${NONE}/start`, 403, { token: R, body: {} });
+await expectCall('Starting a task that doesn’t exist → 404', 'POST', `${HK}/tasks/${NONE}/start`, 404, { token: T, body: {} });
+await expectCall('Inspection with an unknown result → 400 under Result, naming PASS, FAIL and START', 'POST', `${HK}/tasks/${NONE}/inspect`, 400,
+  { token: T, body: { result: 'MAYBE' } }, b => /PASS.*FAIL.*START/.test(b.details?.Result?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('Sending a room back without saying what to redo → 400 under Note', 'POST', `${HK}/tasks/${NONE}/inspect`, 400,
+  { token: T, body: { result: 'FAIL' } }, b => /redo/.test(b.details?.Note?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A cleaning task of an unknown kind → 400 under TaskType', 'POST', `${HK}/tasks`, 400,
+  { token: T, body: { unitId: NONE, taskType: 'POLISH' } }, b => !!b.details?.TaskType?.[0] || JSON.stringify(b.details));
+await expectCall('Checklists: the departure clean has its lines (demo: 7)', 'GET', `${HK}/checklists`, 200, { token: T },
+  b => (Array.isArray(b) && b.some(t => t.taskType === 'DEPARTURE' && t.items.length > 0)) || JSON.stringify(b).slice(0, 200));
+await expectCall('A checklist with no lines → 400 under Items', 'POST', `${HK}/checklists`, 400,
+  { token: T, body: { name: 'API check', taskType: 'DEPARTURE', isActive: false, items: [] } }, b => !!b.details?.Items?.[0] || JSON.stringify(b.details));
+const open = await expectCall('Open tickets, most urgent first (demo: M00001 pool pump, M00002 tap)', 'GET', `${MT}/tickets`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(t => /^M\d{5,}$/.test(t.number) && ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'ON_HOLD'].includes(t.status))) || JSON.stringify(b).slice(0, 200));
+await expectCall('A report without a title → 400 under Title', 'POST', `${MT}/tickets`, 400,
+  { token: R, body: { title: '', category: 'AC', priority: 'HIGH', location: 'Lobby', outOfOrder: false } },
+  b => /3–120/.test(b.details?.Title?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A report that doesn’t say where → 400 under Location', 'POST', `${MT}/tickets`, 400,
+  { token: R, body: { title: 'API check', category: 'AC', priority: 'HIGH', outOfOrder: false } },
+  b => /where/.test(b.details?.Location?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('Out of order without a ready date → 400 under ExpectedReadyOn', 'POST', `${MT}/tickets`, 400,
+  { token: R, body: { title: 'API check', category: 'AC', priority: 'HIGH', unitId: NONE, outOfOrder: true } },
+  b => !!b.details?.ExpectedReadyOn?.[0] || JSON.stringify(b.details));
+await expectCall('Receptionist can’t resolve a ticket → 403', 'POST', `${MT}/tickets/${NONE}/resolve`, 403,
+  { token: R, body: { resolution: 'API check' } });
+const t1 = open?.json?.find?.(t => t.number === 'M00001');
+if (t1) {
+  // A text file posted as a photo: refused by its content, not its name, and nothing is stored.
+  const form = new FormData();
+  form.set('file', new Blob(['not a picture'], { type: 'image/jpeg' }), 'fake.jpg');
+  const res = await fetch(`${BASE}${MT}/tickets/${t1.id}/photos`, { method: 'POST', headers: { authorization: `Bearer ${T}` }, body: form });
+  const b = await res.json().catch(() => ({}));
+  record('A “photo” that isn’t a picture → 400 under File, nothing stored', res.status === 400 && /isn't a photo/.test(b.details?.File?.[0] ?? ''),
+    `got ${res.status} ${JSON.stringify(b.details ?? b).slice(0, 200)}`);
+  await expectCall('Closing a ticket that isn’t resolved → 422, saying to resolve it first', 'POST', `${MT}/tickets/${t1.id}/close`, 422,
+    { token: T, body: {} }, b => /resolve it before closing/.test(b.message ?? '') || b.message);
+} else record('Photo and close checks', false, 'no open M00001 (dev seed S010 adds it; reset the database)');
+await expectCall('Room status shows today’s cleaning state and open repairs', 'GET', `${P}/rooms/status`, 200, { token: T },
+  b => (b.rooms.every(r => 'housekeeping' in r && typeof r.openRepairs === 'number')) || JSON.stringify(b.rooms?.[0]).slice(0, 200));
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

@@ -100,8 +100,8 @@ branch, and so do its screenshots. To test a sprint that is still in review, swi
 
 | Sprint | Where the code is now | Branch to test |
 |---|---|---|
-| 01–12 | Accepted: on `develop` and `main` | `develop` |
-| 13 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
+| 01–13 | Accepted: on `develop` and `main` | `develop` |
+| 14 | In progress: its pull request will be linked here when it is ready for review | the branch named in its pull request |
 
 ```powershell
 cd D:\resort-os
@@ -563,6 +563,46 @@ the tax rules: [GST.md → Invoices](GST.md#invoices-credit-and-debit-notes-spri
 By hand: [REVIEWING.md → Sprint 12](sprints/REVIEWING.md#sprint-12--gst-invoices-credit-and-debit-notes-receipts).
 Screenshots: [sprint-12-screens/](sprints/sprint-12-screens/).
 
+### Sprint 13: Housekeeping and maintenance (mobile-first)
+
+**New:** when a guest checks out, their room appears on the **Housekeeping** screen as *Dirty* with a cleaning task, by
+itself. Built for a phone: one card per room or dorm bed, rooms a guest arrives in today first, and one big button:
+**Start**, then **Done** (two taps); a supervisor then **Mark ready**s it or sends it back saying what to redo. Tap a card
+for its checklist, to assign it, or **Report a problem**. **Maintenance** lists repairs; a report takes the room, kind,
+urgency, photos (shrunk on the phone) and **Out of order**, which blocks the room until it is fixed; resolving it sends
+the room back to cleaning. **Room status** shows today's cleaning state and open repairs. Demo data (S010): Room 101's
+cleaning task, tickets M00001 (pool pump) and M00002 (tap in Room 104). Restart the API and watch for `Applying migration
+V015__housekeeping`.
+
+```powershell
+# Backend (HousekeepingTests, MaintenanceTests, HousekeepingUnitTests; includes the same guest checked out three times at
+# once making one task, two housekeepers starting one room at once, out of order blocking and releasing the room)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Housekeeping|FullyQualifiedName~Maintenance"
+
+# Frontend unit tests (board filters, the one big button, photo sizing, the property's date)
+cd frontend
+npm run test:ci
+
+# Browser, on a 360 px phone (7 steps, S13-01 … S13-07: check-out → task → Start, Done → sent back → ready; report with a
+# photo and out of order; maintenance resolves; the manager closes)
+npm run e2e -- e2e/sprint-13.spec.ts
+cd ..
+
+# API checks: the Sprint 13 block must be all PASS (reads and refusals only; nothing is changed)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6, 7, 8, 10 and 11 must return no rows)
+Get-Content database/queries/check-sprint-13.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check, with the browser at phone width (DevTools device toolbar, 360 px): **Front desk → Departures →
+R00007 → Check out** → **Housekeeping**: Room 105 *Dirty* → **Start** → **Done** (*waiting for inspection*) → **To
+inspect** → **Mark ready** → **Room status**: 105 *Ready*. How it works:
+[system-design.md → 4.23](architecture/system-design.md#423-housekeeping-one-task-per-check-out-and-out-of-order-rooms).
+
+By hand: [REVIEWING.md → Sprint 13](sprints/REVIEWING.md#sprint-13--housekeeping-and-maintenance-mobile-first).
+Screenshots: [sprint-13-screens/](sprints/sprint-13-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -575,7 +615,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 381 backend passed, 88 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 417 backend passed, 95 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -583,7 +623,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–12 (expected: 101 passed, about 14 minutes)
+# 3. Every browser test, Sprints 01–13 (expected: 108 passed, about 16 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
