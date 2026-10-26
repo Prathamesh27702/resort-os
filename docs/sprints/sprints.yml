@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 14
+current: 15
 
 sprints:
 
@@ -1241,7 +1241,7 @@ sprints:
 - id: 14
   title: Menu, restaurant POS and KOT
   phase: 5
-  status: in-progress
+  status: done
   size: L
   module: Restaurant
   feature: restaurant
@@ -1249,7 +1249,7 @@ sprints:
   goal: Orders, kitchen tickets, and charging to a room folio (brief §35, §55).
   client: "The restaurant takes orders by table, sends tickets to the kitchen, and charges in-house guests directly to their room."
   progress:
-    now: "Built; pull request into develop waits for the owner's review."
+    now: "Accepted by the owner on 26 Oct 2026 and released to main (tag sprint-14)."
     done:
       - "Migration V016: menu (sections, dishes with veg / non-veg / egg and sold out, portions, groups of choices; switched off, never deleted), restaurant_tables, orders (O00001…, one open order per table, totals and CHECKs on the row, final once settled or voided), order_items (name and price copied; a sent line can only be voided), kots (K00001…) and kot_items; cash_drawer_movements POS_SALE with the order; folio source RESTAURANT"
       - "Order → send → kitchen Start / Ready → served → paid at the restaurant (cash into the open drawer, UPI, card, bank transfer) or charged to the room: one FOOD line on the guest's main folio with the same GST as the order"
@@ -1297,11 +1297,30 @@ sprints:
     - "Kitchen display not updating: it asks GET /kitchen/kots every 10 s only while the tab is visible; the 'last HH:mm:ss' under the title shows the last answer."
   demo:
     - "Order → KOT → ready → charge to Room 104 (R00008, in house; the plan said Room 103, which is kept free for Sprint 2's review)"
+  handbook:
+    highlights:
+      - "A waiter takes the order on a phone, table by table, with portions (Half / Full) and choices (spice level, add-ons)"
+      - "The kitchen sees each ticket on its screen within 10 seconds, starts it and marks it ready"
+      - "In-house guests' bills go straight onto their room bill, with GST, to be paid at check-out"
+      - "Two waiters can't overwrite each other's changes on the same order"
+      - "Discounts and voids are for managers only, always with a reason"
+    design:
+      ui: "Restaurant (menu) shows the floor: every table free or with its order and what is cooking or ready; room service and takeaway. On an order, tap a dish to add it, Send to kitchen, Served, then Paid or Charge to room. Kitchen shows tickets in New, Preparing and Ready with one-tap Start and Ready, refreshing every 10 seconds. Menu edits sections, dishes, portions, choices, sold out and tables."
+      api: "GET /orders/floor; POST /orders (Idempotency-Key optional), POST /orders/{id}/items, send, discount, void, pay, charge-to-room and PUT|DELETE lines, each with the order's version (409 when someone else changed it first); GET /kitchen/kots and POST …/start, ready; GET|POST|PUT /menu/…"
+      database: "Migration V016 adds the menu (categories, items, variants, modifier groups, modifiers), restaurant_tables, orders (one open per table, totals checked, final once settled), order_items (only voided once sent), kots and kot_items. A room charge is one folio line with source RESTAURANT; restaurant cash is a POS_SALE drawer movement."
+    diagrams:
+      - {file: tools/handbooks/assets/restaurant-flow.png, caption: "Order, kitchen ticket, served, then paid or charged to the room"}
+    screenshots:
+      - {file: docs/sprints/sprint-14-screens/01-floor.png, caption: "The restaurant floor on a waiter's phone"}
+      - {file: docs/sprints/sprint-14-screens/02-choose-portion.png, caption: "Choosing a portion and spice level"}
+      - {file: docs/sprints/sprint-14-screens/03-second-waiter-refused.png, caption: "A second waiter's change refused, with the reason"}
+      - {file: docs/sprints/sprint-14-screens/04-kitchen-display.png, caption: "The kitchen display"}
+      - {file: docs/sprints/sprint-14-screens/07-charged.png, caption: "The bill charged to the guest's room"}
 
 - id: 15
   title: Inventory and recipe costing
   phase: 5
-  status: planned
+  status: in-progress
   size: M
   module: Inventory
   feature: inventory
