@@ -24,6 +24,9 @@
 //     deleted). Every other check is a read, a preview or a refusal: no invoice or note is issued, so no number is used up
 //   - Sprint 13 changes nothing: it reads the housekeeping board, checklists and tickets, and checks refusals (a photo that
 //     isn't a picture, a report without a title, a step someone may not take); no task or ticket is changed
+//   - Sprint 14 changes nothing: it reads the menu, tables, floor, orders and kitchen display, and checks refusals (a table
+//     that already has an order, a stale version, a bill with food still in the kitchen, a void without a reason, a card
+//     number as a reference); no order is opened, so no order number is used up
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -661,6 +664,64 @@ if (t1) {
 } else record('Photo and close checks', false, 'no open M00001 (dev seed S010 adds it; reset the database)');
 await expectCall('Room status shows today’s cleaning state and open repairs', 'GET', `${P}/rooms/status`, 200, { token: T },
   b => (b.rooms.every(r => 'housekeeping' in r && typeof r.openRepairs === 'number')) || JSON.stringify(b.rooms?.[0]).slice(0, 200));
+
+// ---------------------------------------------------------------- Sprint 14 — menu, restaurant POS and KOT
+title('Sprint 14 — menu, restaurant orders, kitchen tickets');
+const OR = `${P}/orders`;
+const menu = await expectCall('Menu by section (demo: Paneer Tikka with Half / Full, Masala Chai sold out)', 'GET', `${P}/menu`, 200, { token: T },
+  b => {
+    const items = (b?.categories ?? []).flatMap(c => c.items);
+    const tikka = items.find(i => i.code === 'PANEER-TIKKA'), chai = items.find(i => i.code === 'MASALA-CHAI');
+    return (items.length > 0 && (!tikka || tikka.variants.map(v => v.name).join('/') === 'Half/Full') && (!chai || chai.isAvailable === false))
+      || JSON.stringify(b).slice(0, 200);
+  });
+await expectCall('Tables (demo: T1–T4 and B1, B2)', 'GET', `${P}/menu/tables`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(t => /^[A-Z0-9][A-Z0-9_-]*$/.test(t.code) && t.seats >= 1)) || JSON.stringify(b).slice(0, 200));
+const floor = await expectCall('Floor: every table free or with its open order (demo: O00001 at T2)', 'GET', `${OR}/floor`, 200, { token: T },
+  b => (Array.isArray(b?.tables) && b.tables.every(t => t.order === null || /^O\d{5,}$/.test(t.order.number))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Kitchen display: tickets still to cook, oldest first (demo: K00001 New)', 'GET', `${P}/kitchen/kots`, 200, { token: T },
+  b => (Array.isArray(b?.tickets) && b.tickets.every(k => /^K\d{5,}$/.test(k.number) && ['NEW', 'PREPARING', 'READY'].includes(k.status))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Today’s open orders with the day’s totals', 'GET', `${OR}?status=OPEN`, 200, { token: T },
+  b => (Array.isArray(b?.items) && typeof b.openTotal === 'number' && b.items.every(o => o.status === 'OPEN')) || JSON.stringify(b).slice(0, 200));
+await expectCall('Orders with an unknown status → 400 under Status', 'GET', `${OR}?status=MAYBE`, 400, { token: T },
+  b => /ALL/.test(b.details?.Status?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('Receptionist can’t see restaurant orders → 403', 'GET', `${OR}/floor`, 403, { token: R });
+await expectCall('A table order without a table → 400 under TableId', 'POST', OR, 400,
+  { token: T, body: { orderType: 'DINE_IN', items: [] } }, b => b.details?.TableId?.[0] === 'Choose the table.' || JSON.stringify(b.details));
+await expectCall('Room service without a room → 400 under UnitId', 'POST', OR, 400,
+  { token: T, body: { orderType: 'ROOM_SERVICE' } }, b => !!b.details?.UnitId?.[0] || JSON.stringify(b.details));
+await expectCall('A dish with quantity 0 → 400 under Items[0].Quantity', 'POST', OR, 400,
+  { token: T, body: { orderType: 'TAKEAWAY', items: [{ menuItemId: NONE, quantity: 0 }] } },
+  b => b.details?.['Items[0].Quantity']?.[0] === 'The quantity must be 1–99.' || JSON.stringify(b.details));
+await expectCall('Voiding without a reason → 400 under Reason', 'POST', `${OR}/${NONE}/void`, 400,
+  { token: T, body: { reason: '' } }, b => /Say why it is voided/.test(b.details?.Reason?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A discount of 150% → 400 under Value', 'POST', `${OR}/${NONE}/discount`, 400,
+  { token: T, body: { kind: 'PERCENT', value: 150, reason: 'API check' } }, b => /at most 100%/.test(b.details?.Value?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('Paying a restaurant bill ONLINE → 400 under Method', 'POST', `${OR}/${NONE}/pay`, 400,
+  { token: T, body: { method: 'ONLINE' } }, b => /paid at the restaurant/.test(b.details?.Method?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A card number as the reference → 400 under Reference (no card data is ever stored)', 'POST', `${OR}/${NONE}/pay`, 400,
+  { token: T, body: { method: 'CARD', reference: '4111111111111111' } }, b => !!b.details?.Reference?.[0] || JSON.stringify(b.details));
+await expectCall('Receptionist can’t void an order → 403', 'POST', `${OR}/${NONE}/void`, 403, { token: R, body: { reason: 'API check' } });
+await expectCall('A kitchen step on a ticket that doesn’t exist → 404', 'POST', `${P}/kitchen/kots/${NONE}/start`, 404, { token: T, body: {} });
+const busy = floor?.json?.tables?.find?.(t => t.order);
+if (busy) {
+  await expectCall(`A second order on table ${busy.code} → 409, naming ${busy.order.number}`, 'POST', OR, 409,
+    { token: T, body: { orderType: 'DINE_IN', tableId: busy.id } },
+    b => (b.code === 'TABLE_HAS_ORDER' && b.message.includes(busy.order.number)) || b.message);
+  const o = (await call('GET', `${OR}/${busy.order.id}`, { token: T })).json;
+  await expectCall(`A change on ${o.number} with an old version → 409 (another waiter changed it first)`, 'POST', `${OR}/${o.id}/items`, 409,
+    { token: T, body: { items: [{ menuItemId: o.items[0].menuItemId, quantity: 1 }], version: (o.version + 7) % 4294967296 } },
+    b => (b.code === 'CONCURRENCY_CONFLICT' && b.message.includes(o.number)) || b.message);
+  if (o.kots.some(k => ['NEW', 'PREPARING', 'READY'].includes(k.status)))
+    await expectCall(`Billing ${o.number} while food is in the kitchen → 422, naming the ticket`, 'POST', `${OR}/${o.id}/pay`, 422,
+      { token: T, body: { method: 'UPI', reference: 'API check', version: o.version } },
+      b => (b.code === 'ORDER_IN_KITCHEN' && /K\d{5}/.test(b.message)) || b.message);
+} else record('Table, version and kitchen refusals', false, 'no open table order (dev seed S011 adds O00001 at T2; reset the database)');
+const starters = menu?.json?.categories?.find?.(c => c.items.some(i => i.code === 'PANEER-TIKKA'));
+if (starters)
+  await expectCall('A new dish with a code already on the menu → 400 under Code', 'POST', `${P}/menu/items`, 400,
+    { token: T, body: { categoryId: starters.id, code: 'PANEER-TIKKA', name: 'API check', foodType: 'VEG', price: 1, isActive: false, sortOrder: 0, variants: [], modifierGroups: [] } },
+    b => /already has the code PANEER-TIKKA/.test(b.details?.Code?.[0] ?? '') || JSON.stringify(b.details));
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

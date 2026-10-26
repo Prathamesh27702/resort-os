@@ -10,27 +10,36 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built; pull request into develop waits for the owner's review.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V016: menu (sections, dishes with veg / non-veg / egg and sold out, portions, groups of choices; switched off, never deleted), restaurant_tables, orders (O00001…, one open order per table, totals and CHECKs on the row, final once settled or voided), order_items (name and price copied; a sent line can only be voided), kots (K00001…) and kot_items; cash_drawer_movements POS_SALE with the order; folio source RESTAURANT
+- Order → send → kitchen Start / Ready → served → paid at the restaurant (cash into the open drawer, UPI, card, bank transfer) or charged to the room: one FOOD line on the guest's main folio with the same GST as the order
+- Every change sends the order's version; the row is locked first, so of two waiters changing one order at once the second gets 409 naming the order, and the phone reloads with the first one's change
+- Discounts need pos.discount and voids pos_order.void, each with a reason; voided lines are struck through on the kitchen ticket and a ticket with nothing left is cancelled
+- Kitchen display polls every 10 s (oldest first, red after 15 min); the order page follows the kitchen the same way while food is cooking
+- Screens for a 360 px phone: Restaurant floor, order page with the menu picker, today's orders; Kitchen display for a tablet; Menu editor with portions, choices, sold out and tables
+- Dev seed S011: 14-dish menu (Paneer Tikka Half / Full with spice level and add-ons, Masala Chai sold out), tables T1–T4, B1, B2, and O00001 at T2 in the kitchen as K00001
+- [done] Docs: API.md, DATABASE.md, schema-sprint-14.md, system design Sprint 14 and 4.24 with the restaurant flow diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__restaurant.sql — new tables (next free number)
-- backend/Resort.Domain/Restaurant/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Restaurant/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/RestaurantEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/RestaurantTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/restaurant/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-14.md, this guide, CHANGELOG.md
+- database/migrations/V016__restaurant.sql; database/seed/dev/S011__restaurant.sql; database/queries/check-sprint-14.sql
+- backend/Resort.Domain/Restaurant/Restaurant.cs; backend/Resort.Domain/Folios/Folios.cs; backend/Resort.Domain/Payments/Payments.cs
+- backend/Resort.Contracts/RestaurantContracts.cs
+- backend/Resort.Application/ — Restaurant/ (OrderService.cs, MenuService.cs), Validation/RestaurantValidators.cs, Payments/CashDrawerService.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/RestaurantEndpoints.cs, Program.cs
+- backend/Resort.Tests/ — Integration/RestaurantTests.cs, Unit/RestaurantUnitTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/restaurant/ (floor.page.ts, order.page.ts, order-dialogs.ts, orders.page.ts, kitchen.page.ts, menu.page.ts, restaurant.api.ts, restaurant.spec.ts), core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-14.spec.ts; scripts/check-api.mjs (Sprint 14 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-14.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-14-screens/; tools/handbooks/diagrams (restaurant-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 446 passed, 0 failed on real PostgreSQL 16 (29 new: RestaurantTests with two waiters adding to one order at the same moment (exactly one 409, ten times over), the ₹1,250 room charge as one FOOD line on the guest's folio with its GST, voids and discounts by permission, 5% GST with a discount on a registered property, cash into the drawer, one order per table, room service only for in-house rooms, no room charge after check-out, portions, choices and sold-out dishes, database triggers refusing changes to sent lines and settled orders; RestaurantUnitTests; dev seed check)
+- Frontend: 100 of 100 unit tests passed (5 new: line prices, what is still to pick, one-tap dishes, menu search, kitchen columns and the 10 s refresh); ESLint clean; production build OK
+- Browser tests: full run of Sprints 01–14, 115 of 117 in about 18 minutes: Sprint 09's S09-06 GSTIN check failed once (the field showed the format message instead of the check-digit one) and S09-07 after it was skipped; run again on its own, Sprint 09 passed 7 of 7. The 9 Sprint 14 steps (waiter on a 360 px phone, kitchen on a tablet, second waiter refused with 409, the ticket appearing on the kitchen display by itself, ₹1,250 charged to Room 104) pass; API checks 197 of 197 (20 new); database checks clean (totals add up, room charge matches its folio line, one open order per table, tickets match their lines, numbers gap-free); screenshots in docs/sprints/sprint-14-screens
 
 **Outcome**
 
@@ -72,11 +81,11 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Order → KOT → kitchen ready → served → paid or charged to room (folio)
-- [ ] Optimistic concurrency on orders (two waiters editing)
-- [ ] Discounts need pos.discount; voids need pos_order.void + reason
-- [ ] Kitchen display auto-refresh (polling every 10 s; no websockets yet — brief §76)
-- [ ] Seed: sample menu
+- [x] Order → KOT → kitchen ready → served → paid or charged to room (folio)
+- [x] Optimistic concurrency on orders (two waiters editing)
+- [x] Discounts need pos.discount; voids need pos_order.void + reason
+- [x] Kitchen display auto-refresh (polling every 10 s; no websockets yet — brief §76)
+- [x] Seed: sample menu
 
 ## How to run this sprint
 
@@ -95,6 +104,12 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- A table that shows an order nobody can find: database/queries/check-sprint-14.sql block 9 lists tables with two open orders (there should be none); the floor shows the open one.
+- A room charge missing from a bill: block 6 compares each ROOM_CHARGE order with its folio line (amount, GST, source RESTAURANT); block 7 finds orders without a line and lines without an order.
+- Kitchen display not updating: it asks GET /kitchen/kots every 10 s only while the tab is visible; the 'last HH:mm:ss' under the title shows the last answer.
 
 ## How to test
 
@@ -123,7 +138,7 @@ Results: CI shows *Backend tests: N passed, 0 failed* on every PR (Checks → Ba
 
 The owner runs this during review, following [REVIEWING.md](REVIEWING.md):
 
-- Order → KOT → ready → charge to Room 103
+- Order → KOT → ready → charge to Room 104 (R00008, in house; the plan said Room 103, which is kept free for Sprint 2's review)
 
 ## Definition of Done
 

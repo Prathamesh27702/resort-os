@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -15,13 +15,14 @@ import { methodLabel } from '../payments/payments.api';
 import { newKey } from '../reservations/reservations.api';
 import { rupees, rupeesExact } from '../settings/rates/rates.api';
 import { DiscountData, DiscountDialog, DishDialog, PayData, PayDialog, ReasonData, ReasonDialog, RoomData, RoomDialog } from './order-dialogs';
-import { FOOD_LABEL, ORDER_TYPE_LABEL, RestaurantApi, kotLabel, oneTap, searchMenu } from './restaurant.api';
+import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLabel, oneTap, searchMenu } from './restaurant.api';
 
 /**
  * One order (Sprint 14), for a waiter's phone. Dishes go on the order as "not sent" lines that can still be changed; Send
  * to kitchen puts them on a kitchen ticket (KOT). When the kitchen marks a ticket ready the waiter serves it, and once
  * everything is served the bill is paid here or charged to the guest's room. Every change sends the order's version: if
- * another waiter changed the order first, the change is refused and the page reloads with their lines.
+ * another waiter changed the order first, the change is refused and the page reloads with their lines. While a ticket is
+ * still cooking the page asks for the order every 10 seconds, so Ready appears without a reload.
  */
 @Component({
   selector: 'app-restaurant-order',
@@ -54,7 +55,7 @@ import { FOOD_LABEL, ORDER_TYPE_LABEL, RestaurantApi, kotLabel, oneTap, searchMe
               <li [class.voided]="l.status === 'VOIDED'" [attr.data-line]="l.name">
                 <div class="what">
                   <span [class]="'food ' + l.foodType" [attr.aria-label]="food[l.foodType]"></span>
-                  <b>{{ l.quantity }}×</b> {{ l.name }}@if (l.variantName) { ({{ l.variantName }}) }
+                  <span class="nm"><b>{{ l.quantity }}×</b> {{ l.name }}@if (l.variantName) { ({{ l.variantName }}) }</span>
                   @if (l.modifiers.length) { <small class="mute">{{ l.modifiers.join(', ') }}</small> }
                   @if (l.note) { <small class="note">“{{ l.note }}”</small> }
                   <small [class]="'kstate ' + lineState(l).cls">{{ lineState(l).text }}</small>
@@ -164,14 +165,13 @@ import { FOOD_LABEL, ORDER_TYPE_LABEL, RestaurantApi, kotLabel, oneTap, searchMe
     h2 { font-size: 1rem; margin: 12px 0 8px; }
     ul { list-style: none; margin: 0; padding: 0; }
     .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
-    .lines li.voided .what, .lines li.voided .amt { text-decoration: line-through; color: #7a8a8d; }
+    .lines li.voided .nm, .lines li.voided .amt { text-decoration: line-through; color: #7a8a8d; }
     .what small { display: block; }
     .note { color: #5b3a00; }
     .amt { text-align: right; font-variant-numeric: tabular-nums; }
     .ctl { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; }
     .kstate { font-size: .75rem; font-weight: 600; color: #5b6b6e; }
     .kstate.NEW, .kstate.unsent { color: #8a5a00; } .kstate.READY { color: #134e63; } .kstate.SERVED { color: #1d5b36; } .kstate.VOIDED { color: #b3261e; }
-    .lines .kstate { text-decoration: none; display: inline-block; }
     .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
     .kots .kstate { padding: 2px 10px; border-radius: 999px; background: #eef2f1; }
     .kots .kstate.READY { background: #e0eff5; }
@@ -243,6 +243,13 @@ export class OrderPage {
       this.load();
       this.api.menu(this.pid()).subscribe({ next: m => { this.menu.set(m); if (!this.cat()) this.cat.set(m.categories[0]?.id ?? null); } });
     });
+    // While food is in the kitchen the page follows it (Ready shows up by itself), as the kitchen display does.
+    const t = setInterval(() => {
+      const o = this.order();
+      if (document.visibilityState !== 'visible' || this.busy() || this.dialog.openDialogs.length || o?.status !== 'OPEN') return;
+      if (o.kots.some(k => k.status === 'NEW' || k.status === 'PREPARING')) this.load();
+    }, KITCHEN_REFRESH_MS);
+    inject(DestroyRef).onDestroy(() => clearInterval(t));
   }
 
   load() {

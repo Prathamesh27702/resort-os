@@ -451,7 +451,9 @@ public sealed class OrderService(
         var kot = await LockKotAsync(propertyId, kotId, ct);
         if (RestaurantFlow.KotProblem(action, kot.Number, kot.Status) is { } why)
             throw new BusinessRuleAppException("INVALID_STATUS_TRANSITION", why, new { from = kot.Status, action });
-        if (r.Version is { } v) ConcurrencyGuard.ExpectVersion(db, kot, v);
+        if (r.Version is { } v && kot.Version != v)
+            throw new ConflictAppException("CONCURRENCY_CONFLICT", $"Someone else changed {kot.Number} a moment ago. The screen reloads to show it; tap again if it still needs doing.");
+        if (r.Version is { } ok) ConcurrencyGuard.ExpectVersion(db, kot, ok);
         var now = clock.GetUtcNow();
         if (action == "start")
         {
@@ -480,7 +482,10 @@ public sealed class OrderService(
                     ?? throw new NotFoundAppException("That order doesn't exist at this property. Reload the list.");
         if (RestaurantFlow.OrderProblem(order.Number, order.Status) is { } why)
             throw new BusinessRuleAppException(order.Status == OrderStatuses.Settled ? "ORDER_SETTLED" : "ORDER_VOIDED", why);
-        if (version is { } v) ConcurrencyGuard.ExpectVersion(db, order, v);
+        if (version is { } v && order.Version != v)
+            throw new ConflictAppException("CONCURRENCY_CONFLICT",
+                $"Someone else changed {order.Number} a moment ago (another waiter, or the kitchen). Reload it to see their change, then make yours again.");
+        if (version is { } ok) ConcurrencyGuard.ExpectVersion(db, order, ok);
         return order;
     }
 

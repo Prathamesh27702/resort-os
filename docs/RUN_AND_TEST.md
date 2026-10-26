@@ -603,6 +603,52 @@ inspect** → **Mark ready** → **Room status**: 105 *Ready*. How it works:
 By hand: [REVIEWING.md → Sprint 13](sprints/REVIEWING.md#sprint-13--housekeeping-and-maintenance-mobile-first).
 Screenshots: [sprint-13-screens/](sprints/sprint-13-screens/).
 
+### Sprint 14: Menu, restaurant POS and KOT
+
+**New:** **Restaurant** (`/restaurant`) is the floor on a waiter's phone: every table *Free* or with its open order and
+what is still *not sent*, *cooking* or *ready*; tap a free table to open an order, or start **Room service** (an in-house
+room) or **Takeaway**. On the order, tap a dish to add it (a dish with portions or choices asks for them first), change
+what isn't sent yet, **Send to kitchen**, **Served** when the kitchen marks the ticket ready, then **Paid** (cash, UPI,
+card, bank transfer; cash goes into the open cash drawer) or **Charge to room** (one line on the guest's folio, with GST).
+Two waiters changing the same order at once: the second is refused and sees the first one's change. **Kitchen**
+(`/restaurant/kitchen`) shows every ticket in *New*, *Preparing* and *Ready*, refreshing every 10 seconds; **Start** and
+**Ready** are one tap. Discounts need `pos.discount` and voids `pos_order.void` with a reason (restaurant manager, owner).
+**Menu** (`/restaurant/menu`) edits sections, dishes with portions and choices, sold out, and tables. Demo data (S011): a
+14-dish menu, tables T1–T4 and B1, B2, and O00001 at T2 already in the kitchen as K00001. Restart the API and watch for
+`Applying migration V016__restaurant`.
+
+```powershell
+# Backend (RestaurantTests, RestaurantUnitTests; includes two waiters adding to one order at the same moment (one gets 409,
+# ten times over), the ₹1,250 room charge on the guest's folio, discounts and voids by permission, cash into the drawer)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Restaurant"
+
+# Frontend unit tests (portion and choice prices, what is still to pick, menu search, the kitchen columns and 10 s refresh)
+cd frontend
+npm run test:ci
+
+# Browser, the waiter on a 360 px phone and the kitchen on a tablet (9 steps, S14-01 … S14-09: table → dishes → second
+# waiter refused → send → the ticket appears on the kitchen display by itself → start, ready → served → charge to room;
+# sold out; a manager's void with its reason)
+npm run e2e -- e2e/sprint-14.spec.ts
+cd ..
+
+# API checks: the Sprint 14 block must be all PASS (reads and refusals only; no order is opened)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5 to 13 must return no rows)
+Get-Content database/queries/check-sprint-14.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check, with a browser window at phone width (DevTools device toolbar, 360 px) and a second, wide window
+on **Restaurant → Kitchen**: **Restaurant** → **T4** → *Starters* → **Paneer Tikka** → **Full**, **Less spicy**, 2 → **Add**,
+then **Dal Makhani**, **Veg Biryani**, **Butter Naan** ×2 (*Food and drinks ₹1,250.00*) → **Send to kitchen** → the kitchen
+window shows the ticket within 10 seconds → **Start** → **Ready** → back on the phone **Served** → **Charge to room** →
+**Room 104** (R00008) → the folio has *Restaurant O00002 · Table T4: …* for ₹1,250 plus GST. How it works:
+[system-design.md → 4.24](architecture/system-design.md#424-restaurant-orders-two-waiters-one-order-and-the-room-charge).
+
+By hand: [REVIEWING.md → Sprint 14](sprints/REVIEWING.md#sprint-14--menu-restaurant-pos-and-kot).
+Screenshots: [sprint-14-screens/](sprints/sprint-14-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -615,7 +661,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 417 backend passed, 95 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 446 backend passed, 100 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -623,7 +669,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–13 (expected: 108 passed, about 16 minutes)
+# 3. Every browser test, Sprints 01–14 (expected: 117 passed, about 19 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..

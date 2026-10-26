@@ -116,7 +116,8 @@ public class RestaurantTests(FolioFactory app) : IClassFixture<FolioFactory>
             Assert.Equal(1, results.Count(r => r.StatusCode == HttpStatusCode.OK));
             var loser = results.Single(r => r.StatusCode != HttpStatusCode.OK);
             Assert.Equal(HttpStatusCode.Conflict, loser.StatusCode);
-            Assert.Equal(("CONCURRENCY_CONFLICT", "The record was changed by someone else. Reload and try again."), await ProblemAsync(loser));
+            Assert.Equal(("CONCURRENCY_CONFLICT", $"Someone else changed {order.Number} a moment ago (another waiter, or the kitchen). Reload it to see their change, then make yours again."),
+                await ProblemAsync(loser));
 
             // Exactly one of the two lines was added, and the totals match the lines.
             var now = await first.GetJsonAsync<OrderDto>(OrderUrl(pid, order));

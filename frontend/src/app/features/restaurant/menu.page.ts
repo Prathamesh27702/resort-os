@@ -59,7 +59,7 @@ const server = (c: AbstractControl | null) => (c?.errors?.['server'] as string |
                 </button>
                 <span class="pr">{{ rupees(i.price) }}</span>
                 <mat-slide-toggle [checked]="i.isAvailable" (change)="available(i, $event.checked)" [disabled]="!canUpdate() || busy() === i.id"
-                                  [attr.aria-label]="i.name + ' available'">{{ i.isAvailable ? 'On' : 'Sold out' }}</mat-slide-toggle>
+                                  [aria-label]="i.name + ' available'">{{ i.isAvailable ? 'On' : 'Sold out' }}</mat-slide-toggle>
               </li>
             } @empty { <li class="mute">No dishes in this section yet.</li> }
           </ul>
