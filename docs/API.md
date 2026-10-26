@@ -744,6 +744,72 @@ reversed (`NOT_REVERSIBLE`). `FolioItemDto` adds `invoiceNumber` and `adjustable
 `itemType` can be `CREDIT` (`reason` = the credit note's reason); `FolioDto.reversals` sums reversal and credit lines.
 `POST /reservations/{id}/check-out` issues the invoice and the receipts in the same transaction (see above).
 
+## Built endpoints (Sprint 13 — housekeeping and maintenance)
+
+All under `/api/v1/properties/{propertyId}`. A room's (or dorm bed's) cleaning state is Sprint 7's `unit_housekeeping_status`:
+`DIRTY` → `CLEANING` → `CLEAN` (cleaned, waiting for inspection) → `INSPECTION` (being inspected) → `READY`, or `OUT_OF_ORDER`.
+Every change that makes a room `DIRTY` (check-out, room move, a resolved repair, front desk by hand) creates its **cleaning
+task in the same transaction**; the task points at that state change (unique), so the same check-out retried or sent three
+times at once makes one task, and a room or bed has at most one open task. A task is `OPEN` → `IN_PROGRESS` → `CLEANED`
+(waiting for inspection) → `DONE`, or `CANCELLED` (the room went out of order). With property setting
+`housekeeping.inspection_required` off (default on), Done makes the room `READY` straight away. Steps take the task's
+`version` (refused with 409 when someone else changed it). Housekeepers (`housekeeping.update`) start and finish; supervisors
+(`housekeeping.assign`, `housekeeping.inspect`) assign, make tasks by hand, inspect and edit checklists; receptionists and
+managers read. The board shows **no guest names**. **Maintenance tickets** (`M00001` …) say where (a room, a dorm bed, a
+piece of equipment or a place in words), the kind and how urgent. **Out of order** puts a Sprint 2 `OUT_OF_ORDER` block on
+the room from tonight until the expected date (at most 90 days), so it can't be sold or checked into; **resolving** the
+ticket releases the block and makes the room `DIRTY` with a "Clean after repair" task, so it is cleaned before it is sold.
+Anyone with `maintenance.create` reports problems and sees the ones they reported; `maintenance.read` sees all;
+`maintenance.update` works and resolves; `maintenance.assign` assigns and closes. How the task is made exactly once:
+[system-design.md → 4.23](architecture/system-design.md#423-housekeeping-one-task-per-check-out-and-out-of-order-rooms).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /housekeeping/board` | Today's board (the property's date): every room and dorm bed with its cleaning state, open task, repair and whether a guest is in, leaving or arriving today. Rush rooms (not ready, guest arriving today) first | `housekeeping.read` | — | `HousekeepingBoardDto` | 403 | — |
+| `GET /housekeeping/staff` | Who can be given rooms (housekeeping staff at the property) with their open tasks | `housekeeping.assign` | — | `StaffOptionDto[]` | 403 | — |
+| `POST /housekeeping/tasks` | A task by hand (stay-over, deep clean); the room becomes `DIRTY` | `housekeeping.assign` | `CreateTaskRequest` | 201 `HousekeepingTaskDto` | 400 `UnitId` ("That room doesn't exist …", "Room 105 is not in use; …"), `BedId` ("Dorm A is a dormitory; choose the bed."), `TaskType`, `AssignTo` (not housekeeping staff here); 403; **409 `TASK_EXISTS`** ("Room 101 already has an open task (departure clean, room dirty). Finish or inspect that one instead."); 422 `ROOM_OUT_OF_ORDER` | INSERT task, room state change |
+| `GET /housekeeping/tasks/{id}` | One task with its checklist and what the caller may do (`nextActions`) | `housekeeping.read` | — | `HousekeepingTaskDto` | 403, 404 | — |
+| `POST /housekeeping/tasks/{id}/assign` | Give it to someone (`userId` null: nobody) | `housekeeping.assign` | `{ userId, version }` | `HousekeepingTaskDto` | 400 `UserId`; 403, 404; 409 version, `TASK_CLOSED` | UPDATE task |
+| `POST /housekeeping/tasks/{id}/start` | Start cleaning (tap 1); an unassigned task becomes the caller's. The room becomes `CLEANING` | `housekeeping.update` | `{ version }` | `HousekeepingTaskDto` | 403, 404; **409 `TASK_ALREADY_STARTED`** ("Room 101 is already being cleaned by Hema (started 10:42)."), `TASK_ASSIGNED_TO_SOMEONE_ELSE` ("Room 101 is assigned to Asha. Ask your supervisor to give it to you."), `TASK_NOT_STARTABLE`, version | UPDATE task, room state change |
+| `POST /housekeeping/tasks/{id}/finish` | Done (tap 2). `checked` null: every line done; otherwise the ticked line ids, which must include every required line. The room becomes `CLEAN` (or `READY` without inspection) | `housekeeping.update` | `{ checked?, note?, version }` | `HousekeepingTaskDto` | 400 `Checked` ("Tick every required line before finishing: Bathroom cleaned, Bed linen changed."); 403, 404; 409 `TASK_NOT_STARTED` ("Cleaning of Room 101 hasn't been started. Tap Start first."), `TASK_ALREADY_FINISHED`, `TASK_ASSIGNED_TO_SOMEONE_ELSE` | UPDATE task, room state change |
+| `POST /housekeeping/tasks/{id}/inspect` | `PASS`: the room is `READY`. `FAIL` (note required): back to `DIRTY`, the task `OPEN` again for the same housekeeper with the note. `START`: the room shows `INSPECTION` | `housekeeping.inspect` | `{ result, note?, version }` | `HousekeepingTaskDto` | 400 `Result`, `Note` ("Say what needs redoing (at least 3 characters), e.g. Bathroom mirror smeared."); 403, 404; 409 `TASK_NOT_FINISHED` ("Room 101 is being cleaned; it can be inspected once the cleaning is finished."), `ALREADY_READY` | UPDATE task, room state change |
+| `GET /housekeeping/checklists` · `POST` · `PUT /{id}` | Checklist templates: one active per kind of cleaning and room type (none = every room type). A change applies to tasks made afterwards | read: `housekeeping.read`; save: `housekeeping.assign` | `SaveChecklistTemplateRequest` | `ChecklistTemplateDto[]` / 201 / 200 | 400 `Name`, `TaskType` (another active one for the same kind and room type), `Items` ("Add at least one line to the checklist."; ≤ 40), `Items[i].Label`, `AccommodationTypeId`; 403, 404 | INSERT/UPDATE template (+ lines) |
+| `GET /maintenance/tickets?status&mine&unitId` | Tickets, unresolved and most urgent first. `status`: `OPEN` (default: anything unresolved), `ALL` or one status; `mine`: assigned to or reported by the caller. Without `maintenance.read`, only the caller's reports | `maintenance.create` | — | `MaintenanceTicketSummaryDto[]` | 400 `Status`; 403 | — |
+| `POST /maintenance/tickets` | Report a problem. `Idempotency-Key` optional (a retried report is saved once). Out of order: blocks the room from tonight | `maintenance.create` | `CreateTicketRequest` | 201 `MaintenanceTicketDto` | 400 `Title` ("Say what is wrong in 3–120 characters, e.g. AC not cooling."), `Location` ("Say where the problem is: choose a room or equipment, or type the place (e.g. Pool deck)."), `Category`, `Priority`, `UnitId`, `BedId`, `AssetId`, `ExpectedReadyOn` ("Say when the room should be usable again …", today or earlier, more than 90 days); 403; **409** `BLOCK_OVERLAPS_RESERVATION` ("Room 104 can't be taken out of order from tonight: Room 104 is booked on R00012 for the night of 25 Oct 2026. Move that booking to another room first, or report the problem without taking the room out of order."), `BLOCK_OVERLAP` | INSERT ticket, comment, block |
+| `GET /maintenance/tickets/{id}` | One ticket with its timeline, photos and `nextActions` | `maintenance.create` (own reports) / `maintenance.read` | — | `MaintenanceTicketDto` | 403, 404 | — |
+| `POST /maintenance/tickets/{id}/assign` | Give it to maintenance staff (`userId` null: nobody) | `maintenance.assign` | `{ userId, note?, version }` | `MaintenanceTicketDto` | 400 `UserId`; 403, 404; 409 version; 422 `TICKET_CLOSED`, `INVALID_STATUS_TRANSITION` ("M00003 is resolved; …") | UPDATE ticket, STATUS comment |
+| `POST /maintenance/tickets/{id}/progress` | Work on it: `IN_PROGRESS` (default) or `ON_HOLD`, with a note for the timeline | `maintenance.update` | `{ status?, note, version }` | `MaintenanceTicketDto` | 400 `Status`, `Note`; 403, 404; 409 version; 422 as assign | UPDATE ticket, comment |
+| `POST /maintenance/tickets/{id}/resolve` | Fixed: releases the out-of-order block and sends the room to cleaning (`AFTER_REPAIR` task) | `maintenance.update` | `{ resolution, version }` | `MaintenanceTicketDto` | 400 `Resolution`; 403, 404; 409 version; 422 `INVALID_STATUS_TRANSITION` ("M00003 is already resolved.") | UPDATE ticket, block released, room state change, task |
+| `POST /maintenance/tickets/{id}/close` | Checked and closed | `maintenance.assign` | `{ note?, version }` | `MaintenanceTicketDto` | 403, 404; 422 `INVALID_STATUS_TRANSITION` ("M00003 is in progress; resolve it before closing it."), `TICKET_CLOSED` | UPDATE ticket, comment |
+| `POST /maintenance/tickets/{id}/comments` | A note on the timeline | `maintenance.create` | `{ body }` | `MaintenanceTicketDto` | 400 `Body`; 403, 404; 422 `TICKET_CLOSED` | INSERT comment |
+| `POST /maintenance/tickets/{id}/photos` | One photo as `multipart/form-data` field `file`, shrunk on the phone first. Checked by its bytes (JPEG, PNG or WebP), at most 2 MB, 6 per ticket; stored encrypted in the file store | `maintenance.create` | multipart | 201 `MaintenancePhotoDto` | 400 `File` ("That file isn't a photo. Send a JPEG, PNG or WebP picture."; "The photo is 3.4 MB; at most 2 MB. …"); 403, 404; 413 over 3 MB; 422 `TOO_MANY_PHOTOS`, `TICKET_CLOSED` | INSERT attachment |
+| `GET /maintenance/tickets/{id}/photos/{photoId}` | The photo, decrypted | `maintenance.create` (own reports) / `maintenance.read` | — | image | 403, 404 | — |
+| `GET /maintenance/staff` | Maintenance staff with their open tickets | `maintenance.assign` | — | `StaffOptionDto[]` | 403 | — |
+| `GET /maintenance/assets` · `POST` · `PUT /{id}` | Equipment (code like `AC-101`, kind, room or place) with its open tickets | read: `maintenance.create`; save: `maintenance.assign` | `SaveAssetRequest` | `MaintenanceAssetDto[]` / 201 / 200 | 400 `Code` ("AC-101 is already used by another piece of equipment here. …"; capitals, digits, `-`, `_`), `Name`, `Category`, `UnitId`; 403, 404 | INSERT/UPDATE asset |
+
+`HousekeepingBoardDto = { today, inspectionRequired, summary: { dirty, cleaning, toInspect, ready, outOfOrder, mine, rush },
+rooms: HousekeepingRoomDto[] }`. `HousekeepingRoomDto = { unitId, unitCode, unitName, bedId, bedCode, typeName, place,
+status, occupied, departureToday, arrivalToday, rush, task: HousekeepingTaskDto | null, repair: { ticketId, number, title,
+outOfOrder, expectedReadyOn } | null }`. `HousekeepingTaskDto = { id, unitId, bedId, place, taskType: DEPARTURE | STAYOVER |
+DEEP_CLEAN | AFTER_REPAIR, status, source: CHECK_OUT | ROOM_MOVE | MAINTENANCE | MANUAL, reservationReference, assignedTo,
+assignedToName, startedAt, startedByName, finishedAt, finishedByName, inspectedAt, inspectedByName, inspectionNote,
+failedInspections, note, checklist: [{ id, label, required, done }], businessDate, createdAt, nextActions, version }`.
+`CreateTaskRequest = { unitId, bedId?, taskType, note?, assignTo? }`. `SaveChecklistTemplateRequest = { name, taskType,
+accommodationTypeId?, isActive, items: [{ label, isRequired }] }`. `CreateTicketRequest = { title, description?, category: AC |
+PLUMBING | ELECTRICAL | FURNITURE | APPLIANCE | POOL | CIVIL | OTHER, priority: LOW | NORMAL | HIGH | URGENT, unitId?, bedId?,
+assetId?, location?, outOfOrder, expectedReadyOn? }`. `MaintenanceTicketDto = { id, number, title, description, category,
+priority, status: OPEN | ASSIGNED | IN_PROGRESS | ON_HOLD | RESOLVED | CLOSED, place, unitId, unitName, bedId, bedCode,
+assetId, assetName, location, outOfOrder, expectedReadyOn, blockId, blockActive, reportedBy, reportedByName, assignedTo,
+assignedToName, assignedAt, startedAt, resolvedAt, resolvedByName, resolution, closedAt, closedByName, createdAt, comments:
+[{ id, kind: NOTE | STATUS, body, fromStatus, toStatus, createdAt, createdByName }], photos: [{ id, fileName, contentType,
+sizeBytes, createdAt, createdByName }], nextActions, version }`.
+
+**Changes to earlier endpoints.** `POST /reservations/{id}/check-out`, `POST /reservations/{id}/assign-room` (a room move after check-in) and
+`PUT /rooms/{unitId}/housekeeping` (front desk) now lock the room and create, reset or close its cleaning task in the same
+transaction; a room move's old room gets a task. `GET /rooms/status` adds `housekeeping` (today only; a dormitory shows its
+least ready bed) and `openRepairs` to each room, and `housekeeping` to each bed. Unit history sources add `HOUSEKEEPING` and
+`MAINTENANCE`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

@@ -75,6 +75,13 @@ export const routes: Routes = [
       { path: 'invoices', canActivate: [permissionGuard('invoice.read')], loadComponent: () => import('./features/invoices/invoices.page').then(m => m.InvoicesPage) },
       { path: 'invoices/:id', canActivate: [permissionGuard('invoice.read')], loadComponent: () => import('./features/invoices/invoice.page').then(m => m.InvoicePage) },
 
+      // /housekeeping, /maintenance (Sprint 13)
+      { path: 'housekeeping', canActivate: [permissionGuard('housekeeping.read')], loadComponent: () => import('./features/housekeeping/housekeeping.page').then(m => m.HousekeepingPage) },
+      { path: 'housekeeping/checklists', canActivate: [permissionGuard('housekeeping.assign')], loadComponent: () => import('./features/housekeeping/checklists.page').then(m => m.ChecklistsPage) },
+      { path: 'maintenance', canActivate: [permissionGuard('maintenance.create')], loadComponent: () => import('./features/maintenance/maintenance.page').then(m => m.MaintenancePage) },
+      { path: 'maintenance/new', canActivate: [permissionGuard('maintenance.create')], loadComponent: () => import('./features/maintenance/report.page').then(m => m.ReportProblemPage) },
+      { path: 'maintenance/:id', canActivate: [permissionGuard('maintenance.create')], loadComponent: () => import('./features/maintenance/ticket.page').then(m => m.TicketPage) },
+
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },
       { path: 'users/:id', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

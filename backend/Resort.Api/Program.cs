@@ -167,6 +167,7 @@ app.MapTaxEndpoints();
 app.MapPaymentEndpoints();
 app.MapRazorpayEndpoints();
 app.MapInvoiceEndpoints();
+app.MapHousekeepingEndpoints();
 
 app.Run();
 

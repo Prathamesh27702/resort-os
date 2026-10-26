@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
 using Resort.Contracts;
 using Resort.Domain.Accommodation;
+using Resort.Domain.FrontDesk;
+using Resort.Domain.Housekeeping;
 
 namespace Resort.Application.Accommodation;
 
@@ -204,6 +206,16 @@ public sealed class AccommodationService(IAppDbContext db, ICurrentUser caller, 
         var blocks = await db.UnitBlocks
             .Where(b => b.PropertyId == propertyId && b.Status == BlockStatuses.Active && b.StartDate <= day && day < b.EndDate)
             .ToListAsync(ct);
+        // The cleaning state is "now", so it is shown on today's board only (Sprint 13).
+        var isToday = day == property.LocalDate(clock.GetUtcNow());
+        var housekeeping = isToday
+            ? (await db.UnitHousekeepingStatus.AsNoTracking().Where(h => h.PropertyId == propertyId).ToListAsync(ct))
+                .ToDictionary(h => (h.UnitId, h.BedId), h => h.Status)
+            : [];
+        var repairs = await db.MaintenanceTickets.AsNoTracking()
+            .Where(t => t.PropertyId == propertyId && t.UnitId != null && MaintenanceStatuses.Unresolved.Contains(t.Status))
+            .GroupBy(t => t.UnitId!.Value).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count, ct);
+        string? Hk(Guid unitId, Guid? bedId) => isToday ? housekeeping.GetValueOrDefault((unitId, bedId), HousekeepingStatuses.Ready) : null;
 
         var rows = rooms.Select(u =>
         {
@@ -212,7 +224,7 @@ public sealed class AccommodationService(IAppDbContext db, ICurrentUser caller, 
             {
                 var bb = unitBlock ?? blocks.FirstOrDefault(x => x.BedId == b.Id);
                 var status = !b.IsActive || !u.IsActive ? "INACTIVE" : bb is not null ? "BLOCKED" : "AVAILABLE";
-                return new BedStatusDto(b.Id, b.Code, b.Name, b.IsActive, status, bb?.Id);
+                return new BedStatusDto(b.Id, b.Code, b.Name, b.IsActive, status, bb?.Id, Hk(u.Id, b.Id));
             }).ToList();
             var activeBeds = beds.Count(b => b.IsActive);
             var blockedBeds = beds.Count(b => b.IsActive && b.Status == "BLOCKED");
@@ -227,13 +239,28 @@ public sealed class AccommodationService(IAppDbContext db, ICurrentUser caller, 
             var shownBlock = unitBlock ?? (blockedBeds > 0 ? blocks.First(x => x.UnitId == u.Id) : null);
             return new RoomStatusDto(u.Id, u.Code, u.Name, u.Type.Name, u.Type.InventoryMode, u.IsActive, roomStatus,
                 shownBlock is null ? null : BlockService.ToDto(shownBlock, u, beds.FirstOrDefault(x => x.BedId == shownBlock.BedId)?.Code, null),
-                activeBeds, blockedBeds, beds);
+                activeBeds, blockedBeds, beds,
+                u.Type.IsBedBased && isToday
+                    ? beds.Where(b => b.IsActive).Select(b => b.Housekeeping!).OrderBy(HousekeepingRank).FirstOrDefault() ?? HousekeepingStatuses.Ready
+                    : Hk(u.Id, null),
+                repairs.GetValueOrDefault(u.Id));
         }).ToList();
 
         return new RoomStatusBoardDto(day, rows);
     }
 
     // ------------------------------------------------------------------ helpers
+
+    /// <summary>Least ready first: a dormitory shows the state of its least ready bed.</summary>
+    private static int HousekeepingRank(string status) => status switch
+    {
+        HousekeepingStatuses.OutOfOrder => 0,
+        HousekeepingStatuses.Dirty => 1,
+        HousekeepingStatuses.Cleaning => 2,
+        HousekeepingStatuses.Clean => 3,
+        HousekeepingStatuses.Inspection => 4,
+        _ => 5,
+    };
 
     private async Task RequirePropertyAsync(Guid propertyId, CancellationToken ct)
     {

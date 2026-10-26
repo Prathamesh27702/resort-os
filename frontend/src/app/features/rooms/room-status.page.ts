@@ -6,9 +6,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { toProblem } from '../../core/http';
 import { RoomStatusBoard } from '../../core/models';
 import { PropertyContext, inZone } from '../../core/property-context';
+import { housekeepingLabel } from '../front-desk/front-desk.api';
 import { RoomsApi, addDays, shortDate } from './rooms.api';
 
-/** Read-only board of every room on one night. Occupancy (Sprint 5) and housekeeping states (Sprint 13) are added later. */
+/** Read-only board of every room on one night: blocks, and for today each room's cleaning state and open repairs (Sprint 13). */
 @Component({
   selector: 'app-room-status',
   imports: [RouterLink, MatButtonModule, MatIconModule, MatTooltipModule],
@@ -18,7 +19,7 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
         <div>
           <a routerLink="/rooms" class="back">Rooms</a>
           <h1>Room status</h1>
-          <p>Night of {{ longDate() }}. Occupancy and housekeeping appear here in later sprints.</p>
+          <p>Night of {{ longDate() }}.@if (date() === today()) { Cleaning state is today's; <a routerLink="/housekeeping">open housekeeping</a>. }</p>
         </div>
         <div class="nav">
           <button mat-icon-button (click)="shift(-1)" aria-label="Previous night"><mat-icon>chevron_left</mat-icon></button>
@@ -45,6 +46,8 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
                 @default { {{ r.inventoryMode === 'BED' ? r.activeBeds + ' beds available' : 'Available' }} }
               }
             </div>
+            @if (r.housekeeping; as hk) { <div [class]="'hk ' + hk">{{ hkLabel(hk) }}</div> }
+            @if (r.openRepairs) { <div class="repairs"><mat-icon inline>build</mat-icon>{{ r.openRepairs }} open repair{{ r.openRepairs === 1 ? '' : 's' }}</div> }
             @if (r.block; as b) {
               <div class="why" [matTooltip]="b.reason">{{ b.reason }}</div>
               <div class="until">Free from {{ shortDate(b.endDate) }}</div>
@@ -81,6 +84,11 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
     .type { font-size: .78rem; color: #5b6b6e; text-align: right; }
     .state { font-weight: 500; }
     .until { font-size: .8rem; color: #5b6b6e; }
+    .hk { display: inline-block; font-size: .75rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-top: 4px; background: #eef2f1; }
+    .hk.DIRTY { background: #fbe4e2; color: #8c1d18; } .hk.CLEANING { background: #fbefd8; color: #8a5a00; }
+    .hk.CLEAN, .hk.INSPECTION { background: #e0eff5; color: #134e63; } .hk.READY { background: #e1f2e8; color: #1d5b36; }
+    .hk.OUT_OF_ORDER { background: #e3e7e6; color: #33474a; }
+    .repairs { font-size: .8rem; color: #5b3a00; margin-top: 2px; }
     .why { font-size: .8rem; color: #7a4a00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .beds { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
     .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #2e6b3c; }
@@ -93,6 +101,7 @@ export class RoomStatusPage {
   private api = inject(RoomsApi);
   private ctx = inject(PropertyContext);
   shortDate = shortDate;
+  hkLabel = housekeepingLabel;
 
   today = computed(() => this.ctx.current()?.localDate ?? '');
   date = signal('');

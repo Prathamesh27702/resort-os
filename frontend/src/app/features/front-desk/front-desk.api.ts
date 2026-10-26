@@ -38,7 +38,7 @@ export class FrontDeskApi {
 function dateParam(date?: string) { return date ? new HttpParams().set('date', date) : new HttpParams(); }
 
 const HK_LABEL: Record<Housekeeping, string> = {
-  DIRTY: 'Dirty', CLEANING: 'Being cleaned', CLEAN: 'Cleaned', INSPECTION: 'To inspect', READY: 'Ready', OUT_OF_ORDER: 'Out of order',
+  DIRTY: 'Dirty', CLEANING: 'Being cleaned', CLEAN: 'To inspect', INSPECTION: 'Inspecting', READY: 'Ready', OUT_OF_ORDER: 'Out of order',
 };
 export const housekeepingLabel = (h: Housekeeping | string) => HK_LABEL[h as Housekeeping] ?? h;
 

@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–12 built and accepted (October 2026); Sprint 13 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–12 built and accepted (October 2026); Sprint 13 (housekeeping and maintenance) built, in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -337,6 +337,28 @@ flowchart LR
   totals, Credit note and Debit note dialogs, notes and receipts with PDFs); on the bill, **Issue invoice** (or the
   invoice's number), each billed charge marked with its invoice and no Reverse; the booking links to its invoices; a
   payment has **Receipt**. [4.22](#422-gst-invoices-gap-free-numbers-and-corrections-only-by-note) explains the rules.
+
+### Sprint 13: Housekeeping and maintenance (mobile-first)
+
+![Housekeeping: one task per check-out, out-of-order rooms back through cleaning](../../tools/handbooks/assets/housekeeping-flow.png)
+
+- Migration V015: `housekeeping_tasks` (one per DIRTY state change, `source_change_id` UNIQUE; at most one open per room
+  or bed; never deleted), `housekeeping_checklist_templates` and `_items` (copied into the task as `checklist` jsonb),
+  `maintenance_assets`, `maintenance_tickets` (`M00001` …, holding the room's `OUT_OF_ORDER` block), and the append-only
+  `maintenance_comments` and `maintenance_attachments`. The cleaning state itself stays in Sprint 7's
+  `unit_housekeeping_status`. Details: [schema-sprint-13.md](../database/schema-sprint-13.md).
+- `Domain/Housekeeping/Housekeeping.cs` (task types and statuses, `HousekeepingFlow`: which step is allowed when, and the
+  exact refusal) and `Maintenance.cs` (`MaintenanceFlow`: ticket steps, the out-of-order date rule, `SniffImage`).
+  `Application/Housekeeping/HousekeepingState.cs` is the one place a room's cleaning state changes and its task is kept
+  in step; `FrontDeskService` (check-out, room move, set by hand) and `MaintenanceService` (out of order, resolve) call it.
+  `HousekeepingService.cs`: board, tasks, start / finish / inspect, checklists. `MaintenanceService.cs`: tickets, photos,
+  equipment. `BlockService.AddAsync` / `Release` are shared with Sprint 2's blocks screen.
+- Endpoints: `HousekeepingEndpoints.cs` (`/housekeeping/...` and `/maintenance/...`).
+- Screens, built for a 360 px phone: **Housekeeping** (`/housekeeping`: one card per room or dorm bed, rush rooms first,
+  one big Start / Done / Mark ready button; a task sheet with the checklist, assign, send back and Report a problem),
+  **Checklists** (`/housekeeping/checklists`), **Maintenance** (`/maintenance`), **Report a problem**
+  (`/maintenance/new`, photos shrunk on the phone by `compressPhoto`), a ticket (`/maintenance/:id`, timeline and next
+  step); **Room status** shows today's cleaning state and open repairs. [4.23](#423-housekeeping-one-task-per-check-out-and-out-of-order-rooms) explains the rules.
 
 ---
 
@@ -813,6 +835,39 @@ accountants: [GST.md → Invoices](../GST.md#invoices-credit-and-debit-notes-spr
    assembly (DejaVu Sans has ₹), so containers without fonts render identically. PDFsharp is pinned to 6.2.x: 6.5 changed
    to AGPL and refuses to run without a licence.
 
+### 4.23 Housekeeping: one task per check-out, and out-of-order rooms
+
+Code: `Application/Housekeeping/` (`HousekeepingState.cs`, `HousekeepingService.cs`, `MaintenanceService.cs`),
+`Domain/Housekeeping/`, `database/migrations/V015__housekeeping.sql`, `features/housekeeping/`, `features/maintenance/`.
+Diagram: section 3 (Sprint 13). Tests: `HousekeepingTests`, `MaintenanceTests`, `HousekeepingUnitTests`.
+
+1. **The task is made where the room gets dirty.** A check-out (or room move, a resolved repair, the front desk by
+   hand) calls `HousekeepingState.ChangeAsync` inside its own transaction: it writes the state, appends the history row,
+   and turns that DIRTY change into a task pointing at it (`source_change_id`, UNIQUE) and marks the change consumed.
+   There is no background job to miss or repeat. If the room already has an open task, that one is reset instead
+   (`ux_hk_tasks_open` allows only one).
+2. **Lock order.** Booking first (check-out), then rooms in id order (`SELECT … FOR UPDATE` on `accommodation_units`,
+   the same order as booking), then the task. Every board step locks the task's room first (`LockTaskAsync`), so a
+   check-out and a housekeeper's tap on the same room run one after the other, and two housekeepers tapping Start on
+   one room get one winner (the other is told who started it and when). Steps also send the task's `version`.
+3. **Three check-outs at once make one task.** They queue on the booking's lock; the first checks out, the others find it
+   checked out and get 409 `ALREADY_CHECKED_OUT`. Even if a change were processed twice, the UNIQUE `source_change_id`
+   refuses a second task. Test: `Check_out_creates_one_dirty_task_and_retried_check_outs_at_the_same_moment_make_no_second_one`.
+4. **The room state follows the task, never the other way round.** OPEN = DIRTY, IN_PROGRESS = CLEANING, CLEANED = CLEAN
+   (INSPECTION while a supervisor checks it), DONE = READY (`HousekeepingFlow.RoomStatusOf`). Check-in (Sprint 7)
+   already refuses a room that isn't READY (HOUSEKEEPING_NOT_READY) unless someone overrides it with a reason, so a room
+   isn't checked into unclean by accident.
+5. **Out of order is a block.** A ticket with Out of order calls `BlockService.AddAsync` (the Sprint 2 rules: no overlap
+   with a booking, the database's EXCLUDE constraint behind it) from tonight to the expected date, sets the room
+   OUT_OF_ORDER and cancels its cleaning task, all in the ticket's transaction. A guest booked tonight refuses it, naming
+   the booking. Resolving releases the block and makes the room DIRTY with an `AFTER_REPAIR` task, so it is cleaned first.
+6. **Photos.** The phone shrinks each photo (canvas, at most 1600 px, JPEG) before upload; the server trusts only the
+   bytes (`SniffImage`), caps 2 MB and 6 per ticket, encrypts with `IFieldEncryptor` and stores it in `IFileStore`
+   under `maintenance/{organization}/{id}`; the row keeps only the key and key id.
+7. **Who sees what.** The board shows room numbers, never guest names. A reporter with `maintenance.create` but not
+   `maintenance.read` sees only their own tickets (404 for others), so housekeepers can report without reading the
+   whole repair log.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -835,3 +890,4 @@ request:
 | 10 | Payments, refunds and the cash drawer (status machine, allocations, on account, drawer ledger, variance approval), payment flow diagram; system design 4.20 Refunds that can't overspend (accepted 20 Oct 2026) |
 | 11 | Razorpay (payment links, the guest's page, webhook verify / dedupe / order, online refunds, the fake Razorpay), Razorpay flow diagram; system design 4.21 The webhook is the only writer (accepted 23 Oct 2026) |
 | 12 | GST invoices, credit and debit notes, receipts (gap-free series, copied taxes, CANCEL / REDUCE, debit notes, PDFs), invoice flow diagram; system design 4.22 Gap-free numbers and corrections only by note (accepted 25 Oct 2026) |
+| 13 | Housekeeping and maintenance (tasks made by check-out, inspection, checklists, tickets, out of order, photos, phone screens), housekeeping flow diagram; system design 4.23 One task per check-out (in review) |

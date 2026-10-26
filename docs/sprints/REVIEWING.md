@@ -375,6 +375,38 @@ permissions). Screenshots: [sprint-12-screens/](sprint-12-screens/). The browser
 | 15 | Sign in as a **receptionist** → the invoice | **PDF** and **Print** only: no Credit note or Debit note (accountants and managers above them issue those) |
 | 16 | Phone width (390 px) → **Invoices** and an invoice | Everything fits; the parties stack under each other |
 
+### Sprint 13 — Housekeeping and maintenance (mobile-first)
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V015__housekeeping`).
+Demo data (S010): Room 101 is dirty with a *Departure clean* task, equipment AC-101, GEYSER-106 and POOL-PUMP, and two
+open tickets, **M00001** (pool pump, High) and **M00002** (tap in Room 104). **R00007** (Room 105) leaves today and is the
+stay to check out. Use two browser windows: the **owner** on a desktop, and a **housekeeper** in a phone-sized window
+(Chrome DevTools → device toolbar → 360 × 780). Screenshots: [sprint-13-screens/](sprint-13-screens/). The browser tests do
+the same on their own stay, on a 360 px phone: `cd frontend; npm run e2e:headed -- e2e/sprint-13.spec.ts` (names S13-01 …
+S13-07). Database checks: `database/queries/check-sprint-13.sql`. How it works:
+[system-design.md → 4.23](../architecture/system-design.md#423-housekeeping-one-task-per-check-out-and-out-of-order-rooms).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Hema Housekeeper*, role **Housekeeper** at Palm Grove Beach Resort, a temporary password. Sign in as Hema in the phone window and set her password | Hema's menu has **Today**, **Rooms**, **Room status**, **Housekeeping** and **Maintenance**, nothing about bookings or money |
+| 2 | Hema: **Housekeeping** | *My rooms*: **101** *Dirty*, *Departure clean · Not assigned · 0/7*, one big **Start** button. If a guest arrives in 101 today the card has an orange edge and *Guest arrives today*, and comes first. Nothing scrolls sideways; no guest names anywhere |
+| 3 | Owner: **Front desk** → **Departures** → **R00007** → **Check out** (if it says a balance is due, take that payment on the bill first) | *Checked out* |
+| 4 | Hema: refresh (top right) | A card **105** *Dirty*, *Guest left today* |
+| 5 | **The acceptance test, tap 1.** Hema: **Start** on 105 | *105: cleaning started.* The card turns *Being cleaned*, *Started HH:mm by Hema* and the button is **Done** |
+| 6 | Tap 2: **Done** | *Room 105 cleaned — waiting for inspection.* The card says *To inspect* |
+| 7 | Owner: **Room status** | 105 shows *To inspect*. Until it is *Ready*, checking a guest into it is refused as not ready (Sprint 7's rule) |
+| 8 | Owner: **Housekeeping** → **To inspect** → tap the 105 card → **Send back** with the box empty | Under the field: *Say what needs redoing (at least 3 characters), e.g. Bathroom mirror smeared.* Nothing changes |
+| 9 | Type *Bathroom mirror smeared* → **Send back** | Hema's card (refresh): 105 *Dirty* again, *Sent back: Bathroom mirror smeared*, still hers |
+| 10 | Hema: **Start**, **Done**. Owner: **To inspect** → **Mark ready** on 105 | *105 is ready for the next guest.* **Room status**: 105 *Ready* |
+| 11 | Hema: tap the 105 card (*All* tab) → open the checklist | The 7 lines of *Departure clean* (none required in the default list; a supervisor can mark lines required in **Checklists**, and then **Done** with one unticked says which, under the checklist) |
+| 12 | Hema: on 105 → **Report a problem** | *Report a problem* with *Room 105* filled in. **Send report** with nothing typed: *Say what is wrong in 3–120 characters, e.g. AC not cooling.* under the field |
+| 13 | *AC not cooling*, Kind *AC*, *High*, switch on **Take 105 out of order** (the date fills in for the day after tomorrow), **Add photo** (camera on a phone, a file on a PC) → **Send report** | *M00003 reported.* and the ticket: *Out of order*, the photo, the timeline. **Room status** (owner): 105 *Blocked*, *Out of order*, *1 open repair*; it can't be booked or checked into |
+| 14 | Owner: try the same on **Room 104** (a guest is in it) with Out of order | Refused: *Room 104 can't be taken out of order from tonight: Room 104 is booked on R00008 …. Move that booking to another room first, or report the problem without taking the room out of order.* |
+| 15 | Owner: **Maintenance** → **M00003** → **Give it to** → **Start work** with the note empty | Under the note: *Say what was done (at least 3 characters).* |
+| 16 | Note *Gas leak found* → **Start work**; then *Leak fixed and gas refilled* → **Resolved** | *In progress*, then *Resolved*, each on the timeline. **Housekeeping**: 105 *Dirty* with **Clean after repair**; **Room status**: no longer blocked |
+| 17 | **Close ticket** | *Closed*; no more buttons. **Maintenance** → *Open* still lists M00001 and M00002, most urgent first |
+| 18 | Owner: **Housekeeping** → **Checklists** → *Departure clean* → **Edit** → remove every line → **Save checklist** | *Add at least one line to tick.* Nothing is saved |
+
 ## Part C — Decide
 
 ### Accept

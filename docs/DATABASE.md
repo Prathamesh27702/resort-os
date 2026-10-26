@@ -17,7 +17,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 9 — GST](database/schema-sprint-09.md) (GST registrations, tax categories, dated tax rules and their slabs, the seeded rules, tax on bill lines) ·
   [Sprint 10 — payments](database/schema-sprint-10.md) (payments and their status machine, allocations to bills, refunds that can't overspend, cash drawer shifts and their ledger, demo payments) ·
   [Sprint 11 — Razorpay](database/schema-sprint-11.md) (payment links as Razorpay orders, webhook events deduplicated by event id, online payments and refunds) ·
-  [Sprint 12 — invoices](database/schema-sprint-12.md) (gap-free number series, GST invoices with their lines and taxes, credit and debit notes, credit lines on the folio, receipts, e-invoice placeholders)
+  [Sprint 12 — invoices](database/schema-sprint-12.md) (gap-free number series, GST invoices with their lines and taxes, credit and debit notes, credit lines on the folio, receipts, e-invoice placeholders) ·
+  [Sprint 13 — housekeeping and maintenance](database/schema-sprint-13.md) (cleaning tasks made once per state change, checklists, equipment, repair tickets with their timeline and encrypted photos, out-of-order blocks, demo tickets)
 
 ## Conventions (every table)
 
@@ -53,7 +54,8 @@ database/migrations/
   V012__payments.sql
   V013__razorpay.sql
   V014__invoicing.sql
-  V015__<next>.sql   ← you add this
+  V015__housekeeping.sql
+  V016__<next>.sql   ← you add this
 database/seed/dev/
   S001__accommodation.sql   ← demo rooms; Development only
   S002__guests.sql          ← 20 demo guests; Development only
@@ -64,6 +66,7 @@ database/seed/dev/
   S007__folios.sql          ← main folios, room nights, dinner/pick-up on R00008, laundry on R00007; Development only
   S008__gst.sql             ← the demo property's GST registration (Goa); Development only
   S009__payments.sql        ← yesterday's closed drawer shift with a ₹500 cash payment (R00007), a ₹2,000 UPI advance (R00002); Development only
+  S010__housekeeping.sql    ← departure checklist, Room 101's cleaning task, 3 pieces of equipment, tickets M00001 (pool pump) and M00002 (tap in Room 104); Development only
 ```
 
 1. **Pick the next number** after the highest on `develop`. If two PRs collide, the second to merge renumbers.
