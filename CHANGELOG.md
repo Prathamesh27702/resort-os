@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-14] — Unreleased — Menu, restaurant POS and KOT (in review)
+## [sprint-14] — 2026-10-26 — Menu, restaurant POS and KOT (accepted)
 
 ### Added
 - Migration V016: the menu (`menu_categories`, `menu_items` with `VEG` / `NON_VEG` / `EGG` and sold out,

@@ -39,3 +39,6 @@
 - version: "1.13"
   date: 2026-10-26
   change: "Sprint 13 (Housekeeping and maintenance, mobile-first) accepted: a check-out puts the room on the housekeeper's phone as a cleaning task, two taps to clean it (Start, Done), a supervisor marks it ready or sends it back saying what to redo, checklists per kind of cleaning, staff report repairs with photos from their phone, a broken room can be taken out of order so nobody sells it and goes back to cleaning once the repair is resolved. Housekeeping flow diagram. Sprint 14 started."
+- version: "1.14"
+  date: 2026-10-26
+  change: "Sprint 14 (Menu, restaurant POS and KOT) accepted: a waiter takes orders on a phone with portions and choices, the kitchen sees each ticket on its display within 10 seconds and marks it ready, the bill is paid at the restaurant (cash into the drawer) or charged to an in-house guest's room bill with GST, two waiters can't overwrite each other's changes, discounts and voids need a manager and a reason, the menu editor marks dishes sold out. Restaurant flow diagram. Sprint 15 started."

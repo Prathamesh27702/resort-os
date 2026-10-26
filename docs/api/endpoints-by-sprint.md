@@ -110,9 +110,9 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/assign | progress | resolve | close | comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
 | `POST /api/v1/properties/{propertyId}/maintenance/tickets/{id}/photos; GET …/photos/{photoId}` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
 | `GET /api/v1/properties/{propertyId}/maintenance/staff; GET|POST …/assets; PUT …/assets/{id}` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
-| `/api/v1/properties/{propertyId}/menu/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `/api/v1/properties/{propertyId}/orders/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `/api/v1/properties/{propertyId}/kitchen/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `/api/v1/properties/{propertyId}/menu/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `/api/v1/properties/{propertyId}/orders/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `/api/v1/properties/{propertyId}/kitchen/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
 | `/api/v1/webhooks/whatsapp` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `/api/v1/webhooks/channel-manager` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
 | `/api/v1/public/* — separate` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |
