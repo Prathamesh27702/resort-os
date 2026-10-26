@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-13] — Unreleased — Housekeeping and maintenance, mobile-first (in review)
+## [sprint-13] — 2026-10-26 — Housekeeping and maintenance, mobile-first (accepted)
 
 ### Added
 - Migration V015: `housekeeping_tasks` (one per DIRTY state change, `source_change_id` UNIQUE; at most one open task per

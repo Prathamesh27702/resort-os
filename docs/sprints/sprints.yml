@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 13
+current: 14
 
 sprints:
 
@@ -1158,7 +1158,7 @@ sprints:
 - id: 13
   title: Housekeeping and maintenance (mobile-first)
   phase: 4
-  status: in-progress
+  status: done
   size: M
   module: Housekeeping
   feature: housekeeping
@@ -1166,7 +1166,7 @@ sprints:
   goal: Room status workflow and maintenance tickets that staff use on phones (brief §33, §34, §53).
   client: "Housekeeping and maintenance staff see their tasks on their phones, update room status, and report repairs with photos."
   progress:
-    now: "Built and in review: pull request into develop, waiting for the owner's acceptance."
+    now: "Accepted by the owner on 26 Oct 2026 and released to main (tag sprint-13)."
     done:
       - "Migration V015: housekeeping_tasks (one open task per room or dorm bed, one task per state change, never deleted), checklist templates and lines (one active per property, kind of cleaning and room type), maintenance_assets, maintenance_tickets (M00001…), maintenance_comments and maintenance_attachments (append-only); every property gets a 7-line Departure clean checklist; rooms already dirty get their task"
       - "A check-out, room move or repair makes the room DIRTY and its cleaning task in the same transaction; the task points at the state change (unique), so three people checking the same guest out at once make one task"
@@ -1241,7 +1241,7 @@ sprints:
 - id: 14
   title: Menu, restaurant POS and KOT
   phase: 5
-  status: planned
+  status: in-progress
   size: L
   module: Restaurant
   feature: restaurant

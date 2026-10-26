@@ -36,3 +36,6 @@
 - version: "1.12"
   date: 2026-10-25
   change: "Sprint 12 (GST invoices, credit/debit notes, receipts) accepted: check-out issues a legally numbered GST invoice and a receipt for each payment by itself, numbers run with no gap per property and financial year, an issued invoice is never edited (a credit note cancels or reduces it, a debit note bills late charges), B2B invoices with the company's GSTIN checked under the field, place of supply is the resort's state, A4 PDFs to download or print. Invoice flow diagram. Sprint 13 started."
+- version: "1.13"
+  date: 2026-10-26
+  change: "Sprint 13 (Housekeeping and maintenance, mobile-first) accepted: a check-out puts the room on the housekeeper's phone as a cleaning task, two taps to clean it (Start, Done), a supervisor marks it ready or sends it back saying what to redo, checklists per kind of cleaning, staff report repairs with photos from their phone, a broken room can be taken out of order so nobody sells it and goes back to cleaning once the repair is resolved. Housekeeping flow diagram. Sprint 14 started."

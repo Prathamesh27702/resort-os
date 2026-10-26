@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 13 — Housekeeping and maintenance (mobile-first)](sprint-13-housekeeping-and-maintenance-mobile.md)** · status: 🔵 In progress
+> **Current sprint: [Sprint 14 — Menu, restaurant POS and KOT](sprint-14-menu-restaurant-pos-and-kot.md)** · status: 🔵 In progress
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -24,8 +24,8 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 10 | [Payments, refunds, cash drawer](sprint-10-payments-refunds-cash-drawer.md) | Phase 3 | M | 🟢 Done |
 | 11 | [Razorpay](sprint-11-razorpay.md) | Phase 3 | M | 🟢 Done |
 | 12 | [GST invoices, credit/debit notes, receipts](sprint-12-gst-invoices-credit-debit-notes-receipts.md) | Phase 3 | L | 🟢 Done |
-| 13 | [Housekeeping and maintenance (mobile-first)](sprint-13-housekeeping-and-maintenance-mobile.md) | Phase 4 | M | 🔵 In progress |
-| 14 | [Menu, restaurant POS and KOT](sprint-14-menu-restaurant-pos-and-kot.md) | Phase 5 | L | ⚪ Planned |
+| 13 | [Housekeeping and maintenance (mobile-first)](sprint-13-housekeeping-and-maintenance-mobile.md) | Phase 4 | M | 🟢 Done |
+| 14 | [Menu, restaurant POS and KOT](sprint-14-menu-restaurant-pos-and-kot.md) | Phase 5 | L | 🔵 In progress |
 | 15 | [Inventory and recipe costing](sprint-15-inventory-and-recipe-costing.md) | Phase 5 | M | ⚪ Planned |
 | 16 | [Suppliers and purchasing](sprint-16-suppliers-and-purchasing.md) | Phase 5 | M | ⚪ Planned |
 | 17 | [Employees and roster](sprint-17-employees-and-roster.md) | Phase 6 | M | ⚪ Planned |
