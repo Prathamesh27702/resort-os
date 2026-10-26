@@ -223,4 +223,29 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
             $"SELECT last_value AS \"Value\" FROM property_counters WHERE property_id = {pid} AND name = 'payment'").SingleAsync());
         Assert.Equal(2L, next);
     }
+    /// <summary>Sprint 14: a sample menu with portions, choices and a sold-out drink; six tables; and one open order whose
+    /// ticket is on the kitchen display, with GST because the demo property is registered.</summary>
+    [Fact]
+    public async Task Dev_seed_has_a_sample_menu_tables_and_an_order_in_the_kitchen()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var menu = await owner.GetJsonAsync<MenuDto>($"/api/v1/properties/{pid}/menu");
+        Assert.Equal(["Starters", "Mains", "Breads and rice", "Desserts", "Drinks"], menu.Categories.Select(c => c.Name));
+        var tikka = menu.Categories[0].Items.Single(i => i.Code == "PANEER-TIKKA");
+        Assert.Equal([("Half", 160m), ("Full", 280m)], tikka.Variants.Select(v => (v.Name, v.Price)));
+        Assert.Equal(["Spice level", "Add-ons"], tikka.ModifierGroups.Select(g => g.Name));
+        Assert.False(menu.Categories[4].Items.Single(i => i.Code == "MASALA-CHAI").IsAvailable);
+
+        var floor = await owner.GetJsonAsync<FloorDto>($"/api/v1/properties/{pid}/orders/floor");
+        Assert.Equal(["T1", "T2", "T3", "T4", "B1", "B2"], floor.Tables.Select(t => t.Code));
+        var order = await owner.GetJsonAsync<OrderDto>($"/api/v1/properties/{pid}/orders/{floor.Tables[1].Order!.Id}");
+        Assert.Equal(("O00001", 850m, 42.5m, 892.5m), (order.Number, order.Subtotal, order.TaxAmount, order.Total));
+        Assert.Equal(new[] { "Less spicy" }, order.Items[0].Modifiers);
+        var kitchen = await owner.GetJsonAsync<KitchenDto>($"/api/v1/properties/{pid}/kitchen/kots");
+        Assert.Equal(("K00001", "Table T2", 3), (kitchen.Tickets[0].Number, kitchen.Tickets[0].Where, kitchen.Tickets[0].Items.Count));
+    }
 }

@@ -9,7 +9,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant orders |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
@@ -359,6 +359,27 @@ flowchart LR
   **Checklists** (`/housekeeping/checklists`), **Maintenance** (`/maintenance`), **Report a problem**
   (`/maintenance/new`, photos shrunk on the phone by `compressPhoto`), a ticket (`/maintenance/:id`, timeline and next
   step); **Room status** shows today's cleaning state and open repairs. [4.23](#423-housekeeping-one-task-per-check-out-and-out-of-order-rooms) explains the rules.
+
+### Sprint 14: Menu, restaurant POS and KOT
+
+![Restaurant: order, kitchen ticket, served, then paid or charged to the room](../../tools/handbooks/assets/restaurant-flow.png)
+
+- Migration V016: the menu (`menu_categories`, `menu_items`, `menu_item_variants`, `modifier_groups`, `modifiers`; switched
+  off, never deleted), `restaurant_tables`, `orders` (`O00001` …; at most one open per table; final once settled or
+  voided), `order_items` (name, portion, choices and price copied when ordered; a sent line can only be voided), `kots`
+  (`K00001` …) and `kot_items`. `cash_drawer_movements` gains `order_id` and type `POS_SALE`; `folio_items.source` gains
+  `RESTAURANT`. Details: [schema-sprint-14.md](../database/schema-sprint-14.md).
+- `Domain/Restaurant/Restaurant.cs` (statuses, `RestaurantMath`: line prices, the discount, the folio line's text;
+  `RestaurantFlow`: which kitchen step is allowed when and the exact refusal). `Application/Restaurant/OrderService.cs`:
+  floor, orders, send, serve, void, discount, pay (cash through `CashDrawerService.AddSaleMovement`), charge to room
+  (`FolioPosting`, tax from `TaxCalculator`, category FOOD) and the kitchen display. `MenuService.cs`: menu and tables.
+  `Validation/RestaurantValidators.cs`.
+- Endpoints: `RestaurantEndpoints.cs` (`/menu/...`, `/orders/...`, `/kitchen/kots/...`).
+- Screens: **Restaurant** (`/restaurant`: the floor on a waiter's phone, room service, takeaway), an order
+  (`/restaurant/orders/:id`: menu picker with portions and choices, send, served, discount, void, paid, charge to room),
+  **Today's orders** (`/restaurant/orders`), **Kitchen** (`/restaurant/kitchen`: New / Preparing / Ready, polling every
+  10 s) and **Menu** (`/restaurant/menu`: sections, dishes, sold out, tables).
+  [4.24](#424-restaurant-orders-two-waiters-one-order-and-the-room-charge) explains the rules.
 
 ---
 
@@ -868,6 +889,37 @@ Diagram: section 3 (Sprint 13). Tests: `HousekeepingTests`, `MaintenanceTests`, 
    `maintenance.read` sees only their own tickets (404 for others), so housekeepers can report without reading the
    whole repair log.
 
+### 4.24 Restaurant orders: two waiters, one order, and the room charge
+
+Code: `Application/Restaurant/` (`OrderService.cs`, `MenuService.cs`), `Domain/Restaurant/Restaurant.cs`,
+`database/migrations/V016__restaurant.sql`, `features/restaurant/`. Diagram: section 3 (Sprint 14). Tests:
+`RestaurantTests`, `RestaurantUnitTests`, `restaurant.spec.ts`, `e2e/sprint-14.spec.ts`.
+
+1. **Two waiters on one order.** Every change sends the order's `version` (PostgreSQL `xmin`). `OrderService.LockAsync`
+   takes the row with `SELECT … FOR UPDATE`, then compares the version: the second of two simultaneous changes waits for
+   the first, finds a newer version and gets 409 `CONCURRENCY_CONFLICT`, naming the order. The phone shows the message
+   and reloads the order, so the waiter sees the other change before trying again. Nothing is merged silently. Test:
+   `Two_waiters_changing_the_same_order_at_once_one_wins_and_the_other_gets_409` (10 runs with a barrier).
+2. **The totals live on the row.** After every change `RecalculateAsync` works out subtotal (live lines), discount
+   (`RestaurantMath.Discount`: a percentage rounded half away from zero, never more than the subtotal), GST (the tax
+   engine, category FOOD, the order's business date) and total, in the same transaction. A CHECK keeps
+   `total = subtotal − discount + tax`.
+3. **The kitchen never sees a ticket change.** Send copies the NEW lines into a KOT. From then a line can only be voided
+   (`pos_order.void`, a reason); the ticket line is struck through, not removed, and a ticket left with nothing is
+   cancelled. Triggers refuse anything else, even from SQL. The display asks for tickets every 10 s while the screen is
+   visible (`KITCHEN_REFRESH_MS`); the order page does the same while a ticket is cooking.
+4. **Settle only what was served.** Paid and Charge to room are refused (422, saying which lines or tickets) while a line
+   isn't sent or a ticket is New, Preparing or Ready. A settled or voided order is final (`fn_orders_final`).
+5. **The room charge.** Lock the order, then the booking (the same order as other folio work); the booking must be
+   CHECKED_IN. `FolioPosting` posts one FOOD line, source RESTAURANT, for the order's net amount, with its tax lines; the
+   service checks the folio's GST equals the order's before committing, and the order keeps `folio_item_id` (unique). A
+   retried request with the same `Idempotency-Key` returns the first answer.
+6. **Cash at the restaurant** needs the open cash drawer and goes in as a `POS_SALE` movement linked to the order (one per
+   order), so the drawer's count includes restaurant cash. References are checked for card numbers like desk payments.
+7. **Permissions.** Waiters take, send, serve and settle orders (`pos_order.create/update`, `payment.create`,
+   `folio.post_charge`); discounts need `pos.discount` and voids `pos_order.void` (restaurant manager, owner); the kitchen
+   has `kot.read/update`; the menu needs `menu.update`. The order's `nextActions` tells the phone which buttons to show.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -891,3 +943,4 @@ request:
 | 11 | Razorpay (payment links, the guest's page, webhook verify / dedupe / order, online refunds, the fake Razorpay), Razorpay flow diagram; system design 4.21 The webhook is the only writer (accepted 23 Oct 2026) |
 | 12 | GST invoices, credit and debit notes, receipts (gap-free series, copied taxes, CANCEL / REDUCE, debit notes, PDFs), invoice flow diagram; system design 4.22 Gap-free numbers and corrections only by note (accepted 25 Oct 2026) |
 | 13 | Housekeeping and maintenance (tasks made by check-out, inspection, checklists, tickets, out of order, photos, phone screens), housekeeping flow diagram; system design 4.23 One task per check-out (accepted 26 Oct 2026) |
+| 14 | Menu, restaurant POS and KOT (orders with versions, kitchen tickets and display, discounts and voids, paid or charged to room), restaurant flow diagram; system design 4.24 Two waiters, one order, and the room charge (in review) |

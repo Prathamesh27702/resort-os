@@ -1064,5 +1064,33 @@
   <text class="s" x="46" y="588"><tspan class="b">Nothing is lost:</tspan> tasks and tickets are never deleted; comments and photos are append-only; every step is in the audit trail.</text>
   <text class="s" x="46" y="610"><tspan class="b">Built for a phone:</tspan> one card per room, one big button, 360 px wide, no guest names on the housekeeping board.</text>
 </svg>
+<svg id="restaurant-flow" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 14: restaurant. Order, kitchen ticket, ready, served, then paid or charged to the guest's room</text>
+  <rect class="lane" x="30" y="56" width="1140" height="250" rx="10"/>
+  <text class="t b" x="46" y="82">An order (every change: lock the order's row, then its version must match; a stale one gets 409)</text>
+  <rect class="step" x="46" y="98" width="200" height="78" rx="8"/><text class="s" x="58" y="122">1. Open at a table</text><text class="xs" x="58" y="144">O00002; one open order per</text><text class="xs" x="58" y="162">table (ux_orders_open_table)</text>
+  <rect class="step" x="266" y="98" width="200" height="78" rx="8"/><text class="s" x="278" y="122">2. Add dishes</text><text class="xs" x="278" y="144">NEW lines: name, portion, choices</text><text class="xs" x="278" y="162">and price copied from the menu</text>
+  <rect class="step" x="486" y="98" width="200" height="78" rx="8"/><text class="s" x="498" y="122">3. Send to kitchen</text><text class="xs" x="498" y="144">K00002 with its kot_items;</text><text class="xs" x="498" y="162">lines SENT (only void from now)</text>
+  <rect class="step" x="706" y="98" width="210" height="78" rx="8"/><text class="s" x="718" y="122">4. Kitchen: Start, Ready</text><text class="xs" x="718" y="144">kot.update; the display asks</text><text class="xs" x="718" y="162">every 10 s (no websockets yet)</text>
+  <rect class="win" x="936" y="98" width="220" height="78" rx="8"/><text class="s b" x="948" y="122">5. Waiter: Served</text><text class="xs" x="948" y="144">every line sent and every ticket</text><text class="xs" x="948" y="162">served: the bill can be settled</text>
+  <path class="arrow" d="M246,137 L264,137"/><path class="arrow" d="M466,137 L484,137"/><path class="arrow" d="M686,137 L704,137"/><path class="arrow" d="M916,137 L934,137"/>
+  <rect class="lose" x="46" y="190" width="640" height="44" rx="8"/><text class="xs" x="58" y="210">Two waiters change O00002 at the same moment: the row lock queues them; the second finds a new version and gets</text><text class="xs" x="58" y="226">409 "Someone else changed O00002 a moment ago". Their page reloads with the first waiter's change; neither change is overwritten.</text>
+  <rect class="ask" x="706" y="190" width="450" height="44" rx="8"/><text class="xs" x="718" y="210">Void a sent line (pos_order.void, a reason): struck through on the</text><text class="xs" x="718" y="226">ticket; a ticket with nothing left is CANCELLED.</text>
+  <text class="xs" x="46" y="262">Discount (pos.discount, a reason): a % or ₹ off the food before GST, never more than it. Subtotal, discount, GST and total are kept on the row and worked out again on every change.</text>
+  <text class="xs" x="46" y="282">Room service: an in-house room (a CHECKED_IN booking) instead of a table. Takeaway: neither. A dish sold out (is_available false) can't be added.</text>
+  <rect class="lane" x="30" y="326" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="352">Settling (once, final: a settled or voided order refuses any UPDATE, trigger fn_orders_final)</text>
+  <rect class="win" x="46" y="368" width="330" height="78" rx="8"/><text class="s b" x="58" y="392">Charge to room (folio.post_charge)</text><text class="xs" x="58" y="412">lock order, then booking (CHECKED_IN); one FOOD line,</text><text class="xs" x="58" y="430">source RESTAURANT, on the main folio; GST as the order</text>
+  <rect class="step" x="396" y="368" width="330" height="78" rx="8"/><text class="s b" x="408" y="392">Paid here (payment.create)</text><text class="xs" x="408" y="412">cash, UPI, card or bank transfer; cash goes in the</text><text class="xs" x="408" y="430">open drawer as POS_SALE; no card numbers (CHECK)</text>
+  <rect class="lose" x="746" y="368" width="410" height="78" rx="8"/><text class="s b" x="758" y="392">Void the order (pos_order.void, a reason)</text><text class="xs" x="758" y="412">lines not sent removed, sent lines voided and struck off</text><text class="xs" x="758" y="430">their tickets; nothing billed</text>
+  <text class="xs" x="46" y="474">A retried Charge or Paid (same Idempotency-Key) returns the first answer. ux_orders_folio_item: a folio line is the charge of one order at most.</text>
+  <text class="xs" x="46" y="494">The folio line says what was eaten: "Restaurant O00002 · Table T4: 2× Paneer Tikka (Full), 1× Dal Makhani, …"; the guest pays it at check-out (Sprint 10) and it is invoiced with the stay (Sprint 12).</text>
+  <rect class="zone" x="30" y="544" width="1140" height="98" rx="8"/>
+  <text class="s" x="46" y="566"><tspan class="b">An order never changes behind the kitchen:</tspan> a sent line and its ticket line only take a void (triggers fn_order_items_guard, fn_kot_items_guard).</text>
+  <text class="s" x="46" y="588"><tspan class="b">The menu can change any time:</tspan> orders keep the name and price they were taken at; dishes, portions and tables are switched off, never deleted.</text>
+  <text class="s" x="46" y="610"><tspan class="b">Built for a phone:</tspan> the floor, the order and the bill at 360 px; the kitchen display on a tablet, oldest ticket first, red after 15 minutes.</text>
+</svg>
 </body>
 </html>

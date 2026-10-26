@@ -82,6 +82,13 @@ export const routes: Routes = [
       { path: 'maintenance/new', canActivate: [permissionGuard('maintenance.create')], loadComponent: () => import('./features/maintenance/report.page').then(m => m.ReportProblemPage) },
       { path: 'maintenance/:id', canActivate: [permissionGuard('maintenance.create')], loadComponent: () => import('./features/maintenance/ticket.page').then(m => m.TicketPage) },
 
+      // /restaurant (Sprint 14)
+      { path: 'restaurant', canActivate: [permissionGuard('pos_order.read')], loadComponent: () => import('./features/restaurant/floor.page').then(m => m.FloorPage) },
+      { path: 'restaurant/orders', canActivate: [permissionGuard('pos_order.read')], loadComponent: () => import('./features/restaurant/orders.page').then(m => m.OrdersPage) },
+      { path: 'restaurant/orders/:id', canActivate: [permissionGuard('pos_order.read')], loadComponent: () => import('./features/restaurant/order.page').then(m => m.OrderPage) },
+      { path: 'restaurant/kitchen', canActivate: [permissionGuard('kot.read')], loadComponent: () => import('./features/restaurant/kitchen.page').then(m => m.KitchenPage) },
+      { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
+
       { path: 'users', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/users.page').then(m => m.UsersPage) },
       { path: 'users/new', canActivate: [permissionGuard('user.create')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },
       { path: 'users/:id', canActivate: [permissionGuard('user.read')], loadComponent: () => import('./features/users/user-edit.page').then(m => m.UserEditPage) },

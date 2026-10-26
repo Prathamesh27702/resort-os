@@ -112,8 +112,8 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 9 | GST / invoicing | gst_registrations, tax_categories, tax_rules, tax_rule_slabs (Sprint 9); invoice_series, invoices, credit_notes, debit_notes, receipts, einvoice_records (Sprint 12) | 9, 12 | built (tax engine, GST invoices, credit and debit notes, receipts); e-invoice IRN in Sprint 25 |
 | 10 | Housekeeping | housekeeping_tasks, housekeeping_checklist_templates, housekeeping_checklist_items (cleaning states stay in unit_housekeeping_status) | 13 | built (tasks made by check-out, inspection, checklists, phone board) |
 | 11 | Maintenance | maintenance_assets, maintenance_tickets, maintenance_comments, maintenance_attachments (out of order via unit_blocks) | 13 | built (tickets with photos, out-of-order rooms) |
-| 12 | Restaurant / POS | restaurant_tables, orders, order_items, kots | 14 | planned |
-| 13 | Menu | menu_categories, menu_items, modifiers | 14 | planned |
+| 12 | Restaurant / POS | restaurant_tables, orders, order_items, kots, kot_items (room charges on folio_items, cash as cash_drawer_movements POS_SALE) | 14 | built (orders, kitchen tickets and display, discounts and voids, paid or charged to room) |
+| 13 | Menu | menu_categories, menu_items, menu_item_variants, modifier_groups, modifiers | 14 | built (portions, choices, sold out, menu editor) |
 | 14 | Inventory | inventory_items, stock_movements, recipes | 15 | planned |
 | 15 | Purchasing | purchase_orders, goods_received_notes, supplier_invoices | 16 | planned |
 | 16 | Suppliers | suppliers | 16 | planned |

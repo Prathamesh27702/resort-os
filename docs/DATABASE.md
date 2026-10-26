@@ -18,7 +18,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 10 — payments](database/schema-sprint-10.md) (payments and their status machine, allocations to bills, refunds that can't overspend, cash drawer shifts and their ledger, demo payments) ·
   [Sprint 11 — Razorpay](database/schema-sprint-11.md) (payment links as Razorpay orders, webhook events deduplicated by event id, online payments and refunds) ·
   [Sprint 12 — invoices](database/schema-sprint-12.md) (gap-free number series, GST invoices with their lines and taxes, credit and debit notes, credit lines on the folio, receipts, e-invoice placeholders) ·
-  [Sprint 13 — housekeeping and maintenance](database/schema-sprint-13.md) (cleaning tasks made once per state change, checklists, equipment, repair tickets with their timeline and encrypted photos, out-of-order blocks, demo tickets)
+  [Sprint 13 — housekeeping and maintenance](database/schema-sprint-13.md) (cleaning tasks made once per state change, checklists, equipment, repair tickets with their timeline and encrypted photos, out-of-order blocks, demo tickets) ·
+  [Sprint 14 — restaurant](database/schema-sprint-14.md) (the menu with portions and choices, tables, orders with their versions, kitchen tickets, voids and discounts, room charges on the folio, restaurant cash in the drawer, demo menu)
 
 ## Conventions (every table)
 
@@ -204,7 +205,7 @@ justified (brief §11: "do not create artificial tables").
 | folio_item → folio_item_taxes → tax_rules | The rule id and rate used are copied at posting time. Changing a rule never changes history (brief §86). |
 | payment → payment_allocations → folio | A payment can settle several folios; a folio can have several payments. |
 | invoice → credit_note | The only way to cancel or reduce an invoice. Invoice numbers are gap-free per series and financial year. |
-| order → folio_item | "Charge to room" posts one folio item per order, linked back to the order. |
+| order → folio_item | "Charge to room" posts one folio item (source `RESTAURANT`) per order, linked back to the order (`orders.folio_item_id`, unique). |
 | inventory_item → stock_movements | On-hand quantity is the sum of movements (ledger). Never an editable column. |
 | employee → employee_compensation | Separate table, separate endpoint, `employee_salary.read` only. |
 | ota_reservations → reservations | Unique `(channel, ota_reservation_id)`, so re-delivered webhooks update, never duplicate. |

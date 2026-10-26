@@ -810,6 +810,69 @@ transaction; a room move's old room gets a task. `GET /rooms/status` adds `house
 least ready bed) and `openRepairs` to each room, and `housekeeping` to each bed. Unit history sources add `HOUSEKEEPING` and
 `MAINTENANCE`.
 
+## Built endpoints (Sprint 14 — menu, restaurant POS and KOT)
+
+All under `/api/v1/properties/{propertyId}`. Prices are **before GST**. An **order** (`O00001` …) is dine-in at a table (at
+most one open order per table), room service to an in-house room, or takeaway. Its lines start `NEW` (not sent; the waiter
+can still change or remove them); **send** puts them on a **kitchen ticket** (`K00001` …), after which a line can only be
+**voided** (`pos_order.void`, with a reason). A ticket is `NEW` → `PREPARING` → `READY` (kitchen, `kot.update`) → `SERVED`
+(waiter), or `CANCELLED` when everything on it is voided. Once every line is sent and every ticket served, the bill is
+**paid** at the restaurant (`payment.create`; cash goes into the open cash drawer) or **charged to the room**
+(`folio.post_charge`: one FOOD line, source `RESTAURANT`, on the in-house guest's main folio with its GST). A settled or
+voided order is final. **Every change to an order sends its `version`**: if someone else changed the order first, 409
+`CONCURRENCY_CONFLICT` ("Someone else changed O00002 a moment ago (another waiter, or the kitchen). Reload it to see their
+change, then make yours again."). GST is worked out by the tax engine (category FOOD, the order's business date) on the
+subtotal less any discount (`pos.discount`, with a reason). Each order lists the steps the caller may take
+(`nextActions`: `add`, `edit`, `send`, `serve`, `discount`, `pay`, `charge`, `void`). How it works:
+[system-design.md → 4.24](architecture/system-design.md#424-restaurant-orders-two-waiters-one-order-and-the-room-charge).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /menu?all` | The menu by section, dishes with portions and choices. `all=true`: also switched-off sections and dishes (the editor) | `menu.read` | — | `MenuDto` | 403 | — |
+| `POST /menu/categories` · `PUT /menu/categories/{id}` | A menu section | `menu.create` / `menu.update` | `SaveMenuCategoryRequest` | 201 / 200 `MenuCategoryDto` | 400 `Name` ("The menu already has a section called Starters."), `SortOrder`; 403, 404 | INSERT/UPDATE |
+| `POST /menu/items` · `PUT /menu/items/{id}` | A dish with all its portions and groups of choices; ones sent with an `id` are kept, new ones added, ones left out switched off. `version` optional on PUT | `menu.create` / `menu.update` | `SaveMenuItemRequest` | 201 / 200 `MenuItemDto` | 400 `Code` ("Another dish already has the code PANEER-TIKKA. Codes are unique on the menu."), `Name`, `CategoryId`, `FoodType`, `Price`, `Variants` ("Two portions have the same name."), `Variants[i].Name`, `ModifierGroups[i].MinSelect` / `MaxSelect` / `Modifiers`; 403, 404; 409 version | INSERT/UPDATE dish (+ portions, choices) |
+| `POST /menu/items/{id}/availability` | Sold out (`false`) or back on (`true`); dishes already ordered are not affected | `menu.update` | `{ isAvailable }` | `MenuItemDto` | 403, 404 | UPDATE dish ("Bebinca sold out") |
+| `GET /menu/tables` · `POST` · `PUT /menu/tables/{id}` | Restaurant tables | read `menu.read`; save `menu.create` / `menu.update` | `SaveRestaurantTableRequest` | `RestaurantTableDto[]` / 201 / 200 | 400 `Code` ("There is already a table T4."), `Seats`, `Area`, `IsActive` ("Table T2 has open order O00001. Settle or move it before switching the table off."); 403, 404 | INSERT/UPDATE |
+| `GET /orders/floor` | Every active table, free or with its open order (lines not sent, cooking, ready), plus open room-service and takeaway orders | `pos_order.read` | — | `FloorDto` | 403 | — |
+| `GET /orders?date&status` | One day's orders (default today), newest first, with the settled and open totals. `status`: `ALL` (default), `OPEN`, `SETTLED`, `VOIDED` | `pos_order.read` | — | `OrderListDto` | 400 `Status`; 403 | — |
+| `GET /orders/rooms` | Rooms with a guest checked in, to deliver to or charge to | `pos_order.read` | — | `InHouseRoomDto[]` | 403 | — |
+| `POST /orders` | Open an order, optionally with its first dishes. `Idempotency-Key` optional | `pos_order.create` | `CreateOrderRequest` | 201 `OrderDto` | 400 `OrderType`, `TableId` ("Choose the table."), `UnitId` ("Nobody is checked in to Room 103, so it can't order room service. Choose an occupied room."), `Covers`, `Items[i].MenuItemId` ("Masala Chai is sold out for now. The kitchen switches it back on when it has more."), `Items[i].VariantId` ("Choose the portion of Paneer Tikka: Half or Full."), `Items[i].ModifierIds` ("Choose the spice level for Paneer Tikka."), `Items[i].Quantity` ("The quantity must be 1–99."); 403; **409 `TABLE_HAS_ORDER`** ("Table T2 already has open order O00001 (opened by Wasim). Add the dishes to that order, or settle it first.") | INSERT order, lines |
+| `GET /orders/{id}` | One order with its lines, tickets, money, taxes and `nextActions` | `pos_order.read` | — | `OrderDto` | 403, 404 | — |
+| `PUT /orders/{id}` | Move to another table, guests at the table, note | `pos_order.update` | `UpdateOrderRequest` | `OrderDto` | 400; 403, 404; 409 version, `TABLE_HAS_ORDER`; 422 `ORDER_SETTLED`, `ORDER_VOIDED` | UPDATE order |
+| `POST /orders/{id}/items` | Add dishes (`NEW` lines) | `pos_order.update` | `AddOrderItemsRequest` | `OrderDto` | 400 as `POST /orders`; 403, 404; **409 version**; 422 `ORDER_SETTLED` ("O00002 is already settled, so it can't be changed. Open a new order for anything more."), `ORDER_VOIDED` | INSERT lines |
+| `PUT /orders/{id}/items/{itemId}` · `DELETE …?version=` | Change the quantity or note of a line not sent yet, or remove it | `pos_order.update` | `UpdateOrderItemRequest` | `OrderDto` | 400 `Quantity`; 403, 404; 409 version; 422 `ALREADY_SENT` ("Butter Naan has gone to the kitchen, so it can't be changed. A manager can void it, with a reason.") | UPDATE / DELETE line |
+| `POST /orders/{id}/items/{itemId}/void` | Void a line already sent; struck through on its ticket (a ticket with nothing left is cancelled) | `pos_order.void` | `VoidRequest` | `OrderDto` | 400 `Reason` ("Say why it is voided (at least 3 characters), e.g. Guest changed their mind."); 403, 404; 409 version; 422 `NOT_SENT` (remove it instead), `ALREADY_VOIDED` | UPDATE line, ticket line (reason) |
+| `POST /orders/{id}/send` | Send every `NEW` line to the kitchen as one ticket | `pos_order.update` | `SendToKitchenRequest` | `OrderDto` | 403, 404; 409 version; 422 `NOTHING_TO_SEND` | INSERT ticket |
+| `POST /orders/{id}/kots/{kotId}/serve` | The waiter served a ready ticket (does not change the order's version) | `pos_order.update` | — | `OrderDto` | 403, 404; 422 `INVALID_STATUS_TRANSITION` ("K00002 is still being prepared. Serve it when the kitchen marks it ready.") | UPDATE ticket |
+| `POST /orders/{id}/discount` | A % or ₹ off the food before GST (`kind` null: remove it); never more than the subtotal | `pos.discount` | `DiscountRequest` | `OrderDto` | 400 `Kind`, `Value` ("A percentage discount can be at most 100%."), `Reason`; 403, 404; 409 version | UPDATE order (reason) |
+| `POST /orders/{id}/void` | Void the whole order: lines not sent removed, sent lines voided on their tickets; nothing billed | `pos_order.void` | `VoidRequest` | `OrderDto` | 400 `Reason`; 403, 404; 409 version; 422 `ORDER_SETTLED` | UPDATE order, lines, tickets (reason) |
+| `POST /orders/{id}/pay` | Paid at the restaurant: `CASH` (into the open cash drawer as `POS_SALE`), `UPI`, `CARD`, `BANK_TRANSFER`. `Idempotency-Key` optional | `payment.create` | `PayOrderRequest` | `OrderDto` | 400 `Method` ("Restaurant bills are paid at the restaurant: choose cash, UPI, card or bank transfer."; "The Front desk cash drawer isn't open, so …"), `Reference` (no card numbers); 403, 404; 409 version; 422 `ORDER_NOT_SENT` ("1 line on O00002 hasn't gone to the kitchen (Butter Naan). Send it or remove it first."), `ORDER_IN_KITCHEN` ("K00002 is ready. Mark it served first."), `ORDER_EMPTY`, `TAX_RULE_MISSING` | UPDATE order, drawer movement |
+| `POST /orders/{id}/charge-to-room` | One FOOD line (source `RESTAURANT`) on the guest's main folio for the amount after discount, with the same GST as the order. `reservationId` defaults to a room-service order's booking. `Idempotency-Key` optional | `folio.post_charge` | `ChargeToRoomRequest` | `OrderDto` | 400 `ReservationId` ("Choose the room to charge it to."; "R00008 has checked out, so nothing more can go on the room's bill. Take the payment at the restaurant instead."); 403, 404; 409 version; 422 as pay | UPDATE order, INSERT folio line (+ taxes) |
+| `GET /kitchen/kots` | Tickets still to cook or serve (`NEW`, `PREPARING`, `READY`), oldest first, with their lines (voided ones struck through). The display polls it every 10 s | `kot.read` | — | `KitchenDto` | 403 | — |
+| `POST /kitchen/kots/{id}/start` · `/ready` | Start cooking; ready to serve (from `NEW` straight to ready is allowed) | `kot.update` | `{ version? }` | `KotDto` | 403, 404; 409 version ("Someone else changed K00002 a moment ago. …"); 422 `INVALID_STATUS_TRANSITION` ("K00002 is already ready.") | UPDATE ticket |
+
+`MenuDto = { categories: [{ id, name, sortOrder, isActive, items: MenuItemDto[] }] }`. `MenuItemDto = { id, categoryId, code,
+name, description, foodType: VEG | NON_VEG | EGG, price, isAvailable, isActive, sortOrder, variants: [{ id, name, price }],
+modifierGroups: [{ id, name, minSelect, maxSelect, modifiers: [{ id, name, priceDelta }] }], version }`.
+`SaveMenuItemRequest = { categoryId, code, name, description?, foodType, price, isActive, sortOrder, variants: [{ id?, name,
+price }], modifierGroups: [{ id?, name, minSelect, maxSelect, modifiers: [{ id?, name, priceDelta }] }], version? }`.
+`CreateOrderRequest = { orderType: DINE_IN | ROOM_SERVICE | TAKEAWAY, tableId?, unitId?, covers?, note?, items?:
+OrderLineRequest[] }`; `OrderLineRequest = { menuItemId, variantId?, modifierIds?, quantity, note? }`.
+`OrderDto = { id, number, orderType, status: OPEN | SETTLED | VOIDED, where, tableId, tableCode, unitId, unitName,
+reservationId, reservationReference, guestName, covers, note, businessDate, items: [{ id, menuItemId, name, variantName,
+foodType, modifiers, quantity, unitPrice, amount, note, status: NEW | SENT | VOIDED, kotId, kotNumber, kitchenStatus,
+voidReason, voidedByName }], kots: [{ id, number, status, sentAt, readyAt, servedAt, lines }], subtotal, discountKind,
+discountValue, discountAmount, discountReason, discountedByName, net, taxes: DocumentTaxDto[], taxAmount, total, taxNote,
+settlement: PAID | ROOM_CHARGE | null, paymentMethod, paymentReference, folioId, folioNumber, settledAt, settledByName,
+voidedAt, voidedByName, voidReason, openedByName, createdAt, nextActions, version }`. `FloorDto = { today, tables: [{ id,
+code, seats, area, order: OrderSummaryDto | null }], otherOrders: OrderSummaryDto[] }`. `KitchenDto = { now, tickets: [{ id,
+number, orderId, orderNumber, where, status, sentAt, sentByName, startedAt, readyAt, note, items: [{ id, name, quantity,
+modifiers, note, foodType, voided, voidReason }], version }] }`.
+
+**Changes to earlier endpoints.** A folio line can now have source `RESTAURANT` (the room charge; it shows on the bill,
+is paid at check-out and invoiced with the stay like any FOOD charge). The cash drawer's movements add `POS_SALE` (cash
+paid at the restaurant, with the order).
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

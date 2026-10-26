@@ -28,7 +28,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
             </a>
           }
         </nav>
-        <p class="later">Kitchen, activities and staff modules arrive in later sprints.</p>
+        <p class="later">Activities, inventory and staff modules arrive in later sprints.</p>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -122,6 +122,8 @@ export class Shell {
     { label: 'Room status', icon: 'grid_view', link: '/rooms/status', perm: 'accommodation.read' },
     { label: 'Housekeeping', icon: 'cleaning_services', link: '/housekeeping', perm: 'housekeeping.read' },
     { label: 'Maintenance', icon: 'build', link: '/maintenance', perm: 'maintenance.create' },
+    { label: 'Restaurant', icon: 'restaurant', link: '/restaurant', perm: 'pos_order.read', exact: true },
+    { label: 'Kitchen', icon: 'soup_kitchen', link: '/restaurant/kitchen', perm: 'kot.read' },
     { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },
     { label: 'Rates', icon: 'sell', link: '/settings/rates', perm: 'rate.read' },
     { label: 'Packages', icon: 'redeem', link: '/settings/packages', perm: 'rate.read' },
