@@ -43,7 +43,11 @@ public sealed class InventoryService(IAppDbContext db, ICurrentUser caller, Audi
         var property = await RequirePropertyAsync(propertyId, ct);
         var q = db.StockMovements.AsNoTracking().Where(m => m.PropertyId == propertyId);
         if (itemId is { } iid) q = q.Where(m => m.ItemId == iid);
-        if (!string.IsNullOrWhiteSpace(type)) q = q.Where(m => m.MovementType == type.Trim().ToUpperInvariant());
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            var movementType = type.Trim().ToUpperInvariant();
+            q = q.Where(m => m.MovementType == movementType);
+        }
         if (from is { } f)
         {
             var start = property.StartOfDay(f);
