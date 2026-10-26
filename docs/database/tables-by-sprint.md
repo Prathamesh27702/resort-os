@@ -72,23 +72,23 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `debit_note_item_taxes` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
 | `receipts` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
 | `einvoice_records` | [Sprint 12](../sprints/sprint-12-gst-invoices-credit-debit-notes-receipts.md) | 🟢 Done |
-| `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `maintenance_assets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `maintenance_tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `maintenance_comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `maintenance_attachments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🔵 In progress |
-| `menu_categories` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `menu_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `menu_item_variants` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `modifier_groups` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `modifiers` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `restaurant_tables` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `orders` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `order_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `kots` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
-| `kot_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | ⚪ Planned |
+| `housekeeping_tasks` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `housekeeping_checklist_templates` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `housekeeping_checklist_items` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `maintenance_assets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `maintenance_tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `maintenance_comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `maintenance_attachments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
+| `menu_categories` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `menu_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `menu_item_variants` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `modifier_groups` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `modifiers` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `restaurant_tables` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `orders` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `order_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `kots` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
+| `kot_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
 | `inventory_categories` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
 | `inventory_units` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
 | `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
