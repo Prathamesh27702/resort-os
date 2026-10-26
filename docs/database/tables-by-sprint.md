@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-151 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+152 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -94,6 +94,7 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
 | `stock_locations` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
 | `stock_movements` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `stock_levels` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
 | `stock_adjustments` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
 | `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
 | `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |

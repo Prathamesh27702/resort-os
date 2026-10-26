@@ -9,6 +9,7 @@ using Resort.Domain.Guests;
 using Resort.Domain.Housekeeping;
 using Resort.Domain.Identity;
 using Resort.Domain.Invoicing;
+using Resort.Domain.Inventory;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
 using Resort.Domain.Rates;
@@ -104,6 +105,16 @@ public interface IAppDbContext
     DbSet<OrderItem> OrderItems { get; }
     DbSet<Kot> Kots { get; }
     DbSet<KotItem> KotItems { get; }
+    DbSet<StockUnit> InventoryUnits { get; }
+    DbSet<InventoryCategory> InventoryCategories { get; }
+    DbSet<StockLocation> StockLocations { get; }
+    DbSet<InventoryItem> InventoryItems { get; }
+    DbSet<StockMovement> StockMovements { get; }
+    DbSet<StockLevel> StockLevels { get; }
+    DbSet<StockAdjustment> StockAdjustments { get; }
+    DbSet<StockCount> StockCounts { get; }
+    DbSet<Recipe> Recipes { get; }
+    DbSet<RecipeIngredient> RecipeIngredients { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

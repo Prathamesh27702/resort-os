@@ -248,4 +248,34 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var kitchen = await owner.GetJsonAsync<KitchenDto>($"/api/v1/properties/{pid}/kitchen/kots");
         Assert.Equal(("K00001", "Table T2", 3), (kitchen.Tickets[0].Number, kitchen.Tickets[0].Where, kitchen.Tickets[0].Items.Count));
     }
+
+    /// <summary>Sprint 15: two stores, 21 stock items with opening stock (fresh cream at its reorder level), nine recipes for eight
+    /// dishes — Paneer Tikka (Full) costs ₹105 of its ₹280, 37.5 % — and one wastage.</summary>
+    [Fact]
+    public async Task Dev_seed_has_sample_stock_and_recipes_with_paneer_tikka_at_a_37_5_percent_food_cost()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var stock = await owner.GetJsonAsync<InventoryDto>($"/api/v1/properties/{pid}/inventory");
+        Assert.Equal([("STORE", false), ("KITCHEN", true)], stock.Locations.Select(l => (l.Code, l.IsKitchen)));
+        Assert.Equal(21, stock.Items.Count);
+        var paneer = stock.Items.Single(i => i.Code == "PANEER");
+        Assert.Equal(("kg", 400m, 5m), (paneer.Unit, paneer.UnitCost, paneer.OnHand));
+        Assert.Equal(["CREAM"], stock.Items.Where(i => i.Low).Select(i => i.Code));
+        Assert.Equal(27.8m, stock.Items.Single(i => i.Code == "ONION-CAPSICUM").OnHand);   // 8 + 20 − 0.2 spoilt
+
+        var recipes = await owner.GetJsonAsync<RecipeListDto>($"/api/v1/properties/{pid}/inventory/recipes");
+        var full = recipes.Dishes.Single(d => d.Name == "Paneer Tikka (Full)");
+        Assert.Equal((105m, 37.5m, 175m), (full.Cost!.Value, full.FoodCostPercent!.Value, full.Contribution!.Value));
+        Assert.Equal(63m, recipes.Dishes.Single(d => d.Name == "Paneer Tikka (Half)").Cost);
+        Assert.Equal(9, recipes.Dishes.Count(d => d.Recipe is not null));   // eight dishes; Paneer Tikka has two portions
+
+        var report = await owner.GetJsonAsync<FoodCostReportDto>($"/api/v1/properties/{pid}/inventory/food-cost");
+        Assert.Equal(["Butter Naan", "Veg Biryani", "Dal Makhani"], report.Highest.Select(l => l.Name));
+        Assert.Equal(["Goan Fish Curry", "Paneer Tikka (Half)", "Paneer Tikka (Full)"], report.Lowest.Select(l => l.Name));
+        Assert.Equal(6, report.NoRecipe.Count);
+    }
 }

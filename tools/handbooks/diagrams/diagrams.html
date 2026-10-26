@@ -1092,5 +1092,30 @@
   <text class="s" x="46" y="588"><tspan class="b">The menu can change any time:</tspan> orders keep the name and price they were taken at; dishes, portions and tables are switched off, never deleted.</text>
   <text class="s" x="46" y="610"><tspan class="b">Built for a phone:</tspan> the floor, the order and the bill at 360 px; the kitchen display on a tablet, oldest ticket first, red after 15 minutes.</text>
 </svg>
+<svg id="stock-ledger" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 15: inventory. Every stock change is one movement in the ledger; the level and the cost follow from it</text>
+  <rect class="lane" x="30" y="56" width="1140" height="250" rx="10"/>
+  <text class="t b" x="46" y="82">What changes stock (each one: lock the items FOR UPDATE in id order, check the store, then insert the movement)</text>
+  <rect class="step" x="46" y="98" width="260" height="78" rx="8"/><text class="s" x="58" y="122">Stock received (SA…)</text><text class="xs" x="58" y="144">+ into a store; the item's cost becomes</text><text class="xs" x="58" y="162">the average of on hand and received</text>
+  <rect class="ask" x="326" y="98" width="260" height="78" rx="8"/><text class="s" x="338" y="122">Wastage, expired, damaged (SA…)</text><text class="xs" x="338" y="144">− out of a store, with a reason;</text><text class="xs" x="338" y="162">never more than the store has</text>
+  <rect class="step" x="606" y="98" width="260" height="78" rx="8"/><text class="s" x="618" y="122">Transfer, correction (SA…)</text><text class="xs" x="618" y="144">out of one store and into another;</text><text class="xs" x="618" y="162">a correction either way, with a reason</text>
+  <rect class="step" x="886" y="98" width="270" height="78" rx="8"/><text class="s" x="898" y="122">Count (SC…)</text><text class="xs" x="898" y="144">counted − system = the difference,</text><text class="xs" x="898" y="162">posted as COUNT; a difference needs a reason</text>
+  <rect class="win" x="46" y="192" width="540" height="78" rx="8"/><text class="s b" x="58" y="216">A kitchen ticket is served (Sprint 14, same transaction)</text><text class="xs" x="58" y="238">each live line: the portion's recipe, else the dish's, converted to the item's unit,</text><text class="xs" x="58" y="256">taken from the KITCHEN store as CONSUMPTION; once per line and item (unique index)</text>
+  <rect class="lose" x="606" y="192" width="550" height="78" rx="8"/><text class="s b" x="618" y="216">Two write-offs of the last 2 l at the same moment</text><text class="xs" x="618" y="238">the second waits for the first's lock, then reads 0.25 l left: "Kitchen has only</text><text class="xs" x="618" y="256">0.25 l of Fresh cream, so 2 l can't be taken out." Both are never lost or doubled.</text>
+  <text class="xs" x="46" y="292">Every person's change is written to the audit log with its reason (brief §58). Only a served dish may take a store below zero: the food is already on the table.</text>
+  <rect class="lane" x="30" y="326" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="352">The ledger and the level (append-only: UPDATE and DELETE are refused by triggers, even from SQL)</text>
+  <rect class="step" x="46" y="368" width="340" height="96" rx="8"/><text class="s b" x="58" y="392">stock_movements</text><text class="xs" x="58" y="412">item, store, type, signed quantity, unit cost,</text><text class="xs" x="58" y="430">value = quantity × cost, why (adjustment, count,</text><text class="xs" x="58" y="448">order line and ticket), on_hand_after</text>
+  <rect class="win" x="426" y="368" width="340" height="96" rx="8"/><text class="s b" x="438" y="392">BEFORE INSERT trigger</text><text class="xs" x="438" y="412">INSERT … ON CONFLICT DO UPDATE</text><text class="xs" x="438" y="430">SET on_hand = on_hand + quantity (atomic)</text><text class="xs" x="438" y="448">RETURNING on_hand INTO on_hand_after</text>
+  <rect class="step" x="806" y="368" width="350" height="96" rx="8"/><text class="s b" x="818" y="392">stock_levels</text><text class="xs" x="818" y="412">on hand per item and store = Σ its movements;</text><text class="xs" x="818" y="430">read by the Stock view and the checks;</text><text class="xs" x="818" y="448">never written by the app</text>
+  <path class="arrow" d="M386,416 L424,416"/><path class="arrow" d="M766,416 L804,416"/>
+  <text class="xs" x="46" y="494">Paneer, Kitchen: OPENING +5 kg → 5 · CONSUMPTION −0.6 kg (O… · K… · 3× Paneer Tikka (Full)) → 4.4 · COUNT −0.1 kg (Trimmings not recorded) → 4.3</text>
+  <rect class="zone" x="30" y="544" width="1140" height="98" rx="8"/>
+  <text class="s" x="46" y="566"><tspan class="b">Recipe cost:</tspan> Σ quantity in the item's unit (200 g → 0.2 kg) × unit cost. Paneer Tikka (Full): ₹105 of ₹280 = 37.5 % food cost, ₹175 contribution, 62.5 % margin.</text>
+  <text class="s" x="46" y="588"><tspan class="b">Units:</tspan> kg, g, l, ml, pcs, dozen; a recipe uses any unit of the item's kind (mass, volume, count). Prices and costs are before GST.</text>
+  <text class="s" x="46" y="610"><tspan class="b">Food-cost report:</tspan> what was served in the period, sales and cost of sales, what was written off, and the three highest and lowest margins.</text>
+</svg>
 </body>
 </html>
