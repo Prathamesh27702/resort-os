@@ -79,25 +79,25 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `maintenance_tickets` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
 | `maintenance_comments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
 | `maintenance_attachments` | [Sprint 13](../sprints/sprint-13-housekeeping-and-maintenance-mobile.md) | 🟢 Done |
-| `menu_categories` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `menu_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `menu_item_variants` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `modifier_groups` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `modifiers` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `restaurant_tables` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `orders` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `order_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `kots` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `kot_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🔵 In progress |
-| `inventory_categories` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `inventory_units` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `stock_locations` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `stock_movements` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `stock_adjustments` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
-| `recipe_ingredients` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | ⚪ Planned |
+| `menu_categories` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `menu_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `menu_item_variants` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `modifier_groups` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `modifiers` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `restaurant_tables` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `orders` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `order_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `kots` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `kot_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
+| `inventory_categories` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `inventory_units` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `stock_locations` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `stock_movements` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `stock_adjustments` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
+| `recipe_ingredients` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
 | `suppliers` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
 | `purchase_requests` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
 | `purchase_request_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |

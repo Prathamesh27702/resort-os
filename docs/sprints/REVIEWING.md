@@ -407,6 +407,42 @@ S13-07). Database checks: `database/queries/check-sprint-13.sql`. How it works:
 | 17 | **Close ticket** | *Closed*; no more buttons. **Maintenance** → *Open* still lists M00001 and M00002, most urgent first |
 | 18 | Owner: **Housekeeping** → **Checklists** → *Departure clean* → **Edit** → remove every line → **Save checklist** | *Add at least one line to tick.* Nothing is saved |
 
+### Sprint 14 — Menu, restaurant POS and KOT
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V016__restaurant`).
+Demo data (S011): a menu in five sections (prices before GST); **Paneer Tikka** has *Half ₹160 / Full ₹280*, a *Spice
+level* to pick and *Add-ons*; **Masala Chai** is sold out. Tables **T1–T4** (Garden) and **B1, B2** (Beach). **O00001**
+at T2 is already with the kitchen as **K00001**. **R00008** (Room 104) is in house and is the room to charge (the plan
+said Room 103, which is kept free for Sprint 2's review). Use three browser windows: the **owner** on a desktop, a
+**waiter** in a phone-sized window (Chrome DevTools → device toolbar → 360 × 780), and the **kitchen** in a wide window
+(a tablet on the kitchen wall). Screenshots: [sprint-14-screens/](sprint-14-screens/). The browser tests do the same on
+their own, the waiter on a 360 px phone: `cd frontend; npm run e2e:headed -- e2e/sprint-14.spec.ts` (names S14-01 …
+S14-09). Database checks: `database/queries/check-sprint-14.sql`. How it works:
+[system-design.md → 4.24](../architecture/system-design.md#424-restaurant-orders-two-waiters-one-order-and-the-room-charge).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Wasim Waiter*, role **Waiter**; *Wendy Waiter*, role **Waiter**; *Kavya Kitchen*, role **Kitchen**, all at Palm Grove Beach Resort. Sign in as Wasim in the phone window and Kavya in the wide window | Wasim's menu has **Restaurant** and **Kitchen** (to look, not to change); Kavya's has **Kitchen** only |
+| 2 | Kavya: **Kitchen** | Three columns, *New*, *Preparing*, *Ready*; **K00001** *Table T2* in *New* with *1× Paneer Tikka (Full), Less spicy*, *1× Goan Fish Curry*, *2× Butter Naan* and how many minutes ago it was sent. *Refreshes every 10 seconds* |
+| 3 | Wasim: **Restaurant** | The floor: T1–T4 under *Garden*, B1, B2 under *Beach*. **T2** shows *O00001* and *3 cooking*; the others say *Free*. Nothing scrolls sideways |
+| 4 | **The acceptance test.** Wasim: tap **T4** | A new order *O00002 Table T4*, *Open*, and *Add dishes* with the menu sections |
+| 5 | *Starters* → **Paneer Tikka** → **Add** straight away | Under the choices: *Choose the portion: Half or Full.* Choose **Full** and **Add** again: *Choose the spice level.* |
+| 6 | Tick **Less spicy**, tap **+** once (2), **Add · ₹560** | *2× Paneer Tikka added.*, the line says *Less spicy* and *Not sent yet* |
+| 7 | *Mains* → **Dal Makhani**, **Veg Biryani**; *Breads and rice* → **Butter Naan** (one tap each) | Each added with one tap (a dish with nothing to choose has a ⊕, one with choices a slider icon). *Drinks* → **Masala Chai** is greyed out with *Sold out* and can't be tapped |
+| 8 | **Two waiters at once.** Sign in as Wendy in a second phone window and open the same order (**Restaurant** → **T4**). Wasim taps **+** on *Butter Naan*; then Wendy, still seeing one naan, taps **+** on it too | Wasim: *2× Butter Naan*. Wendy is refused: *Someone else changed O00002 a moment ago (another waiter, or the kitchen). Reload it to see their change, then make yours again.* and her page now shows 2, not 3 |
+| 9 | Wasim: the bill | *Food and drinks ₹1,250.00*, CGST 2.5% ₹31.25, SGST 2.5% ₹31.25, *Total ₹1,312.50* (no GST lines if the property has no GSTIN). No *Paid* or *Charge to room* yet: *Send every dish to the kitchen before settling the bill.* |
+| 10 | **Send to kitchen (6)** | *Sent to the kitchen.* Each line says *K00002 · New*. Kavya's screen, without touching it: **K00002** *Table T4* appears in *New* within 10 seconds |
+| 11 | Kavya: **Start** on K00002, then **Ready** | It moves to *Preparing*, then *Ready*. A ticket waiting 15 minutes or more turns red |
+| 12 | Wasim (no reload) | Within 10 seconds the ticket says *Ready* and a **Served** button appears. Tap it: *K00002 served.* Now **Charge to room** and **Paid** show |
+| 13 | Wasim: is there a **Discount** or **Void** button? | No: a waiter has neither (`pos.discount`, `pos_order.void`). The API refuses them too (403) |
+| 14 | **Charge to room** → **Room 104** · *R00008* → **Charge to room** | *Charged to the room.* The order says *Settled*, *Charged to Room 104 on folio F…* (a link), and nothing can be added any more |
+| 15 | Owner: open that folio | One new line, *Restaurant O00002 · Table T4: 2× Paneer Tikka (Full), 1× Dal Makhani, 1× Veg Biryani, 2× Butter Naan*, category *Food*, **₹1,250.00** plus its GST; the balance went up by the order's total |
+| 16 | Owner: **Restaurant** → **Menu** → switch **Bebinca** off | *Bebinca is sold out.* Waiters see it greyed out with *Sold out* at once; switch it back on afterwards |
+| 17 | Owner: **Restaurant** → **Takeaway** → add **Gulab Jamun** → **Send to kitchen** → **Void order** → **Void order** with the reason empty | Under the field: *Say why (at least 3 characters), e.g. Guest left before ordering.* |
+| 18 | Type *Guest left before ordering* → **Void order** | *O00003 voided.* The order says *Voided: Guest left before ordering*. Kavya's screen: the ticket is gone (cancelled) |
+| 19 | Owner: **Today's orders** | O00001 *Open*, O00002 *Charged to room*, O00003 *Voided*; *Settled ₹1,312.50* |
+| 20 | Owner: on a new **Takeaway** with one dish sent and served, **Paid** → **Card** with reference *4111 1111 1111 1111* | Under the reference: *Don't type the card number: card details are never stored. Enter the approval code from the terminal slip (up to 12 digits), or leave it empty.* **Cash** with no cash drawer open: *The Front desk cash drawer isn't open, so …* telling you to open it on the front desk first; with the drawer open, the cash shows in the drawer as a restaurant sale |
+
 ## Part C — Decide
 
 ### Accept

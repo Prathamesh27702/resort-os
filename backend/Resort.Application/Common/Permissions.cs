@@ -46,6 +46,17 @@ public static class Perm
     public const string MaintenanceUpdate = "maintenance.update";
     public const string MaintenanceAssign = "maintenance.assign";
 
+    public const string MenuRead = "menu.read";
+    public const string MenuCreate = "menu.create";
+    public const string MenuUpdate = "menu.update";
+    public const string PosOrderRead = "pos_order.read";
+    public const string PosOrderCreate = "pos_order.create";
+    public const string PosOrderUpdate = "pos_order.update";
+    public const string PosOrderVoid = "pos_order.void";
+    public const string PosDiscount = "pos.discount";
+    public const string KotRead = "kot.read";
+    public const string KotUpdate = "kot.update";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
@@ -77,6 +88,7 @@ public static class Perm
         ReservationRead, ReservationCreate, ReservationUpdate, ReservationCancel,
         FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate, HousekeepingAssign, HousekeepingInspect,
         MaintenanceRead, MaintenanceCreate, MaintenanceUpdate, MaintenanceAssign,
+        MenuRead, MenuCreate, MenuUpdate, PosOrderRead, PosOrderCreate, PosOrderUpdate, PosOrderVoid, PosDiscount, KotRead, KotUpdate,
         FolioRead, FolioPostCharge, FolioAdjust,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,

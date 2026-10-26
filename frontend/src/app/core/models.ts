@@ -490,3 +490,57 @@ export interface MaintenanceAsset {
   id: string; code: string; name: string; category: TicketCategory; unitId: string | null; unitName: string | null; location: string | null;
   isActive: boolean; openTickets: number;
 }
+
+// ---------------------------------------------------------------- restaurant POS and KOT (Sprint 14)
+
+export type FoodType = 'VEG' | 'NON_VEG' | 'EGG';
+export type OrderType = 'DINE_IN' | 'ROOM_SERVICE' | 'TAKEAWAY';
+export type OrderStatus = 'OPEN' | 'SETTLED' | 'VOIDED';
+export type OrderItemStatus = 'NEW' | 'SENT' | 'VOIDED';
+export type KotStatus = 'NEW' | 'PREPARING' | 'READY' | 'SERVED' | 'CANCELLED';
+export type OrderAction = 'add' | 'edit' | 'send' | 'serve' | 'discount' | 'pay' | 'charge' | 'void';
+export interface MenuVariant { id: string; name: string; price: number; }
+export interface MenuModifier { id: string; name: string; priceDelta: number; }
+export interface ModifierGroup { id: string; name: string; minSelect: number; maxSelect: number; modifiers: MenuModifier[]; }
+/** A dish or drink; price before GST. isAvailable false = sold out for now. Ordered by variant when it has any. */
+export interface MenuItem {
+  id: string; categoryId: string; code: string; name: string; description: string | null; foodType: FoodType; price: number;
+  isAvailable: boolean; isActive: boolean; sortOrder: number; variants: MenuVariant[]; modifierGroups: ModifierGroup[]; version: number;
+}
+export interface MenuCategory { id: string; name: string; sortOrder: number; isActive: boolean; items: MenuItem[]; }
+export interface Menu { categories: MenuCategory[]; }
+export interface RestaurantTable { id: string; code: string; seats: number; area: string | null; sortOrder: number; isActive: boolean; }
+/** An order in a list. inKitchen / ready: kitchen tickets still cooking / ready to serve. unsent: lines not sent yet. */
+export interface OrderSummary {
+  id: string; number: string; orderType: OrderType; status: OrderStatus; where: string; guestName: string | null; covers: number | null;
+  lines: number; unsent: number; inKitchen: number; ready: number; total: number; settlement: 'PAID' | 'ROOM_CHARGE' | null;
+  openedByName: string | null; createdAt: string; settledAt: string | null;
+}
+export interface FloorTable { id: string; code: string; seats: number; area: string | null; order: OrderSummary | null; }
+export interface Floor { today: string; tables: FloorTable[]; otherOrders: OrderSummary[]; }
+export interface OrderList { items: OrderSummary[]; settledTotal: number; openTotal: number; }
+export interface InHouseRoom { unitId: string; unitCode: string; unitName: string; reservationId: string; reference: string; guestName: string; checkOut: string; }
+export interface OrderItem {
+  id: string; menuItemId: string; name: string; variantName: string | null; foodType: FoodType; modifiers: string[]; quantity: number;
+  unitPrice: number; amount: number; note: string | null; status: OrderItemStatus; kotId: string | null; kotNumber: string | null;
+  kitchenStatus: KotStatus | null; voidReason: string | null; voidedByName: string | null;
+}
+export interface OrderKot { id: string; number: string; status: KotStatus; sentAt: string; readyAt: string | null; servedAt: string | null; lines: number; }
+/** One order. subtotal − discountAmount = net; taxes on net; total = net + taxAmount. Send version back with every change. */
+export interface Order {
+  id: string; number: string; orderType: OrderType; status: OrderStatus; where: string; tableId: string | null; tableCode: string | null;
+  unitId: string | null; unitName: string | null; reservationId: string | null; reservationReference: string | null; guestName: string | null;
+  covers: number | null; note: string | null; businessDate: string; items: OrderItem[]; kots: OrderKot[];
+  subtotal: number; discountKind: 'PERCENT' | 'AMOUNT' | null; discountValue: number | null; discountAmount: number; discountReason: string | null;
+  discountedByName: string | null; net: number; taxes: DocumentTax[]; taxAmount: number; total: number; taxNote: string | null;
+  settlement: 'PAID' | 'ROOM_CHARGE' | null; paymentMethod: PaymentMethod | null; paymentReference: string | null; folioId: string | null;
+  folioNumber: string | null; settledAt: string | null; settledByName: string | null; voidedAt: string | null; voidedByName: string | null;
+  voidReason: string | null; openedByName: string | null; createdAt: string; nextActions: OrderAction[]; version: number;
+}
+export interface OrderLineRequest { menuItemId: string; variantId: string | null; modifierIds: string[] | null; quantity: number; note: string | null; }
+export interface KotItem { id: string; name: string; quantity: number; modifiers: string | null; note: string | null; foodType: FoodType; voided: boolean; voidReason: string | null; }
+export interface Kot {
+  id: string; number: string; orderId: string; orderNumber: string; where: string; status: KotStatus; sentAt: string; sentByName: string | null;
+  startedAt: string | null; readyAt: string | null; note: string | null; items: KotItem[]; version: number;
+}
+export interface Kitchen { now: string; tickets: Kot[]; }

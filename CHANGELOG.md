@@ -2,6 +2,49 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-14] — 2026-10-26 — Menu, restaurant POS and KOT (accepted)
+
+### Added
+- Migration V016: the menu (`menu_categories`, `menu_items` with `VEG` / `NON_VEG` / `EGG` and sold out,
+  `menu_item_variants` for portions, `modifier_groups` and `modifiers` for choices; switched off, never deleted),
+  `restaurant_tables`, `orders` (`O00001` …; at most one open order per table; final once settled or voided; totals and
+  CHECKs on the row; no card numbers in the reference), `order_items` (name, portion, choices and price copied when
+  ordered; a line sent to the kitchen can only be voided), `kots` (`K00001` …) and `kot_items` (only voided, never
+  changed). `cash_drawer_movements` adds `order_id` and type `POS_SALE`; `folio_items.source` adds `RESTAURANT`.
+- Orders: open at a table, room service to an in-house room, or takeaway; add dishes with their portion and choices;
+  change or remove lines not sent; send to the kitchen as one ticket; served; paid at the restaurant (cash into the open
+  cash drawer, UPI, card, bank transfer) or charged to the room as one FOOD line on the guest's folio with its GST.
+  Every change carries the order's version: two waiters changing the same order at once, the second gets 409 and sees
+  the first one's change. Discounts need `pos.discount` and voids `pos_order.void`, each with a reason. A bill is
+  settled only once everything is sent and served.
+- Kitchen display: tickets in New, Preparing and Ready, oldest first, red after 15 minutes, voided lines struck
+  through; refreshes every 10 seconds (polling, no websockets yet); Start and Ready in one tap.
+- API: `GET /menu`, `POST|PUT /menu/categories`, `POST|PUT /menu/items`, `POST /menu/items/{id}/availability`, `GET|POST|PUT
+  /menu/tables`; `GET /orders`, `/orders/floor`, `/orders/rooms`, `POST /orders` (Idempotency-Key optional), `GET|PUT
+  /orders/{id}`, `POST /orders/{id}/items`, `PUT|DELETE /orders/{id}/items/{itemId}`, `POST /orders/{id}/items/{itemId}/void`,
+  `POST /orders/{id}/send | discount | void | pay | charge-to-room`, `POST /orders/{id}/kots/{kotId}/serve`; `GET
+  /kitchen/kots`, `POST /kitchen/kots/{id}/start | ready`.
+- Staff app: **Restaurant** (`/restaurant`, the floor on a waiter's phone), an order (`/restaurant/orders/:id`), **Today's
+  orders** (`/restaurant/orders`), **Kitchen** (`/restaurant/kitchen`), **Menu** (`/restaurant/menu`: sections, dishes with
+  portions and choices, sold out, tables).
+- Dev seed S011: a 14-dish menu in five sections (Paneer Tikka with Half / Full, a spice level and add-ons; Masala Chai
+  sold out), tables T1–T4 and B1, B2, and O00001 at T2 in the kitchen as K00001.
+- Tests: backend `RestaurantTests` (two waiters at once → 409, the ₹1,250 room charge, permissions, GST with a discount,
+  cash with the drawer, table and room rules, portions and choices, database immutability), `RestaurantUnitTests`;
+  frontend `restaurant.spec.ts`; browser steps S14-01 … S14-09 (waiter on a 360 px phone, kitchen on a tablet);
+  `check-api.mjs` Sprint 14 block; `database/queries/check-sprint-14.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-14.md, system design Sprint 14 and 4.24 with the restaurant flow diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The shell menu adds **Restaurant** and **Kitchen**; the note about later modules now names activities, inventory and
+  staff.
+
+### Open points
+- Walk-in restaurant bills paid at the restaurant get no GST tax invoice yet (room charges are invoiced with the stay,
+  Sprint 12). To decide with the accountant: a bill of supply series for restaurant sales, or one at day end.
+- The plan's demo used Room 103; the review uses Room 104 (R00008), because Room 103 is kept free for Sprint 2's review.
+
 ## [sprint-13] — 2026-10-26 — Housekeeping and maintenance, mobile-first (accepted)
 
 ### Added
