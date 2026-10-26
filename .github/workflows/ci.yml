@@ -157,7 +157,8 @@ jobs:
     # Clicks through the staff app like a person: docs/sprints/REVIEWING.md scripts, automated (frontend/e2e).
     name: Browser tests — sprint review scripts
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Setup takes ~8 min and the tests ~17 min (Sprint 14) and grow each sprint, so leave room.
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:16
