@@ -114,6 +114,8 @@ public class StockMovement : Entity, IPropertyScoped
     public Guid? CountId { get; set; }
     public Guid? OrderItemId { get; set; }
     public Guid? KotId { get; set; }
+    /// <summary>The goods received line this stock came in on (Sprint 16 purchasing).</summary>
+    public Guid? GrnItemId { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public Guid? CreatedBy { get; set; }
 }

@@ -695,6 +695,59 @@ ticket → **Food cost**: *Highest margin* and *Lowest margin* on top, *Paneer T
 By hand: [REVIEWING.md → Sprint 15](sprints/REVIEWING.md#sprint-15--inventory-and-recipe-costing).
 Screenshots: [sprint-15-screens/](sprints/sprint-15-screens/).
 
+### Sprint 16: Suppliers and purchasing
+
+**New:** two screens under **Inventory** in the menu. **Suppliers** (`/inventory/suppliers`): each supplier with their
+GSTIN and state (taken from the GSTIN, which is checked down to its last character), payment terms and what is owed; a
+supplier with no GSTIN is *Unregistered: no GST*. **Purchasing** (`/inventory/purchases`) has three views. **Requests**:
+a store asks for stock (**Ask for stock**) and **Raise order** turns a request into a purchase order. **Orders**: each
+order with its status; open one to **Submit** it, **Approve** or **Send back** (orders over ₹10,000 need someone other
+than the person who raised them), record **Goods received** per delivery (a part delivery leaves the rest *To come*; the
+stock goes into the store and the item's cost moves), **Record bill** (the supplier's bill, CGST + SGST or IGST) and
+**Close** an order whose rest is not coming. **Bills**: what is still to pay, what is overdue, the input GST, and
+**Pay** (bank transfer, UPI or cheque with its UTR or number; cash comes out of the open cash drawer). Raising orders
+needs `purchase.create` (purchasing, inventory and restaurant managers); approving needs `purchase.approve` (owner,
+general manager); goods received needs `grn.create` (purchasing, inventory manager); bills and payments need
+`supplier_invoice.manage` (purchasing, accountant). Demo data (S013): four suppliers (Mapusa Fresh Vegetables, Goa Dairy
+Co-operative, Konkan Spice Traders in Maharashtra, Anjuna Fishermen unregistered) and an open request PR00001 for
+vegetables. Restart the API and watch for `Applying migration V018__purchasing`.
+
+```powershell
+# Backend (PurchasingTests, PurchasingUnitTests; includes the vegetable cycle from order to payment with stock going up,
+# a part delivery leaving 60 kg to come while a second delivery at the same moment can't take more, approval by a second
+# person, GSTIN checks with CGST + SGST, IGST and an unregistered supplier, cash out of the drawer paid once)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Purchasing"
+
+# Frontend unit tests (line totals as the server works them out, which steps a person may take, line errors on their row)
+cd frontend
+npm run test:ci
+
+# Browser, the owner on a desktop and a purchasing clerk on a 360 px phone (8 steps, S16-01 … S16-08: suppliers and a
+# mistyped GSTIN refused → PR00001 becomes an ₹11,000 order that waits for approval → the owner approves → a part
+# delivery (too much refused under the line, 60 kg still to come) → the rest comes in → the bill → paid by UPI (no UTR
+# refused) → the clerk can't approve)
+npm run e2e -- e2e/sprint-16.spec.ts
+cd ..
+
+# API checks: the Sprint 16 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6, 7, 9, 10 and 11 must return no rows)
+Get-Content database/queries/check-sprint-16.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (the demo, the full purchase cycle for vegetables): **Purchasing** → **Requests** → *PR00001*
+**Raise order** → supplier **Mapusa Fresh Vegetables**, mixed vegetables **160** kg → total ₹11,000 → **Save draft** →
+**Submit** (*Waiting for approval*) → sign in as another person with approval (or ask the owner if you raised it) →
+**Approve** → **Goods received**: onion and capsicum **All**, mixed vegetables **100**, lime **100** → *Partly received*,
+mixed vegetables *To come 60 kg* → **Goods received** again, **All** → *Received* → **Inventory** shows the main store up
+by 15 kg, 160 kg and 100 pcs, its **Ledger** with the GRNs → back on the order **Record bill** with their bill number →
+**Pay** by UPI with the UTR → *Paid*; **Suppliers** shows *Nothing owed*. How it works:
+[system-design.md → 4.26](architecture/system-design.md#426-purchasing-approval-goods-received-and-supplier-bills).
+
+By hand: [REVIEWING.md → Sprint 16](sprints/REVIEWING.md#sprint-16--suppliers-and-purchasing).
+Screenshots: [sprint-16-screens/](sprints/sprint-16-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -707,7 +760,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 473 backend passed, 104 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 489 backend passed, 108 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -715,7 +768,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–15 (expected: 124 passed, about 20 minutes)
+# 3. Every browser test, Sprints 01–16 (expected: 132 passed, about 21 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -730,14 +783,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–11:
+Expected totals for Sprints 01–16:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 340 passed, 0 failed |
-| Frontend unit tests | 81 of 81 SUCCESS |
-| Browser tests | 96 passed (12 + 14 + 13 + 6 + 7 + 8 + 9 + 7 + 7 + 7 + 6) |
-| API checks | 0 failed |
+| Backend tests | 489 passed, 0 failed |
+| Frontend unit tests | 108 of 108 SUCCESS |
+| Browser tests | 132 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8) |
+| API checks | 216 passed, 0 failed |
 
 Other useful commands:
 

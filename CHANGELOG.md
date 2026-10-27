@@ -2,6 +2,50 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-16] — 2026-10-27 — Suppliers and purchasing (accepted)
+
+### Added
+- Migration V018: `suppliers` (GSTIN optional; the state comes from it), `purchase_requests` and
+  `purchase_request_items` (`PR00001` …), `purchase_orders` and `purchase_order_items` (`PO00001` …; per line what has
+  been received and billed, billed ≤ received ≤ ordered by CHECK), `goods_received_notes` and `grn_items` (`GRN00001` …,
+  never changed), `supplier_invoices` (`SI00001` …; fixed once recorded except what is paid) and
+  `supplier_invoice_items`, `supplier_payments` (`SP00001` …, never changed). `stock_movements.grn_item_id` links stock
+  received to its delivery line; `cash_drawer_movements.supplier_payment_id` links cash paid to a supplier.
+- Purchase orders, raised from a request or on their own, approved at once on submit when within the approval limit
+  (`purchasing.approval_limit`, default ₹10,000 with GST); over it, someone with `purchase.approve` other than the person
+  who raised or submitted it must approve. Send back with a reason, cancel, or close the rest of a part-received order.
+- Goods received per delivery: never more than is still to come (two deliveries at once wait for each other; refused
+  under the line, saying how much is left); each line puts the stock into the store at the order's price and moves the
+  item's average cost; the order shows what is still to come.
+- Supplier bills against what came in: CGST + SGST or IGST from the supplier's state, the input tax and whether it can be
+  claimed, a price that differs from the order flagged, the supplier's bill number recorded once; an unregistered
+  supplier's bill carries no GST.
+- Supplier payments by bank transfer, UPI or cheque (with the UTR or cheque number) or cash out of the open cash drawer;
+  a double tap pays once (Idempotency-Key); never more than is left on the bill.
+- API: `GET|POST /purchasing/suppliers`, `PUT /purchasing/suppliers/{id}`, `GET|POST /purchasing/requests`,
+  `POST /purchasing/requests/{id}/cancel`, `GET|POST /purchasing/orders`, `GET|PUT /purchasing/orders/{id}`, `POST
+  /purchasing/orders/{id}/submit|approve|reject|cancel|close|receipts|invoices`, `GET /purchasing/invoices`, `POST
+  /purchasing/invoices/{id}/payments`.
+- Staff app: **Suppliers** (`/inventory/suppliers`) and **Purchasing** (`/inventory/purchases`: Orders, Requests, Bills,
+  and the order page), laid out for a 360 px phone.
+- Dev seed S013: four suppliers (Mapusa Fresh Vegetables and Goa Dairy Co-operative in Goa, Konkan Spice Traders in
+  Maharashtra, Anjuna Fishermen unregistered) and an open request PR00001 for vegetables.
+- Tests: backend `PurchasingTests` (the vegetable cycle from order to payment with stock going up; a partial GRN leaving
+  the rest to come while a second delivery at the same moment can't take more; approval by a second person; GSTIN, IGST
+  and unregistered suppliers; cash out of the drawer paid once) and `PurchasingUnitTests`; frontend `purchasing.spec.ts`;
+  browser steps S16-01 … S16-08; `check-api.mjs` Sprint 16 block; `database/queries/check-sprint-16.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-16.md, system design Sprint 16 and 4.26 with the purchase flow diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The stock ledger (Sprint 15) shows a delivery's GRN number as its source.
+- The shell menu adds **Purchasing** and **Suppliers**; **Inventory** is no longer highlighted on their pages.
+
+### Open points
+- A recorded supplier bill can't be cancelled or corrected yet (a debit note from the supplier is not modelled).
+- One approval limit per property; no levels by amount or department.
+- Over-delivery is refused (no tolerance); the extra goes on a new order or as stock received in Inventory.
+
 ## [sprint-15] — 2026-10-27 — Inventory and recipe costing (accepted)
 
 ### Added

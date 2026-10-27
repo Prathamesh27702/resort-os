@@ -63,7 +63,8 @@ public sealed record StockCountDto(
 
 public sealed record StockCountResultDto(string LocationName, IReadOnlyList<StockCountDto> Lines, decimal Value);
 
-/// <summary>One row of the stock ledger. Source: "SA00004", "O00012 · K00009 · Paneer Tikka (Full)" or "SC00002".</summary>
+/// <summary>One row of the stock ledger. Source: an adjustment ("SA00004"), a count ("SC00002") or goods received ("GRN00001",
+/// Sprint 16); a served dish says what it was in Note.</summary>
 public sealed record StockMovementDto(
     Guid Id, DateTimeOffset At, Guid ItemId, string ItemName, string Unit, string LocationCode, string Type, decimal Quantity,
     decimal UnitCost, decimal Value, decimal OnHandAfter, string? Source, string? Note, string? ByName);

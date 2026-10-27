@@ -286,6 +286,8 @@ public static class DrawerMovementTypes
     public const string Void = "VOID";
     /// <summary>Cash taken for a restaurant bill (Sprint 14); OrderId names the order.</summary>
     public const string PosSale = "POS_SALE";
+    /// <summary>Cash paid out of the drawer: a supplier paid in cash (Sprint 16); SupplierPaymentId names the payment.</summary>
+    public const string PayOut = "PAY_OUT";
 }
 
 /// <summary>One line of a drawer session's ledger: + money in, − money out. Immutable.</summary>
@@ -300,6 +302,8 @@ public class CashDrawerMovement : Entity, IPropertyScoped
     public Guid? RefundId { get; set; }
     /// <summary>The restaurant order a POS_SALE was for (Sprint 14).</summary>
     public Guid? OrderId { get; set; }
+    /// <summary>The supplier payment a PAY_OUT was for (Sprint 16).</summary>
+    public Guid? SupplierPaymentId { get; set; }
     public string Description { get; set; } = default!;
     public DateTimeOffset MovedAt { get; set; }
     public Guid? MovedBy { get; set; }

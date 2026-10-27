@@ -12,6 +12,7 @@ using Resort.Domain.Invoicing;
 using Resort.Domain.Inventory;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
+using Resort.Domain.Purchasing;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
 using Resort.Domain.Restaurant;
@@ -115,6 +116,16 @@ public interface IAppDbContext
     DbSet<StockCount> StockCounts { get; }
     DbSet<Recipe> Recipes { get; }
     DbSet<RecipeIngredient> RecipeIngredients { get; }
+    DbSet<Supplier> Suppliers { get; }
+    DbSet<PurchaseRequest> PurchaseRequests { get; }
+    DbSet<PurchaseRequestItem> PurchaseRequestItems { get; }
+    DbSet<PurchaseOrder> PurchaseOrders { get; }
+    DbSet<PurchaseOrderItem> PurchaseOrderItems { get; }
+    DbSet<GoodsReceivedNote> GoodsReceivedNotes { get; }
+    DbSet<GrnItem> GrnItems { get; }
+    DbSet<SupplierInvoice> SupplierInvoices { get; }
+    DbSet<SupplierInvoiceItem> SupplierInvoiceItems { get; }
+    DbSet<SupplierPayment> SupplierPayments { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

@@ -45,3 +45,6 @@
 - version: "1.15"
   date: 2026-10-27
   change: "Sprint 15 (Inventory and recipe costing) accepted: stock is kept per store as a ledger where every change says who, when and why; a dish served by the kitchen takes its ingredients from the kitchen's stock by its recipe; recipes show each dish's cost, food cost % and margin; the food-cost report shows the highest and lowest margins, sales and what was written off; wastage, stock received, transfers and counts need a reason, and two changes at once both count. Stock ledger diagram. Sprint 16 started."
+- version: "1.16"
+  date: 2026-10-27
+  change: "Sprint 16 (Suppliers and purchasing) accepted: suppliers with checked GSTINs; a store's request becomes a purchase order; orders over ₹10,000 need a second person's approval; goods arrive in one or more deliveries, each adding the stock while the order shows what is still to come; the supplier's bill is recorded with CGST + SGST or IGST and its input tax, and paid by UPI, bank transfer, cheque or cash from the drawer. Purchase flow diagram. Sprint 17 started."

@@ -89,6 +89,10 @@ export const routes: Routes = [
       { path: 'restaurant/kitchen', canActivate: [permissionGuard('kot.read')], loadComponent: () => import('./features/restaurant/kitchen.page').then(m => m.KitchenPage) },
       // /inventory (Sprint 15)
       { path: 'inventory', canActivate: [permissionGuard('inventory.read')], loadComponent: () => import('./features/inventory/inventory.page').then(m => m.InventoryPage) },
+      // /inventory/suppliers and /inventory/purchases (Sprint 16)
+      { path: 'inventory/suppliers', canActivate: [permissionGuard('supplier.read')], loadComponent: () => import('./features/purchasing/suppliers.page').then(m => m.SuppliersPage) },
+      { path: 'inventory/purchases', canActivate: [permissionGuard('purchase.read')], loadComponent: () => import('./features/purchasing/purchases.page').then(m => m.PurchasesPage) },
+      { path: 'inventory/purchases/:id', canActivate: [permissionGuard('purchase.read')], loadComponent: () => import('./features/purchasing/purchase-order.page').then(m => m.PurchaseOrderPage) },
 
       { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
 
