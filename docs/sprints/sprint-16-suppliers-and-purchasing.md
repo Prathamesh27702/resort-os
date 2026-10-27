@@ -10,27 +10,35 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built; pull request into develop waits for the owner's review.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V018: suppliers (GSTIN optional, state from it), purchase_requests and items (PR00001…), purchase_orders and items (PO00001…, received and billed per line with billed ≤ received ≤ ordered by CHECK), goods_received_notes and grn_items (GRN00001…, never changed), supplier_invoices (SI00001…, fixed once saved except what is paid) and items, supplier_payments (SP00001…, never changed); stock_movements.grn_item_id and cash_drawer_movements.supplier_payment_id
+- Purchase orders from a request or on their own; submit approves at once within the approval limit (purchasing.approval_limit, default ₹10,000 with GST), over it waits for purchase.approve from someone who did not raise or submit it; send back with a reason, cancel, close the rest
+- Goods received per delivery: the order is locked FOR UPDATE so two deliveries at once never take more than is still to come (refused under the line, saying how much is left); each line is a RECEIVED stock movement at the order's price that moves the item's average cost; PARTLY_RECEIVED until every line is in
+- Supplier GSTIN checked down to its check digit, state from it; bills against what came in with CGST + SGST or IGST, input tax and whether it is claimable, price differences flagged, a supplier bill number recorded once; unregistered suppliers charge no GST
+- Payments by bank transfer, UPI or cheque (UTR or cheque number required) or cash out of the open drawer as a PAY_OUT; Idempotency-Key so a double tap pays once; never more than is left
+- Screens Suppliers, Purchasing (Orders, Requests, Bills) and the order page with the steps a person may take; 360 px phone layouts; every refusal said under its field
+- Dev seed S013: four suppliers (Goa, Maharashtra for IGST, one unregistered) and an open vegetable request PR00001
+- [done] Docs: API.md, DATABASE.md, schema-sprint-16.md, system design Sprint 16 and 4.26 with the purchase flow diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__purchasing.sql — new tables (next free number)
-- backend/Resort.Domain/Purchasing/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Purchasing/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/PurchasingEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/PurchasingTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/inventory/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-16.md, this guide, CHANGELOG.md
+- database/migrations/V018__purchasing.sql; database/seed/dev/S013__purchasing.sql; database/queries/check-sprint-16.sql
+- backend/Resort.Domain/Purchasing/Purchasing.cs (+ StockMovement.GrnItemId, CashDrawerMovement.SupplierPaymentId); backend/Resort.Contracts/PurchasingContracts.cs
+- backend/Resort.Application/ — Purchasing/ (SupplierService.cs, PurchasingService.cs, SupplierInvoiceService.cs), Validation/PurchasingValidators.cs, Inventory/StockLedger.cs and InventoryService.cs (GRN source), Common/Permissions.cs, Common/Abstractions.cs, Common/PropertySettingsReader.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/PurchasingEndpoints.cs, Program.cs
+- backend/Resort.Tests/ — Integration/PurchasingTests.cs, Unit/PurchasingUnitTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/purchasing/ (suppliers.page.ts, purchases.page.ts, purchase-order.page.ts, purchasing-dialogs.ts, purchasing.api.ts, purchasing.spec.ts), core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-16.spec.ts; scripts/check-api.mjs (Sprint 16 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-16.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-16-screens/; tools/handbooks/diagrams (purchase-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 489 passed, 0 failed on real PostgreSQL 16 (16 new: PurchasingTests with the vegetable cycle from order to payment and stock going up, a partial GRN leaving 60 kg to come while a second delivery at the same moment can't take more, approval by a second person and send back, GSTIN checks with CGST + SGST, IGST and an unregistered supplier, cash out of the drawer paid once and records that can't be changed; PurchasingUnitTests; dev seed check)
+- Frontend: 107 of 108 unit tests passed (4 new); the one failure is the Sprint 06 calendar timing test (first render under 200 ms), which also fails on develop in the cloud container (slow machine, about 290 ms); ESLint clean; production build OK
+- Browser tests: Sprint 16's 8 steps pass (suppliers and a mistyped GSTIN refused, PR00001 raised as an ₹11,000 order that waits for approval, the owner approves, a part delivery with too much refused and 60 kg still to come, the rest in, the bill, paid by UPI with the UTR required, the clerk can't approve) on desktop and a 360 px phone; API checks 216 of 216 (9 new); database checks clean; screenshots in docs/sprints/sprint-16-screens
 
 **Outcome**
 
@@ -53,6 +61,10 @@ Expected when accepted:
 - `supplier_invoice_items`
 - `supplier_payments`
 
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/purchasing/*`
+
 **Screens / routes**
 
 - `/inventory/suppliers`
@@ -64,10 +76,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] PO approval (purchase.approve) with thresholds
-- [ ] GRN increases stock via stock_movements
-- [ ] Supplier GSTIN and input tax captured
-- [ ] Seed: sample suppliers
+- [x] PO approval (purchase.approve) with thresholds
+- [x] GRN increases stock via stock_movements
+- [x] Supplier GSTIN and input tax captured
+- [x] Seed: sample suppliers
 
 ## How to run this sprint
 
@@ -86,6 +98,12 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- Received doesn't match the deliveries: database/queries/check-sprint-16.sql block 5 compares each order line with its GRN lines and block 6 each GRN line with its stock movement (both should return nothing).
+- Can't approve: the person who raised or submitted an order can't approve it (SELF_APPROVAL); someone else with purchase.approve (owner or general manager) must. Within the limit an order is approved on submit; the limit is purchasing.approval_limit in property settings.
+- A bill or payment that doesn't add up: block 9 checks paid = payments, total = lines and billed ≤ received; block 10 that each cash payment left the drawer as a PAY_OUT.
 
 ## How to test
 

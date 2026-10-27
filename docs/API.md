@@ -924,6 +924,67 @@ actualFoodCostPercent }], highest, lowest, noRecipe: string[], sold, revenue, co
 recipe out of the kitchen store, in the same transaction (one `CONSUMPTION` movement per ingredient, valued at the item's
 cost then). A line voided after it was served keeps its stock used (it was cooked). Add-ons (modifiers) use no stock yet.
 
+## Built endpoints (Sprint 16 — suppliers and purchasing)
+
+All under `/api/v1/properties/{propertyId}/purchasing`. The cycle: a **purchase request** (`PR00001`, what a store needs)
+→ a **purchase order** (`PO00001`, to one supplier, raised from a request or on its own) → **approval** → **goods received
+notes** (`GRN00001`, one per delivery; a part delivery leaves the rest *to come*) → the **supplier's bill** (`SI00001`,
+recorded against what came in) → **payments** (`SP00001`). An order whose total (with GST) is over the property's approval
+limit (`purchasing.approval_limit`, default ₹10,000) waits for someone with `purchase.approve` who did not raise or submit
+it; within the limit it is approved as soon as it is submitted. Each goods received line adds a `RECEIVED` row to the stock
+ledger (Sprint 15) at the order's price before GST, which moves the item's average cost. A supplier's state comes from the
+first two digits of their GSTIN (checked, check digit included); a bill is CGST + SGST when the supplier is in the
+property's GST state, else IGST; an unregistered supplier's bill carries no GST. Input tax counts as claimable only when the
+property has a regular GST registration and the supplier a GSTIN. How it works:
+[system-design.md → 4.26](architecture/system-design.md#426-purchasing-approval-goods-received-and-supplier-bills).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /suppliers` | Suppliers with GSTIN, state, payment terms, what is owed and overdue | `supplier.read` | — | `SupplierDto[]` | 403 | — |
+| `POST /suppliers` · `PUT /suppliers/{id}` | A supplier. `version` on PUT | `supplier.manage` | `SaveSupplierRequest` | 201 / 200 `SupplierDto` | 400 `Gstin` ("The last character (check digit) should be S for this GSTIN; check it for a typing mistake."; "Goa Dairy Co-operative already has the GSTIN …"), `StateCode` (differs from the GSTIN's), `Code` ("Another supplier already has the code FRESH-VEG."), `Name`, `Phone`, `Email`, `PaymentTermsDays`; 403, 404; 409 | INSERT/UPDATE |
+| `GET /requests?status` | Purchase requests, newest first, with their order once raised | `purchase.read` | — | `PurchaseRequestDto[]` | 403 | — |
+| `POST /requests` | Ask for stock for a store | `purchase.create` | `CreatePurchaseRequestRequest` | 201 `PurchaseRequestDto` | 400 `LocationId`, `NeededBy` (a past day), `Items` ("Add at least one item."), `Items[i].ItemId` ("Lime is on two lines. …"), `Items[i].Quantity`; 403 | INSERT |
+| `POST /requests/{id}/cancel` | Cancel an open request, with the reason | `purchase.create` | `PurchaseReasonRequest` | `PurchaseRequestDto` | 400 `Reason`; 403, 404; 409 (already ordered or cancelled; someone else changed it) | UPDATE |
+| `GET /orders?status&supplierId` | Orders, newest first, with the approval limit and how many wait for approval | `purchase.read` | — | `PurchaseOrderListDto` | 403 | — |
+| `GET /orders/{id}` | One order with its lines (ordered, received, to come, billed), deliveries and bills | `purchase.read` | — | `PurchaseOrderDto` | 403, 404 | — |
+| `POST /orders` · `PUT /orders/{id}` | Create (optionally from a request, which becomes ORDERED) or edit a draft. Lines: quantity, price before GST, GST rate (0, 0.25, 3, 5, 12, 18, 28, 40) | `purchase.create` | `SavePurchaseOrderRequest` | 201 / 200 `PurchaseOrderDto` | 400 `SupplierId` ("Mapusa Fresh Vegetables is switched off. …"), `LocationId`, `RequestId` (already ordered), `ExpectedDate`, `Lines[i].GstRate` ("Anjuna Fishermen has no GSTIN, so … 0 %"), `Lines[i].ItemId`, `Lines[i].Quantity`, `Lines[i].UnitPrice`; 403, 404; 409 (not a draft; someone else changed it) | INSERT/UPDATE |
+| `POST /orders/{id}/submit` | Submit a draft: approved at once when within the limit, else waits for approval | `purchase.create` | `PurchaseOrderStepRequest` | `PurchaseOrderDto` | 403, 404; 409 ("PO00002 is waiting for approval; only a draft can be submitted.") | UPDATE |
+| `POST /orders/{id}/approve` | Approve an order waiting for approval | `purchase.approve` | `PurchaseOrderStepRequest` | `PurchaseOrderDto` | 403, 404; 409 `SELF_APPROVAL` ("You raised PO00002, so you can't approve it yourself. …"), `CONCURRENCY_CONFLICT` | UPDATE |
+| `POST /orders/{id}/reject` | Send it back to draft with the reason | `purchase.approve` | `PurchaseReasonRequest` | `PurchaseOrderDto` | 400 `Reason`; 403, 404; 409 | UPDATE |
+| `POST /orders/{id}/cancel` | Cancel an order nothing has come in on, with the reason (its request opens again) | `purchase.create` | `PurchaseReasonRequest` | `PurchaseOrderDto` | 400 `Reason`; 403, 404; 409 (goods have come in: close it instead) | UPDATE |
+| `POST /orders/{id}/close` | Close a part-received order: the rest is not coming | `purchase.create` | `PurchaseReasonRequest` | `PurchaseOrderDto` | 400 `Reason`; 403, 404; 409 | UPDATE |
+| `POST /orders/{id}/receipts` | A delivery: per line how much came in (never more than is still to come), into which store, the challan number. Adds the stock | `grn.create` | `ReceiveGoodsRequest` | 201 `PurchaseOrderDto` | 400 `Lines[i].Quantity` ("Only 60 kg of Mixed vegetables is still to come on PO00001 (100 kg of 160 kg already in). …"), `Lines` (a line twice), `ReceivedOn` (future; before the order), `LocationId`; 403, 404; 409 (not approved; someone else received at the same moment) | INSERT GRN, lines, movements ("GRN00001 · PO00001 · Mapusa Fresh Vegetables") |
+| `POST /orders/{id}/invoices` | The supplier's bill against what came in and is not billed yet; a price that differs from the order is flagged | `supplier_invoice.manage` | `RecordSupplierInvoiceRequest` | 201 `SupplierInvoiceDto` | 400 `SupplierNumber` (already recorded for this supplier), `InvoiceDate`, `DueDate`, `Lines[i].Quantity` ("Only 15 kg of Onion and capsicum has come in and not been billed on PO00001. …"), `Lines[i].GstRate`; 403, 404; 409 | INSERT bill, lines |
+| `GET /invoices?status&supplierId&from&to` | Supplier bills (status `OPEN` = not fully paid) with what is still to pay, overdue and input GST | `purchase.read` | — | `SupplierInvoiceListDto` | 400 `to`; 403 | — |
+| `POST /invoices/{id}/payments` | Pay a bill (all or part). Cash comes out of the open cash drawer as a pay-out. Send an `Idempotency-Key` header: the same key returns the first payment | `supplier_invoice.manage` | `PaySupplierRequest` | 201 `SupplierInvoiceDto` | 400 `Reference` ("Enter the UTR (bank transfer or UPI) or the cheque number, …"), `Amount` ("SI00001 has ₹1,400 left to pay, so ₹2,000 is too much."; more than the drawer holds), `Method` (no open drawer), `PaidOn`; 403, 404; 409 `INVOICE_PAID`, `CONCURRENCY_CONFLICT` | INSERT payment (+ drawer pay-out), UPDATE bill |
+
+`SupplierDto = { id, code, name, gstin, stateCode, stateName, contactName, phone, email, address, paymentTermsDays, note,
+isActive, outstanding, overdue, version }`. `SaveSupplierRequest = { code, name, gstin?, stateCode? (needed only without a
+GSTIN), contactName?, phone?, email?, address?, paymentTermsDays, note?, isActive, version? }`.
+`CreatePurchaseRequestRequest = { locationId, neededBy?, note?, items: [{ itemId, quantity, note? }] }`.
+`PurchaseReasonRequest = { reason, version }`. `PurchaseOrderStepRequest = { note?, version }`.
+`SavePurchaseOrderRequest = { supplierId, locationId, requestId?, expectedDate?, note?, version?, lines: [{ itemId, quantity,
+unitPrice, gstRate }] }`. `PurchaseOrderDto = { id, number, supplierId, supplierName, supplierGstin, supplierState, requestId,
+requestNumber, locationId, locationName, orderDate, expectedDate, status: DRAFT | PENDING_APPROVAL | APPROVED |
+PARTLY_RECEIVED | RECEIVED | CLOSED | CANCELLED, intraState, note, subtotal, taxTotal, total, approvalLimit, needsApproval,
+submittedAt, submittedBy, submittedByName, approvedAt, approvedByName, approvalNote, rejectedReason, endReason, lines: [{ id,
+itemId, itemCode, itemName, unit, quantity, unitPrice, gstRate, taxableValue, tax, total, received, remaining, billed, toBill }],
+receipts: GrnDto[], invoices: SupplierInvoiceDto[], createdByName, createdAt, version }`.
+`ReceiveGoodsRequest = { receivedOn?, locationId?, challanNumber?, note?, lines: [{ orderItemId, quantity }] }`.
+`RecordSupplierInvoiceRequest = { supplierNumber, invoiceDate, dueDate? (default: the supplier's payment terms), note?, lines:
+[{ orderItemId, quantity, unitPrice, gstRate }] }`. `SupplierInvoiceDto = { id, number, supplierId, supplierName,
+supplierGstin, orderId, orderNumber, supplierNumber, invoiceDate, dueDate, intraState, itcEligible, taxableValue, cgst, sgst,
+igst, inputTax, total, amountPaid, balance, status: UNPAID | PART_PAID | PAID, overdue, note, lines: [{ orderItemId,
+itemName, unit, quantity, unitPrice, orderPrice, priceDiffers, gstRate, taxableValue, cgst, sgst, igst, total }], payments:
+[{ id, number, paidOn, amount, method: CASH | BANK_TRANSFER | UPI | CHEQUE, reference, note, byName, createdAt }], byName, createdAt,
+version }`. `GrnDto = { id, number, receivedOn, locationName, challanNumber, note, value, lines: [{ orderItemId, itemName, unit,
+quantity, unitCost, value }], byName, createdAt }`.
+`PaySupplierRequest = { amount, paidOn?, method, reference? (needed except for cash), note?, version }`.
+
+**Changes to earlier endpoints.** `GET /inventory/movements` (Sprint 15) shows a goods received row's source as its GRN
+number and its note as "PO00001 · Mapusa Fresh Vegetables". `GET /cash-drawer` and `GET /cash-drawer/sessions/{id}` (Sprint 10) list a cash supplier payment
+as a `PAY_OUT` movement.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

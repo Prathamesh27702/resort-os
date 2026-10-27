@@ -1117,5 +1117,34 @@
   <text class="s" x="46" y="588"><tspan class="b">Units:</tspan> kg, g, l, ml, pcs, dozen; a recipe uses any unit of the item's kind (mass, volume, count). Prices and costs are before GST.</text>
   <text class="s" x="46" y="610"><tspan class="b">Food-cost report:</tspan> what was served in the period, sales and cost of sales, what was written off, and the three highest and lowest margins.</text>
 </svg>
+<svg id="purchase-flow" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 16: purchasing. Request → order → approval → goods received (stock in) → the supplier's bill → payment</text>
+  <rect class="lane" x="30" y="56" width="1140" height="150" rx="10"/>
+  <text class="t b" x="46" y="82">The cycle (each step one transaction; numbers per property from property_counters)</text>
+  <rect class="step" x="46" y="98" width="160" height="88" rx="8"/><text class="s b" x="58" y="122">Request PR…</text><text class="xs" x="58" y="142">what a store needs:</text><text class="xs" x="58" y="160">item and quantity</text><text class="xs" x="58" y="178">OPEN → ORDERED</text>
+  <rect class="step" x="234" y="98" width="170" height="88" rx="8"/><text class="s b" x="246" y="122">Order PO…</text><text class="xs" x="246" y="142">one supplier, one store;</text><text class="xs" x="246" y="160">price before GST, GST rate;</text><text class="xs" x="246" y="178">DRAFT, then submit</text>
+  <rect class="ask" x="432" y="98" width="180" height="88" rx="8"/><text class="s b" x="444" y="122">Approval</text><text class="xs" x="444" y="142">total over the limit (₹10,000):</text><text class="xs" x="444" y="160">purchase.approve, not the</text><text class="xs" x="444" y="178">person who raised it</text>
+  <rect class="win" x="640" y="98" width="170" height="88" rx="8"/><text class="s b" x="652" y="122">Goods received GRN…</text><text class="xs" x="652" y="142">per delivery; each line is</text><text class="xs" x="652" y="160">a RECEIVED stock movement</text><text class="xs" x="652" y="178">at the order's price</text>
+  <rect class="step" x="838" y="98" width="150" height="88" rx="8"/><text class="s b" x="850" y="122">Bill SI…</text><text class="xs" x="850" y="142">against what came in;</text><text class="xs" x="850" y="160">CGST + SGST or IGST;</text><text class="xs" x="850" y="178">input tax</text>
+  <rect class="step" x="1016" y="98" width="140" height="88" rx="8"/><text class="s b" x="1028" y="122">Payment SP…</text><text class="xs" x="1028" y="142">UTR or cheque no.;</text><text class="xs" x="1028" y="160">cash: drawer PAY_OUT</text><text class="xs" x="1028" y="178">UNPAID → PAID</text>
+  <path class="arrow" d="M206,142 L232,142"/><path class="arrow" d="M404,142 L430,142"/><path class="arrow" d="M612,142 L638,142"/><path class="arrow" d="M810,142 L836,142"/><path class="arrow" d="M988,142 L1014,142"/>
+  <rect class="lane" x="30" y="222" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="248">A part delivery: the rest stays to come (the demo: 160 kg mixed vegetables on PO00001)</text>
+  <rect class="win" x="46" y="264" width="340" height="96" rx="8"/><text class="s b" x="58" y="288">GRN00001: 100 kg came in</text><text class="xs" x="58" y="308">received 100 of 160 → 60 kg to come;</text><text class="xs" x="58" y="326">the order is PARTLY_RECEIVED;</text><text class="xs" x="58" y="344">Main store +100 kg in the stock ledger</text>
+  <rect class="lose" x="426" y="264" width="340" height="96" rx="8"/><text class="s b" x="438" y="288">Someone enters 200 kg at the same moment</text><text class="xs" x="438" y="308">the order row is locked FOR UPDATE, so they wait,</text><text class="xs" x="438" y="326">then read 60 kg left: "Only 60 kg of Mixed vegetables</text><text class="xs" x="438" y="344">is still to come on PO00001 …" (and a CHECK)</text>
+  <rect class="win" x="806" y="264" width="350" height="96" rx="8"/><text class="s b" x="818" y="288">GRN00002: the other 60 kg</text><text class="xs" x="818" y="308">every line in → RECEIVED; or CLOSED with a</text><text class="xs" x="818" y="326">reason when the rest is not coming</text><text class="xs" x="818" y="344">(the order row says what is still to come)</text>
+  <path class="arrow" d="M386,312 L424,312"/><path class="arrow" d="M766,312 L804,312"/>
+  <text class="xs" x="46" y="398">In the database: billed ≤ received ≤ ordered on every order line (ck_purchase_order_items_flow); a GRN line has exactly one stock movement (unique index); GRNs, bill lines and payments are never changed.</text>
+  <rect class="zone" x="30" y="440" width="1140" height="202" rx="8"/>
+  <text class="s" x="46" y="466"><tspan class="b">Stock cost:</tspan> each delivery moves the item's average cost: (on hand × cost + received × order price) ÷ (on hand + received). Prices are before GST.</text>
+  <text class="s" x="46" y="490"><tspan class="b">GST on the bill:</tspan> the supplier's state (first two digits of their GSTIN) = the property's GST state → CGST + SGST, else IGST.</text>
+  <text class="s" x="46" y="514"><tspan class="b">Unregistered supplier</tspan> (no GSTIN, e.g. the fishermen): their bill carries no GST, refused in the app and by a CHECK.</text>
+  <text class="s" x="46" y="538"><tspan class="b">Input tax claimable</tspan> only with a regular GST registration and a supplier GSTIN. The same supplier bill number can't be recorded twice.</text>
+  <text class="s" x="46" y="562"><tspan class="b">Bills are fixed once recorded:</tspan> a trigger lets only what has been paid (which only grows) and the status change.</text>
+  <text class="s" x="46" y="586"><tspan class="b">A payment</tspan> is sent with an Idempotency-Key, so a double tap pays once; it is never more than what is left on the bill.</text>
+  <text class="s" x="46" y="610"><tspan class="b">Cash</tspan> comes out of the open cash drawer (Sprint 10) and must not be more than the drawer should hold.</text>
+</svg>
 </body>
 </html>
