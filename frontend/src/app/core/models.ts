@@ -591,3 +591,58 @@ export interface FoodCostReport {
   from: string; to: string; lines: FoodCostLine[]; highest: FoodCostLine[]; lowest: FoodCostLine[]; noRecipe: string[]; sold: number; revenue: number;
   costOfSales: number; foodCostPercent: number | null; wastage: number;
 }
+
+// ---------------------------------------------------------------- suppliers and purchasing (Sprint 16)
+export type PurchaseRequestStatus = 'OPEN' | 'ORDERED' | 'CANCELLED';
+export type PurchaseOrderStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'PARTLY_RECEIVED' | 'RECEIVED' | 'CLOSED' | 'CANCELLED';
+export type SupplierInvoiceStatus = 'UNPAID' | 'PART_PAID' | 'PAID';
+export type SupplierPaymentMethod = 'CASH' | 'BANK_TRANSFER' | 'UPI' | 'CHEQUE';
+/** gstin null: unregistered (charges no GST). outstanding / overdue: still to pay on their bills. */
+export interface Supplier {
+  id: string; code: string; name: string; gstin: string | null; stateCode: string; stateName: string; contactName: string | null; phone: string | null;
+  email: string | null; address: string | null; paymentTermsDays: number; note: string | null; isActive: boolean; outstanding: number; overdue: number; version: number;
+}
+export interface PurchaseRequestItem { id: string; itemId: string; itemCode: string; itemName: string; unit: string; quantity: number; note: string | null; onHand: number; unitCost: number; }
+export interface PurchaseRequest {
+  id: string; number: string; locationId: string; locationName: string; neededBy: string | null; note: string | null; status: PurchaseRequestStatus;
+  purchaseOrderId: string | null; purchaseOrderNumber: string | null; cancelReason: string | null; items: PurchaseRequestItem[]; byName: string | null;
+  createdAt: string; version: number;
+}
+/** remaining: still to come in; toBill: came in and not billed. Quantities in the item's unit; unitPrice before GST. */
+export interface PurchaseOrderLine {
+  id: string; itemId: string; itemCode: string; itemName: string; unit: string; quantity: number; unitPrice: number; gstRate: number; taxableValue: number;
+  tax: number; total: number; received: number; remaining: number; billed: number; toBill: number;
+}
+export interface GrnLine { orderItemId: string; itemName: string; unit: string; quantity: number; unitCost: number; value: number; }
+export interface Grn {
+  id: string; number: string; receivedOn: string; locationName: string; challanNumber: string | null; note: string | null; value: number; lines: GrnLine[];
+  byName: string | null; createdAt: string;
+}
+export interface SupplierPayment { id: string; number: string; paidOn: string; amount: number; method: SupplierPaymentMethod; reference: string | null; note: string | null; byName: string | null; createdAt: string; }
+export interface SupplierInvoiceLine {
+  orderItemId: string; itemName: string; unit: string; quantity: number; unitPrice: number; orderPrice: number; priceDiffers: boolean; gstRate: number;
+  taxableValue: number; cgst: number; sgst: number; igst: number; total: number;
+}
+/** number: ours (SI00001); supplierNumber: theirs. inputTax = cgst + sgst + igst; itcEligible: it can be claimed. */
+export interface SupplierInvoice {
+  id: string; number: string; supplierId: string; supplierName: string; supplierGstin: string | null; orderId: string; orderNumber: string; supplierNumber: string;
+  invoiceDate: string; dueDate: string; intraState: boolean; itcEligible: boolean; taxableValue: number; cgst: number; sgst: number; igst: number; inputTax: number;
+  total: number; amountPaid: number; balance: number; status: SupplierInvoiceStatus; overdue: boolean; note: string | null; lines: SupplierInvoiceLine[];
+  payments: SupplierPayment[]; byName: string | null; createdAt: string; version: number;
+}
+export interface SupplierInvoiceList { items: SupplierInvoice[]; outstanding: number; overdue: number; inputTax: number; }
+/** needsApproval: total over approvalLimit, so a second person with purchase.approve must approve it. */
+export interface PurchaseOrder {
+  id: string; number: string; supplierId: string; supplierName: string; supplierGstin: string | null; supplierState: string; requestId: string | null;
+  requestNumber: string | null; locationId: string; locationName: string; orderDate: string; expectedDate: string | null; status: PurchaseOrderStatus;
+  intraState: boolean; note: string | null; subtotal: number; taxTotal: number; total: number; approvalLimit: number; needsApproval: boolean;
+  submittedAt: string | null; submittedByName: string | null; submittedBy: string | null; approvedAt: string | null; approvedByName: string | null;
+  approvalNote: string | null; rejectedReason: string | null; endReason: string | null; lines: PurchaseOrderLine[]; receipts: Grn[];
+  invoices: SupplierInvoice[]; createdByName: string | null; createdAt: string; version: number;
+}
+/** received: share of the ordered value that has come in (0–100). */
+export interface PurchaseOrderSummary {
+  id: string; number: string; supplierId: string; supplierName: string; locationName: string; orderDate: string; expectedDate: string | null;
+  status: PurchaseOrderStatus; total: number; needsApproval: boolean; received: number; createdByName: string | null; createdAt: string;
+}
+export interface PurchaseOrderList { items: PurchaseOrderSummary[]; approvalLimit: number; waiting: number; }

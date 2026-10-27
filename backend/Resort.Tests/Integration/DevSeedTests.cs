@@ -278,4 +278,25 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(["Goan Fish Curry", "Paneer Tikka (Half)", "Paneer Tikka (Full)"], report.Lowest.Select(l => l.Name));
         Assert.Equal(6, report.NoRecipe.Count);
     }
+
+    /// <summary>Sprint 16: four suppliers — two in Goa (CGST + SGST), one in Maharashtra (IGST), one unregistered — and the
+    /// kitchen's open request PR00001 for vegetables, the start of the demo's purchase cycle.</summary>
+    [Fact]
+    public async Task Dev_seed_has_sample_suppliers_and_an_open_request_for_vegetables()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var suppliers = await owner.GetJsonAsync<List<SupplierDto>>($"/api/v1/properties/{pid}/purchasing/suppliers");
+        Assert.Equal(["Anjuna Fishermen", "Goa Dairy Co-operative", "Konkan Spice Traders", "Mapusa Fresh Vegetables"], suppliers.Select(s => s.Name));
+        Assert.All(suppliers.Where(s => s.Gstin is not null), s => Assert.Null(Resort.Domain.Tax.Gstin.Problem(s.Gstin)));
+        Assert.Equal([("FISH", null, "30"), ("DAIRY", "30AAATG4321B1ZO", "30"), ("SPICES", "27AABCK7788C1ZA", "27"), ("FRESH-VEG", "30AAACF1234A1ZS", "30")],
+            suppliers.Select(s => (s.Code, s.Gstin, s.StateCode)));
+
+        var request = Assert.Single(await owner.GetJsonAsync<List<PurchaseRequestDto>>($"/api/v1/properties/{pid}/purchasing/requests?status=OPEN"));
+        Assert.Equal(("PR00001", "Main store"), (request.Number, request.LocationName));
+        Assert.Equal([("ONION-CAPSICUM", 15m), ("MIXED-VEG", 10m), ("LIME", 100m)], request.Items.Select(i => (i.ItemCode, i.Quantity)));
+    }
 }

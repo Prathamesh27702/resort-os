@@ -186,7 +186,7 @@ public sealed class CashDrawerService(IAppDbContext db, ICurrentUser caller, Aud
 
     /// <summary>Adds a line to a session's ledger. Not saved.</summary>
     internal void AddMovement(CashDrawerSession session, string type, decimal amount, string description, Guid? paymentId, Guid? refundId,
-        Guid? orderId = null) =>
+        Guid? orderId = null, Guid? supplierPaymentId = null) =>
         db.CashDrawerMovements.Add(new CashDrawerMovement
         {
             OrganizationId = session.OrganizationId,
@@ -197,6 +197,7 @@ public sealed class CashDrawerService(IAppDbContext db, ICurrentUser caller, Aud
             PaymentId = paymentId,
             RefundId = refundId,
             OrderId = orderId,
+            SupplierPaymentId = supplierPaymentId,
             Description = description.Length <= 200 ? description : description[..197] + "…",
             MovedAt = clock.GetUtcNow(),
             MovedBy = caller.UserId,

@@ -63,6 +63,14 @@ public static class Perm
     public const string RecipeRead = "recipe.read";
     public const string RecipeManage = "recipe.manage";
 
+    public const string SupplierRead = "supplier.read";
+    public const string SupplierManage = "supplier.manage";
+    public const string PurchaseRead = "purchase.read";
+    public const string PurchaseCreate = "purchase.create";
+    public const string PurchaseApprove = "purchase.approve";
+    public const string GrnCreate = "grn.create";
+    public const string SupplierInvoiceManage = "supplier_invoice.manage";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
@@ -96,6 +104,7 @@ public static class Perm
         MaintenanceRead, MaintenanceCreate, MaintenanceUpdate, MaintenanceAssign,
         MenuRead, MenuCreate, MenuUpdate, PosOrderRead, PosOrderCreate, PosOrderUpdate, PosOrderVoid, PosDiscount, KotRead, KotUpdate,
         InventoryRead, InventoryAdjust, InventoryManage, RecipeRead, RecipeManage,
+        SupplierRead, SupplierManage, PurchaseRead, PurchaseCreate, PurchaseApprove, GrnCreate, SupplierInvoiceManage,
         FolioRead, FolioPostCharge, FolioAdjust,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,

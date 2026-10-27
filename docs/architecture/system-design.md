@@ -9,7 +9,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory orders |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
@@ -400,6 +400,28 @@ flowchart LR
 - Screens: **Inventory** (`/inventory`: Stock by group and store with reorder flags, Recipes with cost and margin, Food
   cost with the highest and lowest margins, Ledger), dialogs to record, count and edit in `inventory-dialogs.ts`.
   [4.25](#425-the-stock-ledger-recipes-and-food-cost) explains the rules.
+
+### Sprint 16: Suppliers and purchasing
+
+![Purchasing: request, order, approval, goods received into stock, the supplier's bill and payment](../../tools/handbooks/assets/purchase-flow.png)
+
+- Migration V018: `suppliers` (GSTIN optional, state from it), `purchase_requests` + `purchase_request_items`,
+  `purchase_orders` + `purchase_order_items` (received and billed per line, billed ≤ received ≤ ordered by CHECK),
+  `goods_received_notes` + `grn_items` (never changed), `supplier_invoices` (fixed once saved except what is paid) +
+  `supplier_invoice_items`, `supplier_payments` (never changed). `stock_movements.grn_item_id` and
+  `cash_drawer_movements.supplier_payment_id` link a delivery to the stock ledger and a cash payment to the drawer.
+  Details: [schema-sprint-16.md](../database/schema-sprint-16.md).
+- `Domain/Purchasing/Purchasing.cs` (statuses, `PurchaseMath`: line values, CGST + SGST or IGST, what is still to come,
+  when approval is needed, the status after a delivery or a payment). `Application/Purchasing/SupplierService.cs`
+  (suppliers, GSTIN checks with `Gstin.Problem`), `PurchasingService.cs` (requests, orders, submit / approve / send back /
+  cancel / close, goods received through `StockLedger`), `SupplierInvoiceService.cs` (bills and payments, cash through
+  `CashDrawerService`). `Validation/PurchasingValidators.cs`. Setting `purchasing.approval_limit` read with
+  `PropertySettingsReader.DecimalAsync`.
+- Endpoints: `PurchasingEndpoints.cs` (`/purchasing/suppliers`, `/requests`, `/orders` with `submit`, `approve`, `reject`,
+  `cancel`, `close`, `receipts`, `invoices`, and `/purchasing/invoices/{id}/payments` with an Idempotency-Key).
+- Screens: **Suppliers** (`/inventory/suppliers`), **Purchasing** (`/inventory/purchases`: Orders, Requests, Bills) and
+  the order page (`/inventory/purchases/{id}`) with the steps a person may take; dialogs in `purchasing-dialogs.ts`.
+  [4.26](#426-purchasing-approval-goods-received-and-supplier-bills) explains the rules.
 
 ---
 
@@ -980,6 +1002,43 @@ Code: `Application/Inventory/` (`StockLedger.cs`, `InventoryService.cs`, `Recipe
    manager, restaurant manager, owner), `inventory.manage` for items, groups and stores, `recipe.read` / `recipe.manage`
    for recipes and the food-cost report.
 
+### 4.26 Purchasing: approval, goods received and supplier bills
+
+Code: `Application/Purchasing/` (`PurchasingService.cs`, `SupplierInvoiceService.cs`, `SupplierService.cs`),
+`Domain/Purchasing/Purchasing.cs`, `database/migrations/V018__purchasing.sql`, `features/purchasing/`. Diagram: section 3
+(Sprint 16). Tests: `PurchasingTests`, `PurchasingUnitTests`, `purchasing.spec.ts`, `e2e/sprint-16.spec.ts`.
+
+1. **Approval with a limit, by a second person.** Submitting a draft compares its total with GST to
+   `purchasing.approval_limit` (₹10,000 unless set). Within it, the order is approved at once; over it, it waits in
+   `PENDING_APPROVAL` and the limit is saved on the order. `ApproveAsync` refuses the person who raised or submitted it
+   (`SELF_APPROVAL`, 409 with the reason), so an over-limit order always needs two people; `purchase.approve` is held by
+   the owner and general manager. Send back returns it to draft with the reason. Every step locks the order and checks
+   its version (409 naming the order).
+2. **A part delivery leaves the rest to come.** Each order line keeps `received_quantity`; what is still to come is
+   ordered − received. `ReceiveAsync` locks the order row (`SELECT … FOR UPDATE`) before reading it, so two people
+   recording deliveries at the same moment run one after the other: the second sees the first's quantities and is refused
+   under the line if it would take more than is left (*Only 60 kg of Mixed vegetables is still to come on PO00001 …*).
+   The CHECK `billed ≤ received ≤ ordered` backs this in the database. The order becomes `PARTLY_RECEIVED`, `RECEIVED` when
+   every line is in, or `CLOSED` with a reason when the rest is not coming. Test:
+   `A_partial_delivery_leaves_the_rest_to_come_two_deliveries_at_once_never_take_more_and_the_order_can_be_closed`.
+3. **Goods received is stock in.** In the same transaction, the items are locked (`StockLedger.LockItemsAsync`, Sprint 15),
+   the item's average cost moves with the delivery at the order's price before GST, the GRN and its lines are saved,
+   and each line adds one `RECEIVED` stock movement pointing at it (`grn_item_id`, unique) with the note
+   "PO00001 · Mapusa Fresh Vegetables". The ledger shows the GRN number as its source.
+4. **GST and input tax.** A supplier's state is the first two digits of their GSTIN (checked, check digit included); same
+   state as the property's GST registration → CGST + SGST (each half rounded), else IGST. An unregistered supplier can't be
+   given GST on an order or a bill (app and CHECK). A bill records the supplier's state, ours and whether the input tax
+   can be claimed (a regular registration and a supplier GSTIN).
+5. **A bill is against what came in.** Each billed line is at most received − already billed on that order line; a price
+   that differs from the order is kept and flagged. The supplier's own bill number can be recorded once per supplier (any
+   case). Once saved, a trigger lets only `amount_paid` (which only grows) and the status change.
+6. **Paying once.** A payment carries an Idempotency-Key (a double tap returns the first payment), locks the bill, checks
+   its version and never pays more than is left. A bank transfer, UPI or cheque needs its UTR or cheque number. Cash must
+   come from an open drawer that should hold at least the amount, and is written as a `PAY_OUT` movement linked to the
+   payment, so the drawer still balances (4.20).
+7. **Permissions.** `supplier.read` / `supplier.manage`, `purchase.read`, `purchase.create` (requests, orders, submit,
+   cancel, close), `purchase.approve`, `grn.create` (inventory manager, purchasing), `supplier_invoice.manage` (accountant, purchasing).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1005,3 +1064,4 @@ request:
 | 13 | Housekeeping and maintenance (tasks made by check-out, inspection, checklists, tickets, out of order, photos, phone screens), housekeeping flow diagram; system design 4.23 One task per check-out (accepted 26 Oct 2026) |
 | 14 | Menu, restaurant POS and KOT (orders with versions, kitchen tickets and display, discounts and voids, paid or charged to room), restaurant flow diagram; system design 4.24 Two waiters, one order, and the room charge (accepted 26 Oct 2026) |
 | 15 | Inventory and recipe costing (stock ledger and levels, adjustments and counts with reasons, recipes, served dishes use their recipe, food-cost report), stock ledger diagram; system design 4.25 The stock ledger, recipes and food cost (accepted 27 Oct 2026) |
+| 16 | Suppliers and purchasing (requests, orders with an approval limit, part deliveries into the stock ledger, supplier bills with input GST, payments), purchase flow diagram; system design 4.26 Purchasing: approval, goods received and supplier bills (in review) |

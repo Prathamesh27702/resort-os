@@ -35,7 +35,7 @@ public sealed class StockLedger(IAppDbContext db, ICurrentUser caller, TimeProvi
 
     /// <summary>Adds a movement (not saved). Quantity in the item's unit, signed; valued at <paramref name="unitCost"/>.</summary>
     public StockMovement Add(InventoryItem item, Guid locationId, string type, decimal quantity, decimal unitCost, string? note = null,
-        Guid? adjustmentId = null, Guid? countId = null, Guid? orderItemId = null, Guid? kotId = null)
+        Guid? adjustmentId = null, Guid? countId = null, Guid? orderItemId = null, Guid? kotId = null, Guid? grnItemId = null)
     {
         var m = new StockMovement
         {
@@ -52,6 +52,7 @@ public sealed class StockLedger(IAppDbContext db, ICurrentUser caller, TimeProvi
             CountId = countId,
             OrderItemId = orderItemId,
             KotId = kotId,
+            GrnItemId = grnItemId,
             CreatedAt = clock.GetUtcNow(),
             CreatedBy = caller.UserId,
         };

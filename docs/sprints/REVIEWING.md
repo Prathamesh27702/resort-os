@@ -476,6 +476,40 @@ e2e/sprint-15.spec.ts` (names S15-01 … S15-07). Database checks: `database/que
 | 17 | Owner: **Staff accounts** → **New** → *Kiran Kitchen*, role **Kitchen**. Sign in as Kiran in the phone window → **Inventory** | Stock, Recipes, Food cost and Ledger to look at, with no **Record**, **Count** or edit buttons; nothing scrolls sideways. The API refuses a change from Kiran (403) |
 | 18 | Owner: **Recipes** → **Masala Omelette** (*No recipe*) → **Ingredient** → *Butter* 10 *g*, **Ingredient** → *Onion and capsicum* 50 *g* → **Save** | *Recipe of Masala Omelette saved: ₹8, food cost 5 %.* (₹5 butter + ₹3 onion of ₹160). The API refuses a unit of another kind under that line's unit: *Butter is kept in kg, so its quantity must be in kg or g.* |
 
+### Sprint 16 — Suppliers and purchasing
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V018__purchasing`).
+Demo data (S013): four suppliers, **Mapusa Fresh Vegetables** (FRESH-VEG, GSTIN 30AAACF1234A1ZS, Goa, pays after 7 days),
+**Goa Dairy Co-operative** (DAIRY, Goa), **Konkan Spice Traders** (SPICES, a Maharashtra GSTIN, so IGST) and **Anjuna
+Fishermen** (FISH, no GSTIN: unregistered, no GST); and an open request **PR00001** for the Main store: 15 kg onion and
+capsicum, 10 kg mixed vegetables, 100 limes. The approval limit is ₹10,000 (with GST). Vegetables are at 0 % GST. Use two
+browser windows: the **owner** on a desktop and a **purchasing clerk** in a phone-sized window (360 × 780); the clerk is
+needed because nobody may approve an order they raised. Screenshots: [sprint-16-screens/](sprint-16-screens/). The
+browser tests do the same on their own: `cd frontend; npm run e2e:headed -- e2e/sprint-16.spec.ts` (names S16-01 …
+S16-08). Database checks: `database/queries/check-sprint-16.sql`. How it works:
+[system-design.md → 4.26](../architecture/system-design.md#426-purchasing-approval-goods-received-and-supplier-bills).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Suppliers** | Four cards. *Mapusa Fresh Vegetables · GSTIN 30AAACF1234A1ZS · Goa (30) · pays after 7 days*; *Konkan Spice Traders* in *Maharashtra (27)*; *Anjuna Fishermen* says *Unregistered: no GST · Goa (30)*. Each says *Nothing owed* |
+| 2 | **Supplier** → name *Calangute Bakery*, code *BAKERY*, GSTIN *30AAACF1234A1ZT* → **Save** | Under the GSTIN: *The last character (check digit) should be S for this GSTIN; check it for a typing mistake.* **Cancel** |
+| 3 | Owner: **Staff accounts** → **New** → *Priya Purchase*, role **Purchasing**. Sign in as Priya in the phone window → **Purchasing** → **Requests** | *PR00001 for Main store · Open*, *15 kg Onion and capsicum, 10 kg Mixed vegetables, 100 pcs Lime*; nothing scrolls sideways |
+| 4 | **The demo.** **Raise order** on PR00001 → **Supplier** *Mapusa Fresh Vegetables* | Under the supplier: *Goa (30) · CGST + SGST*. The lines come from the request at each item's current cost (₹60/kg, ₹60/kg, ₹5/pc) |
+| 5 | Change mixed vegetables to **160** | The total under the lines: *Before GST ₹11,000.00 · GST ₹0.00 · Total ₹11,000.00* → **Save draft** |
+| 6 | (on PO00001) | *Draft*, and *Over the ₹10,000 limit: once submitted, someone else with purchase approval must approve it.* → **Submit** → *PO00001 sent for approval.*, status *Waiting for approval*. Priya has no **Approve** button |
+| 7 | Owner: **Purchasing** → **Waiting for approval** → PO00001 | *Waiting for approval: ₹11,000 is over the ₹10,000 limit. Submitted by Priya Purchase …* → **Approve** → *PO00001 approved.*, *Approved … by* you. (Had the owner raised it, the API would refuse: *You raised PO00001, so you can't approve it yourself. …*) |
+| 8 | Priya: open PO00001 → **Goods received** → onion and capsicum **All**, mixed vegetables *200*, lime *100*, challan *MFV-C-0412* → **Save delivery** | Under mixed vegetables: *Only 160 kg of Mixed vegetables is still to come on PO00001 (0 kg of 160 kg already in). Record the extra on a new order, or as stock received in Inventory with the reason.* |
+| 9 | Mixed vegetables *100* → **Save delivery** | *GRN00001 saved: 15 kg Onion and capsicum, 100 kg Mixed vegetables, 100 pcs Lime into Main store.* Status *Partly received*; mixed vegetables *Received 100 kg · To come 60 kg*; **Goods received** lists GRN00001 with the challan |
+| 10 | Owner: **Inventory** | The Main store holds 15 kg more onion and capsicum, 100 kg more mixed vegetables and 100 more limes. The **Ledger** shows *Received* rows with source *GRN00001* and *PO00001 · Mapusa Fresh Vegetables*. (The cost stays ₹60/kg: it came in at the same price.) |
+| 11 | Priya: **Goods received** again | Only mixed vegetables is offered: *Still to come 60 kg of 160 kg* → **All** → **Save delivery** → *GRN00002 saved: 60 kg Mixed vegetables into Main store. Everything has come in.* Status *Received* |
+| 12 | Owner: on PO00001 **Record bill** → their bill number *MFV/2210* | The lines that came in, at the order's prices; *Total ₹11,000.00* → **Record bill** → *SI00001 recorded: ₹11,000, due …* (7 days on). The order lists the bill *Unpaid*, *₹11,000 left* |
+| 13 | **Record bill** is gone (everything is billed). Owner: **Purchasing** → **Bills** | *Still to pay ₹11,000*; SI00001 *Mapusa Fresh Vegetables · bill MFV/2210* |
+| 14 | Priya: **Bills** → **Pay** → **Paid by** *UPI* → **Record payment** with no reference | Under the reference: *Enter the UTR (bank transfer or UPI) or the cheque number, 3–60 characters, so the payment can be matched to the bank statement.* |
+| 15 | UTR *UPI-430211987654* → **Record payment** | *SI00001 is paid in full.* The bill says *Paid* with no **Pay** button; nothing scrolls sideways |
+| 16 | Owner: **Suppliers** and **Requests** | Mapusa Fresh Vegetables *Nothing owed*; PR00001 *Ordered*, *On PO00001* |
+| 17 | Owner: a new order to **Anjuna Fishermen** with a line at **5 %** GST → **Save draft** | Under that line: *Anjuna Fishermen has no GSTIN, so they can't charge GST. Set the GST to 0 %, or add their GSTIN in Suppliers.* |
+| 18 | Optional, cash: open the cash drawer (front desk), make a small order (under ₹10,000) to the fishermen, **Submit** (*approved (within the limit)*), receive it, record their bill, **Pay** → **Cash (from the drawer)** | *… is paid in full.* The cash drawer shows the payment going out (a pay-out of the same amount, linked to the payment). More than the drawer should hold is refused under the amount |
+
 ## Part C — Decide
 
 ### Accept

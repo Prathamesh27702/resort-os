@@ -170,6 +170,7 @@ app.MapInvoiceEndpoints();
 app.MapHousekeepingEndpoints();
 app.MapRestaurantEndpoints();
 app.MapInventoryEndpoints();
+app.MapPurchasingEndpoints();
 
 app.Run();
 
