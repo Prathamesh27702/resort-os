@@ -62,6 +62,7 @@ public class PurchasingTests(ResortApiFactory app) : IClassFixture<ResortApiFact
         Assert.Equal(new[] { (12m, 8m), (10m, 0m) }, order.Lines.Select(l => (l.Received, l.Remaining)));
         var grn = Assert.Single(order.Receipts);
         Assert.Equal(("GRN00001", 780m, "DC-4411"), (grn.Number, grn.Value, grn.ChallanNumber));
+        Assert.Equal(order.Lines.Select(l => l.Id), grn.Lines.Select(l => l.OrderItemId));   // the order's line order, every time
 
         // Stock: onion 5 + 12 kg in the store at an average cost of (5 × 35 + 12 × 40) / 17; tomato 10 kg at ₹30.
         var inv = await owner.GetJsonAsync<InventoryDto>($"/api/v1/properties/{pid}/inventory");

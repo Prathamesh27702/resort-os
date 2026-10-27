@@ -457,8 +457,9 @@ public sealed class PurchasingService(
                 i.Tax, i.TaxableValue + i.Tax, i.ReceivedQuantity, PurchaseMath.Remaining(i.Quantity, i.ReceivedQuantity), i.BilledQuantity,
                 i.ReceivedQuantity - i.BilledQuantity);
         }).ToList();
+        var sortOrder = o.Items.ToDictionary(i => i.Id, i => i.SortOrder);   // a delivery's lines in the order's order, not the database's
         var receipts = grns.Select(g => new GrnDto(g.Id, g.Number, g.ReceivedOn, grnLocations.GetValueOrDefault(g.LocationId, ""), g.ChallanNumber, g.Note, g.Value,
-            g.Items.Select(x => new GrnLineDto(x.OrderItemId, items[x.ItemId].Name, units[items[x.ItemId].UnitId], x.Quantity, x.UnitCost, x.Value)).ToList(),
+            g.Items.OrderBy(x => sortOrder.GetValueOrDefault(x.OrderItemId)).Select(x => new GrnLineDto(x.OrderItemId, items[x.ItemId].Name, units[items[x.ItemId].UnitId], x.Quantity, x.UnitCost, x.Value)).ToList(),
             g.CreatedBy is null ? null : Name(g.CreatedBy), g.CreatedAt)).ToList();
         var bills = await invoices.ForOrderAsync(o.Id, ct);
         return new PurchaseOrderDto(o.Id, o.Number, supplier.Id, supplier.Name, supplier.Gstin, GstStates.Words(supplier.StateCode), o.RequestId, request,
