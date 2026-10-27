@@ -99,23 +99,23 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
 | `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
 | `recipe_ingredients` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
-| `suppliers` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `purchase_requests` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `purchase_request_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `purchase_orders` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `purchase_order_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `goods_received_notes` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `grn_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `supplier_invoices` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `supplier_invoice_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `supplier_payments` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
-| `departments` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
-| `designations` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
-| `employees` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
-| `employee_documents` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
-| `employee_compensation` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
-| `shift_templates` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
-| `roster_shifts` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
+| `suppliers` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `purchase_requests` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `purchase_request_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `purchase_orders` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `purchase_order_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `goods_received_notes` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `grn_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `supplier_invoices` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `supplier_invoice_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `supplier_payments` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
+| `departments` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `designations` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `employees` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `employee_documents` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `employee_compensation` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `shift_templates` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `roster_shifts` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
 | `attendance_events` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
 | `geofences` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
 | `timesheets` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |

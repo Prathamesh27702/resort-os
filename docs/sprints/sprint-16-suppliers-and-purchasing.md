@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | M | [Sprint 15](sprint-15-inventory-and-recipe-costing.md) |
+| 🟢 Done | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | M | [Sprint 15](sprint-15-inventory-and-recipe-costing.md) |
 
 **Goal:** Purchase request → PO → goods received → supplier invoice → payment (brief §38).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built; pull request into develop waits for the owner's review.
+**Now:** Accepted by the owner on 27 Oct 2026 and released to main (tag sprint-16).
 
 **Done so far**
 
@@ -42,9 +42,7 @@
 
 **Outcome**
 
-Expected when accepted:
-
-- PO raised, approved, received, invoiced, paid — stock updated
+Accepted 27 Oct 2026. The vegetable cycle runs end to end: PR00001 becomes PO00001 for ₹11,000, approved by a second person, received in two deliveries with 60 kg tracked as still to come in between, stock up by the whole order, the bill recorded and paid by UPI (PurchasingTests, browser steps S16-02 … S16-07). On main as tag sprint-16. Sprint 17 (employees and roster) started.
 
 ## Scope
 

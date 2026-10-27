@@ -248,7 +248,8 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
         var orderIds = list.Select(i => i.OrderId).Distinct().ToList();
         var orders = await db.PurchaseOrders.AsNoTracking().Where(o => orderIds.Contains(o.Id)).ToDictionaryAsync(o => o.Id, o => o.Number, ct);
         var lineIds = list.SelectMany(i => i.Items.Select(x => x.OrderItemId)).ToList();
-        var orderPrices = await db.PurchaseOrderItems.AsNoTracking().Where(x => lineIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.UnitPrice, ct);
+        var orderLines = await db.PurchaseOrderItems.AsNoTracking().Where(x => lineIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, ct);
+        var orderPrices = orderLines.ToDictionary(x => x.Key, x => x.Value.UnitPrice);
         var itemIds = list.SelectMany(i => i.Items.Select(x => x.ItemId)).Distinct().ToList();
         var items = await db.InventoryItems.AsNoTracking().Where(i => itemIds.Contains(i.Id)).ToDictionaryAsync(i => i.Id, ct);
         var units = await db.InventoryUnits.AsNoTracking().ToDictionaryAsync(u => u.Id, u => u.Code, ct);
@@ -261,7 +262,7 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
             return new SupplierInvoiceDto(i.Id, i.Number, i.SupplierId, suppliers.GetValueOrDefault(i.SupplierId, ""), i.SupplierGstin, i.OrderId,
                 orders.GetValueOrDefault(i.OrderId, ""), i.SupplierNumber, i.InvoiceDate, i.DueDate, i.IntraState, i.ItcEligible, i.TaxableValue, i.Cgst, i.Sgst,
                 i.Igst, i.TaxTotal, i.Total, i.AmountPaid, balance, i.Status, balance > 0 && i.DueDate < today, i.Note,
-                i.Items.OrderBy(x => x.CreatedAt).Select(x =>
+                i.Items.OrderBy(x => orderLines.TryGetValue(x.OrderItemId, out var l) ? l.SortOrder : 0).Select(x =>
                 {
                     var orderPrice = orderPrices.GetValueOrDefault(x.OrderItemId);
                     return new SupplierInvoiceLineDto(x.OrderItemId, items[x.ItemId].Name, units[items[x.ItemId].UnitId], x.Quantity, x.UnitPrice, orderPrice,

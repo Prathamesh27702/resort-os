@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-16] — Unreleased — Suppliers and purchasing (in review)
+## [sprint-16] — 2026-10-27 — Suppliers and purchasing (accepted)
 
 ### Added
 - Migration V018: `suppliers` (GSTIN optional; the state comes from it), `purchase_requests` and
