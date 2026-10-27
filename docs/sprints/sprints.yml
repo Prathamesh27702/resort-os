@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 15
+current: 16
 
 sprints:
 
@@ -1320,7 +1320,7 @@ sprints:
 - id: 15
   title: Inventory and recipe costing
   phase: 5
-  status: in-progress
+  status: done
   size: M
   module: Inventory
   feature: inventory
@@ -1328,7 +1328,8 @@ sprints:
   goal: Stock ledger, consumption from recipes, wastage, and food-cost reporting (brief §36, §37).
   client: "Stock is tracked as it is used, recipes give the real food cost per dish, and wastage is recorded."
   progress:
-    now: "Built; pull request into develop waits for the owner's review."
+    now: "Accepted by the owner on 27 Oct 2026 and released to main (tag sprint-15)."
+    outcome: "Accepted 27 Oct 2026. Selling 3 Paneer Tikka (Full) takes 0.6 kg of paneer from the kitchen and the food-cost report shows it at ₹105 of ₹280 = 37.5 % (InventoryTests, browser steps S15-03 and S15-04). On main as tag sprint-15. Sprint 16 (suppliers and purchasing) started."
     done:
       - "Migration V017: inventory_units (kg, g, l, ml, pcs, dozen with kind and size), inventory_categories, stock_locations (one kitchen per property), inventory_items (moving-average cost before GST, reorder level), stock_movements (append-only ledger), stock_levels (on hand per item and store, kept by a trigger in the same statement), stock_adjustments (SA00001…) and stock_counts (SC00001…), never changed, recipes (per dish or portion) and recipe_ingredients"
       - "Stock received, wastage, expired, damaged, corrections and transfers between stores, each with a reason and in the audit log; counts post their differences with a reason; items locked FOR UPDATE in id order so two changes at once both count and stock never goes below zero (except a served dish)"
@@ -1372,11 +1373,30 @@ sprints:
     - "Stock below zero: only a served dish can do that; the Stock view says Below zero: count it. Record stock received or count the store."
   demo:
     - Sell 3 Paneer Tikka → stock reduced → food-cost report
+  handbook:
+    highlights:
+      - "Stock is kept per store (main store, kitchen) and every change is recorded with who, when and why"
+      - "When the kitchen serves a dish, its ingredients come off the kitchen's stock by themselves, from the dish's recipe"
+      - "Recipes show what each dish really costs, its food cost % and margin"
+      - "The food-cost report shows the dishes with the highest and lowest margins, what was sold and what was thrown away"
+      - "Wastage, stock received, transfers and counts always need a reason"
+    design:
+      ui: "Inventory (menu) has four views: Stock by group and store with a Reorder flag; Recipes with each dish's cost, food cost and margin; Food cost for a period with the highest and lowest margins; and the Ledger of every movement, newest first. Record takes stock received, wastage, a correction or a transfer; Count sets a store to what is on the shelf. Laid out for a 360 px phone."
+      api: "GET /inventory and /inventory/movements; POST /inventory/adjustments and /inventory/counts (each with a reason); POST|PUT /inventory/categories, /locations, /items; GET|PUT /inventory/recipes; GET /inventory/food-cost?from&to. Serving a kitchen ticket (POST /orders/{id}/kots/{kotId}/serve) also uses the recipes."
+      database: "Migration V017 adds units, groups, stores and items, the append-only stock_movements ledger, stock_levels kept from it by a trigger in the same statement, stock_adjustments (SA…) and stock_counts (SC…) that are never changed, and recipes with their ingredients. Items are locked in id order for every change, so two changes at once both count."
+    diagrams:
+      - {file: tools/handbooks/assets/stock-ledger.png, caption: "Every stock change is one movement in the ledger; the level and the cost follow from it"}
+    screenshots:
+      - {file: docs/sprints/sprint-15-screens/01-stock.png, caption: "Stock by group and store, with fresh cream to reorder"}
+      - {file: docs/sprints/sprint-15-screens/02-recipe.png, caption: "The Paneer Tikka recipe: ₹105, 37.5 % food cost"}
+      - {file: docs/sprints/sprint-15-screens/03-ledger.png, caption: "The ledger: paneer used by 3 Paneer Tikka, with the order and ticket"}
+      - {file: docs/sprints/sprint-15-screens/04-food-cost.png, caption: "The food-cost report with the highest and lowest margins"}
+      - {file: docs/sprints/sprint-15-screens/06-wastage.png, caption: "Recording wastage needs a reason"}
 
 - id: 16
   title: Suppliers and purchasing
   phase: 5
-  status: planned
+  status: in-progress
   size: M
   module: Purchasing
   feature: inventory

@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | M | [Sprint 14](sprint-14-menu-restaurant-pos-and-kot.md) |
+| 🟢 Done | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | M | [Sprint 14](sprint-14-menu-restaurant-pos-and-kot.md) |
 
 **Goal:** Stock ledger, consumption from recipes, wastage, and food-cost reporting (brief §36, §37).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built; pull request into develop waits for the owner's review.
+**Now:** Accepted by the owner on 27 Oct 2026 and released to main (tag sprint-15).
 
 **Done so far**
 
@@ -41,9 +41,7 @@
 
 **Outcome**
 
-Expected when accepted:
-
-- Owner sees highest/lowest margin items
+Accepted 27 Oct 2026. Selling 3 Paneer Tikka (Full) takes 0.6 kg of paneer from the kitchen and the food-cost report shows it at ₹105 of ₹280 = 37.5 % (InventoryTests, browser steps S15-03 and S15-04). On main as tag sprint-15. Sprint 16 (suppliers and purchasing) started.
 
 ## Scope
 
