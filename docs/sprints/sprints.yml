@@ -1478,22 +1478,71 @@ sprints:
   depends: [1]
   goal: Employee records (salary restricted) and shift rosters with clash detection (brief §42, §46).
   client: "Staff records (with salaries visible only to authorised people) and weekly shift rosters with clash warnings."
+  progress:
+    now: "Built; pull request into develop waits for the owner's review."
+    done:
+      - "Migration V019: departments and designations, employees (E00001…, optional staff account, one employee per account, ACTIVE / LEFT), employee_documents (numbers encrypted, Aadhaar last 4 only, scans encrypted), employee_compensation (append-only), shift_templates (people needed every day) and roster_shifts with the EXCLUDE USING gist constraint ex_roster_shifts_clash on a generated tstzrange"
+      - "Pay behind its own endpoint and employee_salary.read (owner, HR; never a manager or general manager); the audit trail shows amounts as ***"
+      - "Documents behind employee_document.read: masked, opening one is a SENSITIVE_READ audit row; PAN and Aadhaar format checks under the field"
+      - "Roster: shifts from a template or own times in the property's time zone (night shifts end the next day); an overlap is refused naming the other shift (409 SHIFT_CLASH) unless allowed with a reason; the person is locked FOR UPDATE so two managers at once can't both win; shortages per template × day; warnings for a day off, over 48 hours and allowed overlaps; copy a week day for day with what was skipped listed"
+      - "Leaving refused while still on the roster after the last day (the days are listed); my shifts through the linked account (roster.self)"
+      - "Screens Employees, the employee profile and Roster (week grid on a desktop, one day at a time on a 360 px phone, tap a gap to fill it); every refusal said under its field"
+      - "Dev seed S014: five departments, ten employees with their pay, nine shift templates, this week's roster; next week empty"
+      - "[done] Docs: API.md, DATABASE.md, schema-sprint-17.md, system design Sprint 17 and 4.27 with the roster flow diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG"
+    files:
+      - "database/migrations/V019__employees.sql; database/seed/dev/S014__employees.sql; database/queries/check-sprint-17.sql"
+      - "backend/Resort.Domain/Employees/Employees.cs; backend/Resort.Contracts/EmployeeContracts.cs"
+      - "backend/Resort.Application/ — Employees/ (EmployeeService.cs, CompensationService.cs, EmployeeDocumentService.cs, RosterService.cs), Validation/EmployeeValidators.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs"
+      - "backend/Resort.Infrastructure/Persistence/ — AppDbContext.cs, AuditInterceptor.cs ([SalaryData]); backend/Resort.Api/ — Endpoints/EmployeesEndpoints.cs, Infrastructure/Problems.cs, Program.cs"
+      - "backend/Resort.Tests/ — Integration/EmployeesTests.cs, Integration/DevSeedTests.cs"
+      - "frontend/src/app/ — features/employees/ (employees.page.ts, employee.page.ts, employee-dialogs.ts, roster.page.ts, roster-dialogs.ts, employees.api.ts, employees.spec.ts), core/models.ts, app.routes.ts, layout/shell.ts"
+      - "frontend/e2e/sprint-17.spec.ts; scripts/check-api.mjs (Sprint 17 checks)"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-17.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-17-screens/; tools/handbooks/diagrams (roster-flow)"
+    results:
+      - "Backend: 497 passed, 0 failed on real PostgreSQL 16 (8 new: EmployeesTests with a manager refused the pay and the audit trail showing ***, an overlapping shift refused naming the other one unless allowed with a reason, two managers at the same moment with exactly one winning 10 times, next week's roster with its shortages and warnings, copying a week, account links and leaving, encrypted documents; dev seed check)"
+      - "Frontend: 111 of 111 unit tests passed (3 new); ESLint clean; production build OK"
+      - "Browser tests: all 139 steps of Sprints 01–17 pass (19 min); Sprint 17's 7 steps cover ten employees, HR adding Kavya with her pay and PAN (a mistyped phone and PAN refused under the field), a manager on a phone seeing her profile without pay, next week copied with its gaps, a clash refused then allowed as a handover, a gap filled, and the phone roster one day at a time; API checks 224 of 224 (8 new); database checks clean; screenshots in docs/sprints/sprint-17-screens"
   scope:
     tables: [departments, designations, employees, employee_documents, employee_compensation, shift_templates, roster_shifts]
+    api:
+      - "/api/v1/properties/{propertyId}/departments, /designations, /employees/*, /roster/*"
     screens: [/employees, /roster]
   tasks:
-    - "employee_compensation readable only with employee_salary.read (separate table, separate endpoint)"
-    - "Link employee ↔ user (optional)"
-    - "Roster: prevent overlapping shifts (EXCLUDE) unless explicitly allowed; staffing shortage view"
-    - "Seed: 10 employees"
+    - "[done] employee_compensation readable only with employee_salary.read (separate table, separate endpoint)"
+    - "[done] Link employee ↔ user (optional)"
+    - "[done] Roster: prevent overlapping shifts (EXCLUDE) unless explicitly allowed; staffing shortage view"
+    - "[done] Seed: 10 employees"
   tests:
     - Authorization — MANAGER cannot read salaries
     - Integration — overlapping shift rejected
   acceptance:
     - Manager builds next week's roster; shortages highlighted
-  debug: []
+  debug:
+    - "A clash you didn't expect (409 SHIFT_CLASH): the message names the other shift. database/queries/check-sprint-17.sql block 5 lists overlapping scheduled shifts (should be none) and block 6 the overlaps a manager allowed, with their reasons."
+    - "A shortage that won't go away: shortages count scheduled shifts on that template that day; a shift with its own times counts towards no template. Block 8 lists next week's gaps the same way the screen does."
+    - "Someone sees pay who shouldn't (or can't when they should): only employee_salary.read opens /employees/{id}/compensation (owner and HR by default; check the role in Staff accounts → Roles). Block 10 checks that the audit trail never shows an amount."
   demo:
     - Create roster → clash → shortage view
+  handbook:
+    highlights:
+      - "Every employee has a profile with their department, job title, joining date and weekly day off, and can be linked to their staff account"
+      - "Salaries are kept apart: only the owner and HR can see them, and the audit trail never shows an amount"
+      - "ID documents such as PAN are stored encrypted and shown masked; opening one is recorded; for Aadhaar only the last 4 digits are kept"
+      - "The manager builds the week's roster from shift templates, or copies last week"
+      - "Nobody can be put on two shifts at once unless the manager allows it with a reason, such as a handover"
+      - "Shifts with fewer people than they need are listed and can be filled with a tap; working on a day off or over 48 hours is flagged"
+    design:
+      ui: "Employees (/employees) lists people by department with search; the profile (/employees/{id}) shows details, next shifts and, only for those allowed, Pay and Documents. Roster (/roster) shows a week by department with the gaps and warnings above it; on a 360 px phone it shows one day at a time."
+      api: "Departments and job titles, employees (with accounts to link and leaving), pay under /employees/{id}/compensation (employee_salary.read), documents under /employees/{id}/documents (employee_document.read, multipart), and /roster with templates, shifts, cancel, copy-week and mine. An overlapping shift is 409 SHIFT_CLASH naming the other one."
+      database: "Migration V019 adds departments, job titles, employees, encrypted employee documents, append-only pay history, shift templates and roster shifts. An EXCLUDE USING gist constraint on each person's shift periods refuses two overlapping scheduled shifts unless a manager allowed it."
+    diagrams:
+      - {file: tools/handbooks/assets/roster-flow.png, caption: "Saving a shift: the clash check, the exclusion constraint behind it, and the shortage view"}
+    screenshots:
+      - {file: docs/sprints/sprint-17-screens/01-employees.png, caption: "Employees by department with their job title and day off"}
+      - {file: docs/sprints/sprint-17-screens/03-profile-manager-phone.png, caption: "A manager sees the profile on a phone, but not the pay"}
+      - {file: docs/sprints/sprint-17-screens/04-roster-next-week.png, caption: "Next week copied from this week, with the gaps listed"}
+      - {file: docs/sprints/sprint-17-screens/05-clash.png, caption: "A second shift that overlaps the morning is refused, naming it"}
+      - {file: docs/sprints/sprint-17-screens/07-roster-phone.png, caption: "The roster on a phone, one day at a time"}
 
 - id: 18
   title: Attendance and timesheets (PWA)

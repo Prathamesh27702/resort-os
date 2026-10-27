@@ -117,9 +117,9 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 14 | Inventory | inventory_units, inventory_categories, stock_locations, inventory_items, stock_movements, stock_levels, stock_adjustments, stock_counts, recipes, recipe_ingredients | 15 | built (stock ledger by store, wastage, transfers and counts with a reason, recipes, served dishes use their recipe, food-cost report) |
 | 15 | Purchasing | purchase_requests, purchase_request_items, purchase_orders, purchase_order_items, goods_received_notes, grn_items, supplier_invoices, supplier_invoice_items, supplier_payments (stock in as stock_movements RECEIVED, cash out as cash_drawer_movements PAY_OUT) | 16 | built (requests, orders with an approval limit, part deliveries, supplier bills with input GST, payments) |
 | 16 | Suppliers | suppliers | 16 | built (GSTIN checked with its check digit, state, payment terms, what is owed) |
-| 17 | Employees | employees, employee_compensation, departments | 17 | planned |
+| 17 | Employees | departments, designations, employees, employee_documents, employee_compensation | 17 | built (profiles with an optional staff account, pay only with employee_salary.read, encrypted documents) |
 | 18 | Attendance | attendance_events, geofences, timesheets | 18 | planned |
-| 19 | Roster | shift_templates, roster_shifts | 17 | planned |
+| 19 | Roster | shift_templates, roster_shifts | 17 | built (weekly roster, overlapping shifts refused by an EXCLUDE constraint unless allowed with a reason, shortages and warnings, copy a week) |
 | 20 | Leave | leave_types, leave_balances, leave_requests, holidays | 19 | planned |
 | 21 | Activities | activities, activity_schedules, activity_bookings | 20 | planned |
 | 22 | Transport | vehicles, vehicle_trips, trip_passengers | 21 | planned |

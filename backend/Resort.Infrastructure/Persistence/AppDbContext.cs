@@ -6,6 +6,7 @@ using Resort.Application.Common;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
+using Resort.Domain.Employees;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
@@ -136,6 +137,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<SupplierInvoice> SupplierInvoices => Set<SupplierInvoice>();
     public DbSet<SupplierInvoiceItem> SupplierInvoiceItems => Set<SupplierInvoiceItem>();
     public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Designation> Designations => Set<Designation>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
+    public DbSet<EmployeeCompensation> EmployeeCompensation => Set<EmployeeCompensation>();
+    public DbSet<ShiftTemplate> ShiftTemplates => Set<ShiftTemplate>();
+    public DbSet<RosterShift> RosterShifts => Set<RosterShift>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -621,6 +629,19 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         });
         b.Entity<SupplierInvoiceItem>().ToTable("supplier_invoice_items");
         b.Entity<SupplierPayment>().ToTable("supplier_payments");
+
+        // Employees and roster (Sprint 17). Pay rows are never changed (trigger); roster_shifts.period is generated.
+        b.Entity<Department>().ToTable("departments");
+        b.Entity<Designation>().ToTable("designations");
+        b.Entity<Employee>(e =>
+        {
+            e.ToTable("employees");
+            e.Ignore(x => x.FullName);
+        });
+        b.Entity<EmployeeDocument>().ToTable("employee_documents");
+        b.Entity<EmployeeCompensation>().ToTable("employee_compensation");
+        b.Entity<ShiftTemplate>().ToTable("shift_templates");
+        b.Entity<RosterShift>().ToTable("roster_shifts");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

@@ -12,6 +12,7 @@ using Resort.Domain.Invoicing;
 using Resort.Domain.Inventory;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
+using Resort.Domain.Employees;
 using Resort.Domain.Purchasing;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
@@ -126,6 +127,13 @@ public interface IAppDbContext
     DbSet<SupplierInvoice> SupplierInvoices { get; }
     DbSet<SupplierInvoiceItem> SupplierInvoiceItems { get; }
     DbSet<SupplierPayment> SupplierPayments { get; }
+    DbSet<Department> Departments { get; }
+    DbSet<Designation> Designations { get; }
+    DbSet<Employee> Employees { get; }
+    DbSet<EmployeeDocument> EmployeeDocuments { get; }
+    DbSet<EmployeeCompensation> EmployeeCompensation { get; }
+    DbSet<ShiftTemplate> ShiftTemplates { get; }
+    DbSet<RosterShift> RosterShifts { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

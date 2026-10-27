@@ -1146,5 +1146,31 @@
   <text class="s" x="46" y="586"><tspan class="b">A payment</tspan> is sent with an Idempotency-Key, so a double tap pays once; it is never more than what is left on the bill.</text>
   <text class="s" x="46" y="610"><tspan class="b">Cash</tspan> comes out of the open cash drawer (Sprint 10) and must not be more than the drawer should hold.</text>
 </svg>
+<svg id="roster-flow" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 17: the roster. Putting a person on a shift, the clash check, and the shortage view</text>
+  <rect class="lane" x="30" y="56" width="1140" height="150" rx="10"/>
+  <text class="t b" x="46" y="82">Saving a shift (one transaction)</text>
+  <rect class="step" x="46" y="98" width="200" height="88" rx="8"/><text class="s b" x="58" y="122">Shift asked for</text><text class="xs" x="58" y="142">person, day, template (or times);</text><text class="xs" x="58" y="160">local times → exact instants</text><text class="xs" x="58" y="178">(Asia/Kolkata; night ends next day)</text>
+  <rect class="step" x="276" y="98" width="200" height="88" rx="8"/><text class="s b" x="288" y="122">Lock the person</text><text class="xs" x="288" y="142">SELECT employees … FOR UPDATE:</text><text class="xs" x="288" y="160">two managers saving shifts for</text><text class="xs" x="288" y="178">one person go one after the other</text>
+  <rect class="ask" x="506" y="98" width="210" height="88" rx="8"/><text class="s b" x="518" y="122">Any other shift of theirs</text><text class="xs" x="518" y="142">overlapping [starts, ends)?</text><text class="xs" x="518" y="160">back to back (15:00 / 15:00)</text><text class="xs" x="518" y="178">is not an overlap</text>
+  <rect class="lose" x="746" y="98" width="200" height="88" rx="8"/><text class="s b" x="758" y="122">Yes: 409 SHIFT_CLASH</text><text class="xs" x="758" y="142">"Asha Naik is already on Front</text><text class="xs" x="758" y="160">office · Morning 07:00–15:00 on</text><text class="xs" x="758" y="178">Tue 3 Nov. …"</text>
+  <rect class="win" x="976" y="98" width="180" height="88" rx="8"/><text class="s b" x="988" y="122">No: saved</text><text class="xs" x="988" y="142">or "Allow the overlap"</text><text class="xs" x="988" y="160">with a reason → saved,</text><text class="xs" x="988" y="178">shown as a warning</text>
+  <path class="arrow" d="M246,142 L274,142"/><path class="arrow" d="M476,142 L504,142"/><path class="arrow" d="M716,142 L744,142"/><path class="arrow" d="M611,186 L611,196 L1066,196 L1066,188"/>
+  <rect class="lane" x="30" y="222" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="248">The database backs it: an exclusion constraint on roster_shifts</text>
+  <rect class="step" x="46" y="264" width="520" height="110" rx="8"/><text class="s b" x="58" y="288">period tstzrange GENERATED ALWAYS AS (tstzrange(starts_at, ends_at, '[)'))</text><text class="xs" x="58" y="310">ex_roster_shifts_clash EXCLUDE USING gist (employee_id WITH =, period WITH &amp;&amp;)</text><text class="xs" x="58" y="330">WHERE (status = 'SCHEDULED' AND NOT overlap_allowed)</text><text class="xs" x="58" y="352">so even a bug or a hand-written INSERT can't double-book a person.</text>
+  <rect class="lose" x="606" y="264" width="550" height="110" rx="8"/><text class="s b" x="618" y="288">If it fires anyway (a path the app didn't check)</text><text class="xs" x="618" y="310">KnownConstraints maps ex_roster_shifts_clash to 409 SHIFT_CLASH</text><text class="xs" x="618" y="330">with a readable message, never a 500. A cancelled shift (status CANCELLED)</text><text class="xs" x="618" y="352">and an allowed overlap are left out of the constraint.</text>
+  <text class="xs" x="46" y="398">Tested: 10 rounds of two managers putting one person on overlapping shifts at the same moment; exactly one succeeds each time.</text>
+  <rect class="zone" x="30" y="440" width="1140" height="202" rx="8"/>
+  <text class="s" x="46" y="466"><tspan class="b">Shortages:</tspan> for every active shift template that needs people (min staff &gt; 0) and every day of the week: rostered &lt; needed → "Tue 3 Nov Front office · Morning: 0 of 1".</text>
+  <text class="s" x="46" y="490"><tspan class="b">Warnings</tspan> (allowed, but worth a look): on their weekly day off; over 48 hours in the week; two shifts at once allowed by a manager, with the reason.</text>
+  <text class="s" x="46" y="514"><tspan class="b">Copy last week:</tspan> day for day; skips shifts that would clash, fall before joining or after leaving, or use a switched-off template, and lists each one.</text>
+  <text class="s" x="46" y="538"><tspan class="b">A shift</tspan> is at most 16 hours (CHECK) and the break shorter than the shift; the roster goes back a month and 180 days ahead.</text>
+  <text class="s" x="46" y="562"><tspan class="b">Pay is separate:</tspan> employee_compensation, its own endpoint, employee_salary.read only (owner, HR); the audit trail shows amounts as ***.</text>
+  <text class="s" x="46" y="586"><tspan class="b">Documents</tspan> are encrypted (AES-GCM) and listed masked; opening one is a SENSITIVE_READ audit row; Aadhaar keeps only its last 4 digits.</text>
+  <text class="s" x="46" y="610"><tspan class="b">Someone leaving</tspan> must be off the roster after their last day first: the refusal lists the days.</text>
+</svg>
 </body>
 </html>
