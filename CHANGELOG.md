@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-15] — Unreleased — Inventory and recipe costing (in review)
+## [sprint-15] — 2026-10-27 — Inventory and recipe costing (accepted)
 
 ### Added
 - Migration V017: `inventory_units` (kg, g, l, ml, pcs, dozen with their kind and size; a fixed list),

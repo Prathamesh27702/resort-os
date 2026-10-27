@@ -42,3 +42,6 @@
 - version: "1.14"
   date: 2026-10-26
   change: "Sprint 14 (Menu, restaurant POS and KOT) accepted: a waiter takes orders on a phone with portions and choices, the kitchen sees each ticket on its display within 10 seconds and marks it ready, the bill is paid at the restaurant (cash into the drawer) or charged to an in-house guest's room bill with GST, two waiters can't overwrite each other's changes, discounts and voids need a manager and a reason, the menu editor marks dishes sold out. Restaurant flow diagram. Sprint 15 started."
+- version: "1.15"
+  date: 2026-10-27
+  change: "Sprint 15 (Inventory and recipe costing) accepted: stock is kept per store as a ledger where every change says who, when and why; a dish served by the kitchen takes its ingredients from the kitchen's stock by its recipe; recipes show each dish's cost, food cost % and margin; the food-cost report shows the highest and lowest margins, sales and what was written off; wastage, stock received, transfers and counts need a reason, and two changes at once both count. Stock ledger diagram. Sprint 16 started."
