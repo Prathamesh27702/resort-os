@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | M | [Sprint 15](sprint-15-inventory-and-recipe-costing.md) |
+| 🔵 In progress — **current sprint** | Phase 5 — Restaurant, KOT, menu, inventory, purchasing | M | [Sprint 15](sprint-15-inventory-and-recipe-costing.md) |
 
 **Goal:** Purchase request → PO → goods received → supplier invoice → payment (brief §38).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 15 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

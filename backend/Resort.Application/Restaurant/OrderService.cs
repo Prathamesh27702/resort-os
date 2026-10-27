@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
 using Resort.Application.Folios;
+using Resort.Application.Inventory;
 using Resort.Application.Payments;
 using Resort.Application.Reservations;
 using Resort.Application.Tax;
@@ -32,7 +33,7 @@ namespace Resort.Application.Restaurant;
 /// </summary>
 public sealed class OrderService(
     IAppDbContext db, ICurrentUser caller, CallerAccess access, AuditContext audit, TimeProvider clock, TaxCalculator tax,
-    FolioPosting posting, CashDrawerService drawers)
+    FolioPosting posting, CashDrawerService drawers, StockLedger stock)
 {
     /// <summary>Restaurant service is taxed as one supply under the FOOD category (food and soft drinks alike).</summary>
     public const string TaxCategory = ChargeCategories.Food;
@@ -243,7 +244,8 @@ public sealed class OrderService(
     }
 
     /// <summary>The waiter takes a ready ticket to the table. Doesn't change the order's version: serving one ticket never
-    /// gets in the way of a waiter adding to the order.</summary>
+    /// gets in the way of a waiter adding to the order. The dishes on it use their recipes' ingredients from the kitchen
+    /// store (Sprint 15), in the same transaction.</summary>
     public async Task<OrderDto> ServeAsync(Guid propertyId, Guid id, Guid kotId, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
@@ -256,6 +258,7 @@ public sealed class OrderService(
         kot.Status = KotStatuses.Served;
         kot.ServedAt = clock.GetUtcNow();
         kot.ServedBy = caller.UserId;
+        await stock.ConsumeAsync(propertyId, kot, order.Number, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await ToDtoAsync(order, ct);

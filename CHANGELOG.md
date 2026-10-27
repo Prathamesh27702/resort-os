@@ -2,6 +2,48 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-15] — 2026-10-27 — Inventory and recipe costing (accepted)
+
+### Added
+- Migration V017: `inventory_units` (kg, g, l, ml, pcs, dozen with their kind and size; a fixed list),
+  `inventory_categories`, `stock_locations` (one store per property is the kitchen), `inventory_items` (unit cost before
+  GST as a moving average, reorder level; switched off, never deleted), `stock_movements` (the append-only ledger: opening,
+  received, used by a served dish, written off, corrected, counted, moved between stores), `stock_levels` (on hand per item
+  and store, kept by a trigger from the ledger in the same statement), `stock_adjustments` (`SA00001` …) and `stock_counts`
+  (`SC00001` …), both never changed and each with its reason, `recipes` (per dish or per portion) and
+  `recipe_ingredients` (any unit of the item's kind).
+- Stock: record stock received (updates the item's average cost), wastage, expired, damaged, a correction, or a
+  transfer between stores, always with a reason (brief §58) and written to the audit log; count a store and post the
+  differences, each with its reason. Every change locks the items it touches first, so two changes at the same moment
+  both count; stock can't be taken out below zero, except by a served dish (the ledger then shows the shortfall).
+- Served dishes use their recipe: when the waiter marks a kitchen ticket served, each live line takes its recipe's
+  ingredients from the kitchen store, once (a portion's own recipe wins over the dish's).
+- Recipe costing: cost, food cost %, contribution and margin per dish and portion at today's costs; the food-cost
+  report for a period (this month by default, at most a year) with what was sold, sales and cost of sales before GST,
+  what was written off, and the highest and lowest margins.
+- API: `GET /inventory`, `GET /inventory/movements`, `POST|PUT /inventory/categories`, `/inventory/locations`,
+  `/inventory/items`, `POST /inventory/adjustments`, `POST /inventory/counts`, `GET|PUT /inventory/recipes`, `GET
+  /inventory/food-cost`.
+- Staff app: **Inventory** (`/inventory`) with Stock, Recipes, Food cost and Ledger, the dialogs to record, count,
+  edit items, recipes, groups and stores; laid out for a 360 px phone.
+- Dev seed S012: a main store and the kitchen, 21 items in 6 groups with opening stock (fresh cream at its reorder
+  level), recipes for 8 dishes (Paneer Tikka Full ₹105 of ₹280 = 37.5 %), one wastage SA00001.
+- Tests: backend `InventoryTests` (two write-offs of one item at the same moment both count and neither goes below
+  zero; serving 3 Paneer Tikka uses 0.6 kg paneer once; reasons, audit and an unchangeable ledger; counts; recipe units
+  and portions; one kitchen), `InventoryUnitTests` (37.5 % food cost, conversions, average cost); frontend
+  `inventory.spec.ts`; browser steps S15-01 … S15-07; `check-api.mjs` Sprint 15 block;
+  `database/queries/check-sprint-15.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-15.md, system design Sprint 15 and 4.25 with the stock ledger diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- Serving a kitchen ticket (Sprint 14) now also uses the dishes' recipes from the kitchen store.
+- The shell menu adds **Inventory**; the note about later modules now names purchasing, activities and staff.
+
+### Open points
+- Choices on a dish (Sprint 14 add-ons such as extra cheese) don't use stock yet; only the dish's or portion's recipe does.
+- Stock comes in by hand (*Stock received*) until purchasing and goods received notes arrive in Sprint 16.
+
 ## [sprint-14] — 2026-10-26 — Menu, restaurant POS and KOT (accepted)
 
 ### Added

@@ -10,6 +10,7 @@ using Resort.Application.FrontDesk;
 using Resort.Application.Guests;
 using Resort.Application.Housekeeping;
 using Resort.Application.Identity;
+using Resort.Application.Inventory;
 using Resort.Application.Invoicing;
 using Resort.Application.Properties;
 using Resort.Application.Rates;
@@ -63,6 +64,9 @@ public static class DependencyInjection
         services.AddScoped<MaintenanceService>();
         services.AddScoped<MenuService>();
         services.AddScoped<OrderService>();
+        services.AddScoped<StockLedger>();
+        services.AddScoped<InventoryService>();
+        services.AddScoped<RecipeService>();
         return services;
     }
 }

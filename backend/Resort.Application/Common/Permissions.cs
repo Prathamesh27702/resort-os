@@ -57,6 +57,12 @@ public static class Perm
     public const string KotRead = "kot.read";
     public const string KotUpdate = "kot.update";
 
+    public const string InventoryRead = "inventory.read";
+    public const string InventoryAdjust = "inventory.adjust";
+    public const string InventoryManage = "inventory.manage";
+    public const string RecipeRead = "recipe.read";
+    public const string RecipeManage = "recipe.manage";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
@@ -89,6 +95,7 @@ public static class Perm
         FrontDeskCheckIn, FrontDeskCheckOut, HousekeepingRead, HousekeepingUpdate, HousekeepingAssign, HousekeepingInspect,
         MaintenanceRead, MaintenanceCreate, MaintenanceUpdate, MaintenanceAssign,
         MenuRead, MenuCreate, MenuUpdate, PosOrderRead, PosOrderCreate, PosOrderUpdate, PosOrderVoid, PosDiscount, KotRead, KotUpdate,
+        InventoryRead, InventoryAdjust, InventoryManage, RecipeRead, RecipeManage,
         FolioRead, FolioPostCharge, FolioAdjust,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,

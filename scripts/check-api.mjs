@@ -27,6 +27,9 @@
 //   - Sprint 14 changes nothing: it reads the menu, tables, floor, orders and kitchen display, and checks refusals (a table
 //     that already has an order, a stale version, a bill with food still in the kitchen, a void without a reason, a card
 //     number as a reference); no order is opened, so no order number is used up
+//   - Sprint 15 changes nothing: it reads stock, the ledger, recipes and the food-cost report, and checks refusals (a stock
+//     change without a reason, more written off than the store has, a count that differs without a reason, a recipe
+//     quantity in a unit of another kind); no stock moves, so no SA or SC number is used up
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -722,6 +725,47 @@ if (starters)
   await expectCall('A new dish with a code already on the menu → 400 under Code', 'POST', `${P}/menu/items`, 400,
     { token: T, body: { categoryId: starters.id, code: 'PANEER-TIKKA', name: 'API check', foodType: 'VEG', price: 1, isActive: false, sortOrder: 0, variants: [], modifierGroups: [] } },
     b => /already has the code PANEER-TIKKA/.test(b.details?.Code?.[0] ?? '') || JSON.stringify(b.details));
+
+// ---------------------------------------------------------------- Sprint 15 — inventory and recipe costing
+title('Sprint 15 — stock, ledger, recipes, food cost');
+const IV = `${P}/inventory`;
+const inv = await expectCall('Stock by store (demo: Main store and Kitchen, 21 items, fresh cream to reorder)', 'GET', IV, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.locations.filter(l => l.isKitchen).length <= 1 && typeof b.value === 'number'
+        && b.items.every(i => i.onHand === i.levels.reduce((s, l) => s + l.onHand, 0) || Math.abs(i.onHand - i.levels.reduce((s, l) => s + l.onHand, 0)) < 0.0005))
+        || JSON.stringify(b).slice(0, 200));
+await expectCall('The ledger, newest first (demo: SA00001 wastage of onion and capsicum)', 'GET', `${IV}/movements?type=WASTAGE`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.items.every(m => m.type === 'WASTAGE' && m.quantity < 0)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Recipes with their cost (demo: Paneer Tikka (Full) ₹105 of ₹280 = 37.5 %)', 'GET', `${IV}/recipes`, 200, { token: T },
+  b => {
+    const full = b?.dishes?.find?.(d => d.name === 'Paneer Tikka (Full)');
+    return (Array.isArray(b?.dishes) && (!full || !full.recipe || Math.abs(full.foodCostPercent - full.cost / full.price * 100) < 0.01)) || JSON.stringify(b).slice(0, 200);
+  });
+await expectCall('Food-cost report: highest and lowest margins, dishes without a recipe', 'GET', `${IV}/food-cost`, 200, { token: T },
+  b => (Array.isArray(b?.highest) && Array.isArray(b.lowest) && Array.isArray(b.noRecipe) && b.highest.length <= 3
+        && b.highest.every((l, n, a) => n === 0 || a[n - 1].marginPercent >= l.marginPercent)) || JSON.stringify(b).slice(0, 200));
+await expectCall('A food-cost period that ends before it starts → 400 under from', 'GET', `${IV}/food-cost?from=2026-10-10&to=2026-10-01`, 400, { token: T },
+  b => !!b.details?.from?.[0] || JSON.stringify(b.details));
+await expectCall('Receptionist can’t see stock → 403', 'GET', IV, 403, { token: R });
+const paneerItem = inv?.json?.items?.find?.(i => i.code === 'PANEER');
+const kitchenLoc = inv?.json?.locations?.find?.(l => l.isKitchen);
+await expectCall('A stock change without a reason → 400 under Reason', 'POST', `${IV}/adjustments`, 400,
+  { token: T, body: { kind: 'WASTAGE', itemId: paneerItem?.id ?? NONE, locationId: kitchenLoc?.id ?? NONE, quantity: 1, reason: '' } },
+  b => /Every stock change needs a reason/.test(b.details?.Reason?.[0] ?? '') || JSON.stringify(b.details));
+if (paneerItem && kitchenLoc) {
+  await expectCall('Writing off more paneer than the kitchen has → 400 under Quantity, saying how much is there', 'POST', `${IV}/adjustments`, 400,
+    { token: T, body: { kind: 'WASTAGE', itemId: paneerItem.id, locationId: kitchenLoc.id, quantity: 999999, reason: 'API check' } },
+    b => /^Kitchen has (only|no) /.test(b.details?.Quantity?.[0] ?? '') || JSON.stringify(b.details));
+  const have = paneerItem.levels.find(l => l.locationId === kitchenLoc.id)?.onHand ?? 0;
+  await expectCall('A count that differs without a reason → 400 under Lines[0].Reason, naming the item', 'POST', `${IV}/counts`, 400,
+    { token: T, body: { locationId: kitchenLoc.id, lines: [{ itemId: paneerItem.id, countedQuantity: have + 1, reason: null }] } },
+    b => /^Paneer: the system has/.test(b.details?.['Lines[0].Reason']?.[0] ?? '') || JSON.stringify(b.details));
+  const units = inv.json.units;
+  const tikkaDish = menu?.json?.categories?.flatMap?.(c => c.items)?.find?.(i => i.code === 'PANEER-TIKKA');
+  if (tikkaDish)
+    await expectCall('A recipe quantity of paneer in ml → 400 under Ingredients[0].UnitId (kg or g only)', 'PUT', `${IV}/recipes`, 400,
+      { token: T, body: { menuItemId: tikkaDish.id, variantId: null, note: null, ingredients: [{ itemId: paneerItem.id, quantity: 200, unitId: units.find(u => u.code === 'ml').id }], version: null } },
+      b => b.details?.['Ingredients[0].UnitId']?.[0] === 'Paneer is kept in kg, so its quantity must be in kg or g.' || JSON.stringify(b.details));
+} else record('Stock refusals', false, 'no PANEER item or kitchen store (dev seed S012 adds them; reset the database)');
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

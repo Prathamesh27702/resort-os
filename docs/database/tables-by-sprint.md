@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-151 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+152 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -89,25 +89,26 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `order_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
 | `kots` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
 | `kot_items` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
-| `inventory_categories` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `inventory_units` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `stock_locations` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `stock_movements` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `stock_adjustments` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `recipe_ingredients` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🔵 In progress |
-| `suppliers` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `purchase_requests` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `purchase_request_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `purchase_orders` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `purchase_order_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `goods_received_notes` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `grn_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `supplier_invoices` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `supplier_invoice_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
-| `supplier_payments` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | ⚪ Planned |
+| `inventory_categories` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `inventory_units` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `inventory_items` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `stock_locations` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `stock_movements` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `stock_levels` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `stock_adjustments` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `stock_counts` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `recipes` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `recipe_ingredients` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
+| `suppliers` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `purchase_requests` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `purchase_request_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `purchase_orders` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `purchase_order_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `goods_received_notes` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `grn_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `supplier_invoices` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `supplier_invoice_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
+| `supplier_payments` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🔵 In progress |
 | `departments` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
 | `designations` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
 | `employees` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | ⚪ Planned |
