@@ -873,6 +873,57 @@ modifiers, note, foodType, voided, voidReason }], version }] }`.
 is paid at check-out and invoiced with the stay like any FOOD charge). The cash drawer's movements add `POS_SALE` (cash
 paid at the restaurant, with the order).
 
+## Built endpoints (Sprint 15 — inventory and recipe costing)
+
+All under `/api/v1/properties/{propertyId}/inventory`. Stock is counted per **item** (in one unit: g, kg, ml, l, pcs or
+dozen) and **store** (location); one store is the **kitchen**. Stock changes only by adding a row to the **ledger**
+(`stock_movements`, append-only): an opening quantity, stock **received** (at a cost, which moves the item's moving-average
+unit cost), **wastage** / expired / damaged, a **correction**, a **transfer** between stores, a physical **count**'s
+difference, or a **served dish** using its recipe (`CONSUMPTION`, automatic when the waiter serves a kitchen ticket —
+Sprint 14's `POST /orders/{id}/kots/{kotId}/serve`). On hand per item and store is kept by a database trigger as the sum of
+the ledger, so two changes at the same moment both count. Every change a person makes needs a **reason** and is audited
+(brief §58); stock out can't take a store below zero (a served dish can: the restaurant never stops serving because a count
+is behind, and the screen asks for a count). A **recipe** is what one portion of a dish uses, in any unit of each item's
+kind; a portion (Half / Full) can have its own, which wins over the dish's. **Food cost %** = recipe cost ÷ price × 100;
+**contribution** = price − cost; **margin %** = contribution ÷ price × 100 (menu prices before GST). How it works:
+[system-design.md → 4.25](architecture/system-design.md#425-the-stock-ledger-recipes-and-food-cost).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /inventory` | Units, groups, stores, and every item with its on hand per store, value, `low` (at or below the reorder level) and `negative` | `inventory.read` | — | `InventoryDto` | 403 | — |
+| `GET /inventory/movements?itemId&type&from&to&take` | The ledger, newest first (default 100, at most 500), with each row's source (`SA00004`, `SC00002`) and note ("O00012 · K00009 · 3× Paneer Tikka (Full)") | `inventory.read` | — | `StockMovementListDto` | 403 | — |
+| `POST /inventory/categories` · `PUT /inventory/categories/{id}` | A stock group | `inventory.manage` | `SaveInventoryCategoryRequest` | 201 / 200 `InventoryCategoryDto` | 400 `Name` ("There is already a stock group called Dairy."), `SortOrder`; 403, 404 | INSERT/UPDATE |
+| `POST /inventory/locations` · `PUT /inventory/locations/{id}` | A store. Marking one the kitchen takes the mark off the old one | `inventory.manage` | `SaveStockLocationRequest` | 201 / 200 `StockLocationDto` | 400 `Code` ("Another store already has the code KITCHEN."), `Name`, `IsActive` ("Kitchen still has stock. Move it to another store (a transfer) or count it to zero before switching the store off."; "The kitchen store can't be switched off …"); 403, 404 | INSERT/UPDATE |
+| `POST /inventory/items` · `PUT /inventory/items/{id}` | A stock item; a new one may come with its opening stock (into the kitchen unless another store is given; a property with no store gets a Kitchen). `version` optional on PUT | `inventory.manage` | `SaveInventoryItemRequest` | 201 / 200 `InventoryItemDto` | 400 `Code` ("Another stock item already has the code PANEER. …"), `Name`, `CategoryId`, `UnitId` ("Paneer already has stock movements in kg, so its unit can't change. Add a new item for the new unit."), `UnitCost`, `ReorderLevel`, `OpeningQuantity`, `IsActive` ("Paneer is used in a recipe. Take it out of the recipes first, then switch it off."); 403, 404; 409 ("Someone else changed Paneer a moment ago. …") | INSERT/UPDATE item (+ OPENING movement) |
+| `POST /inventory/adjustments` | Record a change of stock with its reason: `RECEIVED`, `WASTAGE`, `EXPIRED`, `DAMAGED`, `CORRECTION` (signed) or `TRANSFER` (to `toLocationId`). Numbered `SA00001` … | `inventory.adjust` | `CreateStockAdjustmentRequest` | 201 `StockAdjustmentDto` | 400 `Reason` ("Say why, in 3–300 characters (e.g. Spoilt in the fridge, Supplier delivery bill 4411). Every stock change needs a reason."), `Quantity` ("Kitchen has only 0.5 kg of Onion and capsicum, so 1.5 kg can't be taken out."), `Kind`, `ItemId`, `LocationId`, `ToLocationId` ("Choose the store the stock goes to."), `UnitCost`; 403 | INSERT adjustment, movement(s) ("SA00004 expired: 0.5 kg Paneer in Kitchen — Past its date"); UPDATE item cost when received |
+| `POST /inventory/counts` | A physical count of one store: each line's difference from the system is posted as a `COUNT` movement. Numbered `SC00001` … per line | `inventory.adjust` | `CreateStockCountRequest` | 201 `StockCountResultDto` | 400 `LocationId`, `Lines` ("An item is counted twice. …"), `Lines[i].CountedQuantity`, `Lines[i].Reason` ("Paneer: the system has 5 kg and you counted 4.8 kg. Say why they differ (e.g. spillage, not recorded)."); 403 | INSERT counts, movements ("Stock count of Kitchen: 2 items counted, 1 changed") |
+| `GET /inventory/recipes` | Every dish on the menu (each portion of a dish with portions) with the recipe it is made by, its cost, food cost %, contribution and margin %; and the units | `recipe.read` | — | `RecipeListDto` | 403 | — |
+| `PUT /inventory/recipes` | Save the recipe of a dish (`variantId` null) or of one portion; an empty list of ingredients takes it off. Returns the dish's costed rows | `recipe.manage` | `SaveRecipeRequest` | `CostedDishDto[]` | 400 `Ingredients` ("Add at least one ingredient to the recipe of Paneer Tikka."), `Ingredients[i].ItemId` ("Paneer is in the recipe twice. Put the whole quantity on one line."), `Ingredients[i].UnitId` ("Paneer is kept in kg, so its quantity must be in kg or g."), `Ingredients[i].Quantity`, `MenuItemId`, `VariantId`; 403; 409 ("Someone else changed the recipe of Paneer Tikka (Half) a moment ago. …") | INSERT/UPDATE recipe (+ ingredients) |
+| `GET /inventory/food-cost?from&to` | The food-cost report (property dates; default this month to today): every costed dish, what was served in the period (sold, sales before GST and discount, the value of the stock it used), the three highest and lowest margins, dishes without a recipe, and stock written off | `recipe.read` | — | `FoodCostReportDto` | 400 `from` ("The start date must be on or before the end date."), `to` (a period of at most a year); 403 | — |
+
+`InventoryDto = { units: [{ id, code, name, dimension: MASS | VOLUME | COUNT, factor }], categories: [{ id, name, sortOrder,
+isActive }], locations: [{ id, code, name, isKitchen, sortOrder, isActive }], items: InventoryItemDto[], value, lowCount }`.
+`InventoryItemDto = { id, categoryId, categoryName, code, name, unitId, unit, dimension, unitCost, reorderLevel, isActive,
+onHand, value, low, negative, levels: [{ locationId, locationCode, onHand }], version }`.
+`SaveInventoryItemRequest = { categoryId, code, name, unitId, unitCost, reorderLevel?, isActive, openingQuantity?,
+openingLocationId?, version? }`. `CreateStockAdjustmentRequest = { kind, itemId, locationId, toLocationId?, quantity (in the
+item's unit; positive, signed for a correction), unitCost? (received only; empty = the item's cost), reason }`.
+`StockAdjustmentDto = { id, number, kind, itemId, itemName, unit, locationId, locationName, toLocationId, toLocationName,
+quantity (as applied to locationId), unitCost, value, reason, onHandAfter, byName, createdAt }`.
+`CreateStockCountRequest = { locationId, lines: [{ itemId, countedQuantity, reason? }] }`.
+`StockMovementDto = { id, at, itemId, itemName, unit, locationCode, type: OPENING | RECEIVED | CONSUMPTION | WASTAGE |
+ADJUSTMENT | COUNT | TRANSFER_OUT | TRANSFER_IN, quantity, unitCost, value, onHandAfter, source, note, byName }`.
+`SaveRecipeRequest = { menuItemId, variantId?, note?, ingredients: [{ itemId, quantity, unitId }], version? }`.
+`CostedDishDto = { menuItemId, variantId, name, category, foodType, price, ownRecipe, recipe: { id, menuItemId, variantId, note,
+ingredients: [{ id, itemId, itemCode, itemName, quantity, unitId, unit, itemQuantity, itemUnit, cost }], cost, version } |
+null, cost, foodCostPercent, contribution, marginPercent }`. `FoodCostReportDto = { from, to, lines: [{ menuItemId,
+variantId, name, category, price, cost, foodCostPercent, contribution, marginPercent, sold, revenue, costOfSales,
+actualFoodCostPercent }], highest, lowest, noRecipe: string[], sold, revenue, costOfSales, foodCostPercent, wastage }`.
+
+**Changes to earlier endpoints.** `POST /orders/{id}/kots/{kotId}/serve` (Sprint 14) now also takes each served dish's
+recipe out of the kitchen store, in the same transaction (one `CONSUMPTION` movement per ingredient, valued at the item's
+cost then). A line voided after it was served keeps its stock used (it was cooked). Add-ons (modifiers) use no stock yet.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

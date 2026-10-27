@@ -10,27 +10,34 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built; pull request into develop waits for the owner's review.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V017: inventory_units (kg, g, l, ml, pcs, dozen with kind and size), inventory_categories, stock_locations (one kitchen per property), inventory_items (moving-average cost before GST, reorder level), stock_movements (append-only ledger), stock_levels (on hand per item and store, kept by a trigger in the same statement), stock_adjustments (SA00001…) and stock_counts (SC00001…), never changed, recipes (per dish or portion) and recipe_ingredients
+- Stock received, wastage, expired, damaged, corrections and transfers between stores, each with a reason and in the audit log; counts post their differences with a reason; items locked FOR UPDATE in id order so two changes at once both count and stock never goes below zero (except a served dish)
+- Serving a kitchen ticket uses each live line's recipe (the portion's, else the dish's) from the kitchen store, in the same transaction, once per line and item
+- Recipe cost, food cost %, contribution and margin per dish and portion; food-cost report for a period with sales, cost of sales, written off, and the highest and lowest margins
+- Inventory screen (Stock, Recipes, Food cost, Ledger) with record, count, item, recipe, group and store dialogs; 360 px phone layout; every refusal said under its field
+- Dev seed S012: main store and kitchen, 21 items in 6 groups, recipes for 8 dishes (Paneer Tikka Full ₹105 of ₹280 = 37.5 %), wastage SA00001
+- [done] Docs: API.md, DATABASE.md, schema-sprint-15.md, system design Sprint 15 and 4.25 with the stock ledger diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__inventory.sql — new tables (next free number)
-- backend/Resort.Domain/Inventory/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Inventory/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/InventoryEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/InventoryTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/inventory/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-15.md, this guide, CHANGELOG.md
+- database/migrations/V017__inventory.sql; database/seed/dev/S012__inventory.sql; database/queries/check-sprint-15.sql
+- backend/Resort.Domain/Inventory/Inventory.cs; backend/Resort.Contracts/InventoryContracts.cs
+- backend/Resort.Application/ — Inventory/ (StockLedger.cs, InventoryService.cs, RecipeService.cs), Validation/InventoryValidators.cs, Restaurant/OrderService.cs (serve uses recipes), Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/InventoryEndpoints.cs, Program.cs
+- backend/Resort.Tests/ — Integration/InventoryTests.cs, Unit/InventoryUnitTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/inventory/ (inventory.page.ts, inventory-dialogs.ts, inventory.api.ts, inventory.spec.ts), core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-15.spec.ts; scripts/check-api.mjs (Sprint 15 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-15.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-15-screens/; tools/handbooks/diagrams (stock-ledger)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 473 passed, 0 failed on real PostgreSQL 16 (27 new: InventoryTests with two write-offs of the same item at the same moment (both count, neither below zero), serving 3 Paneer Tikka uses 0.6 kg paneer once and the report shows 37.5 %, reasons, audit and an unchangeable ledger, counts, recipe units and portions, one kitchen; InventoryUnitTests incl. ₹280 / ₹105 → 37.5 %; dev seed check)
+- Frontend: 104 of 104 unit tests passed (4 new); ESLint clean; production build OK
+- Browser tests: Sprint 15's 7 steps pass (stock, recipe at 37.5 %, sell 3 → 0.6 kg less paneer with the ledger saying why, food-cost report with highest and lowest margins on desktop and a 360 px phone, wastage and count refusals under their fields, kitchen can't change stock); Sprint 14 run before it still passes; API checks 207 of 207 (10 new); database checks clean; screenshots in docs/sprints/sprint-15-screens
 
 **Outcome**
 
@@ -47,10 +54,15 @@ Expected when accepted:
 - `inventory_items`
 - `stock_locations`
 - `stock_movements`
+- `stock_levels`
 - `stock_adjustments`
 - `stock_counts`
 - `recipes`
 - `recipe_ingredients`
+
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/inventory/*`
 
 **Screens / routes**
 
@@ -62,11 +74,11 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] stock_movements is an append-only ledger; on-hand = sum of movements (materialised per item/location)
-- [ ] Served order lines consume recipe ingredients
-- [ ] Adjustments require reason; audited (brief §58)
-- [ ] Food cost %, contribution, margin per item
-- [ ] Seed: sample inventory
+- [x] stock_movements is an append-only ledger; on-hand = sum of movements (materialised per item/location)
+- [x] Served order lines consume recipe ingredients
+- [x] Adjustments require reason; audited (brief §58)
+- [x] Food cost %, contribution, margin per item
+- [x] Seed: sample inventory
 
 ## How to run this sprint
 
@@ -85,6 +97,12 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- Stock that doesn't add up: database/queries/check-sprint-15.sql block 4 compares each level with the sum of its movements and block 5 each on_hand_after with the row before (both should return nothing).
+- A dish served but no stock used: the dish (or its portion) has no active recipe, or the property has no kitchen store; block 7 lists consumption rows, and the Ledger view filtered to Used (served) shows the order and ticket.
+- Stock below zero: only a served dish can do that; the Stock view says Below zero: count it. Record stock received or count the store.
 
 ## How to test
 

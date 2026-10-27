@@ -649,6 +649,52 @@ window shows the ticket within 10 seconds → **Start** → **Ready** → back o
 By hand: [REVIEWING.md → Sprint 14](sprints/REVIEWING.md#sprint-14--menu-restaurant-pos-and-kot).
 Screenshots: [sprint-14-screens/](sprints/sprint-14-screens/).
 
+### Sprint 15: Inventory and recipe costing
+
+**New:** **Inventory** (`/inventory`, menu after Restaurant) has four views. **Stock**: every item by group with what each
+store holds, its value and a *Reorder* flag at or below its reorder level; **Record** takes stock received, wastage,
+expired, damaged, a correction or a transfer between stores, always with a reason; **Count** sets a store's stock to what
+is on the shelf (a difference needs a reason). **Recipes**: what one portion of each dish uses, in any unit of the item's
+kind (200 g of paneer kept in kg), with its cost, food cost % and margin. **Food cost**: for a date range, each dish
+sold with its food cost %, contribution and margin, and the highest and lowest margins on top. **Ledger**: every stock
+movement, newest first, with the store's stock after it and why it happened. When the kitchen serves a ticket, each dish
+on it uses its recipe from the kitchen store by itself. Changing stock needs `inventory.adjust` (inventory manager,
+restaurant manager, owner); recipes need `recipe.manage` (restaurant manager, owner); the kitchen can look but not change. Demo data (S012): a main store and
+the kitchen, 21 items with opening stock (fresh cream already at its reorder level), recipes for 8 dishes, one wastage
+SA00001. Restart the API and watch for `Applying migration V017__inventory`.
+
+```powershell
+# Backend (InventoryTests, InventoryUnitTests; includes two wastages of the same item at the same moment (both count, none
+# lost), Paneer Tikka ₹280 with a ₹105 recipe → 37.5 % food cost, serving 3 Paneer Tikka uses 0.6 kg of paneer once,
+# no reason → refused, can't take out more than the store has)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Inventory"
+
+# Frontend unit tests (line costs and unit conversion, margin bands, which units fit an item)
+cd frontend
+npm run test:ci
+
+# Browser, the manager on a desktop and the kitchen on a 360 px phone (7 steps, S15-01 … S15-07: stock with fresh cream to
+# reorder → the Paneer Tikka recipe at 37.5 % → sell 3 → 0.6 kg less paneer in the kitchen and the ledger says why →
+# food-cost report with highest and lowest margins → wastage needs a reason → a count → the kitchen can't change stock)
+npm run e2e -- e2e/sprint-15.spec.ts
+cd ..
+
+# API checks: the Sprint 15 block must be all PASS (reads and refusals only; no stock is changed)
+node scripts/check-api.mjs
+
+# Database checks (blocks 4, 5, 7 and 10 must return no rows; block 8 only SA00001)
+Get-Content database/queries/check-sprint-15.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: **Inventory** → *Paneer* shows *KITCHEN 5 kg* → **Restaurant** → **Takeaway** → **Paneer Tikka**
+→ **Full**, 3 → **Add** → **Send to kitchen** → **Kitchen** → **Start** → **Ready** → back on the order **Served** →
+**Inventory**: *Paneer* now *KITCHEN 4.4 kg*; its **Ledger** button shows *Used (served)* −0.6 kg with the order and
+ticket → **Food cost**: *Highest margin* and *Lowest margin* on top, *Paneer Tikka (Full)* at 37.5 %. How it works:
+[system-design.md → 4.25](architecture/system-design.md#425-the-stock-ledger-recipes-and-food-cost).
+
+By hand: [REVIEWING.md → Sprint 15](sprints/REVIEWING.md#sprint-15--inventory-and-recipe-costing).
+Screenshots: [sprint-15-screens/](sprints/sprint-15-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -661,7 +707,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 446 backend passed, 100 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 473 backend passed, 104 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -669,7 +715,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–14 (expected: 117 passed, about 19 minutes)
+# 3. Every browser test, Sprints 01–15 (expected: 124 passed, about 20 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..

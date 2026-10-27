@@ -443,6 +443,39 @@ S14-09). Database checks: `database/queries/check-sprint-14.sql`. How it works:
 | 19 | Owner: **Today's orders** | O00001 *Open*, O00002 *Charged to room*, O00003 *Voided*; *Settled ₹1,312.50* |
 | 20 | Owner: on a new **Takeaway** with one dish sent and served, **Paid** → **Card** with reference *4111 1111 1111 1111* | Under the reference: *Don't type the card number: card details are never stored. Enter the approval code from the terminal slip (up to 12 digits), or leave it empty.* **Cash** with no cash drawer open: *The Front desk cash drawer isn't open, so …* telling you to open it on the front desk first; with the drawer open, the cash shows in the drawer as a restaurant sale |
 
+### Sprint 15 — Inventory and recipe costing
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V017__inventory`).
+Demo data (S012): a **Main store** (STORE) and the **Kitchen** (KITCHEN, where served dishes take their ingredients
+from); 21 stock items in 6 groups with opening stock (**Paneer** 5 kg in the kitchen at ₹400/kg; **Fresh cream** 2 l, at
+its reorder level); recipes for 8 dishes, **Paneer Tikka** Half (₹63) and Full (₹105: 200 g paneer, 50 g curd, 20 g tikka
+masala, 100 g onion and capsicum, 10 g butter); one wastage, SA00001. Prices and costs are before GST. Use two browser
+windows: the **owner** on a desktop and the **kitchen** in a phone-sized window (360 × 780). Screenshots:
+[sprint-15-screens/](sprint-15-screens/). The browser tests do the same on their own: `cd frontend; npm run e2e:headed --
+e2e/sprint-15.spec.ts` (names S15-01 … S15-07). Database checks: `database/queries/check-sprint-15.sql`. How it works:
+[system-design.md → 4.25](../architecture/system-design.md#425-the-stock-ledger-recipes-and-food-cost).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Inventory** | *Stock worth ₹…* · *1 to reorder*; the items by group, each with its code, cost per unit and what each store holds (*Paneer … KITCHEN 5 kg*). **Fresh cream** says *Reorder (at 2 l)* |
+| 2 | **Recipes** | Every dish on the menu. **Paneer Tikka (Full)**: *200 g Paneer, …*, **₹105**, *food cost 37.5 %*, *margin 62.5 %*. Dishes without a recipe say *No recipe: uses nothing from stock* |
+| 3 | Open **Paneer Tikka (Full)**, open the unit of the first line | The total under the lines: *Cost ₹105 · food cost 37.5 % · margin ₹175*. The unit list offers only *kg* and *g* (paneer is weighed); **Cancel** |
+| 4 | **The demo.** **Restaurant** → **Takeaway** → **Paneer Tikka** → **Full**, a spice level, 3 → **Add** → **Send to kitchen** | *Sent to the kitchen.* **Inventory**: paneer still *KITCHEN 5 kg* (nothing is used until the dish is served) |
+| 5 | **Kitchen** → **Start** → **Ready**; back on the order **Served** → **Paid** → **Cash** or **UPI** | *K… served.* and the order is settled |
+| 6 | **Inventory** | **Paneer** now *KITCHEN 4.4 kg* (3 × 200 g); curd, tikka masala, onion and butter went down the same way |
+| 7 | Tap **Paneer** (its name) | The **Ledger** of paneer: on top *Used (served)* *−0.6 kg*, *₹240 · left 4.4 kg*, with *O… · K… · 3× Paneer Tikka (Full)*; below it the opening stock |
+| 8 | **Food cost** | This month so far: *Sold 3*, *Sales before GST ₹840*, *Cost of sales ₹315*, *Food cost 37.5 %*, *Written off ₹12* (SA00001). **Highest margin**: Butter Naan 85 %, Veg Biryani, Dal Makhani. **Lowest margin**: Goan Fish Curry 59.22 %, Paneer Tikka (Half), Paneer Tikka (Full). In the table, *Paneer Tikka (Full)* sold 3, ₹840, ₹315 (37.5 %) |
+| 9 | Change **From** to a date after **To** | Under *From*: *The start date must be on or before the end date.* (a period of more than a year is refused under *To*) |
+| 10 | **Stock** → the ✎ list button on **Fresh cream** (*Record for Fresh cream*), *Wastage*, quantity *50*, **Save** with no reason | Under the reason: *Say why, in 3–300 characters. Every stock change needs a reason.* |
+| 11 | Reason *Left out of the fridge*, **Save** | Under the quantity: *Kitchen has only 2 l of Fresh cream, so 50 l can't be taken out.* |
+| 12 | Quantity *0.25*, **Save** | *SA00002 saved: 0.25 l Fresh cream — Kitchen now has 1.75 l.* Fresh cream still says *Reorder (at 2 l)*; *Written off* on **Food cost** goes up by ₹62.50 |
+| 13 | **Record** → *Stock received*, **Paneer**, into **Main store**, 2 kg at ₹450, reason *Supplier bill 4411* | *SA00003 saved: 2 kg Paneer — Main store now has 2 kg.* Paneer's cost becomes the average of what was on hand and what came in: 4.4 kg at ₹400 and 2 kg at ₹450 → *₹415.63/kg*; the recipes' costs follow |
+| 14 | **Record** → *Transfer to another store*, **Paneer**, from **Main store** to **Kitchen**, 1 kg, reason *For tonight's service* | Main store 1 kg, Kitchen 5.4 kg; the ledger shows *Moved out* and *Moved in*, with the reason |
+| 15 | **Count** → store **Kitchen** → *Paneer counted* 5.3 → **Save count** | Under Paneer: *Paneer: the system has 5.4 kg and you counted 5.3 kg. Say why they differ …* |
+| 16 | Reason *Trimmings not recorded* → **Save count** | *Count of Kitchen saved: 1 counted, 1 changed (…).* Paneer *KITCHEN 5.3 kg*; the ledger has a *Count* row of −0.1 kg with the reason |
+| 17 | Owner: **Staff accounts** → **New** → *Kiran Kitchen*, role **Kitchen**. Sign in as Kiran in the phone window → **Inventory** | Stock, Recipes, Food cost and Ledger to look at, with no **Record**, **Count** or edit buttons; nothing scrolls sideways. The API refuses a change from Kiran (403) |
+| 18 | Owner: **Recipes** → **Masala Omelette** (*No recipe*) → **Ingredient** → *Butter* 10 *g*, **Ingredient** → *Onion and capsicum* 50 *g* → **Save** | *Recipe of Masala Omelette saved: ₹8, food cost 5 %.* (₹5 butter + ₹3 onion of ₹160). The API refuses a unit of another kind under that line's unit: *Butter is kept in kg, so its quantity must be in kg or g.* |
+
 ## Part C — Decide
 
 ### Accept

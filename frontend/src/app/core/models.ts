@@ -544,3 +544,50 @@ export interface Kot {
   startedAt: string | null; readyAt: string | null; note: string | null; items: KotItem[]; version: number;
 }
 export interface Kitchen { now: string; tickets: Kot[]; }
+
+// ---------------------------------------------------------------- inventory and recipe costing (Sprint 15)
+export type UnitDimension = 'MASS' | 'VOLUME' | 'COUNT';
+export type AdjustmentKind = 'RECEIVED' | 'WASTAGE' | 'EXPIRED' | 'DAMAGED' | 'CORRECTION' | 'TRANSFER';
+export type MovementType = 'OPENING' | 'RECEIVED' | 'CONSUMPTION' | 'WASTAGE' | 'ADJUSTMENT' | 'COUNT' | 'TRANSFER_OUT' | 'TRANSFER_IN';
+/** factor: base units (g, ml, pcs) in one; kg = 1000. */
+export interface StockUnit { id: string; code: string; name: string; dimension: UnitDimension; factor: number; }
+export interface InventoryCategory { id: string; name: string; sortOrder: number; isActive: boolean; }
+export interface StockLocation { id: string; code: string; name: string; isKitchen: boolean; sortOrder: number; isActive: boolean; }
+export interface StockAt { locationId: string; locationCode: string; onHand: number; }
+/** unitCost: one unit before GST (moving average). low: at or below the reorder level. negative: used more than recorded. */
+export interface InventoryItem {
+  id: string; categoryId: string; categoryName: string; code: string; name: string; unitId: string; unit: string; dimension: UnitDimension;
+  unitCost: number; reorderLevel: number | null; isActive: boolean; onHand: number; value: number; low: boolean; negative: boolean;
+  levels: StockAt[]; version: number;
+}
+export interface Inventory { units: StockUnit[]; categories: InventoryCategory[]; locations: StockLocation[]; items: InventoryItem[]; value: number; lowCount: number; }
+export interface StockAdjustment {
+  id: string; number: string; kind: AdjustmentKind; itemId: string; itemName: string; unit: string; locationId: string; locationName: string;
+  toLocationId: string | null; toLocationName: string | null; quantity: number; unitCost: number; value: number; reason: string; onHandAfter: number;
+  byName: string | null; createdAt: string;
+}
+export interface StockCountLine { id: string; number: string; itemId: string; itemName: string; unit: string; systemQuantity: number; countedQuantity: number; difference: number; value: number; reason: string | null; }
+export interface StockCountResult { locationName: string; lines: StockCountLine[]; value: number; }
+export interface StockMovement {
+  id: string; at: string; itemId: string; itemName: string; unit: string; locationCode: string; type: MovementType; quantity: number;
+  unitCost: number; value: number; onHandAfter: number; source: string | null; note: string | null; byName: string | null;
+}
+export interface StockMovementList { items: StockMovement[]; more: boolean; }
+export interface RecipeIngredient {
+  id: string; itemId: string; itemCode: string; itemName: string; quantity: number; unitId: string; unit: string; itemQuantity: number; itemUnit: string; cost: number;
+}
+export interface Recipe { id: string; menuItemId: string; variantId: string | null; note: string | null; ingredients: RecipeIngredient[]; cost: number; version: number; }
+/** A dish or portion as costed. recipe null: uses nothing from stock. ownRecipe false: a portion made by its dish's recipe. */
+export interface CostedDish {
+  menuItemId: string; variantId: string | null; name: string; category: string; foodType: FoodType; price: number; ownRecipe: boolean; recipe: Recipe | null;
+  cost: number | null; foodCostPercent: number | null; contribution: number | null; marginPercent: number | null;
+}
+export interface RecipeList { dishes: CostedDish[]; units: StockUnit[]; }
+export interface FoodCostLine {
+  menuItemId: string; variantId: string | null; name: string; category: string; price: number; cost: number | null; foodCostPercent: number | null;
+  contribution: number | null; marginPercent: number | null; sold: number; revenue: number; costOfSales: number; actualFoodCostPercent: number | null;
+}
+export interface FoodCostReport {
+  from: string; to: string; lines: FoodCostLine[]; highest: FoodCostLine[]; lowest: FoodCostLine[]; noRecipe: string[]; sold: number; revenue: number;
+  costOfSales: number; foodCostPercent: number | null; wastage: number;
+}

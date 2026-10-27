@@ -12,6 +12,7 @@ using Resort.Domain.Guests;
 using Resort.Domain.Housekeeping;
 using Resort.Domain.Restaurant;
 using Resort.Domain.Identity;
+using Resort.Domain.Inventory;
 using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
@@ -114,6 +115,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Kot> Kots => Set<Kot>();
     public DbSet<KotItem> KotItems => Set<KotItem>();
+    public DbSet<StockUnit> InventoryUnits => Set<StockUnit>();
+    public DbSet<InventoryCategory> InventoryCategories => Set<InventoryCategory>();
+    public DbSet<StockLocation> StockLocations => Set<StockLocation>();
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<StockLevel> StockLevels => Set<StockLevel>();
+    public DbSet<StockAdjustment> StockAdjustments => Set<StockAdjustment>();
+    public DbSet<StockCount> StockCounts => Set<StockCount>();
+    public DbSet<Recipe> Recipes => Set<Recipe>();
+    public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -539,6 +550,38 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.HasOne<Kot>().WithMany().HasForeignKey(x => x.KotId);
             e.HasOne<OrderItem>().WithMany().HasForeignKey(x => x.OrderItemId);
         });
+
+        // Inventory (Sprint 15). stock_levels is written only by the trigger on stock_movements, which also sets a
+        // movement's on_hand_after (read back on insert).
+        b.Entity<StockUnit>().ToTable("inventory_units");
+        b.Entity<InventoryCategory>().ToTable("inventory_categories");
+        b.Entity<StockLocation>().ToTable("stock_locations");
+        b.Entity<InventoryItem>(e =>
+        {
+            e.ToTable("inventory_items");
+            e.HasOne<InventoryCategory>().WithMany().HasForeignKey(x => x.CategoryId);
+        });
+        b.Entity<StockAdjustment>().ToTable("stock_adjustments");
+        b.Entity<StockCount>().ToTable("stock_counts");
+        b.Entity<StockMovement>(e =>
+        {
+            e.ToTable("stock_movements");
+            e.Property(x => x.OnHandAfter).ValueGeneratedOnAdd();
+            e.HasOne<InventoryItem>().WithMany().HasForeignKey(x => x.ItemId);
+            e.HasOne<StockAdjustment>().WithMany().HasForeignKey(x => x.AdjustmentId);
+            e.HasOne<StockCount>().WithMany().HasForeignKey(x => x.CountId);
+        });
+        b.Entity<StockLevel>(e =>
+        {
+            e.ToTable("stock_levels");
+            e.HasKey(x => new { x.ItemId, x.LocationId });
+        });
+        b.Entity<Recipe>(e =>
+        {
+            e.ToTable("recipes");
+            e.HasMany(x => x.Ingredients).WithOne().HasForeignKey(x => x.RecipeId);
+        });
+        b.Entity<RecipeIngredient>().ToTable("recipe_ingredients");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

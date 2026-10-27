@@ -114,7 +114,7 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 11 | Maintenance | maintenance_assets, maintenance_tickets, maintenance_comments, maintenance_attachments (out of order via unit_blocks) | 13 | built (tickets with photos, out-of-order rooms) |
 | 12 | Restaurant / POS | restaurant_tables, orders, order_items, kots, kot_items (room charges on folio_items, cash as cash_drawer_movements POS_SALE) | 14 | built (orders, kitchen tickets and display, discounts and voids, paid or charged to room) |
 | 13 | Menu | menu_categories, menu_items, menu_item_variants, modifier_groups, modifiers | 14 | built (portions, choices, sold out, menu editor) |
-| 14 | Inventory | inventory_items, stock_movements, recipes | 15 | planned |
+| 14 | Inventory | inventory_units, inventory_categories, stock_locations, inventory_items, stock_movements, stock_levels, stock_adjustments, stock_counts, recipes, recipe_ingredients | 15 | built (stock ledger by store, wastage, transfers and counts with a reason, recipes, served dishes use their recipe, food-cost report) |
 | 15 | Purchasing | purchase_orders, goods_received_notes, supplier_invoices | 16 | planned |
 | 16 | Suppliers | suppliers | 16 | planned |
 | 17 | Employees | employees, employee_compensation, departments | 17 | planned |

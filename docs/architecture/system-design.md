@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant orders |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory orders |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–13 built and accepted (October 2026); Sprint 14 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–14 built and accepted (October 2026); Sprint 15 in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -380,6 +380,26 @@ flowchart LR
   **Today's orders** (`/restaurant/orders`), **Kitchen** (`/restaurant/kitchen`: New / Preparing / Ready, polling every
   10 s) and **Menu** (`/restaurant/menu`: sections, dishes, sold out, tables).
   [4.24](#424-restaurant-orders-two-waiters-one-order-and-the-room-charge) explains the rules.
+
+### Sprint 15: Inventory and recipe costing
+
+![Stock ledger: every change is one movement; the level and the cost follow from it](../../tools/handbooks/assets/stock-ledger.png)
+
+- Migration V017: `inventory_units` (a fixed list with kind and size), `inventory_categories`, `stock_locations` (one is the
+  kitchen), `inventory_items`, `stock_movements` (the append-only ledger), `stock_levels` (on hand per item and store, kept
+  by the trigger `fn_stock_movements_level`), `stock_adjustments` (`SA00001` …) and `stock_counts` (`SC00001` …), both
+  never changed, `recipes` and `recipe_ingredients`. Details: [schema-sprint-15.md](../database/schema-sprint-15.md).
+- `Domain/Inventory/Inventory.cs` (movement types, adjustment kinds, `InventoryMath`: unit conversion, values to the paisa,
+  food cost %, contribution, margin, moving average cost). `Application/Inventory/StockLedger.cs`: the only writer of
+  movements (lock the items, check what a store has, add a movement, use a served ticket's recipes).
+  `InventoryService.cs`: stock, groups, stores, items, adjustments, counts, the ledger. `RecipeService.cs`: recipes with
+  their cost and the food-cost report. `Validation/InventoryValidators.cs`. `OrderService.ServeAsync` (Sprint 14) now calls
+  `StockLedger.ConsumeAsync` in the same transaction.
+- Endpoints: `InventoryEndpoints.cs` (`/inventory`, `/inventory/movements`, `/categories`, `/locations`, `/items`,
+  `/adjustments`, `/counts`, `/recipes`, `/food-cost`).
+- Screens: **Inventory** (`/inventory`: Stock by group and store with reorder flags, Recipes with cost and margin, Food
+  cost with the highest and lowest margins, Ledger), dialogs to record, count and edit in `inventory-dialogs.ts`.
+  [4.25](#425-the-stock-ledger-recipes-and-food-cost) explains the rules.
 
 ---
 
@@ -920,6 +940,46 @@ Code: `Application/Restaurant/` (`OrderService.cs`, `MenuService.cs`), `Domain/R
    `folio.post_charge`); discounts need `pos.discount` and voids `pos_order.void` (restaurant manager, owner); the kitchen
    has `kot.read/update`; the menu needs `menu.update`. The order's `nextActions` tells the phone which buttons to show.
 
+### 4.25 The stock ledger, recipes and food cost
+
+Code: `Application/Inventory/` (`StockLedger.cs`, `InventoryService.cs`, `RecipeService.cs`), `Domain/Inventory/Inventory.cs`,
+`database/migrations/V017__inventory.sql`, `features/inventory/`. Diagram: section 3 (Sprint 15). Tests: `InventoryTests`,
+`InventoryUnitTests`, `inventory.spec.ts`, `e2e/sprint-15.spec.ts`.
+
+1. **Stock is a ledger, never a number that is edited.** Every change is one `stock_movements` row with a signed
+   quantity in the item's unit and its value at the cost of the time; a trigger refuses UPDATE and DELETE. A mistake is
+   corrected by a new movement (a correction or a count), so the history always explains today's stock.
+2. **On hand is kept from the ledger in the same statement.** `stock_levels` is a materialised sum: the BEFORE INSERT
+   trigger `fn_stock_movements_level` runs one `INSERT … ON CONFLICT DO UPDATE SET on_hand = on_hand + quantity` and writes
+   the result into the movement's `on_hand_after`. The upsert is atomic, so two inserts at once both count; the app never
+   writes `stock_levels`. Check 4 of `check-sprint-15.sql` proves level = Σ movements.
+3. **Two changes at the same moment.** Checking "the store has enough" and taking it out must not interleave, or two
+   write-offs of the last 2 l could both pass. `StockLedger.LockItemsAsync` takes the items with `SELECT … FOR UPDATE`, in
+   id order (so two requests touching the same items can't deadlock), and only then reads the level. The second request
+   waits, sees the first one's movement and is refused if too little is left: *Kitchen has only 1.75 l of Fresh cream, so
+   2 l can't be taken out.* Item edits also carry `xmin` as their version (409 naming the item). Test:
+   `Two_people_writing_off_the_same_item_at_once_both_count_and_neither_takes_it_below_zero` (with a barrier).
+4. **A reason for every change** (brief §58). Adjustments and counts with a difference need 3–300 characters, checked
+   by the validator, the service and a CHECK; the audit interceptor writes each with its reason (`SA00002 WASTAGE: …`).
+5. **Served dishes use their recipe, once.** `OrderService.ServeAsync` calls `StockLedger.ConsumeAsync` before it saves:
+   for each live line on the ticket, the portion's recipe (else the dish's) is converted to the item's unit and taken from
+   the kitchen store as CONSUMPTION with the order, ticket and dish in its note. It is the same transaction as marking
+   the ticket served, so both happen or neither. `ux_stock_movements_consumption` (order line, item) makes a second
+   consumption impossible. Serving is never refused for lack of stock (the food is already on the table); the level may
+   go below zero and the Stock view says *Below zero: count it*. A dish with no recipe uses nothing.
+6. **Units.** Each unit has a kind (mass, volume, count) and a size in base units (kg = 1000 g, dozen = 12 pcs). A recipe
+   may use any unit of the item's kind; `InventoryMath.Convert` rounds to 3 decimals. The service refuses another kind
+   under that line's unit, naming the units that fit.
+7. **Cost.** An item's `unit_cost` (before GST) is a moving average updated only by stock received: (on hand × old cost +
+   received × its cost) ÷ (on hand + received); stock below zero counts as none. Movements keep the cost of their time,
+   so old values don't change. A recipe's cost = Σ quantity in the item's unit × unit cost, to the paisa; food cost % =
+   cost ÷ price × 100, contribution = price − cost, margin % = contribution ÷ price × 100 (Paneer Tikka Full: ₹105 of
+   ₹280 = 37.5 %, margin 62.5 %). The report adds what was served in the period (lines on served tickets of orders that
+   weren't voided) and what was written off, and lists the three highest and lowest margins.
+8. **Permissions.** `inventory.read` to look (kitchen, managers), `inventory.adjust` to record and count (inventory
+   manager, restaurant manager, owner), `inventory.manage` for items, groups and stores, `recipe.read` / `recipe.manage`
+   for recipes and the food-cost report.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -944,3 +1004,4 @@ request:
 | 12 | GST invoices, credit and debit notes, receipts (gap-free series, copied taxes, CANCEL / REDUCE, debit notes, PDFs), invoice flow diagram; system design 4.22 Gap-free numbers and corrections only by note (accepted 25 Oct 2026) |
 | 13 | Housekeeping and maintenance (tasks made by check-out, inspection, checklists, tickets, out of order, photos, phone screens), housekeeping flow diagram; system design 4.23 One task per check-out (accepted 26 Oct 2026) |
 | 14 | Menu, restaurant POS and KOT (orders with versions, kitchen tickets and display, discounts and voids, paid or charged to room), restaurant flow diagram; system design 4.24 Two waiters, one order, and the room charge (accepted 26 Oct 2026) |
+| 15 | Inventory and recipe costing (stock ledger and levels, adjustments and counts with reasons, recipes, served dishes use their recipe, food-cost report), stock ledger diagram; system design 4.25 The stock ledger, recipes and food cost (in review) |
