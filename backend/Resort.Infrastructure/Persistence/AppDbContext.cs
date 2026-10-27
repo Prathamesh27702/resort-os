@@ -16,6 +16,7 @@ using Resort.Domain.Inventory;
 using Resort.Domain.Invoicing;
 using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
+using Resort.Domain.Purchasing;
 using Resort.Domain.Rates;
 using Resort.Domain.Reservations;
 using Resort.Domain.Tax;
@@ -125,6 +126,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<StockCount> StockCounts => Set<StockCount>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<PurchaseRequest> PurchaseRequests => Set<PurchaseRequest>();
+    public DbSet<PurchaseRequestItem> PurchaseRequestItems => Set<PurchaseRequestItem>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
+    public DbSet<GoodsReceivedNote> GoodsReceivedNotes => Set<GoodsReceivedNote>();
+    public DbSet<GrnItem> GrnItems => Set<GrnItem>();
+    public DbSet<SupplierInvoice> SupplierInvoices => Set<SupplierInvoice>();
+    public DbSet<SupplierInvoiceItem> SupplierInvoiceItems => Set<SupplierInvoiceItem>();
+    public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -582,6 +593,34 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.HasMany(x => x.Ingredients).WithOne().HasForeignKey(x => x.RecipeId);
         });
         b.Entity<RecipeIngredient>().ToTable("recipe_ingredients");
+
+        // Purchasing (Sprint 16). Deliveries, their lines, invoice lines and payments are never changed (triggers).
+        b.Entity<Supplier>().ToTable("suppliers");
+        b.Entity<PurchaseRequest>(e =>
+        {
+            e.ToTable("purchase_requests");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.RequestId);
+        });
+        b.Entity<PurchaseRequestItem>().ToTable("purchase_request_items");
+        b.Entity<PurchaseOrder>(e =>
+        {
+            e.ToTable("purchase_orders");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.OrderId);
+        });
+        b.Entity<PurchaseOrderItem>().ToTable("purchase_order_items");
+        b.Entity<GoodsReceivedNote>(e =>
+        {
+            e.ToTable("goods_received_notes");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.GrnId);
+        });
+        b.Entity<GrnItem>().ToTable("grn_items");
+        b.Entity<SupplierInvoice>(e =>
+        {
+            e.ToTable("supplier_invoices");
+            e.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.InvoiceId);
+        });
+        b.Entity<SupplierInvoiceItem>().ToTable("supplier_invoice_items");
+        b.Entity<SupplierPayment>().ToTable("supplier_payments");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

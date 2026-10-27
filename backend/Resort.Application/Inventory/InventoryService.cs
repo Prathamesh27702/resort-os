@@ -410,10 +410,14 @@ public sealed class InventoryService(IAppDbContext db, ICurrentUser caller, Audi
         var adjustments = await db.StockAdjustments.AsNoTracking().Where(a => adjIds.Contains(a.Id)).ToDictionaryAsync(a => a.Id, a => a.Number, ct);
         var countIds = rows.Where(m => m.CountId != null).Select(m => m.CountId!.Value).Distinct().ToList();
         var counts = await db.StockCounts.AsNoTracking().Where(c => countIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Number, ct);
+        var grnItemIds = rows.Where(m => m.GrnItemId != null).Select(m => m.GrnItemId!.Value).Distinct().ToList();
+        var grns = await db.GrnItems.AsNoTracking().Where(g => grnItemIds.Contains(g.Id))
+            .Join(db.GoodsReceivedNotes.AsNoTracking(), g => g.GrnId, n => n.Id, (g, n) => new { g.Id, n.Number }).ToDictionaryAsync(x => x.Id, x => x.Number, ct);
         var names = await UserNamesAsync(rows.Select(m => m.CreatedBy), ct);
         return rows.Select(m => new StockMovementDto(m.Id, m.CreatedAt, m.ItemId, items[m.ItemId].Name, units[items[m.ItemId].UnitId].Code,
             locations[m.LocationId].Code, m.MovementType, m.Quantity, m.UnitCost, m.Value, m.OnHandAfter,
-            m.AdjustmentId is { } a ? adjustments.GetValueOrDefault(a) : m.CountId is { } c ? counts.GetValueOrDefault(c) : null,
+            m.AdjustmentId is { } a ? adjustments.GetValueOrDefault(a) : m.CountId is { } c ? counts.GetValueOrDefault(c)
+                : m.GrnItemId is { } g ? grns.GetValueOrDefault(g) : null,
             m.Note, m.CreatedBy is { } u ? names.GetValueOrDefault(u) : null)).ToList();
     }
 
