@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–12: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–16: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -30,6 +30,9 @@
 //   - Sprint 15 changes nothing: it reads stock, the ledger, recipes and the food-cost report, and checks refusals (a stock
 //     change without a reason, more written off than the store has, a count that differs without a reason, a recipe
 //     quantity in a unit of another kind); no stock moves, so no SA or SC number is used up
+//   - Sprint 16 changes nothing: it reads suppliers, purchase requests, orders and supplier bills, and checks refusals (a
+//     GSTIN with a wrong check digit, a request without items, a UPI payment without its UTR, a receptionist approving an
+//     order); no supplier, request or order is saved, so no PR, PO, GRN, SI or SP number is used up
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -766,6 +769,32 @@ if (paneerItem && kitchenLoc) {
       { token: T, body: { menuItemId: tikkaDish.id, variantId: null, note: null, ingredients: [{ itemId: paneerItem.id, quantity: 200, unitId: units.find(u => u.code === 'ml').id }], version: null } },
       b => b.details?.['Ingredients[0].UnitId']?.[0] === 'Paneer is kept in kg, so its quantity must be in kg or g.' || JSON.stringify(b.details));
 } else record('Stock refusals', false, 'no PANEER item or kitchen store (dev seed S012 adds them; reset the database)');
+
+// ---------------------------------------------------------------- Sprint 16 — suppliers and purchasing
+title('Sprint 16 — suppliers, purchase orders, goods received, supplier bills');
+const PU = `${P}/purchasing`;
+await expectCall('Suppliers with GSTIN, state and what is owed (demo: Mapusa Fresh Vegetables, Anjuna Fishermen unregistered)', 'GET', `${PU}/suppliers`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(s => typeof s.outstanding === 'number' && /^\d{2}$/.test(s.stateCode) && (s.gstin === null || s.gstin.slice(0, 2) === s.stateCode))
+        && (!b.some(s => s.code === 'FISH') || b.find(s => s.code === 'FISH').gstin === null)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Purchase requests (demo: PR00001 vegetables for the main store)', 'GET', `${PU}/requests`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(r => /^PR\d{5}$/.test(r.number) && r.items.length > 0)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Purchase orders with the approval limit', 'GET', `${PU}/orders`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.approvalLimit > 0 && b.waiting >= b.items.filter(o => o.status === 'PENDING_APPROVAL').length) || JSON.stringify(b).slice(0, 200));
+await expectCall('Supplier bills with what is still to pay and the input GST', 'GET', `${PU}/invoices`, 200, { token: T },
+  b => (Array.isArray(b?.items) && typeof b.outstanding === 'number' && b.overdue <= b.outstanding + 0.005) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t see purchasing → 403', 'GET', `${PU}/orders`, 403, { token: R });
+await expectCall('A supplier GSTIN with a wrong check digit → 400 under Gstin, saying the right one', 'POST', `${PU}/suppliers`, 400,
+  { token: T, body: { code: 'API-CHECK', name: 'API check supplier', gstin: '30AAACF1234A1ZT', stateCode: null, paymentTermsDays: 7 } },
+  b => /check digit\) should be S/.test(b.details?.Gstin?.[0] ?? '') || JSON.stringify(b.details));
+const storeLoc = inv?.json?.locations?.find?.(l => l.code === 'STORE') ?? inv?.json?.locations?.[0];
+await expectCall('A purchase request without items → 400 under Items', 'POST', `${PU}/requests`, 400,
+  { token: T, body: { locationId: storeLoc?.id ?? NONE, neededBy: null, note: null, items: [] } },
+  b => b.details?.Items?.[0] === 'Add at least one item.' || JSON.stringify(b.details));
+await expectCall('A UPI supplier payment without its UTR → 400 under Reference', 'POST', `${PU}/invoices/${NONE}/payments`, 400,
+  { token: T, body: { amount: 1, paidOn: null, method: 'UPI', reference: '', note: null, version: 0 }, headers: { 'Idempotency-Key': `api-check-${randomBytes(6).toString('hex')}` } },
+  b => /Enter the UTR/.test(b.details?.Reference?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('Receptionist can’t approve an order → 403', 'POST', `${PU}/orders/${NONE}/approve`, 403,
+  { token: R, body: { note: null, version: 0 } });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);
