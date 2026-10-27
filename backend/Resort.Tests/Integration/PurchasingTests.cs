@@ -69,7 +69,7 @@ public class PurchasingTests(ResortApiFactory app) : IClassFixture<ResortApiFact
         Assert.Equal((17m, 38.5294m), (onion.OnHand, onion.UnitCost));
         Assert.Equal((10m, 30m), (inv.Items.Single(i => i.Id == stock.Tomato.Id).OnHand, inv.Items.Single(i => i.Id == stock.Tomato.Id).UnitCost));
         var moved = (await owner.GetJsonAsync<StockMovementListDto>($"/api/v1/properties/{pid}/inventory/movements?itemId={stock.Onion.Id}")).Items[0];
-        Assert.Equal(("RECEIVED", 12m, 40m, 480m, 17m, "STORE", "GRN00001 · PO00001"), (moved.Type, moved.Quantity, moved.UnitCost, moved.Value, moved.OnHandAfter, moved.LocationCode, moved.Source + " · " + moved.Note.Split(" · ")[0]));
+        Assert.Equal(("RECEIVED", 12m, 40m, 480m, 17m, "STORE", "GRN00001 · PO00001"), (moved.Type, moved.Quantity, moved.UnitCost, moved.Value, moved.OnHandAfter, moved.LocationCode, moved.Source + " · " + moved.Note!.Split(" · ")[0]));
         Assert.Equal("PO00001 · Mapusa Fresh Vegetables", moved.Note);
 
         // Second delivery: the rest of the onion. Fully received; nothing more can come in.
