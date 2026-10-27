@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 16
+current: 17
 
 sprints:
 
@@ -1396,7 +1396,7 @@ sprints:
 - id: 16
   title: Suppliers and purchasing
   phase: 5
-  status: in-progress
+  status: done
   size: M
   module: Purchasing
   feature: inventory
@@ -1404,7 +1404,8 @@ sprints:
   goal: Purchase request → PO → goods received → supplier invoice → payment (brief §38).
   client: "Purchasing runs from request to purchase order, goods received, supplier invoice and payment."
   progress:
-    now: "Built; pull request into develop waits for the owner's review."
+    now: "Accepted by the owner on 27 Oct 2026 and released to main (tag sprint-16)."
+    outcome: "Accepted 27 Oct 2026. The vegetable cycle runs end to end: PR00001 becomes PO00001 for ₹11,000, approved by a second person, received in two deliveries with 60 kg tracked as still to come in between, stock up by the whole order, the bill recorded and paid by UPI (PurchasingTests, browser steps S16-02 … S16-07). On main as tag sprint-16. Sprint 17 (employees and roster) started."
     done:
       - "Migration V018: suppliers (GSTIN optional, state from it), purchase_requests and items (PR00001…), purchase_orders and items (PO00001…, received and billed per line with billed ≤ received ≤ ordered by CHECK), goods_received_notes and grn_items (GRN00001…, never changed), supplier_invoices (SI00001…, fixed once saved except what is paid) and items, supplier_payments (SP00001…, never changed); stock_movements.grn_item_id and cash_drawer_movements.supplier_payment_id"
       - "Purchase orders from a request or on their own; submit approves at once within the approval limit (purchasing.approval_limit, default ₹10,000 with GST), over it waits for purchase.approve from someone who did not raise or submit it; send back with a reason, cancel, close the rest"
@@ -1447,11 +1448,30 @@ sprints:
     - "A bill or payment that doesn't add up: block 9 checks paid = payments, total = lines and billed ≤ received; block 10 that each cash payment left the drawer as a PAY_OUT."
   demo:
     - Full purchase cycle for vegetables
+  handbook:
+    highlights:
+      - "Suppliers are kept with their GSTIN (checked down to its last character), the state they supply from and their payment terms"
+      - "A store asks for stock; the request becomes a purchase order to a supplier"
+      - "Orders over ₹10,000 need approval from a second person: nobody approves their own order"
+      - "Goods can arrive in several deliveries; each one adds the stock and the order shows what is still to come"
+      - "The supplier's bill is recorded with its GST (CGST + SGST, or IGST from another state) and the input tax, then paid by UPI, bank transfer, cheque or cash from the drawer"
+    design:
+      ui: "Suppliers (/inventory/suppliers) lists each supplier with GSTIN, state, terms and what is owed. Purchasing (/inventory/purchases) has Orders, Requests and Bills; an order's page shows its lines (ordered, received, to come, billed), deliveries and bills, with only the steps the person may take: Submit, Approve, Send back, Goods received, Record bill, Close, Cancel, Pay. Laid out for a 360 px phone."
+      api: "Under /purchasing: suppliers, requests (create, cancel), orders (create, edit, submit, approve, reject, cancel, close, receipts, invoices) and invoices with payments (Idempotency-Key). Approval refuses the person who raised the order; a delivery is refused under the line when it is more than is still to come."
+      database: "Migration V018 adds suppliers, purchase requests and orders with their lines, goods received notes (never changed) whose lines each add one RECEIVED stock movement, supplier invoices fixed once recorded except what is paid, and supplier payments (cash as a PAY_OUT in the cash drawer). A CHECK keeps billed ≤ received ≤ ordered on every order line; the order row is locked for each delivery."
+    diagrams:
+      - {file: tools/handbooks/assets/purchase-flow.png, caption: "Request, order, approval, goods received into stock, the supplier's bill and payment"}
+    screenshots:
+      - {file: docs/sprints/sprint-16-screens/01-suppliers.png, caption: "Suppliers with GSTIN, state and payment terms"}
+      - {file: docs/sprints/sprint-16-screens/04-order-waiting-phone.png, caption: "An ₹11,000 order waiting for a second person's approval"}
+      - {file: docs/sprints/sprint-16-screens/07-partly-received-phone.png, caption: "A part delivery: 60 kg of mixed vegetables still to come"}
+      - {file: docs/sprints/sprint-16-screens/08-bill.png, caption: "Recording the supplier's bill against what came in"}
+      - {file: docs/sprints/sprint-16-screens/10-bills-phone.png, caption: "The bill paid by UPI"}
 
 - id: 17
   title: Employees and roster
   phase: 6
-  status: planned
+  status: in-progress
   size: M
   module: Employees
   feature: employees
