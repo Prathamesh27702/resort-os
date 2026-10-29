@@ -14,6 +14,7 @@ using Resort.Application.Inventory;
 using Resort.Application.Invoicing;
 using Resort.Application.Properties;
 using Resort.Application.Purchasing;
+using Resort.Application.Attendance;
 using Resort.Application.Employees;
 using Resort.Application.Rates;
 using Resort.Application.Reservations;
@@ -76,6 +77,8 @@ public static class DependencyInjection
         services.AddScoped<CompensationService>();
         services.AddScoped<EmployeeDocumentService>();
         services.AddScoped<RosterService>();
+        services.AddScoped<TimesheetService>();
+        services.AddScoped<AttendanceService>();
         return services;
     }
 }

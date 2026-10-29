@@ -79,6 +79,11 @@ public static class Perm
     public const string RosterSelf = "roster.self";
     public const string RosterRead = "roster.read";
     public const string RosterManage = "roster.manage";
+    public const string AttendanceSelf = "attendance.self";
+    public const string AttendanceRead = "attendance.read";
+    public const string AttendanceUpdate = "attendance.update";
+    public const string TimesheetSelf = "timesheet.self";
+    public const string TimesheetApprove = "timesheet.approve";
 
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";

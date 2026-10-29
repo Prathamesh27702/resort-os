@@ -390,7 +390,7 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
         return ShiftDtos([s], [emp], depts, await TemplateDtosAsync(propertyId, ct), Tz(property))[0];
     }
 
-    private static List<RosterShiftDto> ShiftDtos(IEnumerable<RosterShift> shifts, IReadOnlyCollection<Employee> emps, IReadOnlyCollection<Department> depts,
+    internal static List<RosterShiftDto> ShiftDtos(IEnumerable<RosterShift> shifts, IReadOnlyCollection<Employee> emps, IReadOnlyCollection<Department> depts,
         IReadOnlyCollection<ShiftTemplateDto> templates, TimeZoneInfo tz) =>
         shifts.Select(s =>
         {
@@ -401,7 +401,7 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
                 s.EndsAt, s.BreakMinutes, paid, s.OverlapAllowed, s.OverlapReason, s.Note, s.Version);
         }).ToList();
 
-    private async Task<List<ShiftTemplateDto>> TemplateDtosAsync(Guid propertyId, CancellationToken ct)
+    internal async Task<List<ShiftTemplateDto>> TemplateDtosAsync(Guid propertyId, CancellationToken ct)
     {
         var depts = await db.Departments.AsNoTracking().Where(d => d.PropertyId == propertyId).ToListAsync(ct);
         var templates = await db.ShiftTemplates.AsNoTracking().Where(t => t.PropertyId == propertyId).ToListAsync(ct);

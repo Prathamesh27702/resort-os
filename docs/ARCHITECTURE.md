@@ -118,7 +118,7 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 15 | Purchasing | purchase_requests, purchase_request_items, purchase_orders, purchase_order_items, goods_received_notes, grn_items, supplier_invoices, supplier_invoice_items, supplier_payments (stock in as stock_movements RECEIVED, cash out as cash_drawer_movements PAY_OUT) | 16 | built (requests, orders with an approval limit, part deliveries, supplier bills with input GST, payments) |
 | 16 | Suppliers | suppliers | 16 | built (GSTIN checked with its check digit, state, payment terms, what is owed) |
 | 17 | Employees | departments, designations, employees, employee_documents, employee_compensation | 17 | built (profiles with an optional staff account, pay only with employee_salary.read, encrypted documents) |
-| 18 | Attendance | attendance_events, geofences, timesheets | 18 | planned |
+| 18 | Attendance | geofences, attendance_events, timesheets, timesheet_lines, timesheet_corrections | 18 | built (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets with approval, corrections and locking; installable app) |
 | 19 | Roster | shift_templates, roster_shifts | 17 | built (weekly roster, overlapping shifts refused by an EXCLUDE constraint unless allowed with a reason, shortages and warnings, copy a week) |
 | 20 | Leave | leave_types, leave_balances, leave_requests, holidays | 19 | planned |
 | 21 | Activities | activities, activity_schedules, activity_bookings | 20 | planned |

@@ -1172,5 +1172,42 @@
   <text class="s" x="46" y="586"><tspan class="b">Documents</tspan> are encrypted (AES-GCM) and listed masked; opening one is a SENSITIVE_READ audit row; Aadhaar keeps only its last 4 digits.</text>
   <text class="s" x="46" y="610"><tspan class="b">Someone leaving</tspan> must be off the roster after their last day first: the refusal lists the days.</text>
 </svg>
+<svg id="attendance-flow" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 18: attendance. Clocking in on a phone, the day's hours, and the timesheet's states</text>
+  <rect class="lane" x="30" y="56" width="1140" height="176" rx="10"/>
+  <text class="t b" x="46" y="82">Clocking in or out (one transaction, checked by the server)</text>
+  <rect class="step" x="46" y="98" width="200" height="88" rx="8"/><text class="s b" x="58" y="122">Phone sends its position</text><text class="xs" x="58" y="142">latitude, longitude, accuracy;</text><text class="xs" x="58" y="160">a fresh reading every time,</text><text class="xs" x="58" y="178">never one the browser kept</text>
+  <rect class="step" x="276" y="98" width="200" height="88" rx="8"/><text class="s b" x="288" y="122">Lock the person</text><text class="xs" x="288" y="142">SELECT employees … FOR UPDATE;</text><text class="xs" x="288" y="160">a step out of order (in twice)</text><text class="xs" x="288" y="178">→ 409 ATTENDANCE_STATE</text>
+  <rect class="ask" x="506" y="98" width="210" height="88" rx="8"/><text class="s b" x="518" y="122">Nearest active geofence</text><text class="xs" x="518" y="142">distance ≤ radius + accuracy</text><text class="xs" x="518" y="160">(accuracy counts up to 50 m;</text><text class="xs" x="518" y="178">worse than 500 m is refused)</text>
+  <rect class="lose" x="746" y="98" width="200" height="88" rx="8"/><text class="s b" x="758" y="122">No: 422 OUTSIDE_GEOFENCE</text><text class="xs" x="758" y="142">"You are 1.1 km from Main gate;</text><text class="xs" x="758" y="160">clocking in counts within 300 m</text><text class="xs" x="758" y="178">of it. …"  Nothing saved.</text>
+  <rect class="win" x="976" y="98" width="180" height="88" rx="8"/><text class="s b" x="988" y="122">Yes: event saved</text><text class="xs" x="988" y="142">INSIDE, Main gate, 22 m;</text><text class="xs" x="988" y="160">append-only; the week's</text><text class="xs" x="988" y="178">timesheet worked out again</text>
+  <path class="arrow" d="M246,142 L274,142"/><path class="arrow" d="M476,142 L504,142"/><path class="arrow" d="M716,142 L744,142"/><path class="arrow" d="M611,186 L611,196 L1066,196 L1066,188"/>
+  <text class="xs" x="46" y="216"><tspan class="b">No signal?</tspan> A manager records the entry with a reason (source MANAGER, OVERRIDE): never for themselves, up to 7 days back, shown as "manager entry". Breaks don't check location.</text>
+  <rect class="lane" x="30" y="248" width="1140" height="168" rx="10"/>
+  <text class="t b" x="46" y="274">One day, worked out in the property's time zone (TimesheetMath.Day)</text>
+  <rect class="step" x="46" y="290" width="120" height="56" rx="8"/><text class="s b" x="58" y="314">08:03 In</text><text class="xs" x="58" y="334">shift 08:00–16:00</text>
+  <rect class="step" x="186" y="290" width="120" height="56" rx="8"/><text class="s b" x="198" y="314">12:00 Break</text><text class="xs" x="198" y="334">break starts</text>
+  <rect class="step" x="326" y="290" width="120" height="56" rx="8"/><text class="s b" x="338" y="314">12:30 Back</text><text class="xs" x="338" y="334">30 min break</text>
+  <rect class="step" x="466" y="290" width="120" height="56" rx="8"/><text class="s b" x="478" y="314">16:10 Out</text><text class="xs" x="478" y="334">day closed</text>
+  <path class="arrow" d="M166,318 L184,318"/><path class="arrow" d="M306,318 L324,318"/><path class="arrow" d="M446,318 L464,318"/><path class="arrow" d="M586,318 L614,318"/>
+  <rect class="win" x="616" y="290" width="540" height="56" rx="8"/><text class="s b" x="628" y="314">Worked = out − in − breaks = 487 − 30 = 457 min = 7 h 37 min</text><text class="xs" x="628" y="334">late 3 min (after the shift's start) · overtime past the shift's paid minutes, or 8 h with no shift</text>
+  <text class="xs" x="46" y="372"><tspan class="b">Night shift</tspan> 22:55–07:10: counts on the day it started (the rostered shift's date), and a Sunday night belongs to the week it started in.</text>
+  <text class="xs" x="46" y="392"><tspan class="b">Still in</tspan> after 16 hours: MISSING_OUT, not someone still at work. It blocks approval until a manager corrects the day.</text>
+  <rect class="lane" x="30" y="432" width="1140" height="150" rx="10"/>
+  <text class="t b" x="46" y="458">The week's timesheet</text>
+  <rect class="step" x="46" y="476" width="150" height="56" rx="8"/><text class="s b" x="58" y="500">DRAFT</text><text class="xs" x="58" y="520">days worked out live</text>
+  <rect class="step" x="246" y="476" width="170" height="56" rx="8"/><text class="s b" x="258" y="500">SUBMITTED</text><text class="xs" x="258" y="520">by the person, with a note</text>
+  <rect class="win" x="466" y="476" width="190" height="56" rx="8"/><text class="s b" x="478" y="500">APPROVED</text><text class="xs" x="478" y="520">a manager; or approve all</text>
+  <rect class="step" x="706" y="476" width="200" height="56" rx="8"/><text class="s b" x="718" y="500">LOCKED for payroll</text><text class="xs" x="718" y="520">the database refuses changes</text>
+  <rect class="lose" x="466" y="546" width="190" height="30" rx="8"/><text class="xs b" x="478" y="566">REJECTED, with what to fix</text>
+  <path class="arrow" d="M196,504 L244,504"/><path class="arrow" d="M416,504 L464,504"/><path class="arrow" d="M656,504 L704,504"/><path class="arrow" d="M331,532 L331,561 L464,561"/><path class="arrow" d="M466,571 L150,571 L150,534"/>
+  <text class="xs" x="930" y="496">A clock event on a submitted</text><text class="xs" x="930" y="512">week puts it back to DRAFT;</text><text class="xs" x="930" y="528">on an approved or locked one</text><text class="xs" x="930" y="544">it is refused.</text>
+  <rect class="zone" x="30" y="598" width="1140" height="86" rx="8"/>
+  <text class="s" x="46" y="624"><tspan class="b">Corrections</tspan> set a day's in, out and break with a reason; the old times are kept (append-only) and the day is never worked out from events again.</text>
+  <text class="s" x="46" y="648"><tspan class="b">Approve all</tspan> approves the week's submitted timesheets and lists the ones it skipped and why, e.g. "Tue 20 Oct has a clock-in at 14:01 with no clock-out".</text>
+  <text class="s" x="46" y="672"><tspan class="b">Nobody</tspan> approves, sends back, locks or corrects their own timesheet. The app installs on a phone's home screen (PWA).</text>
+</svg>
 </body>
 </html>

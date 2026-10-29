@@ -36,6 +36,9 @@
 //   - Sprint 17 changes nothing: it reads employees, departments, the roster and one person's pay, and checks refusals (a
 //     shift overlapping one already on the roster, a PAN in the wrong format, a receptionist reading pay or the roster);
 //     no employee or shift is saved, so no E number is used up
+//   - Sprint 18 changes nothing: it reads the attendance board, geofences and a week's timesheets, and checks refusals (a
+//     geofence radius under 20 m, a manager entry without a reason, a receptionist reading the board or approving a week);
+//     no clock event, geofence or timesheet is saved
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -828,6 +831,26 @@ const panRes = await fetch(`${BASE}${P}/employees/${firstEmp?.id ?? NONE}/docume
 const panBody = await panRes.json().catch(() => ({}));
 record('A PAN in the wrong format → 400 under Number, saying the format', panRes.status === 400 && /A PAN is 10 characters/.test(panBody.details?.Number?.[0] ?? ''),
   `${panRes.status} ${JSON.stringify(panBody.details ?? panBody).slice(0, 200)}`);
+
+// ---------------------------------------------------------------- Sprint 18 — attendance and timesheets
+title('Sprint 18 — attendance with a geofence checked by the server, timesheets with approval');
+await expectCall('Geofences (demo: Main gate, 300 m)', 'GET', `${P}/attendance/geofences`, 200, { token: T },
+  b => (Array.isArray(b) && b.length > 0 && b.every(g => g.radiusM >= 20 && g.radiusM <= 2000)) || JSON.stringify(b).slice(0, 200));
+const board = await expectCall('Today’s attendance board with counts', 'GET', `${P}/attendance`, 200, { token: T },
+  b => (Array.isArray(b?.rows) && b.rows.every(r => /^E\d{5}$/.test(r.employeeCode) && r.state)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t see the attendance board → 403', 'GET', `${P}/attendance`, 403, { token: R });
+await expectCall('A geofence radius of 5 m → 400 under RadiusM (nothing saved)', 'POST', `${P}/attendance/geofences`, 400,
+  { token: T, body: { name: 'API check', latitude: 15.5, longitude: 73.7, radiusM: 5, isActive: false } },
+  b => /20–2000 metres/.test(b.details?.RadiusM?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('A manager entry without a reason → 400 under Reason (nothing saved)', 'POST', `${P}/attendance/events`, 400,
+  { token: T, body: { employeeId: board?.json?.rows?.[0]?.employeeId ?? NONE, action: 'CLOCK_IN', date: null, time: null, reason: '' } },
+  b => (b.details?.Reason?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+const mondayOf = d => { const x = new Date(d + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() - (x.getUTCDay() + 6) % 7); return x.toISOString().slice(0, 10); };
+const lastWeek = (() => { const x = new Date(mondayOf(today) + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() - 7); return x.toISOString().slice(0, 10); })();
+await expectCall(`Last week’s timesheets (${lastWeek}) with totals and what the owner may do`, 'GET', `${P}/timesheets?week=${lastWeek}`, 200, { token: T },
+  b => (b?.weekStart === lastWeek && Array.isArray(b.timesheets) && b.timesheets.every(t => Array.isArray(t.actions) && t.workedMinutes >= 0)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t approve a week → 403', 'POST', `${P}/timesheets/approve-week`, 403,
+  { token: R, body: { weekStart: lastWeek } });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);
