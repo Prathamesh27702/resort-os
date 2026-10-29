@@ -109,18 +109,18 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `supplier_invoices` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
 | `supplier_invoice_items` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
 | `supplier_payments` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
-| `departments` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `designations` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `employees` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `employee_documents` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `employee_compensation` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `shift_templates` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `roster_shifts` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
-| `attendance_events` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
-| `geofences` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
-| `timesheets` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
-| `timesheet_lines` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
-| `timesheet_corrections` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | ⚪ Planned |
+| `departments` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `designations` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `employees` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `employee_documents` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `employee_compensation` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `shift_templates` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `roster_shifts` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
+| `attendance_events` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
+| `geofences` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
+| `timesheets` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
+| `timesheet_lines` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
+| `timesheet_corrections` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
 | `leave_types` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
 | `leave_policies` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
 | `leave_balances` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |

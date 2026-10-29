@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 01](sprint-01-foundation.md) |
+| 🟢 Done | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 01](sprint-01-foundation.md) |
 
 **Goal:** Employee records (salary restricted) and shift rosters with clash detection (brief §42, §46).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built; pull request into develop waits for the owner's review.
+**Now:** Accepted by the owner on 29 Oct 2026 and released to main (tag sprint-17).
 
 **Done so far**
 
@@ -42,9 +42,7 @@
 
 **Outcome**
 
-Expected when accepted:
-
-- Manager builds next week's roster; shortages highlighted
+Accepted 29 Oct 2026 (the owner checked it on their PC: everything works and the screens are right). A manager copies last week into next week, sees the gaps listed, is refused a second overlapping shift for Asha with the other shift named, allows it as a handover with a reason, and fills a gap with a tap; a manager never sees pay (EmployeesTests, browser steps S17-01 … S17-07). Code #154; on main as tag sprint-17. Sprint 18 (attendance and timesheets) is next.
 
 ## Scope
 

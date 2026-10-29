@@ -48,3 +48,6 @@
 - version: "1.16"
   date: 2026-10-27
   change: "Sprint 16 (Suppliers and purchasing) accepted: suppliers with checked GSTINs; a store's request becomes a purchase order; orders over ₹10,000 need a second person's approval; goods arrive in one or more deliveries, each adding the stock while the order shows what is still to come; the supplier's bill is recorded with CGST + SGST or IGST and its input tax, and paid by UPI, bank transfer, cheque or cash from the drawer. Purchase flow diagram. Sprint 17 started."
+- version: "1.17"
+  date: 2026-10-29
+  change: "Sprint 17 (Employees and roster) accepted: every employee has a profile with department, job title and weekly day off, optionally linked to their staff account; salaries are kept apart and only the owner and HR can see them; ID documents are stored encrypted and shown masked, Aadhaar keeps only its last 4 digits; the manager builds the week's roster from shift templates or by copying last week, nobody can be on two shifts at once unless allowed with a reason, and shifts short of people are listed and filled with a tap. Roster flow diagram. Sprint 18 started."

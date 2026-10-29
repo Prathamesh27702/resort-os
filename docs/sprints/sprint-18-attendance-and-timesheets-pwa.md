@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 6 — Employees, attendance, timesheets, leave, roster | L | [Sprint 17](sprint-17-employees-and-roster.md) |
+| 🔵 In progress — **current sprint** | Phase 6 — Employees, attendance, timesheets, leave, roster | L | [Sprint 17](sprint-17-employees-and-roster.md) |
 
 **Goal:** Mobile clock-in/out with geofence, breaks, timesheets with approval and locked corrections (brief §43, §44, §74).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 17 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 
