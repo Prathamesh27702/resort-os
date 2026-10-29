@@ -510,6 +510,35 @@ S16-08). Database checks: `database/queries/check-sprint-16.sql`. How it works:
 | 17 | Owner: a new order to **Anjuna Fishermen** with a line at **5 %** GST → **Save draft** | Under that line: *Anjuna Fishermen has no GSTIN, so they can't charge GST. Set the GST to 0 %, or add their GSTIN in Suppliers.* |
 | 18 | Optional, cash: open the cash drawer (front desk), make a small order (under ₹10,000) to the fishermen, **Submit** (*approved (within the limit)*), receive it, record their bill, **Pay** → **Cash (from the drawer)** | *… is paid in full.* The cash drawer shows the payment going out (a pay-out of the same amount, linked to the payment). More than the drawer should hold is refused under the amount |
 
+### Sprint 17 — Employees and roster
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V019__employees`).
+Demo data (S014): five departments (Front office, Housekeeping, Kitchen, Restaurant, Maintenance), ten employees
+**E00001 Asha Naik** (Front office · Receptionist, off on Tuesday) … **E00010 Santosh Velip**, each with their pay; nine
+shift templates (Front office Morning 07:00–15:00 and Evening 15:00–23:00 need 1 person each, Housekeeping Day
+08:00–17:00 needs 2 …); this week's roster is filled with a few gaps and **next week is empty**. Use three browser windows:
+an **HR** person on a desktop, a **manager** on a desktop and the same manager in a phone-sized window (360 × 780).
+Screenshots: [sprint-17-screens/](sprint-17-screens/). The browser tests do the same on their own:
+`cd frontend; npm run e2e:headed -- e2e/sprint-17.spec.ts` (names S17-01 … S17-07). Database checks:
+`database/queries/check-sprint-17.sql`. How it works:
+[system-design.md → 4.27](../architecture/system-design.md#427-roster-clash-detection-and-shortages).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Hema HR*, role **HR**; and *Manoj Manager*, role **Manager**. Sign in as Hema → **Employees** | Ten people. *Asha Naik · E00001 · Front office · Receptionist · Full time · off on Tuesday*; *Pooja Shetye* is *Seasonal*. Type *kamat* in **Find someone**: only Ravi Kamat |
+| 2 | **Employee** → first name *Kavya*, last name *Naik*, **Department** *Front office*, **Job title** *Receptionist*, **Joined on** last Monday, **Weekly day off** *Thursday*, **Their phone** (emergency contact) *98-ab* → **Save** | Under that phone: *Enter the phone number with digits only (spaces and - allowed), e.g. +91 98220 12345, or leave it empty.* |
+| 3 | Fix the phone → **Save** | *Kavya Naik added as E00011.* and her profile opens |
+| 4 | **Pay** → **Record pay** → basic *17000*, allowances *2500* | *Gross ₹19,500 a month* → **Record pay** → *Pay recorded.*; the Pay section shows *₹19,500 a month* |
+| 5 | **Documents** → **Add a document** (PAN) → number *ABCPK1234* → **Save document** | Under the number: *A PAN is 10 characters: 5 letters, 4 digits, 1 letter, e.g. ABCPK1234F.* Then *ABCPK1234F* → *PAN saved.*, listed as *•••• 234F*. **Show number** shows it in full (and is recorded in the audit trail as a sensitive read) |
+| 6 | Manager, phone window: open Kavya's profile (**Employees** → Kavya) | Her department, job title and details, but **no Pay and no Documents section** and no ₹19,500 anywhere; nothing scrolls sideways. (The API refuses her pay with 403 too.) |
+| 7 | **The demo.** Manager, desktop: **Roster** → **Next week** (arrow) | The week's dates, no shifts, and **Short this week** listing every shift that needs people |
+| 8 | **Copy last week** → **Copy** | *56 shifts copied.* → **Done**. The grid fills; **Short this week** still lists e.g. *Tue … Front office · Morning 07:00–15:00: 0 of 1* (Asha's day off) |
+| 9 | In Asha's row, Monday cell **+** → **Shift** *Other times*, **Starts** 14:00, **Ends** 22:00 → **Add** | Refused in the dialog: *Asha Naik is already on Front office · Morning 07:00–15:00 on Mon …. One person can't work two shifts at once: choose another time or another person, or allow the overlap with a reason (e.g. a handover).* |
+| 10 | Tick **Allow the overlap**, **Why** *Handover to the evening desk* → **Add** | *Asha Naik on a shift 14:00–22:00 …*; the warnings list *Asha Naik works two shifts at once …: Handover to the evening desk* |
+| 11 | In **Short this week**, tap Tuesday's *Front office · Morning* → **Who** *Kavya Naik* → **Add** | *Kavya Naik on Morning 07:00–15:00 …*; that gap is gone from the list and Kavya's Tuesday cell shows *Morning 07:00–15:00* |
+| 12 | Manager, phone window: **Roster** → **Next week** → the Wednesday tab | One day at a time: Maria Fernandes *day off*, Sunil Gawas *Day 08:00–17:00*; the day's gaps are marked; nothing scrolls sideways |
+| 13 | Optional: Hema → a profile → **Leaves** with a last day before one of their shifts | Refused under the date, naming the days they are still on the roster: *… is on the roster after …. Remove those shifts from the roster first.* |
+
 ## Part C — Decide
 
 ### Accept

@@ -2,6 +2,46 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-17] — 2026-10-29 — Employees and roster (accepted)
+
+### Added
+- Migration V019: `departments` and `designations` (job titles), `employees` (`E00001` …; department, job title,
+  employment type, joining date, weekly day off, emergency contact, optionally one linked staff account; `ACTIVE` or
+  `LEFT` with the last day and the reason), `employee_documents` (numbers encrypted, Aadhaar last 4 digits only, scans
+  encrypted), `employee_compensation` (pay from a date; append-only), `shift_templates` (times, break, people needed every
+  day) and `roster_shifts` (an `EXCLUDE USING gist` constraint stops one person being on two overlapping shifts).
+- Pay kept apart: its own table and endpoint, readable only with `employee_salary.read` (owner and HR; never a manager or
+  general manager); the audit trail shows the amounts as `***`.
+- Employee documents behind `employee_document.read`: shown masked, opening one is recorded as a sensitive read.
+- The weekly roster: put people on shifts from a template or with their own times; an overlapping shift is refused naming
+  the other one unless the manager allows it with a reason (a handover); shortages (each shift × day with fewer people than
+  it needs) to tap and fill; warnings for a day off, over 48 hours, an allowed overlap; copy last week day for day.
+- Someone leaving must be taken off the roster after their last day first; the refusal lists the days.
+- API: `GET|POST /departments`, `PUT /departments/{id}`, `POST /designations`, `PUT /designations/{id}`, `GET|POST
+  /employees`, `GET /employees/accounts`, `GET|PUT /employees/{id}`, `POST /employees/{id}/leave`, `GET
+  /employees/{id}/shifts`, `GET|POST /employees/{id}/compensation`, `GET|POST /employees/{id}/documents`, `GET
+  /employees/{id}/documents/{docId}` and `/file`, `POST /employees/{id}/documents/{docId}/remove`, `GET /roster`, `GET
+  /roster/mine`, `GET|POST /roster/templates`, `PUT /roster/templates/{id}`, `POST /roster/shifts`, `PUT
+  /roster/shifts/{id}`, `POST /roster/shifts/{id}/cancel`, `POST /roster/copy-week`.
+- Staff app: **Employees** (`/employees`), the employee profile (`/employees/{id}`) and **Roster** (`/roster`: a week grid
+  on a desktop, one day at a time on a 360 px phone).
+- Dev seed S014: five departments, eight job titles, ten employees with their pay, nine shift templates and this week's
+  roster; next week is empty for the demo.
+- Tests: backend `EmployeesTests` (a manager refused the pay; an overlapping shift refused unless allowed; two managers at
+  the same moment, exactly one wins, 10 times; next week's roster with shortages and warnings; copying a week; account
+  links and leaving; encrypted documents) and a dev seed check; frontend `employees.spec.ts`; browser steps S17-01 …
+  S17-07; `check-api.mjs` Sprint 17 block; `database/queries/check-sprint-17.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-17.md, system design Sprint 17 and 4.27 with the roster flow diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The shell menu adds **Employees** and **Roster**.
+
+### Open points
+- Shortages count people per shift template; a shift with its own times counts towards no template.
+- Weekly day off is one fixed day; rotating days off and leave come with Sprint 19 (leave), clocking in with Sprint 18.
+- Pay is recorded only (no payslips or payroll run); the payroll export is Sprint 19.
+
 ## [sprint-16] — 2026-10-27 — Suppliers and purchasing (accepted)
 
 ### Added

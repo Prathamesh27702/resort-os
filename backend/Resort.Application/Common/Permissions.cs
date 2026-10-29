@@ -71,6 +71,15 @@ public static class Perm
     public const string GrnCreate = "grn.create";
     public const string SupplierInvoiceManage = "supplier_invoice.manage";
 
+    public const string EmployeeRead = "employee.read";
+    public const string EmployeeCreate = "employee.create";
+    public const string EmployeeUpdate = "employee.update";
+    public const string EmployeeSalaryRead = "employee_salary.read";
+    public const string EmployeeDocumentRead = "employee_document.read";
+    public const string RosterSelf = "roster.self";
+    public const string RosterRead = "roster.read";
+    public const string RosterManage = "roster.manage";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";

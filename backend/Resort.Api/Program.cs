@@ -171,6 +171,7 @@ app.MapHousekeepingEndpoints();
 app.MapRestaurantEndpoints();
 app.MapInventoryEndpoints();
 app.MapPurchasingEndpoints();
+app.MapEmployeesEndpoints();
 
 app.Run();
 

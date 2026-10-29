@@ -93,6 +93,10 @@ export const routes: Routes = [
       { path: 'inventory/suppliers', canActivate: [permissionGuard('supplier.read')], loadComponent: () => import('./features/purchasing/suppliers.page').then(m => m.SuppliersPage) },
       { path: 'inventory/purchases', canActivate: [permissionGuard('purchase.read')], loadComponent: () => import('./features/purchasing/purchases.page').then(m => m.PurchasesPage) },
       { path: 'inventory/purchases/:id', canActivate: [permissionGuard('purchase.read')], loadComponent: () => import('./features/purchasing/purchase-order.page').then(m => m.PurchaseOrderPage) },
+      // /employees and /roster (Sprint 17)
+      { path: 'employees', canActivate: [permissionGuard('employee.read')], loadComponent: () => import('./features/employees/employees.page').then(m => m.EmployeesPage) },
+      { path: 'employees/:id', canActivate: [permissionGuard('employee.read')], loadComponent: () => import('./features/employees/employee.page').then(m => m.EmployeePage) },
+      { path: 'roster', canActivate: [permissionGuard('roster.read')], loadComponent: () => import('./features/employees/roster.page').then(m => m.RosterPage) },
 
       { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
 

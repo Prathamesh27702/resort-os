@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–16: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–17: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -33,6 +33,9 @@
 //   - Sprint 16 changes nothing: it reads suppliers, purchase requests, orders and supplier bills, and checks refusals (a
 //     GSTIN with a wrong check digit, a request without items, a UPI payment without its UTR, a receptionist approving an
 //     order); no supplier, request or order is saved, so no PR, PO, GRN, SI or SP number is used up
+//   - Sprint 17 changes nothing: it reads employees, departments, the roster and one person's pay, and checks refusals (a
+//     shift overlapping one already on the roster, a PAN in the wrong format, a receptionist reading pay or the roster);
+//     no employee or shift is saved, so no E number is used up
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -795,6 +798,36 @@ await expectCall('A UPI supplier payment without its UTR → 400 under Reference
   b => /Enter the UTR/.test(b.details?.Reference?.[0] ?? '') || JSON.stringify(b.details));
 await expectCall('Receptionist can’t approve an order → 403', 'POST', `${PU}/orders/${NONE}/approve`, 403,
   { token: R, body: { note: null, version: 0 } });
+
+// ---------------------------------------------------------------- Sprint 17 — employees and roster
+title('Sprint 17 — employees, pay behind its own permission, the roster with clash detection');
+const emps = await expectCall('Employees by department, numbered E00001 … and without pay (demo: 10)', 'GET', `${P}/employees`, 200, { token: T },
+  b => (Array.isArray(b) && b.length > 0 && b.every(e => /^E\d{5}$/.test(e.code) && e.departmentName && !('basic' in e) && !('gross' in e))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Departments with their job titles', 'GET', `${P}/departments`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(d => Array.isArray(d.designations))) || JSON.stringify(b).slice(0, 200));
+const firstEmp = emps?.json?.[0];
+await expectCall('Pay is its own endpoint (the owner has employee_salary.read)', 'GET', `${P}/employees/${firstEmp?.id ?? NONE}/compensation`, 200, { token: T },
+  b => (Array.isArray(b?.history) && b.history.every(c => Math.abs(c.gross - c.basic - c.allowances) < 0.005)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t read anyone’s pay → 403', 'GET', `${P}/employees/${firstEmp?.id ?? NONE}/compensation`, 403, { token: R });
+await expectCall('Receptionist can’t see the whole roster → 403', 'GET', `${P}/roster`, 403, { token: R });
+const week = await expectCall('This week’s roster with shortages and warnings', 'GET', `${P}/roster`, 200, { token: T },
+  b => (Array.isArray(b?.shifts) && Array.isArray(b.shortages) && b.shortages.every(x => x.rostered < x.needed && x.missing === x.needed - x.rostered)) || JSON.stringify(b).slice(0, 200));
+const onShift = week?.json?.shifts?.find?.(s => !s.overlapAllowed && s.workDate >= week.json.today);
+if (onShift) {
+  await expectCall('A shift overlapping one already on the roster → 409 SHIFT_CLASH naming it (nothing saved)', 'POST', `${P}/roster/shifts`, 409,
+    { token: T, body: { employeeId: onShift.employeeId, workDate: onShift.workDate, templateId: null, departmentId: null,
+      startTime: onShift.startTime, endTime: onShift.endTime, breakMinutes: 0, allowOverlap: false } },
+    b => (b.code === 'SHIFT_CLASH' && b.message.includes(onShift.employeeName) && b.message.includes('One person can')) || JSON.stringify(b));
+} else {
+  console.log('  (skipped the clash check: nobody is on the roster from today to Sunday)');
+}
+const pan = new FormData();
+pan.append('documentType', 'PAN');
+pan.append('number', 'ABCPK1234');
+const panRes = await fetch(`${BASE}${P}/employees/${firstEmp?.id ?? NONE}/documents`, { method: 'POST', headers: { Authorization: `Bearer ${T}` }, body: pan });
+const panBody = await panRes.json().catch(() => ({}));
+record('A PAN in the wrong format → 400 under Number, saying the format', panRes.status === 400 && /A PAN is 10 characters/.test(panBody.details?.Number?.[0] ?? ''),
+  `${panRes.status} ${JSON.stringify(panBody.details ?? panBody).slice(0, 200)}`);
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

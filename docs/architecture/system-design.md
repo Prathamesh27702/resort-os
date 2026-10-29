@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–16 built and accepted (October 2026); Sprint 17 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–17 built and accepted (October 2026); Sprint 18 in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -422,6 +422,28 @@ flowchart LR
 - Screens: **Suppliers** (`/inventory/suppliers`), **Purchasing** (`/inventory/purchases`: Orders, Requests, Bills) and
   the order page (`/inventory/purchases/{id}`) with the steps a person may take; dialogs in `purchasing-dialogs.ts`.
   [4.26](#426-purchasing-approval-goods-received-and-supplier-bills) explains the rules.
+
+### Sprint 17: Employees and roster
+
+![The roster: saving a shift, the clash check backed by an exclusion constraint, and the shortage view](../../tools/handbooks/assets/roster-flow.png)
+
+- Migration V019: `departments` + `designations` (job titles), `employees` (`E00001` …, optional `user_id` linking one
+  staff account, weekly day off, `ACTIVE` / `LEFT`), `employee_documents` (numbers encrypted, Aadhaar last 4 only, scans
+  encrypted in the file store), `employee_compensation` (pay from a date, append-only by trigger), `shift_templates`
+  (times, break, people needed every day) and `roster_shifts` (a generated `period tstzrange` and the exclusion
+  constraint `ex_roster_shifts_clash`). Details: [schema-sprint-17.md](../database/schema-sprint-17.md).
+- `Domain/Employees/Employees.cs` (entities, statuses, `RosterMath`: local times to instants in the property's time
+  zone, a night shift ending the next day, the week's Monday, "7 h 30 min"). `Application/Employees/EmployeeService.cs`
+  (departments, job titles, profiles, account link, leaving), `CompensationService.cs` (pay, behind
+  `employee_salary.read`), `EmployeeDocumentService.cs` (documents through `IFieldEncryptor` and `IFileStore`),
+  `RosterService.cs` (templates, the week with shortages and warnings, saving a shift with the clash check, copy a week,
+  my shifts). `Validation/EmployeeValidators.cs`. `[SalaryData]` makes the audit trail show pay amounts as `***`.
+- Endpoints: `EmployeesEndpoints.cs` (`/departments`, `/designations`, `/employees` with `/compensation` and
+  `/documents`, `/roster` with `/templates`, `/shifts`, `/copy-week`, `/mine`).
+- Screens: **Employees** (`/employees`, by department, search, add), the profile (`/employees/{id}`: pay and documents
+  sections only for those allowed, next shifts, leaving) and **Roster** (`/roster`: a week grid by department on a
+  desktop, one day at a time on a phone; shortages to tap and fill; warnings; copy last week; shift templates), dialogs in
+  `employee-dialogs.ts` and `roster-dialogs.ts`. [4.27](#427-roster-clash-detection-and-shortages) explains the rules.
 
 ---
 
@@ -1039,6 +1061,40 @@ Code: `Application/Purchasing/` (`PurchasingService.cs`, `SupplierInvoiceService
 7. **Permissions.** `supplier.read` / `supplier.manage`, `purchase.read`, `purchase.create` (requests, orders, submit,
    cancel, close), `purchase.approve`, `grn.create` (inventory manager, purchasing), `supplier_invoice.manage` (accountant, purchasing).
 
+### 4.27 Roster: clash detection and shortages
+
+Code: `Application/Employees/` (`RosterService.cs`, `CompensationService.cs`, `EmployeeDocumentService.cs`,
+`EmployeeService.cs`), `Domain/Employees/Employees.cs`, `database/migrations/V019__employees.sql`, `features/employees/`.
+Diagram: section 3 (Sprint 17). Tests: `EmployeesTests`, `employees.spec.ts`, `e2e/sprint-17.spec.ts`.
+
+1. **A shift is two instants.** The manager picks a day and local times (from a template or typed). `RosterMath.Instants`
+   turns them into `starts_at` / `ends_at` in the property's time zone; an end at or before the start is the next day (a
+   night shift). The database keeps a generated `period = tstzrange(starts_at, ends_at, '[)')`, so a shift ending at 15:00
+   and one starting at 15:00 don't overlap. A shift is at most 16 hours (CHECK).
+2. **One person, one shift at a time.** `SaveShiftAsync` runs in a transaction and first locks the employee row(s)
+   (`SELECT … FOR UPDATE ORDER BY id`), so two managers saving shifts for the same person run one after the other. It then
+   looks for another scheduled shift of theirs that overlaps and refuses with `409 SHIFT_CLASH` naming it (*Asha Naik is
+   already on Front office · Morning 07:00–15:00 on Tue 3 Nov. One person can't work two shifts at once …*). The
+   exclusion constraint `ex_roster_shifts_clash EXCLUDE USING gist (employee_id WITH =, period WITH &&) WHERE (status =
+   'SCHEDULED' AND NOT overlap_allowed)` backs this in the database; `KnownConstraints` turns it into the same 409 if it
+   ever fires. Test: `Two_managers_putting_one_person_on_overlapping_shifts_at_the_same_moment_exactly_one_succeeds_10_times`.
+3. **Unless explicitly allowed.** With "Allow the overlap" and a reason (a handover), the shift is saved with
+   `overlap_allowed` and left out of the constraint; the week lists it as an `OVERLAP_ALLOWED` warning with the reason.
+   A cancelled shift (kept with its reason, never deleted) is left out too.
+4. **Shortages are computed, not stored.** For the week, every active template with `min_staff > 0` × every day: the
+   scheduled shifts on that template that day are counted; fewer than needed is a shortage ("0 of 1"). Warnings: a shift
+   on the person's weekly day off, more than 48 paid hours in the week, an allowed overlap. Copying a week goes day for
+   day and skips (and lists) shifts that would clash, fall outside the person's employment or use a switched-off template.
+5. **Pay is apart from the profile.** `EmployeeDto` never has pay. Pay is in `employee_compensation` (append-only: a
+   correction is a new row for the same date; the newest wins) behind `/employees/{id}/compensation`, which needs
+   `employee_salary.read` (owner, HR; not the general manager or a manager). Its properties carry `[SalaryData]`, so the
+   audit trail shows `***` instead of amounts. Test: `A_manager_sees_the_profile_and_the_roster_but_never_the_pay_and_the_audit_trail_hides_the_amounts`.
+6. **Documents** (`employee_document.read`): numbers are encrypted with `IFieldEncryptor` and listed masked; opening one or
+   its scan writes a `SENSITIVE_READ` audit row; for Aadhaar only the last 4 digits are stored. Removing a document wipes
+   the number and the scan and keeps the entry with the reason.
+7. **Permissions.** `employee.read` / `create` / `update`, `employee_salary.read`, `employee_document.read`, `roster.read`,
+   `roster.manage` (manager, HR), `roster.self` (everyone, through the employee linked to their account).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1065,3 +1121,4 @@ request:
 | 14 | Menu, restaurant POS and KOT (orders with versions, kitchen tickets and display, discounts and voids, paid or charged to room), restaurant flow diagram; system design 4.24 Two waiters, one order, and the room charge (accepted 26 Oct 2026) |
 | 15 | Inventory and recipe costing (stock ledger and levels, adjustments and counts with reasons, recipes, served dishes use their recipe, food-cost report), stock ledger diagram; system design 4.25 The stock ledger, recipes and food cost (accepted 27 Oct 2026) |
 | 16 | Suppliers and purchasing (requests, orders with an approval limit, part deliveries into the stock ledger, supplier bills with input GST, payments), purchase flow diagram; system design 4.26 Purchasing: approval, goods received and supplier bills (accepted 27 Oct 2026) |
+| 17 | Employees and roster (departments, profiles with an optional account link, pay behind its own permission, encrypted documents, shift templates, the week's roster with clash detection, shortages and warnings), roster flow diagram; system design 4.27 Roster: clash detection and shortages (accepted 29 Oct 2026) |

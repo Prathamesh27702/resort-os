@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 01](sprint-01-foundation.md) |
+| 🟢 Done | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 01](sprint-01-foundation.md) |
 
 **Goal:** Employee records (salary restricted) and shift rosters with clash detection (brief §42, §46).
 
@@ -10,33 +10,39 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Accepted by the owner on 29 Oct 2026 and released to main (tag sprint-17).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V019: departments and designations, employees (E00001…, optional staff account, one employee per account, ACTIVE / LEFT), employee_documents (numbers encrypted, Aadhaar last 4 only, scans encrypted), employee_compensation (append-only), shift_templates (people needed every day) and roster_shifts with the EXCLUDE USING gist constraint ex_roster_shifts_clash on a generated tstzrange
+- Pay behind its own endpoint and employee_salary.read (owner, HR; never a manager or general manager); the audit trail shows amounts as ***
+- Documents behind employee_document.read: masked, opening one is a SENSITIVE_READ audit row; PAN and Aadhaar format checks under the field
+- Roster: shifts from a template or own times in the property's time zone (night shifts end the next day); an overlap is refused naming the other shift (409 SHIFT_CLASH) unless allowed with a reason; the person is locked FOR UPDATE so two managers at once can't both win; shortages per template × day; warnings for a day off, over 48 hours and allowed overlaps; copy a week day for day with what was skipped listed
+- Leaving refused while still on the roster after the last day (the days are listed); my shifts through the linked account (roster.self)
+- Screens Employees, the employee profile and Roster (week grid on a desktop, one day at a time on a 360 px phone, tap a gap to fill it); every refusal said under its field
+- Dev seed S014: five departments, ten employees with their pay, nine shift templates, this week's roster; next week empty
+- [done] Docs: API.md, DATABASE.md, schema-sprint-17.md, system design Sprint 17 and 4.27 with the roster flow diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__employees.sql — new tables (next free number)
-- backend/Resort.Domain/Employees/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Employees/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/EmployeesEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/EmployeesTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/employees/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-17.md, this guide, CHANGELOG.md
+- database/migrations/V019__employees.sql; database/seed/dev/S014__employees.sql; database/queries/check-sprint-17.sql
+- backend/Resort.Domain/Employees/Employees.cs; backend/Resort.Contracts/EmployeeContracts.cs
+- backend/Resort.Application/ — Employees/ (EmployeeService.cs, CompensationService.cs, EmployeeDocumentService.cs, RosterService.cs), Validation/EmployeeValidators.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/ — AppDbContext.cs, AuditInterceptor.cs ([SalaryData]); backend/Resort.Api/ — Endpoints/EmployeesEndpoints.cs, Infrastructure/Problems.cs, Program.cs
+- backend/Resort.Tests/ — Integration/EmployeesTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/employees/ (employees.page.ts, employee.page.ts, employee-dialogs.ts, roster.page.ts, roster-dialogs.ts, employees.api.ts, employees.spec.ts), core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-17.spec.ts; scripts/check-api.mjs (Sprint 17 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-17.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-17-screens/; tools/handbooks/diagrams (roster-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 497 passed, 0 failed on real PostgreSQL 16 (8 new: EmployeesTests with a manager refused the pay and the audit trail showing ***, an overlapping shift refused naming the other one unless allowed with a reason, two managers at the same moment with exactly one winning 10 times, next week's roster with its shortages and warnings, copying a week, account links and leaving, encrypted documents; dev seed check)
+- Frontend: 111 of 111 unit tests passed (3 new); ESLint clean; production build OK
+- Browser tests: all 139 steps of Sprints 01–17 pass (19 min); Sprint 17's 7 steps cover ten employees, HR adding Kavya with her pay and PAN (a mistyped phone and PAN refused under the field), a manager on a phone seeing her profile without pay, next week copied with its gaps, a clash refused then allowed as a handover, a gap filled, and the phone roster one day at a time; API checks 224 of 224 (8 new); database checks clean; screenshots in docs/sprints/sprint-17-screens
 
 **Outcome**
 
-Expected when accepted:
-
-- Manager builds next week's roster; shortages highlighted
+Accepted 29 Oct 2026 (the owner checked it on their PC: everything works and the screens are right). A manager copies last week into next week, sees the gaps listed, is refused a second overlapping shift for Asha with the other shift named, allows it as a handover with a reason, and fills a gap with a tap; a manager never sees pay (EmployeesTests, browser steps S17-01 … S17-07). Code #154; on main as tag sprint-17. Sprint 18 (attendance and timesheets) is next.
 
 ## Scope
 
@@ -50,6 +56,10 @@ Expected when accepted:
 - `shift_templates`
 - `roster_shifts`
 
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/departments, /designations, /employees/*, /roster/*`
+
 **Screens / routes**
 
 - `/employees`
@@ -61,10 +71,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] employee_compensation readable only with employee_salary.read (separate table, separate endpoint)
-- [ ] Link employee ↔ user (optional)
-- [ ] Roster: prevent overlapping shifts (EXCLUDE) unless explicitly allowed; staffing shortage view
-- [ ] Seed: 10 employees
+- [x] employee_compensation readable only with employee_salary.read (separate table, separate endpoint)
+- [x] Link employee ↔ user (optional)
+- [x] Roster: prevent overlapping shifts (EXCLUDE) unless explicitly allowed; staffing shortage view
+- [x] Seed: 10 employees
 
 ## How to run this sprint
 
@@ -83,6 +93,12 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- A clash you didn't expect (409 SHIFT_CLASH): the message names the other shift. database/queries/check-sprint-17.sql block 5 lists overlapping scheduled shifts (should be none) and block 6 the overlaps a manager allowed, with their reasons.
+- A shortage that won't go away: shortages count scheduled shifts on that template that day; a shift with its own times counts towards no template. Block 8 lists next week's gaps the same way the screen does.
+- Someone sees pay who shouldn't (or can't when they should): only employee_salary.read opens /employees/{id}/compensation (owner and HR by default; check the role in Staff accounts → Roles). Block 10 checks that the audit trail never shows an amount.
 
 ## How to test
 
