@@ -115,7 +115,7 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `/api/v1/properties/{propertyId}/kitchen/*` | [Sprint 14](../sprints/sprint-14-menu-restaurant-pos-and-kot.md) | 🟢 Done |
 | `/api/v1/properties/{propertyId}/inventory/*` | [Sprint 15](../sprints/sprint-15-inventory-and-recipe-costing.md) | 🟢 Done |
 | `/api/v1/properties/{propertyId}/purchasing/*` | [Sprint 16](../sprints/sprint-16-suppliers-and-purchasing.md) | 🟢 Done |
-| `/api/v1/properties/{propertyId}/departments, /designations, /employees/*, /roster/*` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🔵 In progress |
+| `/api/v1/properties/{propertyId}/departments, /designations, /employees/*, /roster/*` | [Sprint 17](../sprints/sprint-17-employees-and-roster.md) | 🟢 Done |
 | `/api/v1/webhooks/whatsapp` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `/api/v1/webhooks/channel-manager` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
 | `/api/v1/public/* — separate` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |

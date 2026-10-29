@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-17] — 2026-10-28 — Employees and roster (in review)
+## [sprint-17] — 2026-10-29 — Employees and roster (accepted)
 
 ### Added
 - Migration V019: `departments` and `designations` (job titles), `employees` (`E00001` …; department, job title,
