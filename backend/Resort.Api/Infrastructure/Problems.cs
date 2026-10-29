@@ -44,6 +44,8 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
         ["ux_packages_code"] = (null, "A package with this code already exists at this property."),
         // The final guards against double booking (V007). The service checks first under row locks, so these only
         // fire if something bypasses it.
+        ["ex_roster_shifts_clash"] = ("SHIFT_CLASH", "Someone else just put this person on another shift at the same time. Reload the roster to see it, then choose another time or person."),
+        ["ux_employees_user"] = (null, "That staff account was just linked to another employee. Reload and choose a different account."),
         ["ex_reservation_units_unit"] = ("ROOM_UNAVAILABLE", "This room was booked by someone else for some of these nights. Check availability again and choose another."),
         ["ex_reservation_units_bed"] = ("ROOM_UNAVAILABLE", "This bed was booked by someone else for some of these nights. Check availability again and choose another."),
         ["ex_reservation_units_blocked"] = ("ROOM_UNAVAILABLE", "This room is blocked for some of these nights. Check availability again and choose another."),

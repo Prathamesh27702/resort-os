@@ -748,6 +748,56 @@ by 15 kg, 160 kg and 100 pcs, its **Ledger** with the GRNs → back on the order
 By hand: [REVIEWING.md → Sprint 16](sprints/REVIEWING.md#sprint-16--suppliers-and-purchasing).
 Screenshots: [sprint-16-screens/](sprints/sprint-16-screens/).
 
+### Sprint 17: Employees and roster
+
+**New:** two screens in the menu. **Employees** (`/employees`): everyone by department with their job title, employment
+type and weekly day off; search by name, code or phone; **Employee** adds someone (numbered E00001 …), **Departments**
+edits departments and job titles. A person's profile shows their details, their next shifts and, only for those allowed,
+**Pay** (`employee_salary.read`: owner and HR; a manager never sees it) and **Documents** (`employee_document.read`: PAN,
+bank account, passport … stored encrypted, shown masked, **Show number** is recorded; for Aadhaar only the last 4 digits
+are kept). **Roster** (`/roster`): one week, Monday to Sunday, by department (on a phone one day at a time). Tap a cell
+to put someone on a shift; one person can't be on two overlapping shifts (the refusal names the other shift) unless you
+tick **Allow the overlap** and say why. **Short this week** lists every shift with fewer people than it needs (tap one to
+fill it); warnings show someone on their day off, over 48 hours, or an allowed overlap. **Copy last week** fills a week day
+for day; **Shifts** edits the shift templates. Managing the roster needs `roster.manage` (manager, HR). Demo data (S014):
+five departments, ten employees (Asha Naik … Santosh Velip) with their pay, nine shift templates and this week's roster;
+next week is empty. Restart the API and watch for `Applying migration V019__employees`.
+
+```powershell
+# Backend (EmployeesTests; includes a manager refused the pay with the audit trail showing ***, an overlapping shift
+# refused naming the other one unless allowed with a reason, two managers at the same moment 10 times with exactly one
+# winning, next week's roster with its shortages and warnings, copying a week, account links, leaving, encrypted documents)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Employees"
+
+# Frontend unit tests (week and day helpers, shifts per cell, shortages per day)
+cd frontend
+npm run test:ci
+
+# Browser, HR and a manager on a desktop and the manager on a 360 px phone (7 steps, S17-01 … S17-07: ten employees →
+# HR adds Kavya with her pay and PAN (a mistyped phone and PAN refused under the field) → the manager sees her profile
+# without pay → next week empty and all short, Copy last week → a clash refused, then allowed as a handover → a gap filled
+# → the phone roster one day at a time)
+npm run e2e -- e2e/sprint-17.spec.ts
+cd ..
+
+# API checks: the Sprint 17 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 7, 10, 11 and 13 must return no rows)
+Get-Content database/queries/check-sprint-17.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (the demo: create a roster → clash → shortage view): sign in as a manager → **Roster** → **Next
+week** (empty, every shift *short*) → **Copy last week** → **Copy** (*56 shifts copied*) → **Short this week** lists the
+gaps, e.g. Tuesday *Front office · Morning 07:00–15:00: 0 of 1* (Asha's day off) → tap **+** in Asha's Monday cell →
+**Other times** 14:00–22:00 → **Add** → refused: *Asha Naik is already on Front office · Morning 07:00–15:00 …* → tick
+**Allow the overlap**, *Handover to the evening desk* → **Add** → it shows under warnings → tap Tuesday's Front office
+gap → choose someone → **Add** → the gap is gone. As the manager open any profile: no **Pay**, no **Documents**. How it
+works: [system-design.md → 4.27](architecture/system-design.md#427-roster-clash-detection-and-shortages).
+
+By hand: [REVIEWING.md → Sprint 17](sprints/REVIEWING.md#sprint-17--employees-and-roster).
+Screenshots: [sprint-17-screens/](sprints/sprint-17-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -760,7 +810,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 489 backend passed, 108 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 497 backend passed, 111 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -768,7 +818,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–16 (expected: 132 passed, about 21 minutes)
+# 3. Every browser test, Sprints 01–17 (expected: 139 passed, about 22 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -783,14 +833,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–16:
+Expected totals for Sprints 01–17:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 489 passed, 0 failed |
-| Frontend unit tests | 108 of 108 SUCCESS |
-| Browser tests | 132 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8) |
-| API checks | 216 passed, 0 failed |
+| Backend tests | 497 passed, 0 failed |
+| Frontend unit tests | 111 of 111 SUCCESS |
+| Browser tests | 139 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7) |
+| API checks | 224 passed, 0 failed |
 
 Other useful commands:
 

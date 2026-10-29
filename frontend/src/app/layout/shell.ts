@@ -127,6 +127,8 @@ export class Shell {
     { label: 'Inventory', icon: 'inventory_2', link: '/inventory', perm: 'inventory.read', exact: true },
     { label: 'Purchasing', icon: 'shopping_cart', link: '/inventory/purchases', perm: 'purchase.read' },
     { label: 'Suppliers', icon: 'local_shipping', link: '/inventory/suppliers', perm: 'supplier.read' },
+    { label: 'Employees', icon: 'groups', link: '/employees', perm: 'employee.read' },
+    { label: 'Roster', icon: 'calendar_view_week', link: '/roster', perm: 'roster.read' },
     { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },
     { label: 'Rates', icon: 'sell', link: '/settings/rates', perm: 'rate.read' },
     { label: 'Packages', icon: 'redeem', link: '/settings/packages', perm: 'rate.read' },

@@ -299,4 +299,35 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(("PR00001", "Main store"), (request.Number, request.LocationName));
         Assert.Equal([("ONION-CAPSICUM", 15m), ("MIXED-VEG", 10m), ("LIME", 100m)], request.Items.Select(i => (i.ItemCode, i.Quantity)));
     }
+
+    /// <summary>Sprint 17: ten employees in five departments with their pay (HR only), shift templates, and this week's
+    /// roster with everyone on their usual shift except on their day off, so the shortage view shows the gaps.</summary>
+    [Fact]
+    public async Task Dev_seed_has_ten_employees_their_pay_and_this_weeks_roster_with_its_gaps()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var departments = await owner.GetJsonAsync<List<DepartmentDto>>($"/api/v1/properties/{pid}/departments");
+        Assert.Equal([("FRONT", 2), ("HK", 3), ("KITCHEN", 2), ("REST", 2), ("MAINT", 1)], departments.Select(d => (d.Code, d.EmployeeCount)));
+        var employees = await owner.GetJsonAsync<List<EmployeeDto>>($"/api/v1/properties/{pid}/employees");
+        Assert.Equal(10, employees.Count);
+        Assert.Equal(Enumerable.Range(1, 10).Select(i => $"E{i:D5}"), employees.Select(e => e.Code).Order());
+        var asha = employees.Single(e => e.Code == "E00001");
+        Assert.Equal(("Asha Naik", "Front office", "Receptionist", (short?)2), (asha.FullName, asha.DepartmentName, asha.DesignationName, asha.WeeklyOff));
+        var pay = await owner.GetJsonAsync<EmployeeCompensationDto>($"/api/v1/properties/{pid}/employees/{asha.Id}/compensation");
+        Assert.Equal((18000m, 21000m), (pay.Current!.Basic, pay.Current.Gross));
+
+        var week = await owner.GetJsonAsync<RosterWeekDto>($"/api/v1/properties/{pid}/roster");
+        Assert.Equal(9, week.Templates.Count);
+        // Everyone but Joel works 6 days; Joel (part time, off on Sunday) Friday and Saturday.
+        Assert.Equal(9 * 6 + 2, week.Shifts.Count);
+        Assert.Empty(week.Warnings);
+        Assert.Contains(week.Shortages, s => s.TemplateName == "Morning" && s.DepartmentName == "Front office" && s.Date == week.WeekStart.AddDays(1));
+        Assert.Equal(11, week.Shortages.Count);
+        var next = await owner.GetJsonAsync<RosterWeekDto>($"/api/v1/properties/{pid}/roster?week={week.WeekStart.AddDays(7):yyyy-MM-dd}");
+        Assert.Empty(next.Shifts);
+    }
 }

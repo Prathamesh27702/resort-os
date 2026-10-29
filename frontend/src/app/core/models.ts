@@ -646,3 +646,59 @@ export interface PurchaseOrderSummary {
   status: PurchaseOrderStatus; total: number; needsApproval: boolean; received: number; createdByName: string | null; createdAt: string;
 }
 export interface PurchaseOrderList { items: PurchaseOrderSummary[]; approvalLimit: number; waiting: number; }
+
+// ---------------------------------------------------------------- employees and roster (Sprint 17)
+export type EmployeeStatus = 'ACTIVE' | 'LEFT';
+export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'SEASONAL';
+export type EmployeeDocumentType = 'AADHAAR' | 'PAN' | 'BANK_ACCOUNT' | 'PASSPORT' | 'DRIVING_LICENCE' | 'OFFER_LETTER' | 'OTHER';
+export type PayBasis = 'MONTHLY' | 'DAILY';
+export interface Designation { id: string; departmentId: string; name: string; isActive: boolean; employeeCount: number; version: number; }
+export interface Department { id: string; code: string; name: string; sortOrder: number; isActive: boolean; employeeCount: number; designations: Designation[]; version: number; }
+/** Never carries pay. weeklyOff: ISO day 1 Monday … 7 Sunday. */
+export interface Employee {
+  id: string; code: string; firstName: string; lastName: string | null; fullName: string; phone: string | null; email: string | null; dateOfBirth: string | null;
+  departmentId: string; departmentName: string; designationId: string | null; designationName: string | null; employmentType: EmploymentType; joinedOn: string;
+  weeklyOff: number | null; userId: string | null; userEmail: string | null; emergencyContactName: string | null; emergencyContactPhone: string | null;
+  address: string | null; note: string | null; status: EmployeeStatus; leftOn: string | null; leavingReason: string | null; version: number;
+}
+export interface LinkableAccount { id: string; fullName: string; email: string; isActive: boolean; linkedEmployeeId: string | null; linkedTo: string | null; }
+/** gross = basic + allowances, per month or per day. replaced: a later entry for the same date corrected it. */
+export interface Compensation {
+  id: string; effectiveFrom: string; payBasis: PayBasis; basic: number; allowances: number; gross: number; pfApplicable: boolean; esiApplicable: boolean;
+  note: string | null; isCurrent: boolean; replaced: boolean; byName: string | null; createdAt: string;
+}
+export interface EmployeeCompensation { employeeId: string; employeeName: string; current: Compensation | null; history: Compensation[]; }
+export interface EmployeeDocument {
+  id: string; documentType: EmployeeDocumentType; maskedNumber: string | null; expiresOn: string | null; expired: boolean; note: string | null; hasFile: boolean;
+  fileName: string | null; contentType: string | null; sizeBytes: number | null; status: 'ACTIVE' | 'REMOVED'; removedReason: string | null; createdAt: string; byName: string | null;
+}
+export interface EmployeeDocumentDetail {
+  id: string; documentType: EmployeeDocumentType; number: string | null; maskedNumber: string | null; expiresOn: string | null; note: string | null; hasFile: boolean;
+  fileName: string | null; contentType: string | null; sizeBytes: number | null; status: 'ACTIVE' | 'REMOVED'; createdAt: string; byName: string | null;
+}
+/** Times are "HH:mm:ss" local to the property; endTime ≤ startTime: ends the next day. */
+export interface ShiftTemplate {
+  id: string; departmentId: string; departmentName: string; code: string; name: string; startTime: string; endTime: string; crossesMidnight: boolean;
+  breakMinutes: number; paidMinutes: number; minStaff: number; isActive: boolean; version: number;
+}
+export interface RosterShift {
+  id: string; employeeId: string; employeeCode: string; employeeName: string; departmentId: string; departmentName: string; templateId: string | null;
+  templateName: string | null; workDate: string; startTime: string; endTime: string; startsAt: string; endsAt: string; breakMinutes: number; paidMinutes: number;
+  overlapAllowed: boolean; overlapReason: string | null; note: string | null; version: number;
+}
+export interface RosterEmployee {
+  id: string; code: string; name: string; departmentId: string; designationName: string | null; weeklyOff: number | null; joinedOn: string; leftOn: string | null;
+  paidMinutes: number; shifts: number;
+}
+export interface RosterShortage {
+  date: string; templateId: string; templateName: string; departmentId: string; departmentName: string; startTime: string; endTime: string; needed: number;
+  rostered: number; missing: number;
+}
+export type RosterWarningKind = 'DAY_OFF' | 'LONG_WEEK' | 'OVERLAP_ALLOWED';
+export interface RosterWarning { kind: RosterWarningKind; date: string | null; employeeId: string; shiftId: string | null; message: string; }
+export interface RosterWeek {
+  weekStart: string; weekEnd: string; today: string; departments: { id: string; code: string; name: string }[]; employees: RosterEmployee[];
+  templates: ShiftTemplate[]; shifts: RosterShift[]; shortages: RosterShortage[]; warnings: RosterWarning[];
+}
+export interface CopyRosterWeekResult { copied: number; skipped: string[]; week: RosterWeek; }
+export interface MyRoster { employeeId: string; employeeName: string; departmentName: string; shifts: RosterShift[]; }

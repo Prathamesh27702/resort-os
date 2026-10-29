@@ -985,6 +985,65 @@ quantity, unitCost, value }], byName, createdAt }`.
 number and its note as "PO00001 · Mapusa Fresh Vegetables". `GET /cash-drawer` and `GET /cash-drawer/sessions/{id}` (Sprint 10) list a cash supplier payment
 as a `PAY_OUT` movement.
 
+## Built endpoints (Sprint 17 — employees and roster)
+
+All under `/api/v1/properties/{propertyId}`. **Employees** (`E00001` …) belong to a department and may have a job title, a
+weekly day off (ISO day 1 Monday … 7 Sunday) and, optionally, a linked staff account (one employee per account). An
+employee profile **never carries pay**: pay lives in its own table (`employee_compensation`, append-only) behind its own
+endpoints, readable only with `employee_salary.read` (owner and HR; a general manager and a manager can't). Documents
+(PAN, bank account, passport …) need `employee_document.read`: numbers are stored encrypted and listed masked, opening one
+writes a `SENSITIVE_READ` audit row, and for Aadhaar only the last 4 digits are ever kept. The **roster** is one week
+(Monday–Sunday) of shifts, each from a **shift template** (department, times, break, how many people it needs every day)
+or with its own times. The database refuses two scheduled shifts of one person that overlap (`EXCLUDE USING gist` on the
+shift's period) unless the manager allowed it with a reason; the API answers `409 SHIFT_CLASH` naming the other shift.
+**Shortages** are template × day with fewer people than it needs. How it works:
+[system-design.md → 4.27](architecture/system-design.md#427-roster-clash-detection-and-shortages).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /departments` | Departments with their job titles and how many active people work in each | `employee.read` | — | `DepartmentDto[]` | 403 | — |
+| `POST /departments` · `PUT /departments/{id}` | A department. `version` on PUT | `employee.update` | `SaveDepartmentRequest` | 201 / 200 `DepartmentDto` | 400 `Code` ("Another department already has the code FRONT."), `Name`, `IsActive` ("2 active employees work in Kitchen. …"); 403, 404; 409 | INSERT/UPDATE |
+| `POST /designations` · `PUT /designations/{id}` | A job title in a department | `employee.update` | `SaveDesignationRequest` | 201 / 200 `DepartmentDto` | 400 `DepartmentId`, `Name` ("Front office already has the job title Receptionist."); 403, 404; 409 | INSERT/UPDATE |
+| `GET /employees?q&departmentId&status` | Employees (status `ACTIVE` by default, `LEFT` or `ALL`); `q` searches name, code, phone, email | `employee.read` | — | `EmployeeDto[]` | 403 | — |
+| `GET /employees/accounts` | Staff accounts that can be linked, with whom each is linked to now | `employee.update` | — | `LinkableAccountDto[]` | 403 | — |
+| `GET /employees/{id}` | One profile (no pay) | `employee.read` | — | `EmployeeDto` | 403, 404 | — |
+| `POST /employees` · `PUT /employees/{id}` | Add (the code is given) or edit an employee | `employee.create` / `employee.update` | `SaveEmployeeRequest` | 201 / 200 `EmployeeDto` | 400 `FirstName`, `Phone`, `Email`, `DepartmentId` (switched off), `DesignationId` ("Housekeeper is a job title in another department. Choose one in Front office."), `JoinedOn` (more than 90 days ahead), `DateOfBirth` (under 18), `UserId` ("The account asha@… is already linked to Asha Naik (E00001). An account belongs to one employee."), `WeeklyOff`; 403, 404; 409 | INSERT/UPDATE |
+| `POST /employees/{id}/leave` | Mark them as left: the last working day and the reason | `employee.update` | `EmployeeLeftRequest` | `EmployeeDto` | 400 `LeftOn` ("Asha Naik is on the roster after Fri 6 Nov: Sat 7 Nov, Sun 8 Nov. Remove those shifts from the roster first."; before joining), `Reason`; 403, 404; 409 | UPDATE |
+| `GET /employees/{id}/shifts` | Their shifts from today on | `roster.read` | — | `RosterShiftDto[]` | 403, 404 | — |
+| `GET /employees/{id}/compensation` | Today's pay and every entry, newest first | `employee_salary.read` | — | `EmployeeCompensationDto` | 403 (a manager), 404 | — |
+| `POST /employees/{id}/compensation` | Record pay from a date (a correction: record again with the same date; the newest wins) | `employee_salary.read` + `employee.update` | `RecordCompensationRequest` | 201 `EmployeeCompensationDto` | 400 `EffectiveFrom` ("Asha Naik joined on Mon 2 Jun 2025; pay can start on that day or later."), `PayBasis`, `Basic`, `Allowances`; 403, 404 | INSERT (amounts shown as `***`) |
+| `GET /employees/{id}/documents` | Their documents, numbers masked | `employee_document.read` | — | `EmployeeDocumentDto[]` | 403, 404 | — |
+| `POST /employees/{id}/documents` | Add a document: `multipart/form-data` with `documentType`, `number?`, `expiresOn?`, `note?`, `file?` (JPEG, PNG or PDF, at most 5 MB) | `employee_document.read` + `employee.update` | form | 201 `EmployeeDocumentDto` | 400 `Number` ("A PAN is 10 characters: 5 letters, 4 digits, 1 letter, e.g. ABCPK1234F."; Aadhaar: 12 digits or the last 4), `File`, `ExpiresOn`, `DocumentType`; 403, 404 | INSERT (number hidden) |
+| `GET /employees/{id}/documents/{docId}` · `…/file` | Open one: the number in full (Aadhaar: last 4 only), or the scan | `employee_document.read` | — | `EmployeeDocumentDetailDto` / the file | 403, 404 | `SENSITIVE_READ` |
+| `POST /employees/{id}/documents/{docId}/remove` | Remove it with the reason: the number and the scan are wiped, the entry stays | `employee_document.read` + `employee.update` | `RemoveEmployeeDocumentRequest` | `EmployeeDocumentDto` | 400 `Reason`; 403, 404; 422 (already removed) | UPDATE |
+| `GET /roster?week` | One week (Monday given or this week): departments, people, templates, shifts, shortages, warnings | `roster.read` | — | `RosterWeekDto` | 403 | — |
+| `GET /roster/mine?from` | The caller's own shifts, from their linked employee | `roster.self` | — | `MyRosterDto` | 403, 404 (account not linked) | — |
+| `GET /roster/templates` · `POST` · `PUT /roster/templates/{id}` | Shift templates. An end time at or before the start ends the next day | `roster.read` / `roster.manage` | `SaveShiftTemplateRequest` | `ShiftTemplateDto[]` / 201 / 200 `ShiftTemplateDto` | 400 `Code`, `DepartmentId`, `EndTime` (longer than 16 hours), `BreakMinutes`, `MinStaff`; 403, 404; 409 | INSERT/UPDATE |
+| `POST /roster/shifts` · `PUT /roster/shifts/{id}` | Put a person on a shift, or change it | `roster.manage` | `SaveRosterShiftRequest` | 201 / 200 `RosterShiftDto` | 400 `WorkDate` (more than a month ago; over 180 days ahead; before they joined), `EmployeeId` (left), `TemplateId` (switched off), `StartTime`, `EndTime`, `BreakMinutes`, `OverlapReason` ("Say why Asha works two shifts at once, e.g. a handover …"); 403, 404; 409 `SHIFT_CLASH` ("Asha Naik is already on Front office · Morning 07:00–15:00 on Tue 3 Nov. One person can't work two shifts at once: …", `details.shiftId`), `CONCURRENCY_CONFLICT` | INSERT/UPDATE |
+| `POST /roster/shifts/{id}/cancel` | Take a shift off the roster, with the reason | `roster.manage` | `CancelRosterShiftRequest` | 204 | 400 `Reason`; 403, 404; 409; 422 (already removed) | UPDATE |
+| `POST /roster/copy-week` | Copy one week into another day for day; clashes, days off the job and switched-off templates are skipped and listed | `roster.manage` | `CopyRosterWeekRequest` | `CopyRosterWeekResultDto` | 400 `ToWeek` (same week; passed; over 180 days), `FromWeek` (nobody on it); 403 | INSERT per shift |
+
+`EmployeeDto = { id, code, firstName, lastName, fullName, phone, email, dateOfBirth, departmentId, departmentName,
+designationId, designationName, employmentType: FULL_TIME | PART_TIME | CONTRACT | SEASONAL, joinedOn, weeklyOff, userId,
+userEmail, emergencyContactName, emergencyContactPhone, address, note, status: ACTIVE | LEFT, leftOn, leavingReason, version }`.
+`SaveEmployeeRequest` is the same without the code, names of linked things and status. `EmployeeLeftRequest = { leftOn,
+reason, version }`. `RecordCompensationRequest = { effectiveFrom, payBasis: MONTHLY | DAILY, basic, allowances, pfApplicable,
+esiApplicable, note? }`. `EmployeeCompensationDto = { employeeId, employeeName, current: CompensationDto?, history:
+CompensationDto[] }`, `CompensationDto = { id, effectiveFrom, payBasis, basic, allowances, gross, pfApplicable, esiApplicable,
+note, isCurrent, replaced, byName, createdAt }`. `EmployeeDocumentDto = { id, documentType: AADHAAR | PAN | BANK_ACCOUNT |
+PASSPORT | DRIVING_LICENCE | OFFER_LETTER | OTHER, maskedNumber, expiresOn, expired, note, hasFile, fileName, contentType,
+sizeBytes, status: ACTIVE | REMOVED, removedReason, createdAt, byName }`.
+`ShiftTemplateDto = { id, departmentId, departmentName, code, name, startTime, endTime, crossesMidnight, breakMinutes,
+paidMinutes, minStaff, isActive, version }`. `SaveRosterShiftRequest = { employeeId, workDate, templateId?, departmentId?,
+startTime?, endTime?, breakMinutes?, allowOverlap, overlapReason?, note?, version? }` (with a template its times are used
+unless given). `RosterShiftDto = { id, employeeId, employeeCode, employeeName, departmentId, departmentName, templateId,
+templateName, workDate, startTime, endTime, startsAt, endsAt, breakMinutes, paidMinutes, overlapAllowed, overlapReason, note,
+version }`. `RosterWeekDto = { weekStart, weekEnd, today, departments, employees: [{ id, code, name, departmentId,
+designationName, weeklyOff, joinedOn, leftOn, paidMinutes, shifts }], templates, shifts, shortages: [{ date, templateId,
+templateName, departmentId, departmentName, startTime, endTime, needed, rostered, missing }], warnings: [{ kind: DAY_OFF |
+LONG_WEEK | OVERLAP_ALLOWED, date, employeeId, shiftId, message }] }`. `CopyRosterWeekRequest = { fromWeek, toWeek }` (Mondays),
+`CopyRosterWeekResultDto = { copied, skipped: string[], week: RosterWeekDto }`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
