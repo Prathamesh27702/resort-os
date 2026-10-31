@@ -405,7 +405,7 @@ public sealed class LeaveRequestService(IAppDbContext db, ICurrentUser caller, C
                ?? throw new NotFoundAppException("That leave request doesn't exist at this property. Reload the page.");
     }
 
-    private async Task<List<LeaveRequestDto>> DtosAsync(Property property, IReadOnlyList<LeaveRequest> list, CancellationToken ct)
+    private async Task<List<LeaveRequestDto>> DtosAsync(Property property, List<LeaveRequest> list, CancellationToken ct)
     {
         if (list.Count == 0) return [];
         var today = property.LocalDate(clock.GetUtcNow());
