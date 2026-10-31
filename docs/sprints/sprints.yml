@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 18
+current: 19
 
 sprints:
 
@@ -1548,7 +1548,7 @@ sprints:
 - id: 18
   title: Attendance and timesheets (PWA)
   phase: 6
-  status: in-progress
+  status: done
   size: L
   module: Attendance
   feature: attendance
@@ -1556,7 +1556,8 @@ sprints:
   goal: Mobile clock-in/out with geofence, breaks, timesheets with approval and locked corrections (brief §43, §44, §74).
   client: "Staff clock in and out on their phones at the resort, and timesheets are approved by managers."
   progress:
-    now: "Built; pull request into develop waits for the owner's review."
+    now: "Accepted by the owner on 31 Oct 2026 and released to main (tag sprint-18)."
+    outcome: "Accepted 31 Oct 2026 (the owner reviewed it on their PC). A housekeeper on a phone is refused 1.1 km from the gate with the distance, clocks in at the gate, takes a break and clocks out; a manager records a clock-in for someone with no signal, with a reason; she submits her week and the manager approves it; last week is approved all at once except Ravi's missing clock-out, which is corrected with a reason, approved and locked for payroll (AttendanceTests, browser steps S18-01 … S18-07). Code #157; on main as tag sprint-18. Sprint 19 (leave, holidays and payroll export) is next."
     done:
       - "Migration V020: geofences (radius 20–2000 m), attendance_events (append-only; a manager entry needs a reason), timesheets (one per person per week, Monday start; a locked one can't change), timesheet_lines (one per day; locked with the timesheet) and timesheet_corrections (append-only, old and new times, reason)"
       - "Clocking in and out on a phone: the browser sends its position, the server measures the distance to each active geofence (the phone's accuracy counts up to 50 m) and refuses with how far away and which area (422 OUTSIDE_GEOFENCE); no geofence set up means it isn't checked; breaks don't check location"
@@ -1627,7 +1628,7 @@ sprints:
 - id: 19
   title: Leave, holidays and payroll export
   phase: 6
-  status: planned
+  status: in-progress
   size: M
   module: Leave
   feature: leave

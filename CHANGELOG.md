@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-18] — 2026-10-29 — Attendance and timesheets (PWA) (in review)
+## [sprint-18] — 2026-10-31 — Attendance and timesheets (PWA) (accepted)
 
 ### Added
 - Migration V020: `geofences` (a centre and a radius of 20–2000 m), `attendance_events` (clock-in, break start and end,

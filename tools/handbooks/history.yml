@@ -51,3 +51,6 @@
 - version: "1.17"
   date: 2026-10-29
   change: "Sprint 17 (Employees and roster) accepted: every employee has a profile with department, job title and weekly day off, optionally linked to their staff account; salaries are kept apart and only the owner and HR can see them; ID documents are stored encrypted and shown masked, Aadhaar keeps only its last 4 digits; the manager builds the week's roster from shift templates or by copying last week, nobody can be on two shifts at once unless allowed with a reason, and shifts short of people are listed and filled with a tap. Roster flow diagram. Sprint 18 started."
+- version: "1.18"
+  date: 2026-10-31
+  change: "Sprint 18 (Attendance and timesheets) accepted: staff clock in and out on their phones, and the server checks they are at the resort, saying how far away they are if not; a manager records the time for someone whose phone has no signal, with a reason; hours, breaks, overtime, late arrivals and early departures are worked out per day in the resort's time zone, night shifts included; each person submits their week, a manager approves it (or all at once) or sends it back, corrections keep the old times, and approved weeks are locked for payroll. The staff app can be installed on a phone. Attendance flow diagram. Sprint 19 started."
