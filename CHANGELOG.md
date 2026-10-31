@@ -40,9 +40,10 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
   one refused.
 - Tests: backend `LeaveUnitTests` (counting days with half days, holidays and a day off; monthly and pro-rated yearly
   accrual; the CSV and its escaping) and `LeaveTests` (the brief's leave approved with the shift taken off; half days and
-  holidays; overlap, own leave, refuse and cancel; the accrual run twice; two requests for the same days at once make one; four approvals at
-  once against a balance for two approve exactly two; the payroll file) and a dev seed check; frontend `leave.spec.ts`; browser steps S19-01 … S19-05; `check-api.mjs` Sprint 19
-  block; `database/queries/check-sprint-19.sql`.
+  holidays; overlap, own leave, refuse and cancel; the accrual run twice; two requests for the same days at once make
+  one; four approvals at once against a balance for two approve exactly two; the payroll file) and a dev seed check;
+  frontend `leave.spec.ts`; browser steps S19-01 … S19-05; `check-api.mjs` Sprint 19 block;
+  `database/queries/check-sprint-19.sql`.
 - Docs: PAYROLL.md (the file format), API.md, DATABASE.md, schema-sprint-19.md, system design Sprint 19 and 4.29,
   ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
 
@@ -59,7 +60,7 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - Cancelling approved leave doesn't put the cancelled shifts back on the roster; add them again if needed.
 - The manager is told about waiting leave on the dashboard; messages (WhatsApp, email) come with the notification engine.
 
-## [sprint-18] — 2026-10-29 — Attendance and timesheets (PWA) (in review)
+## [sprint-18] — 2026-10-31 — Attendance and timesheets (PWA) (accepted)
 
 ### Added
 - Migration V020: `geofences` (a centre and a radius of 20–2000 m), `attendance_events` (clock-in, break start and end,

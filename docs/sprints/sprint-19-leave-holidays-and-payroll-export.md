@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 18](sprint-18-attendance-and-timesheets-pwa.md) |
+| 🔵 In progress — **current sprint** | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 18](sprint-18-attendance-and-timesheets-pwa.md) |
 
 **Goal:** Leave requests with balance/overlap/coverage checks feeding roster and payroll (brief §45).
 

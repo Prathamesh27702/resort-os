@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 18 — Attendance and timesheets (PWA)](sprint-18-attendance-and-timesheets-pwa.md)** · status: 🔵 In progress
+> **Current sprint: [Sprint 19 — Leave, holidays and payroll export](sprint-19-leave-holidays-and-payroll-export.md)** · status: 🔵 In progress
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -29,7 +29,7 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 15 | [Inventory and recipe costing](sprint-15-inventory-and-recipe-costing.md) | Phase 5 | M | 🟢 Done |
 | 16 | [Suppliers and purchasing](sprint-16-suppliers-and-purchasing.md) | Phase 5 | M | 🟢 Done |
 | 17 | [Employees and roster](sprint-17-employees-and-roster.md) | Phase 6 | M | 🟢 Done |
-| 18 | [Attendance and timesheets (PWA)](sprint-18-attendance-and-timesheets-pwa.md) | Phase 6 | L | 🔵 In progress |
+| 18 | [Attendance and timesheets (PWA)](sprint-18-attendance-and-timesheets-pwa.md) | Phase 6 | L | 🟢 Done |
 | 19 | [Leave, holidays and payroll export](sprint-19-leave-holidays-and-payroll-export.md) | Phase 6 | M | 🔵 In progress |
 | 20 | [Activities and equipment](sprint-20-activities-and-equipment.md) | Phase 7 | M | ⚪ Planned |
 | 21 | [Beach transport](sprint-21-beach-transport.md) | Phase 7 | S | ⚪ Planned |
