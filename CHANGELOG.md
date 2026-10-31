@@ -2,6 +2,64 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-19] — 2026-10-31 — Leave, holidays and payroll export (in review)
+
+### Added
+- Migration V021: `leave_types` (code, paid or not, needs a balance, half days allowed), `leave_policies` (days a year,
+  earned monthly, yearly or only by hand, a maximum balance; for everyone or one employment type), `leave_requests`
+  (`LV00001` …; `PENDING` → `APPROVED` or `REJECTED`, or `CANCELLED`; the counted days kept with the request; a database
+  guard refuses two waiting or approved requests of one person on the same day), `leave_ledger` (append-only: brought in,
+  earned, taken, given back, adjusted), `leave_balances` (kept equal to the ledger by a trigger, never below zero),
+  `holidays` (one active holiday a date) and `payroll_exports` (append-only, the file with its SHA-256). New permission
+  `payroll.export` for Owner and HR (118 permissions).
+- Asking for leave, for yourself on the phone or by a manager for someone: half days at either end, holidays and the
+  weekly day off not counted, a live preview of the days, the balance after, and what it does to the roster (the shift
+  that comes off, a shift left short of people, a colleague in the same department also off). Refusals say why under the
+  field: dates the wrong way round, more days than the balance (counting what is already waiting), overlapping leave,
+  before joining, more than 30 days back.
+- Approving takes the days off the balance and cancels the person's shifts on full days of leave; refusing needs a
+  reason; cancelling approved leave before it starts gives the days back. Nobody approves their own leave.
+- Balances: everyone's at a glance, each person's history with the running balance, adjustments by HR with a reason (an
+  opening balance from the paper register, or days added or taken off), and the monthly accrual on the 1st (a background
+  job, or *Add this month's leave* now; running it twice adds nothing; capped at each policy's maximum).
+- Holidays by year, added or changed on the Leave page; leave already asked for keeps its days.
+- Payroll export: a month's preview (days employed, holidays, days and hours worked, overtime, paid and unpaid leave,
+  days not worked, payable days) with what isn't ready (the month not over, timesheets not approved, weeks with no
+  timesheet, leave not decided). Making the file needs a confirmation if anything is listed, locks the approved
+  timesheets it used, and keeps every file to download again. Format: `GENERIC_CSV_V1`, documented in docs/PAYROLL.md.
+- The roster shows leave on each day (`CL leave`, `½ CL leave`), refuses a shift on a day someone is on leave, and
+  *Copy last week* skips them. The dashboard shows **Leave waiting for you** to whoever approves leave.
+- API: `GET /leave/me`, `GET|POST /leave/types`, `PUT /leave/types/{id}`, `PUT /leave/policies`, `GET|POST
+  /leave/holidays`, `PUT /leave/holidays/{id}`, `GET /leave/balances`, `GET /leave/balances/{employeeId}`, `POST
+  /leave/adjustments`, `POST /leave/accruals/run`, `GET|POST /leave/requests`, `POST /leave/requests/preview`, `GET
+  /leave/requests/{id}`, `POST /leave/requests/{id}/approve`, `/reject`, `/cancel`, `GET /payroll/preview`, `GET|POST
+  /payroll/exports`, `GET /payroll/exports/{id}/file`.
+- Staff app: **Leave** (`/leave`: mine, team, balances, holidays, kinds of leave) and **Payroll export** (`/payroll`).
+- Dev seed S016: CL, SL, EL and LOP with their policies (6 days of CL for seasonal staff), the national holidays and Goa
+  Liberation Day for this year and next, opening balances and this month's accrual, two requests waiting, one approved and
+  one refused.
+- Tests: backend `LeaveUnitTests` (counting days with half days, holidays and a day off; monthly and pro-rated yearly
+  accrual; the CSV and its escaping) and `LeaveTests` (the brief's leave approved with the shift taken off; half days and
+  holidays; overlap, own leave, refuse and cancel; the accrual run twice; two requests for the same days at once make
+  one; four approvals at once against a balance for two approve exactly two; the payroll file) and a dev seed check;
+  frontend `leave.spec.ts`; browser steps S19-01 … S19-05; `check-api.mjs` Sprint 19 block;
+  `database/queries/check-sprint-19.sql`.
+- Docs: PAYROLL.md (the file format), API.md, DATABASE.md, schema-sprint-19.md, system design Sprint 19 and 4.29,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The shell menu adds **Leave** and **Payroll export**.
+
+### Open points
+- Payroll provider (Q3) is still open: the file is a documented generic CSV with days and hours only, no pay amounts. A
+  provider's own format can be added as another format once chosen.
+- No year-end lapse or carry-forward rule yet: balances carry on, capped by each policy's maximum. Encashment isn't
+  handled.
+- Festivals that move each year (Diwali, Ganesh Chaturthi, Eid…) are not seeded; add them on the Leave page from the
+  accountant's list.
+- Cancelling approved leave doesn't put the cancelled shifts back on the roster; add them again if needed.
+- The manager is told about waiting leave on the dashboard; messages (WhatsApp, email) come with the notification engine.
+
 ## [sprint-18] — 2026-10-31 — Attendance and timesheets (PWA) (accepted)
 
 ### Added

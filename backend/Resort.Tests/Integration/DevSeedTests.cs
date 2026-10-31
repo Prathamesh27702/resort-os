@@ -361,4 +361,31 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(8, result.Approved);
         Assert.StartsWith("Ravi Kamat: ", Assert.Single(result.Skipped));
     }
+
+    /// <summary>Sprint 19: four leave types with their policies, the holidays, everyone's opening balance and this month's
+    /// accrual (so running it again adds nothing), and the leave requests: two waiting, one approved, one refused.</summary>
+    [Fact]
+    public async Task Dev_seed_has_leave_types_balances_holidays_and_requests_waiting_for_approval()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var types = await owner.GetJsonAsync<List<LeaveTypeDto>>($"/api/v1/properties/{pid}/leave/types");
+        Assert.Equal(["CL", "SL", "EL", "LOP"], types.Select(t => t.Code));
+        Assert.Equal(2, types.Single(t => t.Code == "CL").Policies.Count);
+        Assert.Equal(5, (await owner.GetJsonAsync<List<HolidayDto>>($"/api/v1/properties/{pid}/leave/holidays")).Count);
+
+        var list = await owner.GetJsonAsync<LeaveListDto>($"/api/v1/properties/{pid}/leave/requests?from=2000-01-01&to=2100-01-01");
+        Assert.Equal((2, 1, 1), (list.Counts["PENDING"], list.Counts["APPROVED"], list.Counts["REJECTED"]));
+        Assert.Equal(1.5m, list.Requests.Single(r => r.EmployeeCode == "E00003").Days);
+
+        var balances = await owner.GetJsonAsync<List<EmployeeLeaveBalancesDto>>($"/api/v1/properties/{pid}/leave/balances");
+        Assert.Equal(10, balances.Count);
+        Assert.All(balances, b => Assert.Equal(6m, b.Balances.Single(x => x.Code == "SL").Balance));
+        var month = DateTime.UtcNow.AddHours(5.5).ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
+        var run = await owner.PostAsync($"/api/v1/properties/{pid}/leave/accruals/run", new RunAccrualRequest(month));
+        Assert.Equal(0, (await run.Content.ReadFromJsonAsync<AccrualResultDto>())!.Posted);
+    }
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// API checks for Sprints 01–17: calls the running API like a client would and prints PASS/FAIL per check.
+// API checks for Sprints 01–19: calls the running API like a client would and prints PASS/FAIL per check.
 //
 //   node scripts/check-api.mjs                 (API must be running: backend/Resort.Api → dotnet watch run)
 //
@@ -39,6 +39,9 @@
 //   - Sprint 18 changes nothing: it reads the attendance board, geofences and a week's timesheets, and checks refusals (a
 //     geofence radius under 20 m, a manager entry without a reason, a receptionist reading the board or approving a week);
 //     no clock event, geofence or timesheet is saved
+//   - Sprint 19 changes nothing: it reads leave types, holidays, balances, requests and this month's payroll preview, and
+//     checks refusals (dates the wrong way round, an adjustment without a reason, a file for an unfinished month without
+//     confirming, a receptionist adjusting or exporting); no leave, adjustment or payroll file is saved
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -149,7 +152,7 @@ const R = recLogin2?.json?.accessToken;
 await expectCall('Receptionist can\'t list staff (403)', 'GET', '/api/v1/users', 403, { token: R });
 
 await expectCall('17 roles', 'GET', '/api/v1/roles', 200, { token: T }, b => b.length === 17 || `${b.length} roles`);
-await expectCall('117 permissions', 'GET', '/api/v1/permissions', 200, { token: T }, b => b.length === 117 || `${b.length} permissions`);
+await expectCall('118 permissions (117 from Sprint 01, payroll.export from Sprint 19)', 'GET', '/api/v1/permissions', 200, { token: T }, b => b.length === 118 || `${b.length} permissions`);
 await expectCall('Audit trail (latest 5)', 'GET', '/api/v1/audit-logs?pageSize=5', 200, { token: T },
   b => (Array.isArray(b.items) && b.items.length > 0) || 'no audit entries');
 
@@ -851,6 +854,35 @@ await expectCall(`Last week’s timesheets (${lastWeek}) with totals and what th
   b => (b?.weekStart === lastWeek && Array.isArray(b.timesheets) && b.timesheets.every(t => Array.isArray(t.actions) && t.workedMinutes >= 0)) || JSON.stringify(b).slice(0, 200));
 await expectCall('Receptionist can’t approve a week → 403', 'POST', `${P}/timesheets/approve-week`, 403,
   { token: R, body: { weekStart: lastWeek } });
+
+// ---------------------------------------------------------------- Sprint 19 — leave, holidays and payroll export
+title('Sprint 19 — leave with balances kept by a ledger, holidays, the payroll file');
+const leaveTypes = await expectCall('Kinds of leave (demo: CL, SL, EL, LOP) with their policies', 'GET', `${P}/leave/types`, 200, { token: T },
+  b => (Array.isArray(b) && b.length > 0 && b.every(t => /^[A-Z][A-Z0-9]{0,9}$/.test(t.code) && Array.isArray(t.policies))) || JSON.stringify(b).slice(0, 200));
+await expectCall(`This year’s holidays`, 'GET', `${P}/leave/holidays?year=${today.slice(0, 4)}`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(h => h.date.startsWith(today.slice(0, 4)) && h.name)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Balances for everyone, never below zero', 'GET', `${P}/leave/balances`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(e => e.balances.every(x => x.balance >= 0 && Math.abs(x.available - (x.balance - x.pending)) < 0.005))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Leave requests: waiting, approved and counts', 'GET', `${P}/leave/requests`, 200, { token: T },
+  b => (Array.isArray(b?.requests) && b.requests.every(r => /^LV\d{5}$/.test(r.code) && r.days > 0)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t see everyone’s leave → 403', 'GET', `${P}/leave/requests`, 403, { token: R });
+await expectCall('Receptionist can’t adjust a balance → 403', 'POST', `${P}/leave/adjustments`, 403,
+  { token: R, body: { employeeId: NONE, leaveTypeId: NONE, days: 1, reason: 'API check', opening: false } });
+const cl = leaveTypes?.json?.find?.(t => t.code === 'CL');
+await expectCall('Leave whose last day is before the first → 400 under ToDate (nothing saved)', 'POST', `${P}/leave/requests/preview`, 400,
+  { token: T, body: { employeeId: firstEmp?.id ?? NONE, leaveTypeId: cl?.id ?? NONE, fromDate: today, toDate: '2000-01-01', halfDayStart: false, halfDayEnd: false, reason: null } },
+  b => /before the first day/.test(b.details?.ToDate?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('An adjustment without a reason → 400 under Reason (nothing saved)', 'POST', `${P}/leave/adjustments`, 400,
+  { token: T, body: { employeeId: firstEmp?.id ?? NONE, leaveTypeId: cl?.id ?? NONE, days: 1, reason: '', opening: false } },
+  b => (b.details?.Reason?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+const thisMonth = today.slice(0, 7);
+await expectCall(`Payroll preview for ${thisMonth}: rows and what isn’t ready`, 'GET', `${P}/payroll/preview?month=${thisMonth}`, 200, { token: T },
+  b => (b?.month === thisMonth && Array.isArray(b.rows) && b.warnings.some(w => /hasn't ended/.test(w))
+    && b.rows.every(r => Math.abs(r.payableDays - (r.employedDays - r.unpaidLeaveDays - r.absentDays)) < 0.005)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Making this month’s file without confirming → 422 PAYROLL_NOT_READY listing why (no file made)', 'POST', `${P}/payroll/exports`, 422,
+  { token: T, body: { month: thisMonth, confirmWarnings: false } },
+  b => (b.code === 'PAYROLL_NOT_READY' && Array.isArray(b.details?.warnings) && b.details.warnings.length > 0) || JSON.stringify(b).slice(0, 300));
+await expectCall('Receptionist can’t make a payroll file → 403', 'GET', `${P}/payroll/preview?month=${thisMonth}`, 403, { token: R });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

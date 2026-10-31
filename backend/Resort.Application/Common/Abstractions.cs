@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Attendance;
+using Resort.Domain.Leave;
 using Resort.Domain.Audit;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
@@ -140,6 +141,13 @@ public interface IAppDbContext
     DbSet<Timesheet> Timesheets { get; }
     DbSet<TimesheetLine> TimesheetLines { get; }
     DbSet<TimesheetCorrection> TimesheetCorrections { get; }
+    DbSet<LeaveType> LeaveTypes { get; }
+    DbSet<LeavePolicy> LeavePolicies { get; }
+    DbSet<LeaveRequest> LeaveRequests { get; }
+    DbSet<LeaveLedgerEntry> LeaveLedger { get; }
+    DbSet<LeaveBalance> LeaveBalances { get; }
+    DbSet<Holiday> Holidays { get; }
+    DbSet<PayrollExport> PayrollExports { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
