@@ -330,4 +330,35 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var next = await owner.GetJsonAsync<RosterWeekDto>($"/api/v1/properties/{pid}/roster?week={week.WeekStart.AddDays(7):yyyy-MM-dd}");
         Assert.Empty(next.Shifts);
     }
+
+    /// <summary>Sprint 18: a geofence at the gate, last week's attendance with the timesheets waiting for approval (Ravi's
+    /// with a missing clock-out, Pooja absent on Tuesday, Joel's still a draft), and this week's clock-ins up to yesterday.</summary>
+    [Fact]
+    public async Task Dev_seed_has_a_geofence_and_last_weeks_timesheets_waiting_for_approval()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var fence = Assert.Single(await owner.GetJsonAsync<List<GeofenceDto>>($"/api/v1/properties/{pid}/attendance/geofences"));
+        Assert.Equal(("Main gate", 300), (fence.Name, fence.RadiusM));
+
+        var thisWeek = await owner.GetJsonAsync<TimesheetWeekDto>($"/api/v1/properties/{pid}/timesheets");
+        var last = await owner.GetJsonAsync<TimesheetWeekDto>($"/api/v1/properties/{pid}/timesheets?week={thisWeek.WeekStart.AddDays(-7):yyyy-MM-dd}");
+        Assert.Equal(10, last.Timesheets.Count);
+        Assert.Equal((9, 1), (last.Counts["SUBMITTED"], last.Counts["DRAFT"]));
+        var ravi = last.Timesheets.Single(t => t.EmployeeCode == "E00007");
+        Assert.Equal((1, 5), (ravi.OpenDays, ravi.DaysWorked));
+        var pooja = await owner.GetJsonAsync<TimesheetDto>($"/api/v1/properties/{pid}/timesheets/{last.Timesheets.Single(t => t.EmployeeCode == "E00005").Id}");
+        Assert.Equal("ABSENT", pooja.Lines.Single(l => l.WorkDate == last.WeekStart.AddDays(1)).Status);
+        Assert.All(last.Timesheets.Where(t => t.EmployeeCode != "E00005" && t.EmployeeCode != "E00007" && t.EmployeeCode != "E00009"),
+            t => Assert.Equal(6, t.DaysWorked));
+
+        // Approving the week: everyone submitted except Ravi, whose Tuesday needs a correction first.
+        var approved = await owner.PostAsync($"/api/v1/properties/{pid}/timesheets/approve-week", new ApproveTimesheetWeekRequest(last.WeekStart));
+        var result = (await approved.Content.ReadFromJsonAsync<ApproveTimesheetWeekResultDto>())!;
+        Assert.Equal(8, result.Approved);
+        Assert.StartsWith("Ravi Kamat: ", Assert.Single(result.Skipped));
+    }
 }

@@ -798,6 +798,63 @@ works: [system-design.md → 4.27](architecture/system-design.md#427-roster-clas
 By hand: [REVIEWING.md → Sprint 17](sprints/REVIEWING.md#sprint-17--employees-and-roster).
 Screenshots: [sprint-17-screens/](sprints/sprint-17-screens/).
 
+### Sprint 18: Attendance and timesheets (PWA)
+
+**New:** two screens in the menu and an installable app. **Attendance** (`/attendance`): on a phone, one big button for
+the next step (**Clock in**, **Start break**, **End break**, **Clock out**), the day's entries with where each was
+recorded, and the hours so far. Clocking in and out sends the phone's location; the **server** checks it against the
+resort's areas (geofences) and refuses with how far away you are (*You are 1.1 km from Main gate; clocking in counts within
+300 m of it. …*). Managers also see the **team board** for a day (who is in, late, not in), can **record** an entry for
+someone with a reason (e.g. no signal; it shows as a *manager entry*) and edit the **Areas**. **Timesheets**
+(`/timesheets`): your week (hours per day, late, overtime) to **Submit**, or for managers the team's week with **Approve
+all submitted**; one timesheet shows each day's entries, **Correct a day** (the old times are kept with the reason),
+**Approve**, **Send back** and **Lock for payroll**. The dashboard shows **Your day** and offers **Install** (also in the
+user menu; on an iPhone: Share → Add to Home Screen). The service worker only runs in a production build
+(`npm run build:prod`), not with `npm start`. Demo data (S015): the **Main gate** area (300 m at 15.544000, 73.755300);
+last week's roster and clock events with nine timesheets waiting for approval (Ravi Kamat forgot to clock out on
+Tuesday); this week's clock events up to yesterday. Restart the API and watch for `Applying migration V020__attendance`.
+
+Location on a laptop: the demo area is in Calangute. In Chrome open DevTools → ⋮ → **More tools → Sensors** →
+**Location** → *Other…* and enter 15.5442, 73.7553 (inside) or 15.5440, 73.7653 (about 1.1 km away), or move the area to
+where you are with **Areas** → **Use my location**. A real phone needs the app over HTTPS (browsers only share location
+with `https://` or `localhost`).
+
+```powershell
+# Backend (AttendanceUnitTests and AttendanceTests: 08:03 in, 12:00–12:30 break, 16:10 out = 7 h 37 min; a night shift
+# across midnight counted on the day it started; late, early, overtime; outside then inside the geofence; a forgotten
+# clock-out blocking approval until corrected; a manager entry with a reason; a rejected week; two clock-ins at once)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Attendance"
+
+# Frontend unit tests (minutes and hours, where an entry was recorded)
+cd frontend
+npm run test:ci
+
+# Browser, a housekeeper on a 360 px phone and a manager on a desktop (7 steps, S18-01 … S18-07: refused 1.1 km from the
+# gate, then clocked in at it → break and clock-out → the manager records a clock-in with a reason → she submits her week
+# → the manager approves it → last week approved all at once, Ravi's missing clock-out corrected, approved and locked →
+# the manifest, icons and 360 px screens)
+npm run e2e -- e2e/sprint-18.spec.ts
+cd ..
+
+# API checks: the Sprint 18 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 8, 9 and 11 must return no rows)
+Get-Content database/queries/check-sprint-18.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §74 up to approval): as the owner make a staff account with role **Housekeeper**, then in
+**Employees** add her (Housekeeping) and link that account, and put her on today's roster. In a phone-sized window with
+the Sensors location 1 km away, sign in as her → **Your day** → **Clock in** → refused, saying how far → set the location
+inside → **Clock in** (*Clocked in at …*) → **Start break**, **End break**, **Clock out** → **Timesheets** → **Submit week**.
+As a manager: **Timesheets** → **Team** → her week → **Approve**. Then **Previous week** → **Approve all submitted** (*8
+timesheets approved. 1 need a look first.*: Ravi's Tuesday has no clock-out) → Ravi → **Correct** Tuesday's clock-out 22:05
+with a reason → **Approve** → **Lock for payroll**. How it works:
+[system-design.md → 4.28](architecture/system-design.md#428-attendance-geofence-and-timesheet-maths).
+
+By hand: [REVIEWING.md → Sprint 18](sprints/REVIEWING.md#sprint-18--attendance-and-timesheets-pwa).
+Screenshots: [sprint-18-screens/](sprints/sprint-18-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -810,7 +867,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 497 backend passed, 111 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 510 backend passed, 113 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -818,7 +875,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–17 (expected: 139 passed, about 22 minutes)
+# 3. Every browser test, Sprints 01–18 (expected: 146 passed, about 22 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -833,14 +890,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–17:
+Expected totals for Sprints 01–18:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 497 passed, 0 failed |
-| Frontend unit tests | 111 of 111 SUCCESS |
-| Browser tests | 139 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7) |
-| API checks | 224 passed, 0 failed |
+| Backend tests | 510 passed, 0 failed |
+| Frontend unit tests | 113 of 113 SUCCESS |
+| Browser tests | 146 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7) |
+| API checks | 231 passed, 0 failed |
 
 Other useful commands:
 

@@ -702,3 +702,52 @@ export interface RosterWeek {
 }
 export interface CopyRosterWeekResult { copied: number; skipped: string[]; week: RosterWeek; }
 export interface MyRoster { employeeId: string; employeeName: string; departmentName: string; shifts: RosterShift[]; }
+
+// ------------------------------------------------------------------ attendance and timesheets (Sprint 18)
+
+export type ClockAction = 'CLOCK_IN' | 'BREAK_START' | 'BREAK_END' | 'CLOCK_OUT';
+export type ClockState = 'OFF' | 'ON_SHIFT' | 'ON_BREAK';
+export type AttendanceRowState = 'NOT_YET' | 'NOT_IN' | 'ON_SHIFT' | 'ON_BREAK' | 'DONE' | 'MISSING_OUT';
+export type TimesheetStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'LOCKED';
+export type TimesheetLineStatus = 'WORKED' | 'ABSENT' | 'ON_SHIFT' | 'MISSING_OUT';
+export type TimesheetAction = 'submit' | 'approve' | 'reject' | 'lock' | 'correct';
+
+export interface Geofence { id: string; name: string; latitude: number; longitude: number; radiusM: number; isActive: boolean; version: number; }
+export interface AttendanceEvent {
+  id: string; eventType: ClockAction; occurredAt: string; time: string; workDate: string; locationStatus: 'INSIDE' | 'NO_GEOFENCE' | 'OVERRIDE';
+  distanceM: number | null; geofenceName: string | null; source: 'DEVICE' | 'MANAGER'; reason: string | null; recordedBy: string | null;
+}
+export interface MyAttendance {
+  employeeId: string; employeeName: string; departmentName: string; state: ClockState; since: string | null; today: string; workDate: string | null;
+  todayShift: RosterShift | null; nextShift: RosterShift | null; events: AttendanceEvent[]; workedMinutes: number; breakMinutes: number;
+  missedClockOut: string | null; geofenceRequired: boolean; week: TimesheetSummary | null;
+}
+export interface AttendanceRow {
+  employeeId: string; employeeCode: string; employeeName: string; departmentId: string; departmentName: string; shift: RosterShift | null;
+  state: AttendanceRowState; clockIn: string | null; clockOut: string | null; workedMinutes: number; lateMinutes: number; overridden: boolean;
+  events: AttendanceEvent[];
+}
+export interface AttendanceDay { date: string; today: string; onShift: number; notIn: number; late: number; rows: AttendanceRow[]; geofences: Geofence[]; }
+
+export interface TimesheetSummary {
+  id: string; employeeId: string; employeeCode: string; employeeName: string; departmentName: string; weekStart: string; weekEnd: string;
+  status: TimesheetStatus; workedMinutes: number; breakMinutes: number; overtimeMinutes: number; lateMinutes: number; earlyMinutes: number;
+  daysWorked: number; openDays: number; corrections: number; submittedAt: string | null; decidedAt: string | null; decidedBy: string | null;
+  rejectionReason: string | null; lockedAt: string | null; actions: TimesheetAction[]; version: number;
+}
+export interface TimesheetLine {
+  workDate: string; shiftName: string | null; shiftStart: string | null; shiftEnd: string | null; scheduledMinutes: number | null;
+  clockIn: string | null; clockOut: string | null; clockOutNextDay: boolean; clockInAt: string | null; clockOutAt: string | null; breakMinutes: number;
+  workedMinutes: number; overtimeMinutes: number; lateMinutes: number; earlyMinutes: number; status: TimesheetLineStatus; overridden: boolean;
+  corrected: boolean; events: AttendanceEvent[];
+}
+export interface TimesheetCorrection {
+  id: string; workDate: string; oldClockIn: string | null; oldClockOut: string | null; oldBreakMinutes: number | null; oldWorkedMinutes: number | null;
+  newClockIn: string | null; newClockOut: string | null; newBreakMinutes: number; newWorkedMinutes: number; reason: string; timesheetStatus: TimesheetStatus;
+  createdAt: string; by: string | null;
+}
+export interface Timesheet {
+  sheet: TimesheetSummary; note: string | null; submittedBy: string | null; lines: TimesheetLine[]; corrections: TimesheetCorrection[];
+}
+export interface TimesheetWeek { weekStart: string; weekEnd: string; today: string; timesheets: TimesheetSummary[]; counts: Record<TimesheetStatus, number>; }
+export interface ApproveTimesheetWeekResult { approved: number; skipped: string[]; week: TimesheetWeek; }

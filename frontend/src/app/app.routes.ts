@@ -97,6 +97,10 @@ export const routes: Routes = [
       { path: 'employees', canActivate: [permissionGuard('employee.read')], loadComponent: () => import('./features/employees/employees.page').then(m => m.EmployeesPage) },
       { path: 'employees/:id', canActivate: [permissionGuard('employee.read')], loadComponent: () => import('./features/employees/employee.page').then(m => m.EmployeePage) },
       { path: 'roster', canActivate: [permissionGuard('roster.read')], loadComponent: () => import('./features/employees/roster.page').then(m => m.RosterPage) },
+      // /attendance, /timesheets (Sprint 18)
+      { path: 'attendance', canActivate: [permissionGuard('attendance.self')], loadComponent: () => import('./features/attendance/attendance.page').then(m => m.AttendancePage) },
+      { path: 'timesheets', canActivate: [permissionGuard('timesheet.self')], loadComponent: () => import('./features/attendance/timesheets.page').then(m => m.TimesheetsPage) },
+      { path: 'timesheets/:id', canActivate: [permissionGuard('attendance.read')], loadComponent: () => import('./features/attendance/timesheets.page').then(m => m.TimesheetPage) },
 
       { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
 

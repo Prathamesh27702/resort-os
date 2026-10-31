@@ -2,6 +2,49 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-18] — 2026-10-31 — Attendance and timesheets (PWA) (accepted)
+
+### Added
+- Migration V020: `geofences` (a centre and a radius of 20–2000 m), `attendance_events` (clock-in, break start and end,
+  clock-out; append-only; where the phone was and how far from the nearest area, or a manager's entry with its reason),
+  `timesheets` (one per person per week; `DRAFT` → `SUBMITTED` → `APPROVED` or `REJECTED` → `LOCKED`; a locked one can't
+  change), `timesheet_lines` (one per day) and `timesheet_corrections` (append-only, old and new times with the reason).
+- Clocking in and out on a phone: the server checks the phone's position against the resort's areas and refuses with how
+  far away you are; breaks; one step at a time per person, so a double tap can't clock in twice.
+- A manager records a clock event for someone with a reason (no signal, forgot); shown as a manager entry; never their own.
+- Each day worked out in the property's time zone: hours worked, breaks, late, left early, overtime; night shifts count on
+  the day they start; a clock-in with no clock-out after 16 hours is a missing clock-out.
+- Timesheets: submit with a note; approve, send back with what to fix, or approve all for a week (skipping and listing any
+  with a day without a clock-out); corrections that keep the old times; lock for payroll; nobody approves or corrects
+  their own.
+- Installable app (PWA): web manifest, icons, a service worker in production builds (API calls never cached), the install
+  offer on the dashboard and in the user menu.
+- API: `GET /attendance`, `GET /attendance/me`, `POST /attendance/me/clock`, `POST /attendance/events`, `GET|POST
+  /attendance/geofences`, `PUT /attendance/geofences/{id}`, `GET /timesheets`, `GET /timesheets/mine`, `GET
+  /timesheets/{id}`, `POST /timesheets/{id}/submit`, `/approve`, `/reject`, `/lock`, `/corrections`, `POST
+  /timesheets/approve-week`.
+- Staff app: **Attendance** (`/attendance`: the phone clock; the team board, manager entries and areas for managers),
+  **Timesheets** (`/timesheets`, `/timesheets/{id}`) and the dashboard's **Your day** card.
+- Dev seed S015: the Main gate area (300 m), last week's roster and clock events with nine timesheets waiting for approval
+  (one with a forgotten clock-out), this week's clock events up to yesterday.
+- Tests: backend `AttendanceUnitTests` (the brief's 7 h 37 min day, a night shift across midnight, late, early, overtime,
+  a missing clock-out, distances) and `AttendanceTests` (geofence refusal then clock-in and the week approved; a night
+  shift in the week it started; a forgotten clock-out corrected before approval; a manager entry with a reason and a
+  rejected week; two clock-ins at once make one, 5 times) and a dev seed check; frontend `attendance.spec.ts`; browser
+  steps S18-01 … S18-07; `check-api.mjs` Sprint 18 block; `database/queries/check-sprint-18.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-18.md, system design Sprint 18 and 4.28 with the attendance flow diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The shell menu adds **Attendance** and **Timesheets**, and the user menu **Install the app**.
+
+### Open points
+- Location needs HTTPS on a real phone (browsers share it only with `https://` or `localhost`); production runs on HTTPS.
+- A phone's location can be faked by a determined person; the geofence stops honest mistakes, and manager entries and
+  corrections are always recorded with a reason. Selfie or device binding could come later if wanted.
+- Leave and holidays (a rostered day on leave shows as *Not in* for now) and the payroll export of locked timesheets come
+  with Sprint 19. Working offline comes with Sprint 28.
+
 ## [sprint-17] — 2026-10-29 — Employees and roster (accepted)
 
 ### Added
