@@ -22,7 +22,8 @@ PostgreSQL 16. One database for all modules. The schema is owned by plain SQL mi
   [Sprint 14 — restaurant](database/schema-sprint-14.md) (the menu with portions and choices, tables, orders with their versions, kitchen tickets, voids and discounts, room charges on the folio, restaurant cash in the drawer, demo menu) ·
   [Sprint 15 — inventory](database/schema-sprint-15.md) (units, stores and stock items, the append-only stock ledger and on hand kept from it, adjustments and counts with their reason, recipes per dish or portion, demo stock and recipes) ·
   [Sprint 16 — suppliers and purchasing](database/schema-sprint-16.md) (suppliers with GSTIN, requests, orders with approval, goods received into the stock ledger, supplier bills with input GST, payments, demo suppliers) ·
-  [Sprint 17 — employees and roster](database/schema-sprint-17.md) (departments and job titles, employees with an optional account, pay apart behind its own permission, encrypted documents, shift templates, the roster with its clash constraint, ten demo employees)
+  [Sprint 17 — employees and roster](database/schema-sprint-17.md) (departments and job titles, employees with an optional account, pay apart behind its own permission, encrypted documents, shift templates, the roster with its clash constraint, ten demo employees) ·
+  [Sprint 18 — attendance and timesheets](database/schema-sprint-18.md) (geofences, append-only clock events with where the phone was or a manager's reason, weekly timesheets worked out per day, corrections that keep the old times, locked for payroll, last week's demo timesheets)
 
 ## Conventions (every table)
 

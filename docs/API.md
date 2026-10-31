@@ -1044,6 +1044,63 @@ templateName, departmentId, departmentName, startTime, endTime, needed, rostered
 LONG_WEEK | OVERLAP_ALLOWED, date, employeeId, shiftId, message }] }`. `CopyRosterWeekRequest = { fromWeek, toWeek }` (Mondays),
 `CopyRosterWeekResultDto = { copied, skipped: string[], week: RosterWeekDto }`.
 
+## Built endpoints (Sprint 18 — attendance and timesheets)
+
+All under `/api/v1/properties/{propertyId}`. A person **clocks in and out on their phone**: the browser sends its position
+and the **server** measures the distance to each active **geofence** (a circle: centre and a radius of 20–2000 m). The
+phone's own accuracy counts up to 50 m; a reading worse than 500 m is refused under `AccuracyM`. Outside every area the
+answer is `422 OUTSIDE_GEOFENCE` with how far away and which area (`details: { distanceM, radiusM, geofence }`). With no
+geofence set up, location isn't checked; breaks never check it. A manager (`attendance.update`) can **record** a clock
+event for someone, with a reason (e.g. no signal); it shows as a manager entry (`source: MANAGER`, `locationStatus:
+OVERRIDE`). Nobody records their own. Each person has one **timesheet** per week (Monday–Sunday), made when first needed,
+with one line per day worked out in the property's time zone: worked = out − in − breaks, late and left early against
+the rostered shift, overtime beyond the shift's paid minutes (beyond 8 h without a shift), a night shift on the day it
+starts, and a clock-in with no clock-out after 16 hours shown as `MISSING_OUT`. States: `DRAFT` → `SUBMITTED` →
+`APPROVED` or `REJECTED` (with a reason; the person fixes and submits again) → `LOCKED` for payroll. **Corrections** set a
+day's times with a reason and keep the old ones; a corrected day is never recalculated from clock events; nothing changes
+once `LOCKED`. Nobody approves, rejects, locks or corrects their own timesheet. How it works:
+[system-design.md → 4.28](architecture/system-design.md#428-attendance-geofence-and-timesheet-maths).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /attendance/me` | The caller's attendance now: clocked in or not, today's and the next shift, the day's entries and hours, this week's timesheet | `attendance.self` | — | `MyAttendanceDto` | 403, 404 (account not linked to an employee) | — |
+| `POST /attendance/me/clock` | Clock in, start or end a break, clock out | `attendance.self` | `ClockRequest` | `MyAttendanceDto` | 400 `Action`, `Latitude` ("We need your phone's location to check you are at the resort. …"), `AccuracyM` ("Your phone only knows where you are to within 1.2 km. …"); 403, 404; 409 `ATTENDANCE_STATE` ("You clocked in at 08:03 and haven't clocked out yet."), `TIMESHEET_CLOSED` (the week is approved or locked); 422 `OUTSIDE_GEOFENCE` ("You are 1.1 km from Main gate; clocking in counts within 300 m of it. Do it at the resort, or ask your manager to record it with a reason."), `NOT_EMPLOYED` | INSERT |
+| `GET /attendance?date` | One day's board (today by default): everyone rostered or who clocked in, their state, in and out, late, manager entries; counts | `attendance.read` | — | `AttendanceDayDto` | 403 | — |
+| `POST /attendance/events` | A manager records a clock event for someone, now or at a time up to 7 days back, with the reason | `attendance.update` | `ManagerClockRequest` | `AttendanceDayDto` | 400 `EmployeeId`, `Action`, `Reason` ("Say why you are recording this for them, 3–300 characters …"), `Time` (in the future; before their latest entry), `Date` (more than 7 days back; before they joined); 403, 404; 409 `ATTENDANCE_STATE`, `TIMESHEET_CLOSED`; 422 `OWN_ATTENDANCE` | INSERT |
+| `GET /attendance/geofences` | The areas where clocking in counts | `attendance.read` | — | `GeofenceDto[]` | 403 | — |
+| `POST /attendance/geofences` · `PUT /attendance/geofences/{id}` | An area: name, centre, radius, on or off. `version` on PUT | `attendance.update` | `SaveGeofenceRequest` | 201 / 200 `GeofenceDto` | 400 `Name` (2–60; "There is already an area called Main gate."), `Latitude`, `Longitude`, `RadiusM` ("The radius is 20–2000 metres."); 403, 404; 409 | INSERT/UPDATE |
+| `GET /timesheets?week` | One week's timesheets for everyone (Monday given or this week) with counts per status | `attendance.read` | — | `TimesheetWeekDto` | 403 | — |
+| `GET /timesheets/mine?week` | The caller's own timesheet for the week, made if missing | `timesheet.self` | — | `TimesheetDto` | 403, 404 (account not linked) | — |
+| `GET /timesheets/{id}` | One timesheet: days, entries, corrections | `attendance.read` | — | `TimesheetDto` | 403, 404 | — |
+| `POST /timesheets/{id}/submit` | Submit one's own week, with an optional note | `timesheet.self` | `SubmitTimesheetRequest` | `TimesheetDto` | 400 `Note`; 403 (not yours), 404; 409; 422 `INVALID_STATUS_TRANSITION`, `TIMESHEET_EMPTY`, `STILL_CLOCKED_IN` ("You are still clocked in since 08:03. Clock out first, then submit.") | UPDATE |
+| `POST /timesheets/{id}/approve` | Approve a submitted week | `timesheet.approve` | `TimesheetVersionRequest` | `TimesheetDto` | 403, 404; 409; 422 `OWN_TIMESHEET`, `INVALID_STATUS_TRANSITION`, `TIMESHEET_OPEN_DAY` ("Tue 20 Oct has a clock-in at 14:01 with no clock-out. Correct that day first.") | UPDATE |
+| `POST /timesheets/{id}/reject` | Send it back with what needs fixing | `timesheet.approve` | `RejectTimesheetRequest` | `TimesheetDto` | 400 `Reason`; 403, 404; 409; 422 `OWN_TIMESHEET`, `INVALID_STATUS_TRANSITION` | UPDATE |
+| `POST /timesheets/{id}/lock` | Lock an approved week for payroll | `timesheet.approve` | `TimesheetVersionRequest` | `TimesheetDto` | 403, 404; 409; 422 `OWN_TIMESHEET`, `INVALID_STATUS_TRANSITION` | UPDATE |
+| `POST /timesheets/{id}/corrections` | Set one day's in, out and break with the reason; the old times are kept | `attendance.update` (+ `timesheet.approve` once approved) | `CorrectTimesheetLineRequest` | `TimesheetDto` | 400 `WorkDate` (outside the week; before joining), `ClockIn`/`ClockOut` ("Give both the clock-in and the clock-out time, or leave both empty …"; in the future; over 16 hours), `BreakMinutes` (0–180; not shorter than the time worked), `Reason`; 403 (approved, without `timesheet.approve`), 404; 409 `TIMESHEET_LOCKED`, `CONCURRENCY_CONFLICT`; 422 `OWN_TIMESHEET` | INSERT correction + UPDATE |
+| `POST /timesheets/approve-week` | Approve every submitted timesheet of a week; any that can't be approved are skipped and listed with the reason | `timesheet.approve` | `ApproveTimesheetWeekRequest` | `ApproveTimesheetWeekResultDto` | 400 `WeekStart`; 403 | UPDATE per timesheet |
+
+`ClockRequest = { action: CLOCK_IN | BREAK_START | BREAK_END | CLOCK_OUT, latitude?, longitude?, accuracyM? }`.
+`ManagerClockRequest = { employeeId, action, date?, time?, reason }` (local date and time at the property; default now).
+`AttendanceEventDto = { id, eventType, occurredAt, time, workDate, locationStatus: INSIDE | NO_GEOFENCE | OVERRIDE,
+distanceM, geofenceName, source: DEVICE | MANAGER, reason, recordedBy }`. `MyAttendanceDto = { employeeId, employeeName,
+departmentName, state: OFF | ON_SHIFT | ON_BREAK, since, today, workDate, todayShift, nextShift, events, workedMinutes,
+breakMinutes, missedClockOut, geofenceRequired, week: TimesheetSummaryDto? }`. `AttendanceDayDto = { date, today, onShift,
+notIn, late, rows: [{ employeeId, employeeCode, employeeName, departmentId, departmentName, shift, state: NOT_YET | NOT_IN |
+ON_SHIFT | ON_BREAK | DONE | MISSING_OUT, clockIn, clockOut, workedMinutes, lateMinutes, overridden, events }], geofences }`.
+`GeofenceDto = { id, name, latitude, longitude, radiusM, isActive, version }`; `SaveGeofenceRequest` is the same without
+the id. `TimesheetSummaryDto = { id, employeeId, employeeCode, employeeName, departmentName, weekStart, weekEnd, status:
+DRAFT | SUBMITTED | APPROVED | REJECTED | LOCKED, workedMinutes, breakMinutes, overtimeMinutes, lateMinutes, earlyMinutes,
+daysWorked, openDays, corrections, submittedAt, decidedAt, decidedBy, rejectionReason, lockedAt, actions: (submit | approve
+| reject | lock | correct)[], version }`. `TimesheetDto = { sheet, note, submittedBy, lines: [{ workDate, shiftName,
+shiftStart, shiftEnd, scheduledMinutes, clockIn, clockOut, clockOutNextDay, clockInAt, clockOutAt, breakMinutes,
+workedMinutes, overtimeMinutes, lateMinutes, earlyMinutes, status: WORKED | ABSENT | ON_SHIFT | MISSING_OUT, overridden,
+corrected, events }], corrections: [{ id, workDate, oldClockIn, oldClockOut, oldBreakMinutes, oldWorkedMinutes, newClockIn,
+newClockOut, newBreakMinutes, newWorkedMinutes, reason, timesheetStatus, createdAt, by }] }`. `TimesheetWeekDto = { weekStart,
+weekEnd, today, timesheets, counts }`. `SubmitTimesheetRequest = { note?, version? }`, `RejectTimesheetRequest = { reason,
+version? }`, `TimesheetVersionRequest = { version? }`, `ApproveTimesheetWeekRequest = { weekStart }`,
+`ApproveTimesheetWeekResultDto = { approved, skipped: string[], week }`. `CorrectTimesheetLineRequest = { workDate, clockIn?,
+clockOut?, breakMinutes, reason, version? }` (a clock-out at or before the clock-in is the next day; both empty: not worked).
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

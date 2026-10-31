@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
 using Resort.Domain.Accommodation;
+using Resort.Domain.Attendance;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
 using Resort.Domain.Employees;
@@ -144,6 +145,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<EmployeeCompensation> EmployeeCompensation => Set<EmployeeCompensation>();
     public DbSet<ShiftTemplate> ShiftTemplates => Set<ShiftTemplate>();
     public DbSet<RosterShift> RosterShifts => Set<RosterShift>();
+    public DbSet<Geofence> Geofences => Set<Geofence>();
+    public DbSet<AttendanceEvent> AttendanceEvents => Set<AttendanceEvent>();
+    public DbSet<Timesheet> Timesheets => Set<Timesheet>();
+    public DbSet<TimesheetLine> TimesheetLines => Set<TimesheetLine>();
+    public DbSet<TimesheetCorrection> TimesheetCorrections => Set<TimesheetCorrection>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -642,6 +648,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         b.Entity<EmployeeCompensation>().ToTable("employee_compensation");
         b.Entity<ShiftTemplate>().ToTable("shift_templates");
         b.Entity<RosterShift>().ToTable("roster_shifts");
+
+        // Attendance and timesheets (Sprint 18). Events and corrections are never changed (triggers); a locked timesheet
+        // and its lines can't change either.
+        b.Entity<Geofence>().ToTable("geofences");
+        b.Entity<AttendanceEvent>().ToTable("attendance_events");
+        b.Entity<Timesheet>(e =>
+        {
+            e.ToTable("timesheets");
+            e.Ignore(x => x.Open);
+        });
+        b.Entity<TimesheetLine>().ToTable("timesheet_lines");
+        b.Entity<TimesheetCorrection>().ToTable("timesheet_corrections");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

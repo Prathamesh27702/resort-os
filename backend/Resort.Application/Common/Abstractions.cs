@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Resort.Domain.Accommodation;
+using Resort.Domain.Attendance;
 using Resort.Domain.Audit;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
@@ -134,6 +135,11 @@ public interface IAppDbContext
     DbSet<EmployeeCompensation> EmployeeCompensation { get; }
     DbSet<ShiftTemplate> ShiftTemplates { get; }
     DbSet<RosterShift> RosterShifts { get; }
+    DbSet<Geofence> Geofences { get; }
+    DbSet<AttendanceEvent> AttendanceEvents { get; }
+    DbSet<Timesheet> Timesheets { get; }
+    DbSet<TimesheetLine> TimesheetLines { get; }
+    DbSet<TimesheetCorrection> TimesheetCorrections { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

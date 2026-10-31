@@ -539,6 +539,37 @@ Screenshots: [sprint-17-screens/](sprint-17-screens/). The browser tests do the 
 | 12 | Manager, phone window: **Roster** → **Next week** → the Wednesday tab | One day at a time: Maria Fernandes *day off*, Sunil Gawas *Day 08:00–17:00*; the day's gaps are marked; nothing scrolls sideways |
 | 13 | Optional: Hema → a profile → **Leaves** with a last day before one of their shifts | Refused under the date, naming the days they are still on the roster: *… is on the roster after …. Remove those shifts from the roster first.* |
 
+### Sprint 18 — Attendance and timesheets (PWA)
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V020__attendance`).
+Demo data (S015): the **Main gate** area, 300 m around 15.544000, 73.755300 (Calangute); last week's roster and clock
+events, with nine of last week's timesheets **waiting for approval**: **Ravi Kamat** (E00007) clocked in on Tuesday and
+never out, and his note says he left at 22:05; **Pooja Shetye** was not in on Tuesday. Use two browser windows: a
+**manager** on a desktop and a **housekeeper** in a phone-sized window (360 × 780). The demo area is in Calangute, so set
+the phone window's location in Chrome DevTools → ⋮ → **More tools → Sensors** → **Location** → *Other…* (15.5440, 73.7653
+is about 1.1 km from the gate; 15.5442, 73.7553 is inside), and allow location when the browser asks. Screenshots:
+[sprint-18-screens/](sprint-18-screens/). The browser tests do the same on their own:
+`cd frontend; npm run e2e:headed -- e2e/sprint-18.spec.ts` (names S18-01 … S18-07). Database checks:
+`database/queries/check-sprint-18.sql`. How it works:
+[system-design.md → 4.28](../architecture/system-design.md#428-attendance-geofence-and-timesheet-maths).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Gauri Gaonkar*, role **Housekeeper**; and *Mira Manager*, role **Manager**. **Employees** → **Employee** → *Gauri Gaonkar*, Housekeeping, **Staff account** Gauri's → **Save**. **Roster** → today, Gauri's cell → **Other times** from a quarter of an hour ago, 8 hours → **Add** | *Gauri Gaonkar added as E00011.* and her shift on today's roster |
+| 2 | Phone window, location 1.1 km away: sign in as Gauri | The dashboard's **Your day**: *Not clocked in*, *Today: …* her shift, a **Clock in** link (and, in a production build, an offer to install the app) |
+| 3 | **Clock in** → **Clock in** | Refused in red: *You are 1.1 km from Main gate; clocking in counts within 300 m of it. Do it at the resort, or ask your manager to record it with a reason.* Nothing is saved |
+| 4 | Set the location inside (15.5442, 73.7553) → **Clock in** | *Clocked in at HH:MM.*; *At work since HH:MM*; the entry *In · Main gate · 22 m from the centre*; nothing scrolls sideways |
+| 5 | **Start break** → **End break** → **Clock out** | *On a break since …*, then *At work since …*, then *Clocked out at HH:MM. Worked 0 h.*; four entries listed |
+| 6 | Manager, desktop: sign in as Mira → **Attendance** | Today's team board: Gauri *Clocked out*, the rest *Not in* or *Not started*, with late minutes |
+| 7 | Someone *Not in* → the clock button → **Time** a few minutes ago → **Record** without a reason | Under **Why**: *Say why, at least 3 characters.* |
+| 8 | **Why** *Phone had no signal at the beach* → **Record** | *Clock in at HH:MM recorded for ….*; their row *At work* with *manager entry* |
+| 9 | Phone: **Timesheets** | *Draft*, today's line; **Note for your manager** *First day at the resort* → **Submit week** → *Submitted. Your manager will approve it or send it back.*; *Waiting for approval* |
+| 10 | Manager: **Timesheets** → **Team** → Gauri's row → **Approve** | Her note is shown; *… week is approved.*; *Approved* |
+| 11 | **The demo.** **Previous week** (arrow) → **Approve all submitted (9)** | *8 timesheets approved. 1 need a look first.* and under it *Ravi Kamat: Tue … has a clock-in at 14:01 with no clock-out. Correct that day first.*; Ravi's row says *1 day without a clock-out* |
+| 12 | Ravi's row → his timesheet → Tuesday (*No clock-out*) → **Correct** → **Clock-out** 22:05, **Why** *Forgot to clock out, left at 22:05 (kitchen closing log)* → **Save correction** | *Correction saved. The old times are kept on the timesheet.*; **Corrections** lists *Tue …: 14:01 to no clock-out (0 h) → 14:01 to 22:05 (8 h 4 min) · Forgot to clock out …* with your name |
+| 13 | **Approve** → **Lock for payroll** | *Approved*, then *… locked for payroll.* and *Locked for payroll*; **Correct a day** is gone |
+| 14 | Optional: sign in as yourself (owner) on your own phone over HTTPS, or a production build on the laptop → the user menu | **Install the app** puts Resort OS on the home screen; it opens on the dashboard without the browser bar |
+
 ## Part C — Decide
 
 ### Accept

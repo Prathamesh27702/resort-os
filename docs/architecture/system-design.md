@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–17 built and accepted (October 2026); Sprint 18 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–17 built and accepted (October 2026); Sprint 18 built and in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -444,6 +444,32 @@ flowchart LR
   sections only for those allowed, next shifts, leaving) and **Roster** (`/roster`: a week grid by department on a
   desktop, one day at a time on a phone; shortages to tap and fill; warnings; copy last week; shift templates), dialogs in
   `employee-dialogs.ts` and `roster-dialogs.ts`. [4.27](#427-roster-clash-detection-and-shortages) explains the rules.
+
+### Sprint 18: Attendance and timesheets (PWA)
+
+![Clocking in: the phone's position checked by the server against the geofence, the day worked out in the property's time zone, and the timesheet's states](../../tools/handbooks/assets/attendance-flow.png)
+
+- Migration V020: `geofences` (a centre and a radius of 20–2000 m), `attendance_events` (clock-in, break start and end,
+  clock-out; append-only by trigger; where the phone was, how far from the nearest geofence, or a manager's entry with
+  its reason), `timesheets` (one per person per Monday-to-Sunday week, with totals and the approval; a `LOCKED` row can't
+  change), `timesheet_lines` (one per day; can't change once locked) and `timesheet_corrections` (append-only, old and
+  new times with the reason). Details: [schema-sprint-18.md](../database/schema-sprint-18.md).
+- `Domain/Attendance/Attendance.cs` (entities, statuses, `TimesheetMath`: a day from its clock events, from a
+  correction's times, the haversine distance, "1.2 km"). `Application/Attendance/AttendanceService.cs` (geofences, my
+  attendance, clocking with the geofence check, the day's board, a manager's entry) and `TimesheetService.cs` (weeks,
+  making a timesheet when first needed, working out its days, submit, approve, approve all, send back, lock, correct).
+  `Validation/AttendanceValidators.cs`.
+- Endpoints: `AttendanceEndpoints.cs` (`/attendance` with `/me`, `/me/clock`, `/events`, `/geofences`; `/timesheets`
+  with `/mine`, `/{id}`, `/submit`, `/approve`, `/reject`, `/lock`, `/corrections`, `/approve-week`).
+- Screens: **Attendance** (`/attendance`: one big button on a phone for the next step, the day's entries and hours; for
+  managers also the team board with who is in, late or not in, recording an entry with a reason, and the areas),
+  **Timesheets** (`/timesheets`: my week to submit, or the team's week with approve all) and one timesheet
+  (`/timesheets/{id}`: each day with its entries, corrections, approve, send back, lock); dialogs in
+  `attendance-dialogs.ts`. The dashboard's **Your day** card shows the shift and a clock-in link.
+- **Installable app (PWA):** `public/manifest.webmanifest` and `public/icons/`, `@angular/service-worker` with
+  `ngsw-config.json` in production builds only (the app's files are cached; `/api`, `/pay`, `/swagger` and `/health`
+  never are), and `core/install.ts` keeping the browser's install prompt for the dashboard banner and the user menu (an
+  iPhone gets "Share → Add to Home Screen" instead). [4.28](#428-attendance-geofence-and-timesheet-maths) explains the rules.
 
 ---
 
@@ -1095,6 +1121,52 @@ Diagram: section 3 (Sprint 17). Tests: `EmployeesTests`, `employees.spec.ts`, `e
 7. **Permissions.** `employee.read` / `create` / `update`, `employee_salary.read`, `employee_document.read`, `roster.read`,
    `roster.manage` (manager, HR), `roster.self` (everyone, through the employee linked to their account).
 
+### 4.28 Attendance: geofence and timesheet maths
+
+Code: `Application/Attendance/` (`AttendanceService.cs`, `TimesheetService.cs`), `Domain/Attendance/Attendance.cs`
+(`TimesheetMath`), `database/migrations/V020__attendance.sql`, `features/attendance/`. Diagram: section 3 (Sprint 18).
+Tests: `AttendanceUnitTests`, `AttendanceTests`, `attendance.spec.ts`, `e2e/sprint-18.spec.ts`.
+
+1. **The server decides where you are.** The phone only sends its position (`navigator.geolocation`, never a cached
+   reading) and its accuracy. `LocateAsync` measures the great-circle distance to each active geofence and takes the
+   nearest edge. Inside is `distance ≤ radius + min(accuracy, 50 m)`; a reading worse than 500 m is refused under
+   `AccuracyM`. Outside is `422 OUTSIDE_GEOFENCE`: *You are 1.1 km from Main gate; clocking in counts within 300 m of it.
+   Do it at the resort, or ask your manager to record it with a reason.* Only clocking in and out are checked; breaks
+   aren't. With no geofence set up nothing is checked (`NO_GEOFENCE`).
+2. **One step at a time per person.** `ClockAsync` runs in a transaction that first locks the employee row (`SELECT …
+   FOR UPDATE`), reads their latest events and refuses a step that doesn't follow (`409 ATTENDANCE_STATE`: *You clocked
+   in at 08:03 and haven't clocked out yet.*). So a double tap can't clock in twice. Test:
+   `Two_clock_ins_sent_at_the_same_moment_make_exactly_one_5_times`.
+3. **A manager's entry** (`POST /attendance/events`, `attendance.update`) is the override: the reason is required (the
+   validator and a CHECK), the event is `source MANAGER` / `OVERRIDE`, it can be up to 7 days back but never before the
+   person's latest entry, and nobody records their own (`OWN_ATTENDANCE`). The day's line is flagged `overridden`, and
+   every screen shows "manager entry".
+4. **Which day it counts for.** A clock-in takes the rostered shift starting within 3 hours of it and that shift's date;
+   with no shift, the local date. Break and clock-out events take the open clock-in's day. So a night shift 22:55–07:10
+   counts on the day it started, and a Sunday night shift belongs to the week it started in.
+5. **The day's maths** (`TimesheetMath.Day`, in the property's time zone): for each session in → out, worked = out − in −
+   its breaks (a break still open at clock-out ends there); the day adds its sessions. Late = first in after the shift's
+   start; left early = last out before the shift's end; overtime = worked beyond the shift's paid minutes (length minus
+   break), or beyond 8 h with no shift. 08:03 in, 12:00–12:30 break, 16:10 out is 487 − 30 = 457 minutes = **7 h 37 min**
+   (the brief's example, a unit test). A clock-in with no clock-out is `ON_SHIFT` for 16 hours, then `MISSING_OUT`; only
+   what is known (in, late) counts until it is closed.
+6. **States.** `DRAFT` → `SUBMITTED` (the person, with a note; refused while still clocked in) → `APPROVED` or `REJECTED`
+   (a manager, with what to fix) → `LOCKED` (for payroll). Days are worked out from events only while the timesheet is
+   `DRAFT` or `REJECTED`; a new clock event on a `SUBMITTED` week puts it back to `DRAFT`, and on an approved or locked one
+   is refused (`TIMESHEET_CLOSED`). Approving is refused while any day has no clock-out (`TIMESHEET_OPEN_DAY`, naming the
+   day); **approve all** approves the rest of the week and lists the ones it skipped and why. Nobody approves, sends back,
+   locks or corrects their own timesheet.
+7. **Corrections keep the old times.** A manager sets a day's in, out and break with a reason; `timesheet_corrections`
+   keeps old and new (append-only), the line is marked `corrected` and never worked out from events again. Correcting an
+   approved week needs `timesheet.approve` too; a locked one is `409 TIMESHEET_LOCKED`, and the triggers
+   `trg_timesheets_locked` and `trg_timesheet_lines_locked` refuse any change to it in the database. Test:
+   `A_forgotten_clock_out_blocks_approval_until_a_manager_corrects_the_day_and_the_correction_is_kept`.
+8. **Making a timesheet** when first needed uses `INSERT … ON CONFLICT (employee_id, week_start) DO NOTHING`, so two
+   requests at once make one, and approve all locks the week's rows (`FOR UPDATE`) before deciding.
+9. **Permissions.** `attendance.self` and `timesheet.self` (everyone, through the employee linked to their account),
+   `attendance.read` (the board and the team's timesheets: managers, supervisors, HR), `attendance.update` (manager
+   entries, areas, corrections: manager, HR), `timesheet.approve` (manager, HR).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1122,3 +1194,4 @@ request:
 | 15 | Inventory and recipe costing (stock ledger and levels, adjustments and counts with reasons, recipes, served dishes use their recipe, food-cost report), stock ledger diagram; system design 4.25 The stock ledger, recipes and food cost (accepted 27 Oct 2026) |
 | 16 | Suppliers and purchasing (requests, orders with an approval limit, part deliveries into the stock ledger, supplier bills with input GST, payments), purchase flow diagram; system design 4.26 Purchasing: approval, goods received and supplier bills (accepted 27 Oct 2026) |
 | 17 | Employees and roster (departments, profiles with an optional account link, pay behind its own permission, encrypted documents, shift templates, the week's roster with clash detection, shortages and warnings), roster flow diagram; system design 4.27 Roster: clash detection and shortages (accepted 29 Oct 2026) |
+| 18 | Attendance and timesheets (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets worked out per day, approve all, corrections that keep the old times, locked for payroll; installable app), attendance flow diagram; system design 4.28 Attendance: geofence and timesheet maths (in review) |

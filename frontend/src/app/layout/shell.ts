@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { AuthService } from '../core/auth.service';
 import { PropertyContext, inZone } from '../core/property-context';
+import { InstallPrompt } from '../core/install';
 
 interface NavItem { label: string; icon: string; link: string; perm?: string; exact?: boolean; }
 
@@ -28,7 +29,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
             </a>
           }
         </nav>
-        <p class="later">Activities and staff modules arrive in later sprints.</p>
+        <p class="later">Leave, activities and transport arrive in later sprints.</p>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -63,6 +64,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
             <span class="who"><b>{{ auth.me()?.fullName }}</b><small>{{ auth.roleLabel() }}</small></span>
           </button>
           <mat-menu #umenu="matMenu">
+            @if (install.canInstall()) { <button mat-menu-item (click)="install.install()"><mat-icon>install_mobile</mat-icon>Install the app</button> }
             <a mat-menu-item routerLink="/account/password"><mat-icon>key</mat-icon>Change password</a>
             <button mat-menu-item (click)="auth.logout()"><mat-icon>logout</mat-icon>Sign out</button>
           </mat-menu>
@@ -104,6 +106,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
 export class Shell {
   auth = inject(AuthService);
   props = inject(PropertyContext);
+  install = inject(InstallPrompt);
   navOpen = signal(false);
   mobile = toSignal(inject(BreakpointObserver).observe('(max-width: 760px)').pipe(map(r => r.matches)), { initialValue: false });
 
@@ -129,6 +132,8 @@ export class Shell {
     { label: 'Suppliers', icon: 'local_shipping', link: '/inventory/suppliers', perm: 'supplier.read' },
     { label: 'Employees', icon: 'groups', link: '/employees', perm: 'employee.read' },
     { label: 'Roster', icon: 'calendar_view_week', link: '/roster', perm: 'roster.read' },
+    { label: 'Attendance', icon: 'pin_drop', link: '/attendance', perm: 'attendance.self' },
+    { label: 'Timesheets', icon: 'fact_check', link: '/timesheets', perm: 'timesheet.self' },
     { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },
     { label: 'Rates', icon: 'sell', link: '/settings/rates', perm: 'rate.read' },
     { label: 'Packages', icon: 'redeem', link: '/settings/packages', perm: 'rate.read' },
