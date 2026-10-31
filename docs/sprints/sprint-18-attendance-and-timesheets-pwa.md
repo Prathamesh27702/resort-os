@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 6 — Employees, attendance, timesheets, leave, roster | L | [Sprint 17](sprint-17-employees-and-roster.md) |
+| 🟢 Done | Phase 6 — Employees, attendance, timesheets, leave, roster | L | [Sprint 17](sprint-17-employees-and-roster.md) |
 
 **Goal:** Mobile clock-in/out with geofence, breaks, timesheets with approval and locked corrections (brief §43, §44, §74).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built; pull request into develop waits for the owner's review.
+**Now:** Accepted by the owner on 31 Oct 2026 and released to main (tag sprint-18).
 
 **Done so far**
 
@@ -44,9 +44,7 @@
 
 **Outcome**
 
-Expected when accepted:
-
-- Employee clocks in/out on a phone; manager approves the week
+Accepted 31 Oct 2026 (the owner reviewed it on their PC). A housekeeper on a phone is refused 1.1 km from the gate with the distance, clocks in at the gate, takes a break and clocks out; a manager records a clock-in for someone with no signal, with a reason; she submits her week and the manager approves it; last week is approved all at once except Ravi's missing clock-out, which is corrected with a reason, approved and locked for payroll (AttendanceTests, browser steps S18-01 … S18-07). Code #157; on main as tag sprint-18. Sprint 19 (leave, holidays and payroll export) is next.
 
 ## Scope
 

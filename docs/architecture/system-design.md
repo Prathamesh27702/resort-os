@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–17 built and accepted (October 2026); Sprint 18 built and in review. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–18 built and accepted (October 2026); Sprint 19 in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -1194,4 +1194,4 @@ request:
 | 15 | Inventory and recipe costing (stock ledger and levels, adjustments and counts with reasons, recipes, served dishes use their recipe, food-cost report), stock ledger diagram; system design 4.25 The stock ledger, recipes and food cost (accepted 27 Oct 2026) |
 | 16 | Suppliers and purchasing (requests, orders with an approval limit, part deliveries into the stock ledger, supplier bills with input GST, payments), purchase flow diagram; system design 4.26 Purchasing: approval, goods received and supplier bills (accepted 27 Oct 2026) |
 | 17 | Employees and roster (departments, profiles with an optional account link, pay behind its own permission, encrypted documents, shift templates, the week's roster with clash detection, shortages and warnings), roster flow diagram; system design 4.27 Roster: clash detection and shortages (accepted 29 Oct 2026) |
-| 18 | Attendance and timesheets (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets worked out per day, approve all, corrections that keep the old times, locked for payroll; installable app), attendance flow diagram; system design 4.28 Attendance: geofence and timesheet maths (in review) |
+| 18 | Attendance and timesheets (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets worked out per day, approve all, corrections that keep the old times, locked for payroll; installable app), attendance flow diagram; system design 4.28 Attendance: geofence and timesheet maths (accepted 31 Oct 2026) |
