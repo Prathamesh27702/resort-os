@@ -121,13 +121,13 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `timesheets` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
 | `timesheet_lines` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
 | `timesheet_corrections` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🔵 In progress |
-| `leave_types` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
-| `leave_policies` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
-| `leave_balances` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
-| `leave_ledger` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
-| `leave_requests` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
-| `holidays` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
-| `payroll_exports` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | ⚪ Planned |
+| `leave_types` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
+| `leave_policies` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
+| `leave_balances` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
+| `leave_ledger` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
+| `leave_requests` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
+| `holidays` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
+| `payroll_exports` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
 | `activities` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
 | `activity_schedules` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
 | `activity_bookings` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |

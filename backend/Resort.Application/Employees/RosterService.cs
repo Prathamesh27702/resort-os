@@ -3,6 +3,7 @@ using Resort.Application.Common;
 using Resort.Application.Reservations;
 using Resort.Contracts;
 using Resort.Domain.Employees;
+using Resort.Domain.Leave;
 using Resort.Domain.Organizations;
 using Resort.Domain.Rates;
 
@@ -135,10 +136,11 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
             warnings.Add(new RosterWarningDto("LONG_WEEK", null, e.Id, null,
                 $"{e.Name} has {RosterMath.Hours(e.PaidMinutes)} this week, over the 48-hour limit for a week."));
 
+        var leave = await LeaveDaysAsync(propertyId, from, to, ct);
         var shownDepts = depts.Where(d => d.IsActive || empDtos.Any(e => e.DepartmentId == d.Id) || shiftDtos.Any(s => s.DepartmentId == d.Id))
             .OrderBy(d => d.SortOrder).ThenBy(d => d.Name).Select(d => new RosterDepartmentDto(d.Id, d.Code, d.Name)).ToList();
         return new RosterWeekDto(from, to, today, shownDepts, empDtos, templates, shiftDtos, shortages,
-            warnings.OrderBy(w => w.Date ?? DateOnly.MaxValue).ThenBy(w => w.Kind).ToList());
+            warnings.OrderBy(w => w.Date ?? DateOnly.MaxValue).ThenBy(w => w.Kind).ToList(), leave);
     }
 
     // ------------------------------------------------------------------ shifts
@@ -202,6 +204,9 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
             throw ReservationService.Field(nameof(r.BreakMinutes), $"The break must be shorter than the shift ({RosterMath.Hours(minutes)}).");
         var (startsAt, endsAt) = RosterMath.Instants(r.WorkDate, start, end, tz);
 
+        if ((await LeaveDaysAsync(propertyId, r.WorkDate, r.WorkDate, ct)).FirstOrDefault(l => l.EmployeeId == emp.Id && !l.Half) is { } off)
+            throw new ConflictAppException("ON_LEAVE",
+                $"{emp.FullName} is on leave on {QuoteEngine.Day(r.WorkDate)} ({off.LeaveTypeCode} {off.RequestCode}). Choose someone else, or cancel the leave first.");
         var clash = await ClashAsync(emp.Id, startsAt, endsAt, shift?.Id, ct);
         if (clash is not null && !r.AllowOverlap)
             throw new ConflictAppException("SHIFT_CLASH", await ClashMessageAsync(emp.FullName, clash, tz, ct), new { shiftId = clash.Id });
@@ -276,6 +281,7 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
                         && s.WorkDate >= to.AddDays(-1) && s.WorkDate <= to.AddDays(7))
             .ToListAsync(ct);
 
+        var onLeave = (await LeaveDaysAsync(propertyId, to, to.AddDays(6), ct)).Where(l => !l.Half).Select(l => (l.EmployeeId, l.Date)).ToHashSet();
         var skipped = new List<string>();
         var copied = 0;
         foreach (var s in source.OrderBy(s => s.WorkDate).ThenBy(s => s.StartsAt))
@@ -287,6 +293,11 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
             if (!e.WorksOn(day))
             {
                 skipped.Add($"{label}: {(day < e.JoinedOn ? $"joins on {Short(e.JoinedOn)}" : $"left on {Short(e.LeftOn!.Value)}")}.");
+                continue;
+            }
+            if (onLeave.Contains((e.Id, day)))
+            {
+                skipped.Add($"{label}: on leave that day.");
                 continue;
             }
             if (s.TemplateId is { } tid && !templates[tid].IsActive)
@@ -360,6 +371,19 @@ public sealed class RosterService(IAppDbContext db, ICurrentUser caller, TimePro
     }
 
     // ------------------------------------------------------------------ helpers
+
+    /// <summary>Approved leave (Sprint 19) per person and day between two dates; Half: only half the day is off.</summary>
+    internal async Task<List<RosterLeaveDto>> LeaveDaysAsync(Guid propertyId, DateOnly from, DateOnly to, CancellationToken ct)
+    {
+        var requests = await db.LeaveRequests.AsNoTracking()
+            .Where(q => q.PropertyId == propertyId && q.Status == LeaveRequestStatuses.Approved && q.FromDate <= to && q.ToDate >= from).ToListAsync(ct);
+        if (requests.Count == 0) return [];
+        var typeIds = requests.Select(q => q.LeaveTypeId).Distinct().ToList();
+        var codes = await db.LeaveTypes.AsNoTracking().Where(t => typeIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, t => t.Code, ct);
+        return requests.SelectMany(q => q.CountedDates.Where(d => d >= from && d <= to)
+                .Select(d => new RosterLeaveDto(q.EmployeeId, d, codes[q.LeaveTypeId], q.Code, q.DayFraction(d) < 1m)))
+            .OrderBy(l => l.Date).ThenBy(l => l.EmployeeId).ToList();
+    }
 
     private async Task LockEmployeesAsync(IEnumerable<Guid> ids, CancellationToken ct)
     {

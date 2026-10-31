@@ -699,6 +699,8 @@ export interface RosterWarning { kind: RosterWarningKind; date: string | null; e
 export interface RosterWeek {
   weekStart: string; weekEnd: string; today: string; departments: { id: string; code: string; name: string }[]; employees: RosterEmployee[];
   templates: ShiftTemplate[]; shifts: RosterShift[]; shortages: RosterShortage[]; warnings: RosterWarning[];
+  /** Approved leave on the roster (Sprint 19): one entry per person and day; half: only half the day is off. */
+  leave: RosterLeave[];
 }
 export interface CopyRosterWeekResult { copied: number; skipped: string[]; week: RosterWeek; }
 export interface MyRoster { employeeId: string; employeeName: string; departmentName: string; shifts: RosterShift[]; }
@@ -751,3 +753,50 @@ export interface Timesheet {
 }
 export interface TimesheetWeek { weekStart: string; weekEnd: string; today: string; timesheets: TimesheetSummary[]; counts: Record<TimesheetStatus, number>; }
 export interface ApproveTimesheetWeekResult { approved: number; skipped: string[]; week: TimesheetWeek; }
+
+// ------------------------------------------------------------------ leave, holidays and payroll (Sprint 19)
+
+export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+export type LeaveAccrual = 'MONTHLY' | 'YEARLY' | 'NONE';
+export type LeaveEntryType = 'OPENING' | 'ACCRUAL' | 'TAKEN' | 'RETURNED' | 'ADJUSTMENT';
+export type LeaveWarningKind = 'ROSTERED' | 'SHORT_STAFFED' | 'ALSO_OFF';
+
+export interface LeavePolicy { id: string; employmentType: string | null; daysPerYear: number; accrual: LeaveAccrual; maxBalance: number | null; isActive: boolean; version: number; }
+export interface LeaveType {
+  id: string; code: string; name: string; isPaid: boolean; needsBalance: boolean; allowHalfDay: boolean; sortOrder: number; isActive: boolean;
+  policies: LeavePolicy[]; version: number;
+}
+export interface Holiday { id: string; date: string; name: string; isActive: boolean; version: number; }
+export interface LeaveBalance { leaveTypeId: string; code: string; name: string; needsBalance: boolean; balance: number; pending: number; available: number; takenThisYear: number; }
+export interface EmployeeLeaveBalances { employeeId: string; employeeCode: string; employeeName: string; departmentName: string; employmentType: string; balances: LeaveBalance[]; }
+export interface LeaveLedgerEntry {
+  id: string; leaveTypeCode: string; entryType: LeaveEntryType; days: number; balanceAfter: number; entryDate: string; period: string | null;
+  requestCode: string | null; reason: string | null; createdAt: string; by: string | null;
+}
+export interface LeaveLedger { employee: EmployeeLeaveBalances; entries: LeaveLedgerEntry[]; }
+export interface AccrualResult { month: string; posted: number; alreadyPosted: number; days: number; notes: string[]; }
+export interface LeaveWarning { kind: LeaveWarningKind; date: string; message: string; }
+export interface LeavePreview {
+  days: number; countedDates: string[]; skipped: string[]; balance: number | null; available: number | null; balanceAfter: number | null; warnings: LeaveWarning[];
+}
+export interface LeaveRequest {
+  id: string; code: string; employeeId: string; employeeCode: string; employeeName: string; departmentName: string; leaveTypeId: string; leaveTypeCode: string;
+  leaveTypeName: string; isPaid: boolean; fromDate: string; toDate: string; halfDayStart: boolean; halfDayEnd: boolean; days: number; countedDates: string[];
+  reason: string | null; status: LeaveStatus; createdAt: string; requestedBy: string | null; decidedAt: string | null; decidedBy: string | null;
+  decisionNote: string | null; shiftsCancelled: number; cancelledAt: string | null; cancelledBy: string | null; cancelReason: string | null;
+  balance: number | null; warnings: LeaveWarning[]; actions: ('approve' | 'reject' | 'cancel')[]; version: number;
+}
+export interface LeaveList { requests: LeaveRequest[]; counts: Record<LeaveStatus, number>; }
+export interface MyLeave { employeeId: string; employeeName: string; today: string; balances: LeaveBalance[]; requests: LeaveRequest[]; holidays: Holiday[]; types: LeaveType[]; }
+export interface RosterLeave { employeeId: string; date: string; leaveTypeCode: string; requestCode: string; half: boolean; }
+
+export interface PayrollRow {
+  employeeCode: string; employeeName: string; department: string; employmentType: string; employedDays: number; weeklyOffs: number; holidays: number;
+  daysWorked: number; workedMinutes: number; overtimeMinutes: number; lateMinutes: number; paidLeaveDays: number; unpaidLeaveDays: number; absentDays: number;
+  payableDays: number; leaveDetail: string;
+}
+export interface PayrollPreview { month: string; periodStart: string; periodEnd: string; rows: PayrollRow[]; warnings: string[]; approvedToLock: number; holidays: Holiday[]; }
+export interface PayrollExport {
+  id: string; month: string; periodStart: string; periodEnd: string; format: string; fileName: string; sha256: string; employees: number; timesheetsLocked: number;
+  warnings: string[]; createdAt: string; by: string | null;
+}

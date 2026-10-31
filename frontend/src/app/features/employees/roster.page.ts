@@ -89,7 +89,8 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
                                 [disabled]="!canManage()" [attr.data-shift]="e.code + '-' + d">
                                 <b>{{ s.templateName ?? 'Shift' }}</b> {{ hm(s.startTime) }}–{{ hm(s.endTime) }}</button>
                             }
-                            @if (canManage() && works(e, d)) {
+                            @if (leaveOn(e.id, d); as l) { <span class="leave" [attr.data-leave]="e.code + '-' + d" [title]="l.requestCode">{{ l.half ? '½ ' : '' }}{{ l.leaveTypeCode }} leave</span> }
+                            @if (canManage() && works(e, d) && !fullLeave(e.id, d)) {
                               <button class="add" (click)="add(e.id, d)" [attr.aria-label]="'Add a shift for ' + e.name + ' on ' + shortDay(d)">+</button>
                             }
                             @if (e.weeklyOff === isoDay(d) && !cell(e.id, d).length) { <small class="mute">off</small> }
@@ -120,8 +121,9 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
                       @for (s of cell(e.id, day()); track s.id) {
                         <button class="chip" [class.overlap]="s.overlapAllowed" (click)="open(s)" [disabled]="!canManage()" [attr.data-shift]="e.code + '-' + day()">
                           <b>{{ s.templateName ?? 'Shift' }}</b> {{ hm(s.startTime) }}–{{ hm(s.endTime) }}</button>
-                      } @empty { <small class="mute">{{ !works(e, day()) ? 'not working here' : e.weeklyOff === isoDay(day()) ? 'day off' : 'not on' }}</small> }
-                      @if (canManage() && works(e, day())) { <button class="add" (click)="add(e.id, day())" [attr.aria-label]="'Add a shift for ' + e.name">+</button> }
+                      } @empty { @if (!leaveOn(e.id, day())) { <small class="mute">{{ !works(e, day()) ? 'not working here' : e.weeklyOff === isoDay(day()) ? 'day off' : 'not on' }}</small> } }
+                      @if (leaveOn(e.id, day()); as l) { <span class="leave">{{ l.half ? '½ ' : '' }}{{ l.leaveTypeCode }} leave</span> }
+                      @if (canManage() && works(e, day()) && !fullLeave(e.id, day())) { <button class="add" (click)="add(e.id, day())" [attr.aria-label]="'Add a shift for ' + e.name">+</button> }
                     </div>
                   </li>
                 }
@@ -147,6 +149,7 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .week-grid thead th { position: sticky; top: 0; background: #f6f8f7; font-weight: 600; white-space: nowrap; } .week-grid thead th.today { background: #e6f0ff; }
     .week-grid td.today { background: #f5f9ff; } .week-grid td.off { background: repeating-linear-gradient(45deg, #fafafa, #fafafa 6px, #f1f3f2 6px, #f1f3f2 12px); }
     .week-grid td.out { background: #f3f3f3; }
+    .leave { display: inline-block; border-radius: 8px; padding: 1px 6px; font-size: .8rem; background: #e8f0fb; color: #1d4a7a; margin: 1px 0; }
     .week-grid .who { width: 170px; } .week-grid th.who { display: table-cell; } .week-grid th.who span { display: block; } .week-grid th.who small { display: block; font-weight: normal; }
     .week-grid tr.dept th { background: #eef3f1; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; color: #34484b; }
     .badge { display: inline-block; background: #b3261e; color: #fff; border-radius: 9px; font-size: .72rem; padding: 0 6px; margin-left: 4px; }
@@ -202,6 +205,9 @@ export class RosterPage {
   thisWeek() { this.monday.set(null); this.day.set(''); this.load(); }
 
   people(deptId: string): RosterEmployee[] { return (this.week()?.employees ?? []).filter(e => e.departmentId === deptId); }
+  /** Approved leave that day (Sprint 19). */
+  leaveOn(employeeId: string, date: string) { return this.week()?.leave?.find(l => l.employeeId === employeeId && l.date === date) ?? null; }
+  fullLeave(employeeId: string, date: string) { const l = this.leaveOn(employeeId, date); return !!l && !l.half; }
   cell(employeeId: string, date: string): RosterShift[] { const w = this.week(); return w ? cellShifts(w, employeeId, date) : []; }
   works(e: RosterEmployee, d: string) { return e.joinedOn <= d && (!e.leftOn || e.leftOn >= d); }
 

@@ -29,7 +29,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
             </a>
           }
         </nav>
-        <p class="later">Leave, activities and transport arrive in later sprints.</p>
+        <p class="later">Activities and transport arrive in later sprints.</p>
       </mat-sidenav>
 
       <mat-sidenav-content>
@@ -134,6 +134,8 @@ export class Shell {
     { label: 'Roster', icon: 'calendar_view_week', link: '/roster', perm: 'roster.read' },
     { label: 'Attendance', icon: 'pin_drop', link: '/attendance', perm: 'attendance.self' },
     { label: 'Timesheets', icon: 'fact_check', link: '/timesheets', perm: 'timesheet.self' },
+    { label: 'Leave', icon: 'beach_access', link: '/leave', perm: 'leave.create' },
+    { label: 'Payroll export', icon: 'summarize', link: '/payroll', perm: 'payroll.export' },
     { label: 'Room types', icon: 'category', link: '/settings/room-types', perm: 'accommodation.read' },
     { label: 'Rates', icon: 'sell', link: '/settings/rates', perm: 'rate.read' },
     { label: 'Packages', icon: 'redeem', link: '/settings/packages', perm: 'rate.read' },

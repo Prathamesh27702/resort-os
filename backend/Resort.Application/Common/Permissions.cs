@@ -84,6 +84,12 @@ public static class Perm
     public const string AttendanceUpdate = "attendance.update";
     public const string TimesheetSelf = "timesheet.self";
     public const string TimesheetApprove = "timesheet.approve";
+    public const string LeaveCreate = "leave.create";
+    public const string LeaveRead = "leave.read";
+    public const string LeaveApprove = "leave.approve";
+    public const string LeaveReject = "leave.reject";
+    public const string LeaveManageBalances = "leave.manage_balances";
+    public const string PayrollExport = "payroll.export";
 
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";

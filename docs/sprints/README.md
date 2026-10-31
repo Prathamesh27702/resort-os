@@ -30,7 +30,7 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 16 | [Suppliers and purchasing](sprint-16-suppliers-and-purchasing.md) | Phase 5 | M | 🟢 Done |
 | 17 | [Employees and roster](sprint-17-employees-and-roster.md) | Phase 6 | M | 🟢 Done |
 | 18 | [Attendance and timesheets (PWA)](sprint-18-attendance-and-timesheets-pwa.md) | Phase 6 | L | 🔵 In progress |
-| 19 | [Leave, holidays and payroll export](sprint-19-leave-holidays-and-payroll-export.md) | Phase 6 | M | ⚪ Planned |
+| 19 | [Leave, holidays and payroll export](sprint-19-leave-holidays-and-payroll-export.md) | Phase 6 | M | 🔵 In progress |
 | 20 | [Activities and equipment](sprint-20-activities-and-equipment.md) | Phase 7 | M | ⚪ Planned |
 | 21 | [Beach transport](sprint-21-beach-transport.md) | Phase 7 | S | ⚪ Planned |
 | 22 | [Expenses and budgets](sprint-22-expenses-and-budgets.md) | Phase 8 | M | ⚪ Planned |
