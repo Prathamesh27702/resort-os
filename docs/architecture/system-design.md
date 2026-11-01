@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll, activity seats and equipment |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–19 built and accepted (October–November 2026); Sprint 20 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–19 built and accepted (October–November 2026); Sprint 20 built and in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -495,6 +495,32 @@ flowchart LR
   **Payroll export** (`/payroll`: the month's rows, what isn't ready, making and downloading files); dialogs in
   `leave-dialogs.ts`. The roster shows leave chips; the dashboard shows **Leave waiting for you**. The file format is in
   [PAYROLL.md](../PAYROLL.md); [4.29](#429-leave-balance--ledger-overlap-guard-payroll-export) explains the rules.
+
+### Sprint 20: Activities and equipment
+
+![Activities and equipment: the last seat, the weather, and a life jacket that comes back damaged](../../tools/handbooks/assets/activity-flow.png)
+
+- Migration V022: `activities`, `activity_schedules` (sessions; `seats_booked` kept from the bookings by
+  `trg_activity_bookings_seats`, `ck_activity_schedules_capacity` keeps it within the seats), `activity_bookings`
+  (`AB00001` …; on the bill, free or complimentary; cancelled by the guest or the weather with the charge reversed or
+  moved), `equipment_types`, `equipment` (tagged items; `trg_equipment_status_transition` allows only the listed moves)
+  and `equipment_assignments` (`ux_equipment_assignments_open`: one open assignment per item); folio items may come from
+  `ACTIVITY`. Details: [schema-sprint-20.md](../database/schema-sprint-20.md).
+- `Domain/Activities/Activities.cs` (activities, sessions with `SeatsLeft`, bookings, their statuses) and `Equipment.cs`
+  (`EquipmentStatuses.Transitions`, the same list as the trigger). `Application/Activities/ActivityService.cs` (activities,
+  putting sessions on, the day, a session with its move targets, stays that can be booked), `ActivityBookingService.cs`
+  (book under the session lock with an Idempotency-Key, cancel, weather cancellation with refunds or moves) and
+  `EquipmentService.cs` (the board, kinds and items, status by hand, issue, hand over, release, return).
+  `Validation/ActivityValidators.cs`. Charges go through `FolioPosting` (category Activity, source `ACTIVITY`).
+- Endpoints: `ActivityEndpoints.cs` (`/activities` with `/sessions`, `/sessions/{id}/weather-cancel`, `/stays`,
+  `/bookings`, `/bookings/{id}/cancel`; `/equipment` with `/types`, `/items`, `/items/{id}/status`, `/issue`,
+  `/assignments/{id}/issue|release|return`). The permissions `activity.*`, `activity_booking.create` and `equipment.*`
+  already existed from Sprint 01's catalogue.
+- Screens: **Activities** (`/activities`, `features/activities/`: the day's sessions with seats left; open one for its
+  bookings, Book, Equipment, Cancel; Cancel for weather; putting sessions on; the list of activities) and **Equipment**
+  (`/equipment`: what is out with Return, Hand over and Release; every item by kind with Change; Issue). Dialogs in
+  `activity-dialogs.ts` and `equipment-dialogs.ts`. [4.30](#430-activity-seats-weather-cancellation-equipment) explains
+  the rules.
 
 ---
 
@@ -1240,6 +1266,49 @@ Tests: `LeaveUnitTests`, `LeaveTests`, `leave.spec.ts`, `e2e/sprint-19.spec.ts`.
    HR), `leave.approve` and `leave.reject` (manager, HR; approving also lets you ask for someone), `leave.manage_balances`
    (HR: kinds, holidays, adjustments, the accrual), `payroll.export` (Owner and HR).
 
+### 4.30 Activity seats, weather cancellation, equipment
+
+Code: `Application/Activities/` (`ActivityService.cs`, `ActivityBookingService.cs`, `EquipmentService.cs`),
+`Domain/Activities/`, `database/migrations/V022__activities.sql`, `features/activities/`. Diagram: section 3 (Sprint 20).
+Tests: `ActivityUnitTests`, `ActivitiesTests`, `activities.spec.ts`, `e2e/sprint-20.spec.ts`.
+
+1. **The last seat goes to one person** (the Sprint 05 approach, 4.7). `BookAsync` opens a transaction and locks the
+   session row first (`SELECT … FROM activity_schedules WHERE id = … FOR UPDATE`), then reads the seats left and checks
+   the session is scheduled and not started. Two people booking the last kayak seat queue on the lock; the second sees 0
+   left and gets `409 ACTIVITY_FULL` with the reason. Test: `The_last_kayak_seat_booked_twice_at_the_same_moment_goes_to_exactly_one_of_them_10_times`.
+2. **The database is the final guard.** `trg_activity_bookings_seats` adds a booking's seats to `seats_booked` (and takes
+   them off when it is cancelled) in the same statement, and `ck_activity_schedules_capacity` refuses `seats_booked` above
+   `capacity`; `ck_activity_bookings_session_open` refuses a booking on a cancelled session. So even code that skipped the
+   lock can't oversell; the service maps the constraint to plain words. A booking keeps its session and seats
+   (`ck_activity_bookings_fixed`): to change them, cancel and book again. `seats_booked` is read back after each save
+   (EF `ValueGeneratedOnAddOrUpdate`).
+3. **Lock order.** Session (several in `ANY(...) ORDER BY id`), then the stay, then equipment rows. Every path takes them
+   in that order, so two transactions never wait on each other in a circle.
+4. **Money.** A staying guest's booking posts one charge to the stay's main folio through `FolioPosting.ChargeAsync`
+   (category Activity, source `ACTIVITY`), saved before the booking that points at it (EF doesn't order inserts across
+   tables without navigations). Cancelling posts a reversal (`FolioPosting.ReverseAsync`) and records it in
+   `reversal_item_id`; a charge reversed earlier by hand on the bill is reused, not reversed twice. Free and
+   complimentary bookings post nothing; complimentary needs a reason.
+5. **The weather.** `WeatherCancelAsync` locks the session and every target session (in id order), checks each move (same
+   activity, within 14 days, scheduled, not started, enough seats, counting other moves to the same session), cancels the
+   session, then for each booking either reverses the charge (`refund = REVERSED`) or cancels it with `refund = MOVED` and
+   inserts a copy on the target session carrying the same charge (`moved_from_booking_id`; `ux_activity_bookings_charge`
+   lets only the booked row hold it). `fk_activity_bookings_moved_to` is deferred, so the old booking is cancelled before
+   its copy is inserted. Kept-aside equipment of cancelled bookings is released; handed-out items stay out.
+6. **Equipment moves.** Each item is one row with a status; `EquipmentStatuses.Transitions` and
+   `fn_equipment_status_transition` hold the same 20 allowed moves (`Equipment_moves_in_code_match_the_database_trigger`
+   parses the trigger and compares). The service answers first with the steps allowed; the trigger catches anything
+   else. `RESERVED` and `ISSUED` are only reached through an assignment, never by hand (`422 EQUIPMENT_OUT` for an item
+   that is out).
+7. **Issuing** locks the chosen items (or the first available of a kind by tag, `FOR UPDATE`), refuses with the reason
+   when there aren't enough (`409 EQUIPMENT_UNAVAILABLE`: "Only 2 of life jacket are available and 3 were asked for."),
+   and inserts one assignment per item; `ux_equipment_assignments_open` makes a second open assignment of the same item
+   impossible. For a booking, due back is the session's end. **Returning** sets the assignment `RETURNED` (good or damaged)
+   or `LOST` and the item `AVAILABLE`, `DAMAGED` or `LOST`; damaged and lost need what happened. No charge is posted.
+8. **Permissions.** `activity.read`, `activity_booking.create` (reception: book and cancel), `activity.manage` (activity
+   manager, manager: activities, sessions, the weather), `equipment.read`, `equipment.issue` (reception: issue, hand over,
+   release, return), `equipment.manage` (kinds, items, status by hand).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1269,3 +1338,4 @@ request:
 | 17 | Employees and roster (departments, profiles with an optional account link, pay behind its own permission, encrypted documents, shift templates, the week's roster with clash detection, shortages and warnings), roster flow diagram; system design 4.27 Roster: clash detection and shortages (accepted 29 Oct 2026) |
 | 18 | Attendance and timesheets (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets worked out per day, approve all, corrections that keep the old times, locked for payroll; installable app), attendance flow diagram; system design 4.28 Attendance: geofence and timesheet maths (accepted 31 Oct 2026) |
 | 19 | Leave, holidays and payroll export (kinds and policies, requests with half days and holidays not counted, the overlap guard, balances kept by an append-only ledger, the monthly accrual, approvals that take shifts off the roster, the payroll CSV with its warnings and lock), leave flow diagram; system design 4.29 Leave: balance = ledger, overlap guard, payroll export (accepted 1 Nov 2026) |
+| 20 | Activities and equipment (sessions whose seats can't be oversold, bookings on the bill, weather cancellation with refunds or moves, tagged equipment issued and returned with its allowed moves), activity flow diagram; system design 4.30 Activity seats, weather cancellation, equipment (in review) |

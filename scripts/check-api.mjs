@@ -42,6 +42,9 @@
 //   - Sprint 19 changes nothing: it reads leave types, holidays, balances, requests and this month's payroll preview, and
 //     checks refusals (dates the wrong way round, an adjustment without a reason, a file for an unfinished month without
 //     confirming, a receptionist adjusting or exporting); no leave, adjustment or payroll file is saved
+//   - Sprint 20 changes nothing: it reads activities, tomorrow's sessions and the equipment board, and checks refusals (a
+//     booking without an Idempotency-Key, a booking for more seats than a session has, a damaged return without a reason,
+//     a receptionist putting sessions on or changing equipment); no booking or equipment move is saved
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -883,6 +886,31 @@ await expectCall('Making this month’s file without confirming → 422 PAYROLL_
   { token: T, body: { month: thisMonth, confirmWarnings: false } },
   b => (b.code === 'PAYROLL_NOT_READY' && Array.isArray(b.details?.warnings) && b.details.warnings.length > 0) || JSON.stringify(b).slice(0, 300));
 await expectCall('Receptionist can’t make a payroll file → 403', 'GET', `${P}/payroll/preview?month=${thisMonth}`, 403, { token: R });
+
+// ---------------------------------------------------------------- Sprint 20 — activities and equipment
+title('Sprint 20 — activity sessions that cannot be oversold, equipment issued and returned');
+await expectCall('Activities (demo: kayaking, yoga, snorkelling, cycling)', 'GET', `${P}/activities`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(a => /^[A-Z][A-Z0-9]{0,9}$/.test(a.code) && a.capacity > 0)) || JSON.stringify(b).slice(0, 200));
+const actDay = await expectCall(`Sessions on ${plus(1)}: seats booked never above the seats`, 'GET', `${P}/activities/sessions?date=${plus(1)}`, 200, { token: T },
+  b => (Array.isArray(b?.sessions) && b.sessions.every(x => x.seatsBooked >= 0 && x.seatsBooked <= x.capacity && x.seatsLeft === x.capacity - x.seatsBooked))
+    || JSON.stringify(b).slice(0, 200));
+const actSession = actDay?.json?.sessions?.find?.(x => x.status === 'SCHEDULED');
+await expectCall('A booking without an Idempotency-Key → 400 (nothing saved)', 'POST', `${P}/activities/bookings`, 400,
+  { token: T, body: { sessionId: actSession?.id ?? NONE, seats: 1, guestName: 'API check', complimentary: true, complimentaryReason: 'API check' } });
+await expectCall('More seats than the session has → 409 ACTIVITY_FULL with the seats left (nothing saved)', 'POST',
+  `${P}/activities/bookings`, actSession ? 409 : 404,
+  { token: T, headers: { 'Idempotency-Key': `apicheck-${randomBytes(6).toString('hex')}` },
+    body: { sessionId: actSession?.id ?? NONE, seats: Math.min((actSession?.capacity ?? 0) + 1, 50), guestName: 'API check', complimentary: true, complimentaryReason: 'API check' } },
+  b => (!actSession || (b.code === 'ACTIVITY_FULL' && /left|full/.test(b.message))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t put sessions on → 403', 'POST', `${P}/activities/sessions`, 403,
+  { token: R, body: { activityId: NONE, fromDate: plus(1), toDate: plus(1), times: ['07:00'] } });
+const eqBoard = await expectCall('Equipment board: kinds with counts, items, what is out', 'GET', `${P}/equipment`, 200, { token: T },
+  b => (Array.isArray(b?.types) && b.types.every(t => t.available <= t.total) && Array.isArray(b.items) && Array.isArray(b.out)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Returning without saying what happened to a damaged item → 400 under Note (nothing saved)', 'POST', `${P}/equipment/assignments/${NONE}/return`, 400,
+  { token: T, body: { condition: 'DAMAGED', note: '' } }, b => (b.details?.Note?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+const someItem = eqBoard?.json?.items?.[0];
+await expectCall('Receptionist can’t change an item’s status → 403', 'POST', `${P}/equipment/items/${someItem?.id ?? NONE}/status`, 403,
+  { token: R, body: { status: 'MAINTENANCE', note: 'API check' } });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

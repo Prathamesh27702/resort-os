@@ -610,6 +610,42 @@ Database checks: `database/queries/check-sprint-19.sql`. How it works:
 | 22 | Last month → **Make the file** (after approving last month's timesheets in **Timesheets**) | No warnings, no confirmation needed; *… N timesheets locked*; those timesheets now say *Locked for payroll* |
 | 23 | As the manager: open `/payroll` | Not in the menu; the page refuses (payroll is Owner and HR only) |
 
+### Sprint 20 — Activities and equipment
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V022__activities`).
+Demo data (S017): **Kayaking** (90 min, 6 seats, ₹800 a person, a life jacket each) at 07:00 and 16:00, **Sunrise yoga**
+(free, 20 seats) at 06:30, **Snorkelling trip** (₹1,500, 8 seats, a snorkel set each) at 10:00 and **Village cycle tour**
+(₹500, 10 seats, a bicycle each) at 16:30, today and the next 7 days. Tomorrow's 07:00 kayaking already has **AB00001**,
+4 seats for *Coastline Travels (agent group)*, complimentary; yoga has two free bookings. Equipment: life jackets LJ-01…12,
+kayaks KY-01…06 (KY-06 in maintenance), snorkel sets SN-01…08 (SN-08 damaged), bicycles BC-01…08 (BC-08 lost). Use two
+windows: the **owner** (or an Activity manager) on a desktop and a **receptionist** in a phone-sized window (360 × 780).
+Screenshots: [sprint-20-screens/](sprint-20-screens/). The browser tests do the same on their own: `cd frontend; npm run
+e2e:headed -- e2e/sprint-20.spec.ts` (names S20-01 … S20-05). Database checks: `database/queries/check-sprint-20.sql`.
+How it works: [system-design.md → 4.30](../architecture/system-design.md#430-activity-seats-weather-cancellation-equipment).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Rekha Desk*, role **Receptionist** | Her account |
+| 2 | Owner: **Activities** → **Activities** → **New activity** → code *SUNSET*, name *Sunset kayaking*, **Seats a session** 0 → **Save** | Under **Seats a session**: *Seats per session are 1–200.* |
+| 3 | Seats 6, minutes 90, price 900, **Equipment each person needs** *Life jacket* → **Save** | *Sunset kayaking saved.*; it is in the list *90 min · 6 seats · ₹900 a person · a life jacket each* |
+| 4 | **Day** → **Put sessions on** → Sunset kayaking, from tomorrow to tomorrow, **Start times** *17:30, 18:00* → **Put on** | *2 sessions put on.*; ▶ shows them tomorrow with *6 left* |
+| 5 | Again for the same day and *17:30* | *0 sessions put on. Skipped: … 17:30: already on.* |
+| 6 | Phone: sign in as Rekha → **Activities** → ▶ (tomorrow) → **07:00 Kayaking** | *4/6, 2 left*; AB00001 *Coastline Travels (agent group) · 4 seats · complimentary: …* |
+| 7 | **Book** → **Guest staying** a guest staying tomorrow → **Seats** 3 → **Book** | Refused, under the form: *Kayaking at 07:00 … has 2 seats left and this booking is for 3. Book fewer seats or choose another session.* |
+| 8 | **Seats** 2 → **Book** | The price *₹1,600* shows before booking; then *AB00004: … booked on Kayaking at 07:00 (2 seats). ₹1,600 on R…'s bill.*; the session shows *6/6 full* and no **Book** button. Nothing scrolls sideways |
+| 9 | Owner: **Front desk** → that guest's bill | A line *Kayaking … 2 seats* ₹1,600 (Activity) |
+| 10 | Phone: the booking's **Equipment** → **How many** 2 → **Issue** | *LJ-01, LJ-02 issued for …*; the booking shows *LJ-01 out · LJ-02 out* |
+| 11 | **Equipment** | **Out now (2)**; *Life jacket 10/12*; each with due back at the session's end |
+| 12 | LJ-01 **Return** → **Good** → **Return** | *LJ-01 is back and available.* |
+| 13 | LJ-02 **Return** → **Damaged** → **Return** with nothing typed | Under **What happened**: *Say what happened (at least 3 characters).* |
+| 14 | *Strap torn* → **Return** | *LJ-02 is back damaged and out of use: Strap torn*; **Items** shows LJ-02 *Damaged*, *Strap torn*; the card *1 out of use* |
+| 15 | Owner: **Equipment** → **Items** → LJ-02 **Change** | **Set to** offers In maintenance, Available, Lost, Retired (not Issued) |
+| 16 | **In maintenance**, *Sent for stitching* → **Save** | *LJ-02 is in maintenance.*; later **Change** → **Available** puts it back in use |
+| 17 | Owner: **Activities** → ▶ → **07:00 Kayaking** → **Cancel for weather** → **Cancel the session** with no reason | Under the reason: what to fill in |
+| 18 | *Rough sea, red flag*; AB00004 **Refund ₹1,600 on the bill**; AB00001 **Move to … 16:00** → **Cancel the session** | *Kayaking at 07:00 cancelled. 1 refunded (₹1,600 off the bills), 1 moved.*; the session *cancelled*; 16:00 shows *4/6*; the guest's bill shows the ₹1,600 and its reversal |
+| 19 | Phone: open a cancelled booking | *Weather: Rough sea, red flag* and no buttons |
+| 20 | Phone: open `/equipment` → **Items** | No **Change** buttons (reception issues and takes back; managers change items) |
+
 ## Part C — Decide
 
 ### Accept

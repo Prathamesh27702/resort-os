@@ -912,6 +912,63 @@ anyway** → **Make the file** → the CSV downloads. How it works:
 By hand: [REVIEWING.md → Sprint 19](sprints/REVIEWING.md#sprint-19--leave-holidays-and-payroll-export).
 Screenshots: [sprint-19-screens/](sprints/sprint-19-screens/).
 
+### Sprint 20: Activities and equipment
+
+**New:** two screens in the menu. **Activities** (`/activities`): the day's sessions (◀ ▶ to move a day, **Today**) with
+the seats booked and left (*6/6 full*); tap a session to see who is booked, then **Book** (a guest staying that day, or
+anyone by name on a free session or as complimentary with a reason; the price for the seats shows before you book and goes
+on the guest's bill), **Equipment** for a booking (the life jackets it needs, the first free by tag), **Cancel** a booking
+(the charge comes off the bill), and for managers **Seats and price** and **Cancel for weather** (one reason; each booking
+is refunded on the bill or moved to another session of the same activity). Managers also **Put sessions on** (an activity,
+from–to, start times like *07:00, 16:00*) and keep the list under **Activities** (**New activity**). **Equipment**
+(`/equipment`): **Out now** (who has what, due back, overdue first) with **Return** (Good, Damaged or Lost, with what
+happened), **Hand over** and **Release** for what was kept aside; **Items** with each one's status and, for managers,
+**Change** (to maintenance, back into use, lost, retired); the kind cards at the top filter both and show *available /
+total*; **Issue** gives out equipment to anyone by name. Demo data (S017): kayaking (6 seats, ₹800, a life jacket each) at
+07:00 and 16:00, sunrise yoga (free) at 06:30, snorkelling (₹1,500) at 10:00, a village cycle tour (₹500) at 16:30, today
+and the next 7 days; tomorrow's 07:00 kayaking has 4 seats for an agent group; 12 life jackets, 6 kayaks (one in
+maintenance), 8 snorkel sets (one damaged), 8 bicycles (one lost). Restart the API and watch for `Applying migration
+V022__activities`.
+
+```powershell
+# Backend (ActivityUnitTests and ActivitiesTests: kayaking at 7am with 6 seats can't be oversold; the last seat booked by
+# two people at once, 10 times, goes to one; the database guards on their own; cancelling takes the charge off; the
+# weather refunds one booking and moves another; life jackets issued, one back damaged, then maintenance; validation and
+# permissions; putting sessions on)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Activit"
+
+# Frontend unit tests (money, seats and how a booking was paid, as the screens write them)
+cd frontend
+npm run test:ci
+
+# Browser, an activity manager on a desktop and a receptionist on a 360 px phone (5 steps, S20-01 … S20-05: the manager
+# adds kayaking, 6 seats is required (0 refused under the field), and puts sessions on for tomorrow at 07:00 and 09:00 →
+# the receptionist books 4 seats for a staying guest (₹3,200 on the bill), the last 2 are filled, the session shows full
+# and a 7th seat is refused with ACTIVITY_FULL → she issues 4 life jackets for the booking, one comes back good and one
+# damaged ("Strap torn", the reason required) → the manager cancels 07:00 for the weather, refunding the paid booking and
+# moving the other to 09:00 → the damaged jacket goes to maintenance)
+npm run e2e -- e2e/sprint-20.spec.ts
+cd ..
+
+# API checks: the Sprint 20 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 7, 8, 11 and 12 must return no rows)
+Get-Content database/queries/check-sprint-20.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §48–49, *kayaking at 7am with 6 seats cannot be oversold*): reset the database and sign in
+as the owner. **Activities** → ▶ (tomorrow) → **07:00 Kayaking** shows *4/6, 2 left* (the agent group) → **Book** → a
+guest staying tomorrow, 2 seats → *₹1,600 on R… 's bill* → the session shows *6/6 full* and has no **Book** button. Open a
+second browser and try booking the same session from the API, or book 1 seat on it from two tabs that both still show
+*1 left*: one is booked, the other says *Kayaking at 07:00 is full (6 of 6 seats booked). Choose another session.* Then
+**Equipment** on the guest's booking → **Issue** (2 life jackets) → **Equipment** page → **Return** one *Good* and one
+*Damaged* with *Strap torn* → **Items** shows it *Damaged*. How it works:
+[system-design.md → 4.30](architecture/system-design.md#430-activity-seats-weather-cancellation-equipment).
+
+By hand: [REVIEWING.md → Sprint 20](sprints/REVIEWING.md#sprint-20--activities-and-equipment).
+Screenshots: [sprint-20-screens/](sprints/sprint-20-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
