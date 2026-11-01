@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 19
+current: 20
 
 sprints:
 
@@ -1628,7 +1628,7 @@ sprints:
 - id: 19
   title: Leave, holidays and payroll export
   phase: 6
-  status: in-progress
+  status: done
   size: M
   module: Leave
   feature: leave
@@ -1636,7 +1636,8 @@ sprints:
   goal: Leave requests with balance/overlap/coverage checks feeding roster and payroll (brief §45).
   client: "Leave requests check balances and cover; holidays and approved hours flow into a payroll export file."
   progress:
-    now: "Built; pull request into develop waits for the owner's review."
+    now: "Accepted by the owner on 1 Nov 2026 and released to main (tag sprint-19)."
+    outcome: "Accepted 1 Nov 2026 (the owner reviewed it on their PC). A housekeeper on a phone asks for 1.5 days over a holiday with a half day and sees the days and her balance before sending; a wrong date is refused under the field; her manager approves it from the dashboard and her shift comes off the roster; HR sees balances and her history, adjusts it with a reason and adds a holiday; the month's payroll CSV is made after confirming what isn't ready, locking the approved timesheets. Defaults kept: generic CSV (days and hours, no pay; provider Q3 still open), payroll.export for Owner and HR, CL 12 / SL 6 / EL 15 / LOP, no year-end lapse or carry-forward yet."
     done:
       - "Migration V021: leave_types and leave_policies (days a year, earned monthly or yearly, a maximum; for everyone or one employment type), leave_requests (LV00001…, counted days stored, an EXCLUDE constraint refusing overlapping waiting or approved leave), leave_ledger (append-only) and leave_balances (kept equal to the ledger by a trigger, never below zero), holidays, payroll_exports (append-only with SHA-256); permission payroll.export for Owner and HR"
       - "Asking for leave on a phone or for someone: half days at either end, holidays and the weekly day off not counted, a live preview with the balance after and the roster warnings (the shift that comes off, a shift left short, a colleague also off); refusals say why under the field (balance short counting what is waiting, dates the wrong way round, overlap, before joining, more than 30 days back)"
@@ -1704,7 +1705,7 @@ sprints:
 - id: 20
   title: Activities and equipment
   phase: 7
-  status: planned
+  status: in-progress
   size: M
   module: Activities
   feature: activities

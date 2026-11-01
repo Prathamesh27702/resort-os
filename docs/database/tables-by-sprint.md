@@ -121,19 +121,19 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `timesheets` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🟢 Done |
 | `timesheet_lines` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🟢 Done |
 | `timesheet_corrections` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🟢 Done |
-| `leave_types` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `leave_policies` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `leave_balances` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `leave_ledger` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `leave_requests` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `holidays` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `payroll_exports` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🔵 In progress |
-| `activities` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
-| `activity_schedules` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
-| `activity_bookings` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
-| `equipment_types` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
-| `equipment` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
-| `equipment_assignments` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | ⚪ Planned |
+| `leave_types` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `leave_policies` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `leave_balances` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `leave_ledger` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `leave_requests` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `holidays` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `payroll_exports` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
+| `activities` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
+| `activity_schedules` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
+| `activity_bookings` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
+| `equipment_types` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
+| `equipment` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
+| `equipment_assignments` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
 | `vehicles` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
 | `transport_routes` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
 | `vehicle_trips` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
