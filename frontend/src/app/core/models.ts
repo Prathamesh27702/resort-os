@@ -800,3 +800,53 @@ export interface PayrollExport {
   id: string; month: string; periodStart: string; periodEnd: string; format: string; fileName: string; sha256: string; employees: number; timesheetsLocked: number;
   warnings: string[]; createdAt: string; by: string | null;
 }
+
+// ------------------------------------------------------------------ activities and equipment (Sprint 20)
+export interface Activity {
+  id: string; code: string; name: string; description: string | null; durationMinutes: number; capacity: number; price: number; meetingPoint: string | null;
+  weatherDependent: boolean; equipmentTypeId: string | null; equipmentTypeName: string | null; sortOrder: number; isActive: boolean; version: number;
+}
+export type ActivitySessionStatus = 'SCHEDULED' | 'CANCELLED';
+export interface ActivitySession {
+  id: string; activityId: string; activityCode: string; activityName: string; date: string; startsAt: string; endsAt: string; startTime: string; endTime: string;
+  capacity: number; seatsBooked: number; seatsLeft: number; price: number; status: ActivitySessionStatus; note: string | null; cancelReason: string | null;
+  cancelledAt: string | null; cancelledBy: string | null; weatherDependent: boolean; meetingPoint: string | null; equipmentTypeId: string | null;
+  started: boolean; actions: ('book' | 'edit' | 'weather-cancel')[]; version: number;
+}
+export interface ActivityDay { date: string; today: string; sessions: ActivitySession[]; activities: Activity[]; }
+export type ActivitySettlement = 'ROOM_CHARGE' | 'FREE' | 'COMPLIMENTARY';
+export interface ActivityBooking {
+  id: string; code: string; sessionId: string; activityName: string; date: string; startTime: string; reservationId: string | null;
+  reservationReference: string | null; room: string | null; guestName: string; seats: number; unitPrice: number; amount: number;
+  settlement: ActivitySettlement; complimentaryReason: string | null; folioNumber: string | null; note: string | null; status: 'BOOKED' | 'CANCELLED';
+  cancelKind: 'GUEST' | 'WEATHER' | null; cancelReason: string | null; cancelledAt: string | null; refund: 'REVERSED' | 'MOVED' | 'NONE' | null;
+  movedToCode: string | null; movedFromCode: string | null; equipment: EquipmentAssignment[]; actions: ('cancel' | 'equipment')[]; createdAt: string;
+  by: string | null; version: number;
+}
+export interface ActivitySessionDetail { session: ActivitySession; bookings: ActivityBooking[]; moveTargets: ActivitySession[]; }
+export interface WeatherCancelResult {
+  session: ActivitySession; refunded: number; amountRefunded: number; moved: number; nothingToRefund: number; bookings: ActivityBooking[];
+}
+export interface ActivityStay {
+  reservationId: string; reference: string; status: string; guestName: string; rooms: string; checkIn: string; checkOut: string; guests: number;
+}
+export interface CreateSessionsResult { created: number; skipped: string[]; }
+
+export type EquipmentStatus = 'AVAILABLE' | 'RESERVED' | 'ISSUED' | 'DAMAGED' | 'MAINTENANCE' | 'LOST' | 'RETIRED';
+export interface EquipmentType {
+  id: string; code: string; name: string; sortOrder: number; isActive: boolean; total: number; available: number; byStatus: Partial<Record<EquipmentStatus, number>>;
+  version: number;
+}
+export interface EquipmentItem {
+  id: string; equipmentTypeId: string; typeName: string; tag: string; note: string | null; status: EquipmentStatus; statusNote: string | null;
+  statusChangedAt: string; with: string | null; moves: EquipmentStatus[]; version: number;
+}
+export type AssignmentStatus = 'RESERVED' | 'ISSUED' | 'RETURNED' | 'LOST' | 'RELEASED';
+export interface EquipmentAssignment {
+  id: string; equipmentId: string; tag: string; typeName: string; issuedTo: string; activityBookingId: string | null; bookingCode: string | null;
+  reservationId: string | null; reservationReference: string | null; status: AssignmentStatus; reservedAt: string | null; issuedAt: string | null;
+  issuedBy: string | null; dueBackAt: string | null; overdue: boolean; closedAt: string | null; closedBy: string | null;
+  returnCondition: 'GOOD' | 'DAMAGED' | 'LOST' | null; returnNote: string | null; version: number;
+}
+export interface EquipmentBoard { types: EquipmentType[]; items: EquipmentItem[]; out: EquipmentAssignment[]; }
+export interface EquipmentItemHistory { item: EquipmentItem; assignments: EquipmentAssignment[]; }
