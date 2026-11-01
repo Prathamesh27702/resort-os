@@ -54,3 +54,6 @@
 - version: "1.18"
   date: 2026-10-31
   change: "Sprint 18 (Attendance and timesheets) accepted: staff clock in and out on their phones, and the server checks they are at the resort, saying how far away they are if not; a manager records the time for someone whose phone has no signal, with a reason; hours, breaks, overtime, late arrivals and early departures are worked out per day in the resort's time zone, night shifts included; each person submits their week, a manager approves it (or all at once) or sends it back, corrections keep the old times, and approved weeks are locked for payroll. The staff app can be installed on a phone. Attendance flow diagram. Sprint 19 started."
+- version: "1.19"
+  date: 2026-11-01
+  change: "Sprint 19 (Leave, holidays and payroll export) accepted: staff ask for leave on their phones, with half days, and see straight away how many days it is and what is left; holidays and days off inside the leave are not counted; managers see what the leave does to the roster before approving, and approved leave takes the shifts off the roster; balances can't go below zero, every change is kept with a reason, and leave is earned every month by itself; each month's payroll file (days and hours per person) is made in one click after it lists what isn't ready yet. Leave flow diagram. Sprint 20 started."

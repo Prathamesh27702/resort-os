@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 18](sprint-18-attendance-and-timesheets-pwa.md) |
+| 🟢 Done | Phase 6 — Employees, attendance, timesheets, leave, roster | M | [Sprint 18](sprint-18-attendance-and-timesheets-pwa.md) |
 
 **Goal:** Leave requests with balance/overlap/coverage checks feeding roster and payroll (brief §45).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built; pull request into develop waits for the owner's review.
+**Now:** Accepted by the owner on 1 Nov 2026 and released to main (tag sprint-19).
 
 **Done so far**
 
@@ -43,9 +43,7 @@
 
 **Outcome**
 
-Expected when accepted:
-
-- Brief §74 passes end to end
+Accepted 1 Nov 2026 (the owner reviewed it on their PC). A housekeeper on a phone asks for 1.5 days over a holiday with a half day and sees the days and her balance before sending; a wrong date is refused under the field; her manager approves it from the dashboard and her shift comes off the roster; HR sees balances and her history, adjusts it with a reason and adds a holiday; the month's payroll CSV is made after confirming what isn't ready, locking the approved timesheets. Defaults kept: generic CSV (days and hours, no pay; provider Q3 still open), payroll.export for Owner and HR, CL 12 / SL 6 / EL 15 / LOP, no year-end lapse or carry-forward yet.
 
 ## Scope
 

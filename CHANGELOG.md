@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-19] — 2026-10-31 — Leave, holidays and payroll export (in review)
+## [sprint-19] — 2026-11-01 — Leave, holidays and payroll export (accepted)
 
 ### Added
 - Migration V021: `leave_types` (code, paid or not, needs a balance, half days allowed), `leave_policies` (days a year,
