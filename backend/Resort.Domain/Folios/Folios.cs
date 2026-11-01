@@ -41,6 +41,8 @@ public static class FolioItemSources
     public const string Package = "PACKAGE";
     /// <summary>A restaurant bill charged to the room (Sprint 14): one line per order, its number in the description.</summary>
     public const string Restaurant = "RESTAURANT";
+    /// <summary>An activity booking charged to the room (Sprint 20): seats × the price per person, its number in the description.</summary>
+    public const string Activity = "ACTIVITY";
 }
 
 /// <summary>When a stay's room nights are put on the bill (property setting <c>folio.room_charge_posting</c>).</summary>

@@ -388,4 +388,29 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var run = await owner.PostAsync($"/api/v1/properties/{pid}/leave/accruals/run", new RunAccrualRequest(month));
         Assert.Equal(0, (await run.Content.ReadFromJsonAsync<AccrualResultDto>())!.Posted);
     }
+
+    /// <summary>Sprint 20: four kinds of equipment (three items out of use), four activities with sessions for a week, and
+    /// tomorrow's 07:00 kayaking with 4 of 6 seats taken (complimentary), so the review demo books the last two.</summary>
+    [Fact]
+    public async Task Dev_seed_has_activities_with_sessions_and_equipment_with_some_out_of_use()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var board = await owner.GetJsonAsync<EquipmentBoardDto>($"/api/v1/properties/{pid}/equipment");
+        Assert.Equal([("LJ", 12, 12), ("KY", 6, 5), ("SN", 8, 7), ("BC", 8, 7)], board.Types.Select(t => (t.Code, t.Total, t.Available)));
+        Assert.Equal(("MAINTENANCE", "DAMAGED", "LOST"),
+            (board.Items.Single(i => i.Tag == "KY-06").Status, board.Items.Single(i => i.Tag == "SN-08").Status, board.Items.Single(i => i.Tag == "BC-08").Status));
+
+        var acts = await owner.GetJsonAsync<List<ActivityDto>>($"/api/v1/properties/{pid}/activities");
+        Assert.Equal(["KAYAK", "YOGA", "SNORKEL", "CYCLE"], acts.Select(a => a.Code));
+        var tomorrow = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5.5)).AddDays(1);
+        var day = await owner.GetJsonAsync<ActivityDayDto>($"/api/v1/properties/{pid}/activities/sessions?date={tomorrow:yyyy-MM-dd}");
+        Assert.Equal(5, day.Sessions.Count);
+        var kayak = day.Sessions.Single(s => s.ActivityCode == "KAYAK" && s.StartTime == "07:00");
+        Assert.Equal((6, 4, 2), (kayak.Capacity, kayak.SeatsBooked, kayak.SeatsLeft));
+        Assert.Equal("06:30", day.Sessions[0].StartTime);
+    }
 }
