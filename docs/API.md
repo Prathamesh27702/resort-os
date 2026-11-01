@@ -1101,6 +1101,73 @@ version? }`, `TimesheetVersionRequest = { version? }`, `ApproveTimesheetWeekRequ
 `ApproveTimesheetWeekResultDto = { approved, skipped: string[], week }`. `CorrectTimesheetLineRequest = { workDate, clockIn?,
 clockOut?, breakMinutes, reason, version? }` (a clock-out at or before the clock-in is the next day; both empty: not worked).
 
+## Built endpoints (Sprint 19 — leave, holidays and payroll export)
+
+All under `/api/v1/properties/{propertyId}`. **Leave types** (CL, SL, EL, LOP …) have **policies** (days a year, earned
+`MONTHLY` on the 1st, `YEARLY` on 1 January pro-rated for joiners, or `NONE`; a maximum balance), for everyone or for one
+employment type (the specific one wins). The defaults are made the first time a property opens leave. A **leave request**
+(`LV00001` …) covers a from–to range with optional half days at either end; the days counted skip the property's
+**holidays** and the person's weekly day off, and are stored with the request. A request needing a balance is refused
+under `LeaveTypeId` when the balance less what is already waiting is short; two waiting or approved requests of one person
+never share a day (a database exclusion constraint, `409 LEAVE_OVERLAP`). **Approving** posts `TAKEN` to the **ledger**
+(append-only) and cancels the person's scheduled shifts on full days; cancelling an approved request before it starts posts
+`RETURNED`. The **balance** is kept equal to the ledger by a trigger and can never go below zero (approvals at the same
+moment can't overdraw it). Nobody approves or refuses their own leave or adjusts their own balance. The **payroll export** makes a
+month's CSV (`GENERIC_CSV_V1`, [PAYROLL.md](PAYROLL.md)) from approved and locked timesheets and approved leave, locks the
+approved timesheets it used, and keeps the file. How it works:
+[system-design.md → 4.29](architecture/system-design.md#429-leave-balance--ledger-overlap-guard-payroll-export).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /leave/me` | The caller's balances, requests, coming holidays and the kinds of leave to ask for | `leave.create` | — | `MyLeaveDto` | 403, 404 (account not linked to an employee) | — |
+| `GET /leave/types` | Kinds of leave with their policies (made with the defaults on first use) | `leave.create` | — | `LeaveTypeDto[]` | 403 | — |
+| `POST /leave/types` · `PUT /leave/types/{id}` | A kind of leave with its policy for everyone. `version` on PUT | `leave.manage_balances` | `SaveLeaveTypeRequest` | 201 / 200 `LeaveTypeDto` | 400 `Code` (A–Z and digits, up to 10; "Another leave type already has the code CL."), `Name`, `NeedsBalance` (unpaid leave can't need a balance), `DaysPerYear` (0–365), `Accrual`, `MaxBalance`; 403, 404; 409 | INSERT/UPDATE |
+| `PUT /leave/policies` | The policy for one employment type (e.g. seasonal staff) | `leave.manage_balances` | `SaveLeavePolicyRequest` | `LeaveTypeDto` | 400 `EmploymentType`, `DaysPerYear`, `Accrual`, `MaxBalance`; 403, 404; 409 | INSERT/UPDATE |
+| `GET /leave/holidays?year` | The year's holidays (this year by default) | `leave.create` | — | `HolidayDto[]` | 403 | — |
+| `POST /leave/holidays` · `PUT /leave/holidays/{id}` | A holiday; turned off rather than deleted. Leave already asked for keeps its days | `leave.manage_balances` | `SaveHolidayRequest` | 201 / 200 `HolidayDto` | 400 `Date` ("Tue 17 Nov is already a holiday: Feast of the resort."), `Name`; 403, 404; 409 | INSERT/UPDATE |
+| `GET /leave/balances` | Everyone's balances | `leave.read` | — | `EmployeeLeaveBalancesDto[]` | 403 | — |
+| `GET /leave/balances/{employeeId}` | One person's balances and ledger with the running balance (their own, or anyone's with `leave.read`) | `leave.create` | — | `LeaveLedgerDto` | 403, 404 | — |
+| `POST /leave/adjustments` | Add or take off days by hand with the reason, or an opening balance | `leave.manage_balances` | `AdjustLeaveRequest` | `LeaveLedgerDto` | 400 `LeaveTypeId` (not a kind with a balance), `Days` (not 0, halves only, ±0.5–365; "That would take Casual leave below zero: they have 2 days."), `Reason`; 403, 404; 422 `OWN_LEAVE` | INSERT ledger |
+| `POST /leave/accruals/run` | Post a month's earned leave now (the background job does it on the 1st); running again adds nothing | `leave.manage_balances` | `RunAccrualRequest` | `AccrualResultDto` | 400 `Month` (not started yet; before January last year); 403 | INSERT ledger |
+| `GET /leave/requests?status&from&to&employeeId` | Requests overlapping a range (30 days back to 180 ahead by default) with warnings and counts | `leave.read` | — | `LeaveListDto` | 403 | — |
+| `POST /leave/requests/preview` | What a request would come to: the days, what isn't counted, the balance after, warnings. Saves nothing | `leave.create` | `CreateLeaveRequest` | `LeavePreviewDto` | as for `POST /leave/requests` | — |
+| `POST /leave/requests` | Ask for leave, for yourself or (with `leave.approve`) for someone | `leave.create` | `CreateLeaveRequest` | 201 `LeaveRequestDto` | 400 `EmployeeId`, `LeaveTypeId` (not in use; "You have 1 day of Casual leave (1 day already asked for and waiting, so 0 days left). These dates are 1.5 days. …"), `FromDate` (more than 30 days back; before joining; more than a year ahead), `ToDate` ("The last day is before the first day."; over 90 days; after leaving), `HalfDayStart`/`HalfDayEnd` (not allowed for this kind; on a holiday; both on one day), `Reason`; 403 (for someone else without `leave.approve`), 404; 409 `LEAVE_OVERLAP` ("You already have Casual leave LV00005 on Mon 16 – Wed 18 Nov (waiting for approval). Leave can't overlap: …") | INSERT |
+| `GET /leave/requests/{id}` | One request (their own, or anyone's with `leave.read`) | `leave.create` | — | `LeaveRequestDto` | 403, 404 | — |
+| `POST /leave/requests/{id}/approve` | Approve: the days come off the balance, shifts on full days are cancelled | `leave.approve` | `ApproveLeaveRequest` | `LeaveRequestDto` | 400 `Note`; 403, 404; 409 `CONCURRENCY_CONFLICT`; 422 `OWN_LEAVE`, `INVALID_STATUS_TRANSITION`, `INSUFFICIENT_LEAVE_BALANCE` | UPDATE + INSERT ledger + UPDATE shifts |
+| `POST /leave/requests/{id}/reject` | Refuse with the reason | `leave.reject` | `RejectLeaveRequest` | `LeaveRequestDto` | 400 `Reason`; 403, 404; 409; 422 `OWN_LEAVE`, `INVALID_STATUS_TRANSITION` | UPDATE |
+| `POST /leave/requests/{id}/cancel` | Cancel one's own waiting or approved leave (or anyone's with `leave.approve`); approved days are given back | `leave.create` | `CancelLeaveRequest` | `LeaveRequestDto` | 400 `Reason`; 403, 404; 409; 422 `INVALID_STATUS_TRANSITION`, `LEAVE_STARTED` ("LV00003 began on Sat 14 Nov, so it can't be cancelled now. …") | UPDATE (+ INSERT ledger) |
+| `GET /payroll/preview?month` | A month's rows and what isn't ready (`yyyy-MM`) | `payroll.export` | — | `PayrollPreviewDto` | 400 `Month` (not started; over two years back); 403 | — |
+| `GET /payroll/exports` · `POST /payroll/exports` | Files made, newest first · make a month's file (needs `confirmWarnings` when anything isn't ready); locks the approved timesheets used | `payroll.export` | `CreatePayrollExportRequest` | `PayrollExportDto[]` · 201 `PayrollExportDto` | 400 `Month`; 403; 422 `PAYROLL_NOT_READY` (`details: { warnings }`) | INSERT + UPDATE timesheets |
+| `GET /payroll/exports/{id}/file` | Download a file (`text/csv`) | `payroll.export` | — | the CSV | 403, 404 | — |
+
+`CreateLeaveRequest = { employeeId?, leaveTypeId, fromDate, toDate, halfDayStart, halfDayEnd, reason? }` (`halfDayStart`:
+off from lunch on the first day; `halfDayEnd`: back after lunch on the last day; on a one-day request one of them).
+`LeaveWarningDto = { kind: ROSTERED | SHORT_STAFFED | ALSO_OFF, date, message }`. `LeavePreviewDto = { days, countedDates,
+skipped: string[], balance, available, balanceAfter, warnings }`. `LeaveRequestDto = { id, code, employeeId, employeeCode,
+employeeName, departmentName, leaveTypeId, leaveTypeCode, leaveTypeName, isPaid, fromDate, toDate, halfDayStart, halfDayEnd,
+days, countedDates, reason, status: PENDING | APPROVED | REJECTED | CANCELLED, createdAt, requestedBy, decidedAt, decidedBy,
+decisionNote, shiftsCancelled, cancelledAt, cancelReason, balance, warnings, actions: (approve | reject | cancel)[], version }`.
+`LeaveListDto = { requests, counts }`. `MyLeaveDto = { employeeId, employeeName, today, balances, requests, holidays, types }`.
+`LeaveTypeDto = { id, code, name, isPaid, needsBalance, allowHalfDay, sortOrder, isActive, policies: LeavePolicyDto[],
+version }`, `LeavePolicyDto = { id, employmentType (null: everyone), daysPerYear, accrual: MONTHLY | YEARLY | NONE,
+maxBalance, isActive, version }`. `SaveLeaveTypeRequest = { code, name, isPaid, needsBalance, allowHalfDay, sortOrder,
+isActive, daysPerYear, accrual, maxBalance?, version? }`. `SaveLeavePolicyRequest = { leaveTypeId, employmentType?,
+daysPerYear, accrual, maxBalance?, isActive, version? }`. `HolidayDto = { id, date, name, isActive, version }`.
+`LeaveBalanceDto = { leaveTypeId, code, name, needsBalance, balance, pending, available, takenThisYear }`.
+`EmployeeLeaveBalancesDto = { employeeId, employeeCode, employeeName, departmentName, employmentType, balances }`.
+`LeaveLedgerDto = { employee, entries: [{ id, leaveTypeCode, entryType: OPENING | ACCRUAL | TAKEN | RETURNED | ADJUSTMENT,
+days, balanceAfter, entryDate, period, requestCode, reason, createdAt, by }] }`. `AdjustLeaveRequest = { employeeId,
+leaveTypeId, days, reason, opening }`. `RunAccrualRequest = { month }`, `AccrualResultDto = { month, posted, alreadyPosted,
+days, notes }`. `PayrollPreviewDto = { month, periodStart, periodEnd, rows: PayrollRowDto[], warnings, approvedToLock,
+holidays }`, `PayrollRowDto = { employeeCode, employeeName, department, employmentType, employedDays, weeklyOffs, holidays,
+daysWorked, workedMinutes, overtimeMinutes, lateMinutes, paidLeaveDays, unpaidLeaveDays, absentDays, payableDays,
+leaveDetail }`. `CreatePayrollExportRequest = { month, confirmWarnings }`. `PayrollExportDto = { id, month, periodStart,
+periodEnd, format, fileName, sha256, employees, timesheetsLocked, warnings, createdAt, by }`.
+
+The roster (Sprint 17) changes: `RosterWeekDto` adds `leave: [{ employeeId, date, leaveTypeCode, requestCode, half }]`;
+`POST /roster/shifts` refuses a day of approved leave with `409 ON_LEAVE` ("Gauri Gaonkar is on leave on Mon 16 Nov (CL
+LV00005). Choose someone else, or cancel the leave first."); `POST /roster/copy-week` skips those days.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

@@ -10,27 +10,36 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built; pull request into develop waits for the owner's review.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V021: leave_types and leave_policies (days a year, earned monthly or yearly, a maximum; for everyone or one employment type), leave_requests (LV00001…, counted days stored, an EXCLUDE constraint refusing overlapping waiting or approved leave), leave_ledger (append-only) and leave_balances (kept equal to the ledger by a trigger, never below zero), holidays, payroll_exports (append-only with SHA-256); permission payroll.export for Owner and HR
+- Asking for leave on a phone or for someone: half days at either end, holidays and the weekly day off not counted, a live preview with the balance after and the roster warnings (the shift that comes off, a shift left short, a colleague also off); refusals say why under the field (balance short counting what is waiting, dates the wrong way round, overlap, before joining, more than 30 days back)
+- Approving locks the balance, posts TAKEN and cancels shifts on full days of leave; refusing needs a reason; cancelling approved leave before it starts gives the days back; nobody decides their own leave
+- Balances and each person's ledger with the running balance; HR adjustments and opening balances with a reason; the monthly accrual on the 1st (background job or by hand; twice adds nothing; capped)
+- Holidays by year; kinds of leave with their policies; defaults CL 12, SL 6, EL 15, LOP made on first use
+- Payroll export: the month's rows (days employed, holidays, days and hours worked, overtime, paid and unpaid leave, days not in, payable days) with what isn't ready; the file needs a confirmation if anything is listed, locks the approved timesheets it used and is kept to download again; format GENERIC_CSV_V1 documented in docs/PAYROLL.md
+- The roster shows leave and refuses a shift on a day of leave (409 ON_LEAVE); copy week skips those days; the dashboard shows Leave waiting for you
+- Dev seed S016: leave types and policies, national holidays and Goa Liberation Day for this year and next, opening balances and this month's accrual, two requests waiting, one approved, one refused
+- [done] Docs: PAYROLL.md, API.md, DATABASE.md, schema-sprint-19.md, system design Sprint 19 and 4.29 with the leave flow diagram, ARCHITECTURE.md, permission matrix, INTEGRATIONS.md, Q3 note, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__leave.sql — new tables (next free number)
-- backend/Resort.Domain/Leave/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Leave/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/LeaveEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/LeaveTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/leave/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-19.md, this guide, CHANGELOG.md
+- database/migrations/V021__leave.sql; database/seed/dev/S016__leave.sql; database/queries/check-sprint-19.sql
+- backend/Resort.Domain/Leave/Leave.cs (LeaveMath, PayrollCsv); backend/Resort.Contracts/LeaveContracts.cs, EmployeeContracts.cs
+- backend/Resort.Application/ — Leave/ (LeaveService.cs, LeaveRequestService.cs, PayrollService.cs), Employees/RosterService.cs, Validation/LeaveValidators.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/LeaveEndpoints.cs, Infrastructure/LeaveAccrualJob.cs, Infrastructure/Problems.cs, Program.cs
+- backend/Resort.Tests/ — Unit/LeaveUnitTests.cs, Integration/LeaveTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/leave/ (leave.page.ts, leave-dialogs.ts, payroll.page.ts, leave.api.ts, leave.spec.ts), features/employees/roster.page.ts, features/dashboard/dashboard.page.ts, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-19.spec.ts; scripts/check-api.mjs (Sprint 19 checks)
+- docs/PAYROLL.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-19.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/security/permission-matrix.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-19-screens/; tools/handbooks/diagrams (leave-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 525 passed, 0 failed on real PostgreSQL 16 (15 new: counting days with half days, a holiday and a day off; monthly and pro-rated yearly accrual; the CSV with its escaping; the brief's leave refused while the balance is short, then approved with the full day taken off the roster and the half day kept; half days and holidays inside the range and impossible ones refused under the field; overlap, own leave, refusing and cancelling; the accrual run twice adding nothing and stopping at the maximum; two requests for the same days at the same moment making one, 5 times; four approvals at the same moment against a balance for two approving exactly two, 5 times; the payroll file waiting for unready weeks unless confirmed and locking the approved ones; dev seed check)
+- Frontend: 116 of 116 unit tests passed (3 new); ESLint clean; production build OK
+- Browser tests: all 151 steps of Sprints 01–19 passed in one run (25.6 min); Sprint 19's 5 steps cover a housekeeper on a 360 px phone asking for 1.5 days over a holiday (a wrong date refused under the field), her manager approving it from the dashboard with her shift taken off the roster, her balance going down, HR adjusting it with a reason and adding a holiday (a duplicate refused), and this month's payroll file made after confirming what isn't ready; API checks 242 of 242 (11 new); database checks clean; screenshots in docs/sprints/sprint-19-screens
 
 **Outcome**
 
@@ -50,9 +59,14 @@ Expected when accepted:
 - `holidays`
 - `payroll_exports`
 
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/leave/*, /payroll/*`
+
 **Screens / routes**
 
 - `/leave`
+- `/payroll`
 
 Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABASE.md). Update both in this sprint.
 
@@ -60,9 +74,9 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Balance = ledger sum; accrual job
-- [ ] Approval updates roster and creates ledger entries; audited
-- [ ] Payroll export CSV for the chosen Indian payroll provider (format decided in Sprint 0)
+- [x] Balance = ledger sum; accrual job
+- [x] Approval updates roster and creates ledger entries; audited
+- [x] Payroll export CSV in a documented generic format (GENERIC_CSV_V1; the provider, Q3, is still open)
 
 ## How to run this sprint
 
@@ -81,6 +95,13 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - **SQL:** set `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information` in `.env` to log every SQL statement.
 - **Database:** `docker compose --env-file .env -f infra/docker/docker-compose.yml exec db psql -U $POSTGRES_USER $POSTGRES_DB`
 - **Web:** Angular DevTools + the browser Network tab; API errors are `{code, message, details, correlationId}`.
+
+Sprint-specific:
+
+- A balance looks wrong: open Leave → Balances → the person for their history with the running balance. check-sprint-19.sql block 5 lists any balance that differs from its ledger (should be none); block 13 lists adjustments with their reasons.
+- Leave refused for overlap: the message names the other request; cancel it or choose other dates. Block 7 lists overlapping waiting or approved requests (should be none).
+- The accrual added nothing: it posts once per person, kind and month (block 12), only for people employed on the 1st, and stops at the policy's maximum (the result says so per person).
+- Payroll file missing someone's hours: only approved or locked timesheets count; the preview lists weeks not approved or with no timesheet. Block 16 lists approved timesheets a file should have locked.
 
 ## How to test
 

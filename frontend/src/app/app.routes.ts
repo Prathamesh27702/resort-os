@@ -101,6 +101,9 @@ export const routes: Routes = [
       { path: 'attendance', canActivate: [permissionGuard('attendance.self')], loadComponent: () => import('./features/attendance/attendance.page').then(m => m.AttendancePage) },
       { path: 'timesheets', canActivate: [permissionGuard('timesheet.self')], loadComponent: () => import('./features/attendance/timesheets.page').then(m => m.TimesheetsPage) },
       { path: 'timesheets/:id', canActivate: [permissionGuard('attendance.read')], loadComponent: () => import('./features/attendance/timesheets.page').then(m => m.TimesheetPage) },
+      // /leave, /payroll (Sprint 19)
+      { path: 'leave', canActivate: [permissionGuard('leave.create')], loadComponent: () => import('./features/leave/leave.page').then(m => m.LeavePage) },
+      { path: 'payroll', canActivate: [permissionGuard('payroll.export')], loadComponent: () => import('./features/leave/payroll.page').then(m => m.PayrollPage) },
 
       { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
 

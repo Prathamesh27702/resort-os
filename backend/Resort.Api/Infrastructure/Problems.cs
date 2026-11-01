@@ -46,6 +46,11 @@ public sealed class AppExceptionHandler(ILogger<AppExceptionHandler> log) : IExc
         // fire if something bypasses it.
         ["ex_roster_shifts_clash"] = ("SHIFT_CLASH", "Someone else just put this person on another shift at the same time. Reload the roster to see it, then choose another time or person."),
         ["ux_geofences_name"] = (null, "There is already an area with this name at this property."),
+        ["ex_leave_requests_overlap"] = ("LEAVE_OVERLAP", "This person already has leave on some of these days (asked for a moment ago). Reload to see it, then choose other dates."),
+        ["ck_leave_balances_not_negative"] = ("INSUFFICIENT_LEAVE_BALANCE", "The leave balance was used by another approval a moment ago and there aren't enough days left. Reload to see the balance."),
+        ["ux_holidays_date"] = (null, "That date was just made a holiday by someone else. Reload the holidays."),
+        ["ux_leave_types_name"] = (null, "There is already a leave type with this name at this property."),
+        ["ux_leave_ledger_accrual"] = (null, "This month's leave was just added by someone else (or the accrual job). Reload the balances."),
         ["ux_employees_user"] = (null, "That staff account was just linked to another employee. Reload and choose a different account."),
         ["ex_reservation_units_unit"] = ("ROOM_UNAVAILABLE", "This room was booked by someone else for some of these nights. Check availability again and choose another."),
         ["ex_reservation_units_bed"] = ("ROOM_UNAVAILABLE", "This bed was booked by someone else for some of these nights. Check availability again and choose another."),

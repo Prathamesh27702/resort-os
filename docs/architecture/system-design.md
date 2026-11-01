@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–18 built and accepted (October 2026); Sprint 19 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–18 built and accepted (October 2026); Sprint 19 built and in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -470,6 +470,31 @@ flowchart LR
   `ngsw-config.json` in production builds only (the app's files are cached; `/api`, `/pay`, `/swagger` and `/health`
   never are), and `core/install.ts` keeping the browser's install prompt for the dashboard banner and the user menu (an
   iPhone gets "Share → Add to Home Screen" instead). [4.28](#428-attendance-geofence-and-timesheet-maths) explains the rules.
+
+### Sprint 19: Leave, holidays and payroll export
+
+![Leave: counting the days, approving against a balance kept by a ledger, and the payroll file](../../tools/handbooks/assets/leave-flow.png)
+
+- Migration V021: `leave_types` and `leave_policies` (days a year, earned monthly or yearly, a maximum), `leave_requests`
+  (the counted days stored with the request; `ex_leave_requests_overlap` refuses two waiting or approved requests of one
+  person on the same day), `leave_ledger` (append-only) and `leave_balances` (kept equal to the ledger by
+  `trg_leave_ledger_balance`, never below zero), `holidays`, `payroll_exports` (append-only, with the SHA-256), and the
+  permission `payroll.export` for Owner and HR. Details: [schema-sprint-19.md](../database/schema-sprint-19.md).
+- `Domain/Leave/Leave.cs` (entities, statuses, `LeaveMath`: counting days with half days, holidays and the day off;
+  monthly and pro-rated yearly accrual; `PayrollCsv`: the `GENERIC_CSV_V1` writer). `Application/Leave/LeaveService.cs`
+  (kinds and policies with the defaults, holidays, balances and the ledger, adjustments, `LeaveAccrual`),
+  `LeaveRequestService.cs` (preview, ask, approve, refuse, cancel, the roster warnings) and `PayrollService.cs` (the
+  month's rows and warnings, making and keeping the file). `Validation/LeaveValidators.cs`. `Api/Infrastructure/
+  LeaveAccrualJob.cs` posts each month's accrual on the 1st (`Leave:AccrualJob`). `RosterService` shows leave on the
+  week, refuses a shift on a day of leave (`409 ON_LEAVE`) and skips those days when copying a week.
+- Endpoints: `LeaveEndpoints.cs` (`/leave` with `/me`, `/types`, `/policies`, `/holidays`, `/balances`, `/adjustments`,
+  `/accruals/run`, `/requests` with `/preview`, `/approve`, `/reject`, `/cancel`; `/payroll` with `/preview`, `/exports`,
+  `/exports/{id}/file`).
+- Screens: **Leave** (`/leave`, `features/leave/`: mine with balances and **Ask for leave** with a live preview; team
+  with approvals and who is off; balances with each person's history and adjustments; holidays; kinds of leave) and
+  **Payroll export** (`/payroll`: the month's rows, what isn't ready, making and downloading files); dialogs in
+  `leave-dialogs.ts`. The roster shows leave chips; the dashboard shows **Leave waiting for you**. The file format is in
+  [PAYROLL.md](../PAYROLL.md); [4.29](#429-leave-balance--ledger-overlap-guard-payroll-export) explains the rules.
 
 ---
 
@@ -1167,6 +1192,54 @@ Tests: `AttendanceUnitTests`, `AttendanceTests`, `attendance.spec.ts`, `e2e/spri
    `attendance.read` (the board and the team's timesheets: managers, supervisors, HR), `attendance.update` (manager
    entries, areas, corrections: manager, HR), `timesheet.approve` (manager, HR).
 
+### 4.29 Leave: balance = ledger, overlap guard, payroll export
+
+Code: `Application/Leave/` (`LeaveService.cs`, `LeaveRequestService.cs`, `PayrollService.cs`), `Domain/Leave/Leave.cs`
+(`LeaveMath`, `PayrollCsv`), `database/migrations/V021__leave.sql`, `features/leave/`. Diagram: section 3 (Sprint 19).
+Tests: `LeaveUnitTests`, `LeaveTests`, `leave.spec.ts`, `e2e/sprint-19.spec.ts`. File format: [PAYROLL.md](../PAYROLL.md).
+
+1. **Counting the days** (`LeaveMath.Count`): every date from the first to the last, less the property's active holidays
+   and the person's weekly day off; a half day at the start or the end counts 0.5. Mon 16 – Wed 18 Nov with Tuesday a
+   holiday and back after lunch on Wednesday is 1 + 0 + 0.5 = **1.5 days**. The counted dates are stored on the request
+   (`counted_dates`, with a CHECK that `days` matches them), so adding a holiday later doesn't change leave already asked
+   for, and the payroll export splits leave across a month end by its own dates.
+2. **Balance = ledger.** Like stock (4.25), a balance is never written directly: every change is a `leave_ledger` row
+   (append-only), and `trg_leave_ledger_balance` adds it to `leave_balances` in the same transaction, where
+   `ck_leave_balances_not_negative` refuses going below zero. The trigger UPDATEs first and INSERTs only when there is no
+   row yet; `INSERT … ON CONFLICT DO UPDATE` would check the new row (a negative `TAKEN`) against the CHECK before merging
+   and fail. Check: `check-sprint-19.sql` block 5.
+3. **Asking checks what is left.** A kind that needs a balance is refused under `LeaveTypeId` when the balance less what
+   is already waiting is short: *You have 1 day of Casual leave (1 day already asked for and waiting, so 0 days left). These
+   dates are 1.5 days. Ask for fewer days, or choose Leave without pay.* The same checks run for the live preview (which
+   saves nothing) and for sending.
+4. **No overlapping leave**, even from two tabs at once: `ex_leave_requests_overlap EXCLUDE USING gist (employee_id WITH
+   =, period WITH &&) WHERE status IN ('PENDING','APPROVED')`. The service looks first to name the other request
+   (`409 LEAVE_OVERLAP`); the constraint catches a race. So a morning and an afternoon half day on one date need one
+   request, not two.
+5. **Approving can't overdraw.** `ApproveAsync` locks the person's balance row (`SELECT … FOR UPDATE`, after making it if
+   missing), checks it again (`422 INSUFFICIENT_LEAVE_BALANCE`), posts `TAKEN`, and cancels the person's `SCHEDULED`
+   shifts on full days of leave (*On leave: LV00005 (Casual leave)*); half days keep their shift. Four approvals at once
+   against a balance for two queue on the lock: two succeed, two are refused (test
+   `Approvals_at_the_same_moment_never_take_a_balance_below_zero_5_times`). Cancelling approved leave before it starts
+   posts `RETURNED`; once started it is `LEAVE_STARTED` (HR adjusts instead). Nobody approves, refuses or adjusts their own.
+6. **Warnings, not refusals.** What leave does to the roster is shown, not blocked: the shift that comes off, a template
+   left with fewer people than its `min_staff`, a colleague in the department also off. The manager decides.
+7. **Accrual once per month.** `LeaveAccrual.RunAsync` (the background job on the 1st, or **Add this month's leave**)
+   takes an advisory lock for the property, then for each person employed on the 1st and each policy (the one for their
+   employment type wins over the one for everyone) posts `ACCRUAL` with `period` `yyyy-MM` (monthly: a twelfth, rounded
+   down to 0.01) or `yyyy` (yearly, pro-rated from the first full month for a joiner, rounded down to 0.5), capped at
+   `max_balance`. `ux_leave_ledger_accrual` makes a second run add nothing. The defaults (CL, SL, EL, LOP) are made the
+   first time a property opens leave, under the same kind of lock.
+8. **The payroll file** (`PayrollService`): one row per person employed in the month; hours only from `APPROVED` or
+   `LOCKED` timesheets; approved leave by its counted dates; payable days = employed − unpaid leave − days not in. What
+   isn't ready (the month not over, timesheets not approved, weeks with clock-ins but no timesheet, leave not decided) is
+   listed; making the file needs `confirmWarnings` then (`422 PAYROLL_NOT_READY` otherwise) and keeps the list with it.
+   In one transaction it locks the approved timesheets with days in the month and saves the CSV bytes with their SHA-256
+   in `payroll_exports` (append-only). Text cells starting with `=`, `+`, `-` or `@` get a leading `'` (CSV injection).
+9. **Permissions.** `leave.create` (everyone: their own leave, balances and history), `leave.read` (everyone's: manager,
+   HR), `leave.approve` and `leave.reject` (manager, HR; approving also lets you ask for someone), `leave.manage_balances`
+   (HR: kinds, holidays, adjustments, the accrual), `payroll.export` (Owner and HR).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1195,3 +1268,4 @@ request:
 | 16 | Suppliers and purchasing (requests, orders with an approval limit, part deliveries into the stock ledger, supplier bills with input GST, payments), purchase flow diagram; system design 4.26 Purchasing: approval, goods received and supplier bills (accepted 27 Oct 2026) |
 | 17 | Employees and roster (departments, profiles with an optional account link, pay behind its own permission, encrypted documents, shift templates, the week's roster with clash detection, shortages and warnings), roster flow diagram; system design 4.27 Roster: clash detection and shortages (accepted 29 Oct 2026) |
 | 18 | Attendance and timesheets (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets worked out per day, approve all, corrections that keep the old times, locked for payroll; installable app), attendance flow diagram; system design 4.28 Attendance: geofence and timesheet maths (accepted 31 Oct 2026) |
+| 19 | Leave, holidays and payroll export (kinds and policies, requests with half days and holidays not counted, the overlap guard, balances kept by an append-only ledger, the monthly accrual, approvals that take shifts off the roster, the payroll CSV with its warnings and lock), leave flow diagram; system design 4.29 Leave: balance = ledger, overlap guard, payroll export (in review) |

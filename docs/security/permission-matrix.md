@@ -1,6 +1,6 @@
 # Permission matrix
 
-Generated from the seeded database (`V002__seed_permissions_roles.sql`). ✓ = granted by default. 🛡 = sensitive.
+Generated from the seeded database (`V002__seed_permissions_roles.sql`; `payroll.export` added by `V021__leave.sql` in Sprint 19, 118 permissions). ✓ = granted by default. 🛡 = sensitive.
 
 Roles are templates: a grant can be organisation-wide or limited to one property. Code only ever checks permission codes, never role names.
 
@@ -191,6 +191,12 @@ Legend: **OWN** OWNER · **GM** GENERAL_MANAGER · **MGR** MANAGER · **ACC** AC
 | `payment.refund` 🛡<br>Issue refunds | ✓ | ✓ | ✓ | ✓ |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `payment.void` 🛡<br>Void payments | ✓ | ✓ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
+### payroll
+
+| Permission | OWN | GM | MGR | ACC | HR | RCP | HKS | HK | MNT | RM | WTR | KIT | INV | PUR | ACT | DRV | EMP |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `payroll.export` 🛡<br>Make and download payroll files (Sprint 19, V021) | ✓ |  |  |  | ✓ |  |  |  |  |  |  |  |  |  |  |  |  |
+
 ### pos
 
 | Permission | OWN | GM | MGR | ACC | HR | RCP | HKS | HK | MNT | RM | WTR | KIT | INV | PUR | ACT | DRV | EMP |
@@ -278,11 +284,11 @@ Legend: **OWN** OWNER · **GM** GENERAL_MANAGER · **MGR** MANAGER · **ACC** AC
 
 | Role | Permissions |
 |---|--:|
-| OWNER | 117 |
+| OWNER | 118 |
 | GENERAL_MANAGER | 112 |
 | MANAGER | 78 |
 | ACCOUNTANT | 26 |
-| HR | 20 |
+| HR | 21 |
 | RECEPTIONIST | 35 |
 | HOUSEKEEPING_SUPERVISOR | 16 |
 | HOUSEKEEPER | 9 |

@@ -10,7 +10,7 @@ same pattern so they behave the same under failure.
 | Channel manager → Booking.com, MakeMyTrip, Goibibo, Airbnb, Agoda, Expedia | [OTA.md](OTA.md) | `IChannelManager` | 26 |
 | WhatsApp Business Platform + email | [WHATSAPP.md](WHATSAPP.md) | `IMessageSender` | 24 |
 | GST / e-invoice | [GST.md](GST.md) | via accounting provider | 9, 12, 25 |
-| Payroll provider | — (CSV/API export) | `IPayrollExport` | 19 |
+| Payroll provider (not chosen yet, Q3) | [PAYROLL.md](PAYROLL.md) | CSV file `GENERIC_CSV_V1` (`PayrollCsv`); a provider adapter once chosen | 19 |
 | File storage | — | `IFileStore` | 3 |
 
 ## The pattern
