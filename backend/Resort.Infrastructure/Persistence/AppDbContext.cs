@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Resort.Application.Common;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Attendance;
+using Resort.Domain.Leave;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
 using Resort.Domain.Employees;
@@ -150,6 +151,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<Timesheet> Timesheets => Set<Timesheet>();
     public DbSet<TimesheetLine> TimesheetLines => Set<TimesheetLine>();
     public DbSet<TimesheetCorrection> TimesheetCorrections => Set<TimesheetCorrection>();
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+    public DbSet<LeavePolicy> LeavePolicies => Set<LeavePolicy>();
+    public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
+    public DbSet<LeaveLedgerEntry> LeaveLedger => Set<LeaveLedgerEntry>();
+    public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
+    public DbSet<Holiday> Holidays => Set<Holiday>();
+    public DbSet<PayrollExport> PayrollExports => Set<PayrollExport>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -660,6 +668,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         });
         b.Entity<TimesheetLine>().ToTable("timesheet_lines");
         b.Entity<TimesheetCorrection>().ToTable("timesheet_corrections");
+
+        // Leave, holidays and payroll (Sprint 19). The ledger and payroll files are never changed (triggers); balances are
+        // written only by the ledger trigger (and LockBalanceAsync's empty row), never by EF.
+        b.Entity<LeaveType>().ToTable("leave_types");
+        b.Entity<LeavePolicy>().ToTable("leave_policies");
+        b.Entity<LeaveRequest>().ToTable("leave_requests");
+        b.Entity<LeaveLedgerEntry>().ToTable("leave_ledger");
+        b.Entity<LeaveBalance>().ToTable("leave_balances");
+        b.Entity<Holiday>().ToTable("holidays");
+        b.Entity<PayrollExport>().ToTable("payroll_exports");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

@@ -10,6 +10,7 @@ import { InstallPrompt } from '../../core/install';
 import { RoomsApi } from '../rooms/rooms.api';
 import { AttendanceApi, STATUS_LABEL } from '../attendance/attendance.api';
 import { hm, hours } from '../employees/employees.api';
+import { LeaveApi } from '../leave/leave.api';
 
 interface Step { done: boolean; title: string; detail: string; link: string; action: string; }
 
@@ -57,6 +58,14 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
             <a mat-stroked-button routerLink="/timesheets" [queryParams]="{ view: 'mine' }">My timesheet</a>
             @if (m.week; as w) { <span class="sub">This week {{ hours(w.workedMinutes) }} · {{ statusLabel[w.status] }}</span> }
           </div>
+        </section>
+      }
+
+      @if (leaveWaiting(); as n) {
+        <section class="panel myday" data-testid="leave-waiting">
+          <h2>Leave waiting for you</h2>
+          <p>{{ n }} {{ n === 1 ? 'request is' : 'requests are' }} waiting for approval.</p>
+          <div class="row"><a mat-flat-button routerLink="/leave" [queryParams]="{ view: 'team' }">Look at {{ n === 1 ? 'it' : 'them' }}</a></div>
         </section>
       }
 
@@ -110,6 +119,9 @@ export class DashboardPage {
   private attendance = inject(AttendanceApi);
   install = inject(InstallPrompt);
   me = signal<MyAttendance | null>(null);
+  /** Leave requests waiting for the caller to approve (Sprint 19): the manager is told here. */
+  leaveWaiting = signal(0);
+  private leave = inject(LeaveApi);
   hm = hm; hours = hours; statusLabel = STATUS_LABEL;
   showInstall = computed(() => !this.install.installed() && !this.install.dismissed() && (this.install.canInstall() || this.install.iosHint()));
 
@@ -122,6 +134,9 @@ export class DashboardPage {
       // The employee's own day (Sprint 18): only when their account is linked to an employee record here.
       this.me.set(null);
       if (p && this.auth.can('attendance.self', p.id)) this.attendance.me(p.id).subscribe({ next: m => this.me.set(m), error: () => this.me.set(null) });
+      this.leaveWaiting.set(0);
+      if (p && this.auth.can('leave.approve', p.id))
+        this.leave.requests(p.id, { status: 'PENDING' }).subscribe({ next: l => this.leaveWaiting.set(l.requests.filter(r => r.actions.includes('approve')).length) });
     });
   }
 

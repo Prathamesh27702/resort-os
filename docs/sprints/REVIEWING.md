@@ -70,7 +70,7 @@ Start the API and web app (Getting started, Step 6) and run the tests (Step 7). 
 | 1 | Open http://localhost:4300, sign in as `owner@demo.local` with the password from `.env` | *Good morning/afternoon, Demo*, today's date in IST, and a 3-step setup checklist |
 | 2 | Click **Edit property**. Fill address line 1, PIN code, phone and email; check **State (GST)** shows Goa (30). **Save changes** | *Changes saved*; back on **Today** the first two checklist steps are ticked |
 | 3 | **Staff accounts → Add staff**: name *Riya Naik*, email `riya@demo.local`, temporary password `Welcome12345`, role **Receptionist** at **Palm Grove Beach Resort**. **Create account** | Riya appears with *Awaiting first sign-in* |
-| 4 | **Roles & permissions** | A grid of 117 permissions × 17 roles; salary rows only for Owner and HR |
+| 4 | **Roles & permissions** | A grid of 117 permissions (118 from Sprint 19) × 17 roles; salary rows only for Owner and HR |
 | 5 | **Audit trail** | Your property edit (old → new values) and Riya's creation, with your name and IST time |
 | 6 | Open a **private/incognito window**, sign in as `riya@demo.local` / `Welcome12345` | Forced to **Choose your own password**. Set one, then sign in again with it |
 | 7 | As Riya | Menu shows only **Today** and **Properties**. Typing `localhost:4300/users` sends her back to Today |
@@ -569,6 +569,46 @@ is about 1.1 km from the gate; 15.5442, 73.7553 is inside), and allow location w
 | 12 | Ravi's row → his timesheet → Tuesday (*No clock-out*) → **Correct** → **Clock-out** 22:05, **Why** *Forgot to clock out, left at 22:05 (kitchen closing log)* → **Save correction** | *Correction saved. The old times are kept on the timesheet.*; **Corrections** lists *Tue …: 14:01 to no clock-out (0 h) → 14:01 to 22:05 (8 h 4 min) · Forgot to clock out …* with your name |
 | 13 | **Approve** → **Lock for payroll** | *Approved*, then *… locked for payroll.* and *Locked for payroll*; **Correct a day** is gone |
 | 14 | Optional: sign in as yourself (owner) on your own phone over HTTPS, or a production build on the laptop → the user menu | **Install the app** puts Resort OS on the home screen; it opens on the dashboard without the browser bar |
+
+### Sprint 19 — Leave, holidays and payroll export
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V021__leave`). Demo data
+(S016): **Casual leave** (CL, 12 a year earned monthly, at most 12; 6 a year for seasonal staff), **Sick leave** (SL, 6 on
+1 January), **Earned leave** (EL, 15 a year monthly, at most 45, whole days) and **Leave without pay** (LOP); the national
+holidays and Goa Liberation Day for this year and next; everyone's opening balances and this month's accrual; **Sunil
+Gawas**'s sick day from tomorrow and **Maria Fernandes**'s 1.5 days of CL waiting for approval, **Neha Parab**'s 2 days
+approved, **Ravi Kamat**'s day refused. Use three browser windows: **Gauri**, a housekeeper, in a phone-sized window
+(360 × 780), her **manager** and **HR** (or the owner) on a desktop. In the steps, *Monday* is a Monday three weeks from
+now and *Tuesday* and *Wednesday* the days after it. Screenshots: [sprint-19-screens/](sprint-19-screens/). The browser
+tests do the same on their own: `cd frontend; npm run e2e:headed -- e2e/sprint-19.spec.ts` (names S19-01 … S19-05).
+Database checks: `database/queries/check-sprint-19.sql`. How it works:
+[system-design.md → 4.29](../architecture/system-design.md#429-leave-balance--ledger-overlap-guard-payroll-export).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Gauri Gaonkar*, role **Housekeeper**; *Mira Manager*, role **Manager**; *Hema HR*, role **HR**. **Employees** → **Employee** → *Gauri Gaonkar*, Housekeeping, weekly day off Sunday, **Staff account** Gauri's → **Save**. **Roster** → that week → Gauri's Monday → 07:00–15:00 → **Add** | *Gauri Gaonkar added as E00011.* and her Monday shift |
+| 2 | HR: **Leave** → **Holidays** → **Add a holiday** → *Tuesday*, *Feast of the resort* → **Save**. **Balances** → Gauri's row → **Leave** Casual leave, **Days** 4, **Why** *Brought forward from the paper register*, tick **Opening balance** → **Adjust** | *Feast of the resort on … saved.*; her history shows *Brought in CL +4*, balance 4 |
+| 3 | Phone: sign in as Gauri → **Leave** | *4 days Casual leave* (and 0 SL, 0 EL); **Ask for leave** |
+| 4 | **Ask for leave** → **From** *Monday*, **To** a day before Monday | Under **To**: *The last day is before the first day.* |
+| 5 | **To** *Wednesday*, tick **Last day: until lunch**, reason *Village feast* | The preview: *1.5 days · 4 days available, 2.5 days left after*; *Not counted: Tue …: Feast of the resort*; *Mon …: Gauri's shift Housekeeping 07:00–15:00 comes off the roster when this is approved.* Nothing scrolls sideways |
+| 6 | Change the kind to Earned leave (whole days only) | The half-day boxes go away; the preview counts 2 days; set it back to Casual leave and tick **Last day: until lunch** again |
+| 7 | **Send** | *LV00005: 1.5 days of Casual leave asked for. Your manager will approve it.*; the card says *1.5 days waiting · 2.5 days free*; the request *Waiting for approval* |
+| 8 | **Ask for leave** again for *Wednesday* only | In red: *You already have Casual leave LV00005 on … (waiting for approval). Leave can't overlap: choose other dates, or cancel LV00005 first.*; **Cancel** |
+| 9 | Manager: sign in as Mira → the dashboard | **Leave waiting for you**: *3 requests are waiting for approval.* → **Look at them** |
+| 10 | **Team** | Gauri's request with the shift warning; Sunil's and Maria's; **Who is off** lists Neha's 2 days |
+| 11 | Gauri's **Approve** → note *Enjoy the feast* → **Approve** | *LV00005 approved: 1.5 days off Gauri Gaonkar's Casual leave, 1 shift taken off the roster.*; it moves to **Who is off** |
+| 12 | **Roster** → that week | Gauri: *CL leave* on Monday (no shift, no **+**), *½ CL leave* on Wednesday; Tuesday is the holiday |
+| 13 | Tap a shortage on that Monday in Housekeeping and choose Gauri | Refused: *Gauri Gaonkar is on leave on Mon … (CL LV00005). Choose someone else, or cancel the leave first.* |
+| 14 | Phone: **Leave** | *2.5 days Casual leave*; the request *Approved*, *approved by Mira Manager: Enjoy the feast* |
+| 15 | HR: **Leave** → **Balances** → Gauri → **Adjust** with no reason | Under **Why**: *Say why, at least 3 characters.* |
+| 16 | **Days** 1, **Why** *Worked on the holiday in August* → **Adjust** | The top line *Adjusted CL +1 … Worked on the holiday in August*, balance 3.5; **Close**; the row says 3.5 |
+| 17 | **Holidays** → **Add a holiday** on *Tuesday* again | Under **Date**: *Tue … is already a holiday: Feast of the resort.* |
+| 18 | **Balances** → **Add this month's leave** | *Nothing to add: this month's leave was already there (N entries).* (the seed added it; running it again adds nothing) |
+| 19 | Manager: Maria's request → **Refuse** without a reason, then with *Short of staff that week* | First a reason is asked for; then *LV00002 refused.* |
+| 20 | Owner or HR: **Payroll export** → this month | **Not ready yet**: *… hasn't ended …*, timesheets waiting for approval, weeks with no timesheet; a row per person with days, hours, leave and payable days; **Make the file** greyed out |
+| 21 | Tick **Make the file anyway** → **Make the file** | *Payroll file for … made: N people …*; a CSV downloads named `payroll-…-YYYY-MM-….csv`; it opens in Excel with one row per person; **Files made** lists it with *by you* and its SHA-256 |
+| 22 | Last month → **Make the file** (after approving last month's timesheets in **Timesheets**) | No warnings, no confirmation needed; *… N timesheets locked*; those timesheets now say *Locked for payroll* |
+| 23 | As the manager: open `/payroll` | Not in the menu; the page refuses (payroll is Owner and HR only) |
 
 ## Part C — Decide
 

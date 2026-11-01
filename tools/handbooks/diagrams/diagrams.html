@@ -1209,5 +1209,37 @@
   <text class="s" x="46" y="648"><tspan class="b">Approve all</tspan> approves the week's submitted timesheets and lists the ones it skipped and why, e.g. "Tue 20 Oct has a clock-in at 14:01 with no clock-out".</text>
   <text class="s" x="46" y="672"><tspan class="b">Nobody</tspan> approves, sends back, locks or corrects their own timesheet. The app installs on a phone's home screen (PWA).</text>
 </svg>
+<svg id="leave-flow" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 19: leave. Asking, approving against a balance kept by a ledger, and the payroll file</text>
+  <rect class="lane" x="30" y="56" width="1140" height="176" rx="10"/>
+  <text class="t b" x="46" y="82">Asking (the preview saves nothing; sending runs the same checks)</text>
+  <rect class="step" x="46" y="98" width="230" height="88" rx="8"/><text class="s b" x="58" y="122">Mon 16 – Wed 18 Nov</text><text class="xs" x="58" y="142">Casual leave, back after lunch</text><text class="xs" x="58" y="160">on the last day</text><text class="xs" x="58" y="178">(half_day_end)</text>
+  <rect class="step" x="306" y="98" width="250" height="88" rx="8"/><text class="s b" x="318" y="122">Count the days (LeaveMath)</text><text class="xs" x="318" y="142">Mon 1 + Tue holiday 0 + Wed ½</text><text class="xs" x="318" y="160">= 1.5 days; the weekly day off</text><text class="xs" x="318" y="178">is skipped too; dates kept</text>
+  <rect class="ask" x="586" y="98" width="260" height="88" rx="8"/><text class="s b" x="598" y="122">Balance − waiting ≥ days?</text><text class="xs" x="598" y="142">4 available → 2.5 left after;</text><text class="xs" x="598" y="160">overlap with another waiting or</text><text class="xs" x="598" y="178">approved request? (EXCLUDE gist)</text>
+  <rect class="lose" x="876" y="98" width="280" height="88" rx="8"/><text class="s b" x="888" y="122">No: refused under the field</text><text class="xs" x="888" y="142">"You have 1 day of Casual leave … These</text><text class="xs" x="888" y="160">dates are 1.5 days." · 409 LEAVE_OVERLAP</text><text class="xs" x="888" y="178">naming the other request</text>
+  <path class="arrow" d="M276,142 L304,142"/><path class="arrow" d="M556,142 L584,142"/><path class="arrow" d="M846,142 L874,142"/>
+  <text class="xs" x="46" y="216"><tspan class="b">Warnings, not refusals:</tspan> her shift that comes off the roster, a shift left short of the people it needs, a colleague in the department also off.</text>
+  <rect class="lane" x="30" y="248" width="1140" height="200" rx="10"/>
+  <text class="t b" x="46" y="274">Approving (one transaction; never your own)</text>
+  <rect class="step" x="46" y="290" width="220" height="88" rx="8"/><text class="s b" x="58" y="314">Lock the balance row</text><text class="xs" x="58" y="334">SELECT leave_balances …</text><text class="xs" x="58" y="352">FOR UPDATE: five approvals</text><text class="xs" x="58" y="370">at once queue up</text>
+  <rect class="ask" x="296" y="290" width="200" height="88" rx="8"/><text class="s b" x="308" y="314">Enough left?</text><text class="xs" x="308" y="334">no → 422</text><text class="xs" x="308" y="352">INSUFFICIENT_LEAVE_</text><text class="xs" x="308" y="370">BALANCE, nothing saved</text>
+  <rect class="win" x="526" y="290" width="270" height="88" rx="8"/><text class="s b" x="538" y="314">Ledger row TAKEN −1.5</text><text class="xs" x="538" y="334">append-only; the trigger adds it to</text><text class="xs" x="538" y="352">leave_balances (CHECK balance ≥ 0)</text><text class="xs" x="538" y="370">so balance = sum of the ledger</text>
+  <rect class="win" x="826" y="290" width="330" height="88" rx="8"/><text class="s b" x="838" y="314">Shifts on full days cancelled</text><text class="xs" x="838" y="334">"On leave: LV00005 (Casual leave)"; the roster</text><text class="xs" x="838" y="352">shows CL leave and refuses a new shift</text><text class="xs" x="838" y="370">(409 ON_LEAVE); half days keep theirs</text>
+  <path class="arrow" d="M266,334 L294,334"/><path class="arrow" d="M496,334 L524,334"/><path class="arrow" d="M796,334 L824,334"/>
+  <text class="xs" x="46" y="404"><tspan class="b">Ledger entries:</tspan> OPENING (brought in) · ACCRUAL (on the 1st; once per person, kind and month by a unique index) · TAKEN · RETURNED (cancelled before it starts) · ADJUSTMENT (HR, with a reason).</text>
+  <text class="xs" x="46" y="424"><tspan class="b">Refused</tspan> needs a reason; <tspan class="b">cancelled</tspan> approved leave gives the days back but not the shifts.</text>
+  <rect class="lane" x="30" y="464" width="1140" height="140" rx="10"/>
+  <text class="t b" x="46" y="490">The month's payroll file (Owner and HR)</text>
+  <rect class="step" x="46" y="506" width="270" height="72" rx="8"/><text class="s b" x="58" y="530">Rows per person employed</text><text class="xs" x="58" y="550">days, holidays, hours from APPROVED</text><text class="xs" x="58" y="568">or LOCKED timesheets, approved leave</text>
+  <rect class="ask" x="346" y="506" width="290" height="72" rx="8"/><text class="s b" x="358" y="530">Anything not ready?</text><text class="xs" x="358" y="550">month not over, timesheets not approved,</text><text class="xs" x="358" y="568">no timesheet, leave not decided</text>
+  <rect class="lose" x="666" y="506" width="200" height="72" rx="8"/><text class="s b" x="678" y="530">422 PAYROLL_NOT_READY</text><text class="xs" x="678" y="550">unless confirmed; the list</text><text class="xs" x="678" y="568">is kept with the file</text>
+  <rect class="win" x="896" y="506" width="260" height="72" rx="8"/><text class="s b" x="908" y="530">GENERIC_CSV_V1 + SHA-256</text><text class="xs" x="908" y="550">append-only; locks the approved</text><text class="xs" x="908" y="568">timesheets it used</text>
+  <path class="arrow" d="M316,542 L344,542"/><path class="arrow" d="M636,542 L664,542"/><path class="arrow" d="M866,542 L894,542"/>
+  <rect class="zone" x="30" y="620" width="1140" height="64" rx="8"/>
+  <text class="s" x="46" y="646"><tspan class="b">Payable days</tspan> = days employed − unpaid leave − days rostered but not in. No pay amounts: the provider keeps the salaries.</text>
+  <text class="s" x="46" y="670"><tspan class="b">Cells</tspan> starting with = + − @ get a leading apostrophe so a spreadsheet never runs them as a formula.</text>
+</svg>
 </body>
 </html>

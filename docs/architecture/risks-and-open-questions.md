@@ -8,7 +8,7 @@ Each item becomes a GitHub issue labelled `needs:owner-decision` and is due befo
 |---|---|---|---|
 | Q1 | Cloud provider and region for staging/production (Azure Central India, AWS Mumbai, or a VPS) | Sprint 29 (budget now) | Azure Central India, App Service B1 + PostgreSQL Flexible Server B1ms |
 | Q2 | Which **channel manager** (e.g. a provider supporting MakeMyTrip/Goibibo + Booking.com + Airbnb) | Sprint 26 | — must decide |
-| Q3 | Which **payroll provider** and its import format | Sprint 19 | CSV in a documented generic format |
+| Q3 | Which **payroll provider** and its import format | Sprint 19 | CSV in a documented generic format. **Sprint 19:** built as `GENERIC_CSV_V1` ([PAYROLL.md](../PAYROLL.md)), days and hours only; still open which provider, to add its own format |
 | Q4 | Transactional **email provider** | Sprint 24 | Amazon SES or Postmark |
 | Q5 | Is the organisation required to issue **e-invoices** (turnover threshold)? Through Zoho or a GSP? | Sprint 25 | Store e-invoice fields; send via Zoho if required |
 | Q6 | Guest **ID collection** rules for this location (Form-C for foreign nationals, local police requirements) | Sprint 3 | Collect ID type + number + scan only for foreign nationals and where required |

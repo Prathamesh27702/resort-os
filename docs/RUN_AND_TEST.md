@@ -855,6 +855,63 @@ with a reason → **Approve** → **Lock for payroll**. How it works:
 By hand: [REVIEWING.md → Sprint 18](sprints/REVIEWING.md#sprint-18--attendance-and-timesheets-pwa).
 Screenshots: [sprint-18-screens/](sprints/sprint-18-screens/).
 
+### Sprint 19: Leave, holidays and payroll export
+
+**New:** two screens in the menu. **Leave** (`/leave`): **Mine** shows your balances (*4 days Casual leave*, with what is
+waiting), **Ask for leave** (kind, from, to, *First day: from lunch* / *Last day: until lunch*, a reason) with a live
+preview of the days counted, the balance after, the holidays and days off not counted, and what it does to the roster;
+then your requests and the coming holidays. **Team** (needs `leave.read`; managers and HR) lists what is waiting for
+approval with its warnings (*Mon 16 Nov: Gauri's shift Housekeeping 07:00–15:00 comes off the roster when this is
+approved.*, a shift left short, a colleague also off) with **Approve** and **Refuse**, and who is off in the next six
+months; **Leave for someone** asks on someone's behalf. **Balances** (HR) shows everyone's balances; tap a person for their
+history with the running balance and **Adjust** with a reason (or an opening balance); **Add this month's leave** runs
+the accrual now (it also runs by itself on the 1st). **Holidays** by year and **Kinds of leave** with their policies (HR
+changes them). **Payroll export** (`/payroll`, Owner and HR): choose a month, see each person's days and hours, what isn't
+ready, and **Make the file** (a CSV, described in [PAYROLL.md](PAYROLL.md)); files made are listed to download again. The
+**Roster** shows leave on each day; the dashboard shows **Leave waiting for you**. Demo data (S016): CL 12 a year (6 for
+seasonal staff), SL 6, EL 15, LOP; the national holidays and Goa Liberation Day; opening balances and this month's
+accrual; Sunil's sick day (from tomorrow) and Maria's 1.5 days waiting, Neha's 2 days approved, Ravi's day refused.
+Restart the API and watch for `Applying migration V021__leave`.
+
+```powershell
+# Backend (LeaveUnitTests and LeaveTests: days with half days, a holiday and a day off; monthly and pro-rated yearly
+# accrual; the brief's leave approved with the shift taken off the roster; overlap, own leave, refuse, cancel; the accrual
+# run twice adding nothing; four approvals at once against a balance for two approve exactly two; the payroll file with its warnings)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Leave"
+
+# Frontend unit tests (days and date ranges as the screens write them, errors under the fields)
+cd frontend
+npm run test:ci
+
+# Browser, a housekeeper on a 360 px phone, her manager and HR on a desktop (5 steps, S19-01 … S19-05: she asks for
+# Monday to Wednesday morning over a holiday, 1.5 days, with a wrong date refused under the field → the manager approves
+# it from the dashboard, the roster shows the leave and her Monday shift is gone → her balance is down → HR sees the
+# balances and her history, adjusts it with a reason, adds a holiday (the same date again refused) → this month's payroll
+# preview lists what isn't ready; the file is made once confirmed)
+npm run e2e -- e2e/sprint-19.spec.ts
+cd ..
+
+# API checks: the Sprint 19 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5–10, 12 and 16 must return no rows; block 15 is_intact true)
+Get-Content database/queries/check-sprint-19.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §74, leave and payroll): as the owner make a staff account with role **Housekeeper**, add
+her in **Employees** (Housekeeping, linked to that account) with a shift next Monday, then **Leave** → **Balances** → her
+row → **Adjust** 4 days of Casual leave, *Opening balance*, with a reason, and **Holidays** → **Add a holiday** next
+Tuesday. In a phone-sized window sign in as her → **Leave** → **Ask for leave** → Casual leave, Monday to Wednesday,
+**Last day: until lunch** → the preview says *1.5 days*, Tuesday not counted, and that Monday's shift comes off the roster
+→ **Send**. As a manager: the dashboard's **Leave waiting for you** → **Look at them** → **Approve** (*… 1.5 days off …,
+1 shift taken off the roster*) → **Roster** → that week shows *CL leave* on Monday and *½ CL leave* on Wednesday, no
+shift. As the owner or HR: **Payroll export** → this month → the list of what isn't ready → tick **Make the file
+anyway** → **Make the file** → the CSV downloads. How it works:
+[system-design.md → 4.29](architecture/system-design.md#429-leave-balance--ledger-overlap-guard-payroll-export).
+
+By hand: [REVIEWING.md → Sprint 19](sprints/REVIEWING.md#sprint-19--leave-holidays-and-payroll-export).
+Screenshots: [sprint-19-screens/](sprints/sprint-19-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -867,7 +924,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 510 backend passed, 113 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 525 backend passed, 116 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -875,7 +932,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–18 (expected: 146 passed, about 22 minutes)
+# 3. Every browser test, Sprints 01–19 (expected: 151 passed, about 23 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -890,14 +947,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–18:
+Expected totals for Sprints 01–19:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 510 passed, 0 failed |
-| Frontend unit tests | 113 of 113 SUCCESS |
-| Browser tests | 146 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7) |
-| API checks | 231 passed, 0 failed |
+| Backend tests | 525 passed, 0 failed |
+| Frontend unit tests | 116 of 116 SUCCESS |
+| Browser tests | 151 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5) |
+| API checks | 242 passed, 0 failed |
 
 Other useful commands:
 

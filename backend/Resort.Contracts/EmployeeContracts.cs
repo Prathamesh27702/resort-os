@@ -126,7 +126,7 @@ public sealed record RosterWarningDto(string Kind, DateOnly? Date, Guid Employee
 public sealed record RosterWeekDto(
     DateOnly WeekStart, DateOnly WeekEnd, DateOnly Today, IReadOnlyList<RosterDepartmentDto> Departments, IReadOnlyList<RosterEmployeeDto> Employees,
     IReadOnlyList<ShiftTemplateDto> Templates, IReadOnlyList<RosterShiftDto> Shifts, IReadOnlyList<RosterShortageDto> Shortages,
-    IReadOnlyList<RosterWarningDto> Warnings);
+    IReadOnlyList<RosterWarningDto> Warnings, IReadOnlyList<RosterLeaveDto> Leave);
 
 /// <summary>Copies one week's shifts into another, day for day. Shifts that would clash, fall on a day the person
 /// doesn't work here, or use a template that is switched off are skipped and listed.</summary>
