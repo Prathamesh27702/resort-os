@@ -1241,5 +1241,40 @@
   <text class="s" x="46" y="646"><tspan class="b">Payable days</tspan> = days employed − unpaid leave − days rostered but not in. No pay amounts: the provider keeps the salaries.</text>
   <text class="s" x="46" y="670"><tspan class="b">Cells</tspan> starting with = + − @ get a leading apostrophe so a spreadsheet never runs them as a formula.</text>
 </svg>
+<svg id="activity-flow" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 20: activities and equipment. The last seat, the weather, and a life jacket that comes back damaged</text>
+  <rect class="lane" x="30" y="56" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="82">Booking a seat (one transaction; an Idempotency-Key makes a double tap book once)</text>
+  <rect class="step" x="46" y="98" width="230" height="88" rx="8"/><text class="s b" x="58" y="122">Lock the session row</text><text class="xs" x="58" y="142">SELECT activity_schedules …</text><text class="xs" x="58" y="160">FOR UPDATE: two people on the</text><text class="xs" x="58" y="178">last seat queue here</text>
+  <rect class="ask" x="306" y="98" width="250" height="88" rx="8"/><text class="s b" x="318" y="122">Seats left ≥ seats asked?</text><text class="xs" x="318" y="142">scheduled, not started;</text><text class="xs" x="318" y="160">the stay confirmed or in house</text><text class="xs" x="318" y="178">on the session's date</text>
+  <rect class="lose" x="586" y="98" width="250" height="88" rx="8"/><text class="s b" x="598" y="122">No: 409 ACTIVITY_FULL</text><text class="xs" x="598" y="142">"Kayaking at 07:00 is full</text><text class="xs" x="598" y="160">(6 of 6 seats booked). Choose</text><text class="xs" x="598" y="178">another session." Nothing saved</text>
+  <rect class="win" x="866" y="98" width="290" height="88" rx="8"/><text class="s b" x="878" y="122">Yes: AB00004 + the charge</text><text class="xs" x="878" y="142">₹3,200 on the stay's bill (Activity);</text><text class="xs" x="878" y="160">the trigger adds 4 to seats_booked</text><text class="xs" x="878" y="178">(CHECK seats_booked ≤ capacity)</text>
+  <path class="arrow" d="M276,142 L304,142"/><path class="arrow" d="M556,142 L584,142"/><path class="arrow" d="M431,98 L431,90 L1011,90 L1011,96"/><text class="xs" x="700" y="86">yes</text><text class="xs" x="560" y="136">no</text>
+  <text class="xs" x="46" y="212"><tspan class="b">Two guards:</tspan> the lock answers with the reason; the database CHECK refuses an oversell even from code that skipped the lock.</text>
+  <text class="xs" x="46" y="230"><tspan class="b">Not staying?</tspan> Only a free session, or complimentary with a reason. A guest cancelling before the start gets the charge reversed.</text>
+  <rect class="lane" x="30" y="262" width="1140" height="170" rx="10"/>
+  <text class="t b" x="46" y="288">Cancelling for the weather (the manager; one transaction)</text>
+  <rect class="step" x="46" y="304" width="250" height="88" rx="8"/><text class="s b" x="58" y="328">"Rough sea, red flag"</text><text class="xs" x="58" y="348">lock the session, then each</text><text class="xs" x="58" y="366">target session in id order;</text><text class="xs" x="58" y="384">status CANCELLED</text>
+  <rect class="win" x="326" y="304" width="390" height="88" rx="8"/><text class="s b" x="338" y="328">Refund (the default)</text><text class="xs" x="338" y="348">a reversal of the charge on the same bill;</text><text class="xs" x="338" y="366">booking CANCELLED, kind WEATHER,</text><text class="xs" x="338" y="384">refund REVERSED</text>
+  <rect class="win" x="746" y="304" width="410" height="88" rx="8"/><text class="s b" x="758" y="328">Or move (the credit)</text><text class="xs" x="758" y="348">a copy on another session of the same activity within</text><text class="xs" x="758" y="366">14 days, if it has the seats; the charge goes with it;</text><text class="xs" x="758" y="384">old booking refund MOVED, linked both ways</text>
+  <path class="arrow" d="M296,348 L324,348"/><path class="arrow" d="M716,348 L744,348"/>
+  <text class="xs" x="46" y="418"><tspan class="b">Kept-aside equipment</tspan> for the cancelled bookings goes back on the shelf. Items already handed out stay out until returned.</text>
+  <rect class="lane" x="30" y="448" width="1140" height="160" rx="10"/>
+  <text class="t b" x="46" y="474">Equipment: one row per tagged item; one open assignment per item (unique index)</text>
+  <rect class="step" x="46" y="490" width="170" height="64" rx="8"/><text class="s b" x="58" y="514">AVAILABLE</text><text class="xs" x="58" y="534">LJ-01 … LJ-12</text>
+  <rect class="step" x="246" y="490" width="170" height="64" rx="8"/><text class="s b" x="258" y="514">RESERVED</text><text class="xs" x="258" y="534">kept aside</text>
+  <rect class="step" x="446" y="490" width="190" height="64" rx="8"/><text class="s b" x="458" y="514">ISSUED</text><text class="xs" x="458" y="534">due back at the session's end</text>
+  <rect class="win" x="666" y="490" width="150" height="64" rx="8"/><text class="s b" x="678" y="514">Returned good</text><text class="xs" x="678" y="534">→ AVAILABLE</text>
+  <rect class="lose" x="846" y="490" width="150" height="64" rx="8"/><text class="s b" x="858" y="514">DAMAGED</text><text class="xs" x="858" y="534">"Strap torn"</text>
+  <rect class="ask" x="1016" y="490" width="140" height="64" rx="8"/><text class="s b" x="1028" y="514">MAINTENANCE</text><text class="xs" x="1028" y="534">→ AVAILABLE</text>
+  <path class="arrow" d="M216,522 L244,522"/><path class="arrow" d="M416,522 L444,522"/><path class="arrow" d="M636,522 L664,522"/><path class="arrow" d="M541,554 L541,564 L921,564 L921,556"/><path class="arrow" d="M996,522 L1014,522"/>
+  <text class="xs" x="46" y="584"><tspan class="b">Also:</tspan> ISSUED → LOST (with what happened); LOST → AVAILABLE (found); any out-of-use item → RETIRED (the end). Damaged and lost need a reason.</text>
+  <text class="xs" x="46" y="598"><tspan class="b">trg_equipment_status_transition</tspan> refuses any other move; EquipmentStatuses.Transitions in C# is the same list (a test checks) and answers first with the steps allowed.</text>
+  <rect class="zone" x="30" y="624" width="1140" height="60" rx="8"/>
+  <text class="s" x="46" y="650"><tspan class="b">Who:</tspan> reception books, issues and takes back; the activity manager puts sessions on, cancels for the weather and moves items through maintenance.</text>
+  <text class="s" x="46" y="672"><tspan class="b">Not automatic:</tspan> no damage or loss charge is posted by itself, and there is no cancellation fee.</text>
+</svg>
 </body>
 </html>

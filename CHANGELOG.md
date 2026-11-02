@@ -2,6 +2,59 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-20] — 2026-11-02 — Activities and equipment (accepted)
+
+### Added
+- Migration V022: `activities` (code, minutes, seats a session, price a person, where to meet, whether the weather can
+  stop it, the equipment each person needs), `activity_schedules` (sessions; `seats_booked` kept by a trigger from the
+  bookings and a CHECK that it never goes past the seats), `activity_bookings` (`AB00001` …; put on a staying guest's
+  bill, free, or complimentary with a reason; cancelled by the guest or by the weather, with the charge reversed or moved
+  with the booking), `equipment_types`, `equipment` (one row per tagged item: `AVAILABLE`, `RESERVED`, `ISSUED`,
+  `DAMAGED`, `MAINTENANCE`, `LOST`, `RETIRED`; a trigger refuses any other move) and `equipment_assignments` (who has
+  it, kept aside or handed out, due back, returned good, damaged or lost with what happened; one open assignment per
+  item). Folio items get the source `ACTIVITY`.
+- Booking a session locks it first (the Sprint 05 approach: `SELECT … FOR UPDATE` on the session row, then the stay),
+  so the last seat goes to one person only; the database CHECK is the final guard. A full session says so: "Kayaking at
+  07:00 is full (6 of 6 seats booked). Choose another session." Bookings need an Idempotency-Key, so a double tap books
+  once.
+- A staying guest's booking goes on their bill as one charge (category Activity); cancelling it before the start takes
+  the charge off. Anyone not staying can be booked on a free session, or as complimentary with a reason.
+- Cancelling a session for the weather: one reason, then for each booking a refund on the bill (the default) or a move to
+  another session of the same activity within 14 days (the charge goes with it). Reserved equipment is put back.
+- Equipment: issue a number of one kind (the first available by tag) for a booking or to anyone by name, or keep it
+  aside and hand it over later; return it good, damaged or lost (damaged and lost need what happened and take it out of
+  use); move damaged items to maintenance and back into use; add kinds and items (`LJ-13`, `LJ-14` … numbered after the
+  highest). What is out shows first, overdue at the top.
+- API: `GET|POST /activities`, `PUT /activities/{id}`, `GET|POST /activities/sessions`, `GET|PUT
+  /activities/sessions/{id}`, `POST /activities/sessions/{id}/weather-cancel`, `GET /activities/stays`, `GET|POST
+  /activities/bookings`, `GET /activities/bookings/{id}`, `POST /activities/bookings/{id}/cancel`, `GET /equipment`,
+  `POST /equipment/types`, `PUT /equipment/types/{id}`, `POST /equipment/items`, `GET /equipment/items/{id}`, `POST
+  /equipment/items/{id}/status`, `POST /equipment/issue`, `POST /equipment/assignments/{id}/issue`, `/release`, `/return`.
+- Staff app: **Activities** (`/activities`: the day's sessions with seats left, bookings, Book, Equipment, Cancel for
+  weather, putting sessions on, the list of activities) and **Equipment** (`/equipment`: what is out, every item by
+  kind, issue and return). Both work on a 360 px phone.
+- Dev seed S017: life jackets ×12, kayaks ×6 (one in maintenance), snorkel sets ×8 (one damaged), bicycles ×8 (one
+  lost); kayaking (6 seats, ₹800), sunrise yoga (free), snorkelling (₹1,500) and a village cycle tour (₹500) with sessions
+  for today and the next 7 days; tomorrow 4 seats on the 07:00 kayaking for an agent group (complimentary) and two on
+  yoga.
+- Tests: backend `ActivityUnitTests` (the equipment moves in code match the database trigger) and `ActivitiesTests`
+  (kayaking at 07:00 with 6 seats can't be oversold; the last seat booked by two people at once, 10 times, one wins; the
+  database guards on their own; cancelling reverses the charge; the weather cancellation refunds one booking and moves
+  another; the review demo of issuing life jackets and one coming back damaged; validation and permissions; sessions)
+  and a dev seed check; frontend `activities.spec.ts`; browser steps S20-01 … S20-05; `check-api.mjs` Sprint 20 block;
+  `database/queries/check-sprint-20.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-20.md, system design Sprint 20 and 4.30, ARCHITECTURE.md module map,
+  RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The shell menu adds **Activities** and **Equipment**.
+
+### Open points
+- Paid activities go only on a staying guest's bill. Visitors can be booked on free sessions or as complimentary; taking
+  payment at the desk for a visitor comes later.
+- No damage or loss charge is posted by itself; add one to the guest's bill by hand if the resort charges for it.
+- No cancellation fee: a guest cancelling before the start gets the full charge back.
+
 ## [sprint-19] — 2026-11-01 — Leave, holidays and payroll export (accepted)
 
 ### Added

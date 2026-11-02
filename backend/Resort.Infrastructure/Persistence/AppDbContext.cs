@@ -6,6 +6,7 @@ using Resort.Application.Common;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Attendance;
 using Resort.Domain.Leave;
+using Resort.Domain.Activities;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
 using Resort.Domain.Employees;
@@ -158,6 +159,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
     public DbSet<Holiday> Holidays => Set<Holiday>();
     public DbSet<PayrollExport> PayrollExports => Set<PayrollExport>();
+    public DbSet<Activity> Activities => Set<Activity>();
+    public DbSet<ActivitySchedule> ActivitySchedules => Set<ActivitySchedule>();
+    public DbSet<ActivityBooking> ActivityBookings => Set<ActivityBooking>();
+    public DbSet<EquipmentType> EquipmentTypes => Set<EquipmentType>();
+    public DbSet<EquipmentItem> EquipmentItems => Set<EquipmentItem>();
+    public DbSet<EquipmentAssignment> EquipmentAssignments => Set<EquipmentAssignment>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -678,6 +685,23 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         b.Entity<LeaveBalance>().ToTable("leave_balances");
         b.Entity<Holiday>().ToTable("holidays");
         b.Entity<PayrollExport>().ToTable("payroll_exports");
+
+        // Activities and equipment (Sprint 20). seats_booked is written only by the bookings' trigger, never by EF.
+        b.Entity<Activity>().ToTable("activities");
+        b.Entity<ActivitySchedule>(e =>
+        {
+            e.ToTable("activity_schedules");
+            e.Property(x => x.SeatsBooked).ValueGeneratedOnAddOrUpdate();
+            e.Ignore(x => x.SeatsLeft);
+        });
+        b.Entity<ActivityBooking>().ToTable("activity_bookings");
+        b.Entity<EquipmentType>().ToTable("equipment_types");
+        b.Entity<EquipmentItem>(e =>
+        {
+            e.ToTable("equipment");
+            e.Property(x => x.StatusChangedAt).ValueGeneratedOnUpdate();
+        });
+        b.Entity<EquipmentAssignment>().ToTable("equipment_assignments");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

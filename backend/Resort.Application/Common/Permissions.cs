@@ -91,6 +91,13 @@ public static class Perm
     public const string LeaveManageBalances = "leave.manage_balances";
     public const string PayrollExport = "payroll.export";
 
+    public const string ActivityRead = "activity.read";
+    public const string ActivityManage = "activity.manage";
+    public const string ActivityBookingCreate = "activity_booking.create";
+    public const string EquipmentRead = "equipment.read";
+    public const string EquipmentManage = "equipment.manage";
+    public const string EquipmentIssue = "equipment.issue";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
@@ -126,6 +133,7 @@ public static class Perm
         InventoryRead, InventoryAdjust, InventoryManage, RecipeRead, RecipeManage,
         SupplierRead, SupplierManage, PurchaseRead, PurchaseCreate, PurchaseApprove, GrnCreate, SupplierInvoiceManage,
         FolioRead, FolioPostCharge, FolioAdjust,
+        ActivityRead, ActivityManage, ActivityBookingCreate, EquipmentRead, EquipmentManage, EquipmentIssue,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,
         InvoiceRead, InvoiceCreate, InvoiceCancel, CreditNoteCreate,

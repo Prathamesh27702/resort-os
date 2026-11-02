@@ -175,6 +175,7 @@ app.MapPurchasingEndpoints();
 app.MapEmployeesEndpoints();
 app.MapAttendanceEndpoints();
 app.MapLeaveEndpoints();
+app.MapActivityEndpoints();
 
 app.Run();
 
