@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-20] — Activities and equipment (in review)
+## [sprint-20] — 2026-11-02 — Activities and equipment (accepted)
 
 ### Added
 - Migration V022: `activities` (code, minutes, seats a session, price a person, where to meet, whether the weather can

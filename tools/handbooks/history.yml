@@ -57,3 +57,6 @@
 - version: "1.19"
   date: 2026-11-01
   change: "Sprint 19 (Leave, holidays and payroll export) accepted: staff ask for leave on their phones, with half days, and see straight away how many days it is and what is left; holidays and days off inside the leave are not counted; managers see what the leave does to the roster before approving, and approved leave takes the shifts off the roster; balances can't go below zero, every change is kept with a reason, and leave is earned every month by itself; each month's payroll file (days and hours per person) is made in one click after it lists what isn't ready yet. Leave flow diagram. Sprint 20 started."
+- version: "1.20"
+  date: 2026-11-02
+  change: "Sprint 20 (Activities and equipment) accepted: each session shows the seats left and the last seat can't be sold twice, even when two people book at the same moment; a staying guest's activity goes straight on their room bill and comes off if they cancel; when the weather stops a session, one step refunds everyone on their bills or moves them to another session; every life jacket, kayak and bicycle has a tag, so the resort sees who has it, when it is due back and what came back damaged. Activity flow diagram. Sprint 21 started."
