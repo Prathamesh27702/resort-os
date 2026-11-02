@@ -127,6 +127,7 @@ export class Shell {
     { label: 'Maintenance', icon: 'build', link: '/maintenance', perm: 'maintenance.create' },
     { label: 'Activities', icon: 'kayaking', link: '/activities', perm: 'activity.read' },
     { label: 'Equipment', icon: 'scuba_diving', link: '/equipment', perm: 'equipment.read' },
+    { label: 'Beach transport', icon: 'airport_shuttle', link: '/transport', perm: 'transport.read' },
     { label: 'Restaurant', icon: 'restaurant', link: '/restaurant', perm: 'pos_order.read', exact: true },
     { label: 'Kitchen', icon: 'soup_kitchen', link: '/restaurant/kitchen', perm: 'kot.read' },
     { label: 'Inventory', icon: 'inventory_2', link: '/inventory', perm: 'inventory.read', exact: true },

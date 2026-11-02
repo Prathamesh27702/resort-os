@@ -45,6 +45,9 @@
 //   - Sprint 20 changes nothing: it reads activities, tomorrow's sessions and the equipment board, and checks refusals (a
 //     booking without an Idempotency-Key, a booking for more seats than a session has, a damaged return without a reason,
 //     a receptionist putting sessions on or changing equipment); no booking or equipment move is saved
+//   - Sprint 21 changes nothing: it reads vehicles, routes and tomorrow's trips, and checks refusals (a booking without an
+//     Idempotency-Key, more seats than a trip has, a vehicle with a bad registration, a receptionist putting trips on or
+//     marking a trip as left); no vehicle, booking, trip or boarding is saved
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -911,6 +914,28 @@ await expectCall('Returning without saying what happened to a damaged item → 4
 const someItem = eqBoard?.json?.items?.[0];
 await expectCall('Receptionist can’t change an item’s status → 403', 'POST', `${P}/equipment/items/${someItem?.id ?? NONE}/status`, 403,
   { token: R, body: { status: 'MAINTENANCE', note: 'API check' } });
+
+// ---------------------------------------------------------------- Sprint 21 — beach transport
+title('Sprint 21 — beach trips that cannot be overbooked, the driver\'s manifest');
+await expectCall('Vehicles (demo: Force Traveller 12 seats, Mahindra Bolero 7)', 'GET', `${P}/transport/vehicles`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(v => /^[A-Z0-9]{4,12}$/.test(v.registration) && v.seats > 0)) || JSON.stringify(b).slice(0, 200));
+await expectCall('Routes (demo: beach shuttle and return, ₹500 a seat)', 'GET', `${P}/transport/routes`, 200, { token: T },
+  b => (Array.isArray(b) && b.every(r => r.distanceKm > 0 && r.price >= 0)) || JSON.stringify(b).slice(0, 200));
+const tripDay = await expectCall(`Trips on ${plus(1)}: seats booked never above the seats`, 'GET', `${P}/transport/trips?date=${plus(1)}`, 200, { token: T },
+  b => (Array.isArray(b?.trips) && b.trips.every(x => x.seatsBooked >= 0 && x.seatsBooked <= x.capacity && (x.status !== 'SCHEDULED' || x.seatsLeft === x.capacity - x.seatsBooked)))
+    || JSON.stringify(b).slice(0, 200));
+const tripOpen = tripDay?.json?.trips?.find?.(x => x.status === 'SCHEDULED');
+await expectCall('A seat booked without an Idempotency-Key → 400 (nothing saved)', 'POST', `${P}/transport/bookings`, 400,
+  { token: T, body: { tripId: tripOpen?.id ?? NONE, seats: 1, guestName: 'API check', complimentary: true, complimentaryReason: 'API check' } });
+await expectCall('More seats than the trip has → 409 TRIP_FULL with the seats left (nothing saved)', 'POST', `${P}/transport/bookings`, tripOpen ? 409 : 404,
+  { token: T, headers: { 'Idempotency-Key': `apicheck-${randomBytes(6).toString('hex')}` },
+    body: { tripId: tripOpen?.id ?? NONE, seats: Math.min((tripOpen?.capacity ?? 0) + 1, 60), guestName: 'API check', complimentary: true, complimentaryReason: 'API check' } },
+  b => (!tripOpen || (b.code === 'TRIP_FULL' && /left|full/.test(b.message))) || JSON.stringify(b).slice(0, 200));
+await expectCall('Receptionist can’t put trips on → 403', 'POST', `${P}/transport/trips`, 403,
+  { token: R, body: { routeId: NONE, vehicleId: NONE, fromDate: plus(1), toDate: plus(1), times: ['08:00'] } });
+await expectCall('Receptionist can’t mark a trip as left → 403', 'POST', `${P}/transport/trips/${tripOpen?.id ?? NONE}/depart`, 403, { token: R, body: {} });
+await expectCall('A vehicle with a bad registration → 400 under Registration (nothing saved)', 'POST', `${P}/transport/vehicles`, 400,
+  { token: T, body: { code: 'APICHK', name: 'API check', registration: 'X', seats: 4 } }, b => (b.details?.Registration?.[0] ?? '').length > 0 || JSON.stringify(b.details));
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

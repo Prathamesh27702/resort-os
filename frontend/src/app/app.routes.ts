@@ -107,6 +107,8 @@ export const routes: Routes = [
       // /activities, /equipment (Sprint 20)
       { path: 'activities', canActivate: [permissionGuard('activity.read')], loadComponent: () => import('./features/activities/activities.page').then(m => m.ActivitiesPage) },
       { path: 'equipment', canActivate: [permissionGuard('equipment.read')], loadComponent: () => import('./features/activities/equipment.page').then(m => m.EquipmentPage) },
+      // /transport (Sprint 21)
+      { path: 'transport', canActivate: [permissionGuard('transport.read')], loadComponent: () => import('./features/transport/transport.page').then(m => m.TransportPage) },
 
       { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
 

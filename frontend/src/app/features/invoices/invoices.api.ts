@@ -72,7 +72,7 @@ export function fileName(header: string | null): string | null {
 /** "BEACH/2627/00001" → "BEACH-2627-00001.pdf", as the server names it. */
 export const pdfName = (number: string) => number.replace(/\//g, '-') + '.pdf';
 
-function save(blob: Blob, name: string) {
+export function save(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -98,7 +98,7 @@ function printPdf(blob: Blob) {
 }
 
 /** A failed blob request carries the API's JSON error as a Blob: read it back so toProblem shows the real reason. */
-async function jsonError(e: unknown): Promise<unknown> {
+export async function jsonError(e: unknown): Promise<unknown> {
   if (!(e instanceof HttpErrorResponse) || !(e.error instanceof Blob)) return e;
   try {
     return new HttpErrorResponse({ error: JSON.parse(await e.error.text()), status: e.status, statusText: e.statusText, url: e.url ?? undefined });

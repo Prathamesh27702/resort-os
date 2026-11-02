@@ -7,6 +7,7 @@ using Resort.Domain.Accommodation;
 using Resort.Domain.Attendance;
 using Resort.Domain.Leave;
 using Resort.Domain.Activities;
+using Resort.Domain.Transport;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
 using Resort.Domain.Employees;
@@ -165,6 +166,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<EquipmentType> EquipmentTypes => Set<EquipmentType>();
     public DbSet<EquipmentItem> EquipmentItems => Set<EquipmentItem>();
     public DbSet<EquipmentAssignment> EquipmentAssignments => Set<EquipmentAssignment>();
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<TransportRoute> TransportRoutes => Set<TransportRoute>();
+    public DbSet<VehicleTrip> VehicleTrips => Set<VehicleTrip>();
+    public DbSet<TripPassenger> TripPassengers => Set<TripPassenger>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -702,6 +707,17 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.Property(x => x.StatusChangedAt).ValueGeneratedOnUpdate();
         });
         b.Entity<EquipmentAssignment>().ToTable("equipment_assignments");
+
+        // Beach transport (Sprint 21). seats_booked is written only by the passengers' trigger, never by EF.
+        b.Entity<Vehicle>().ToTable("vehicles");
+        b.Entity<TransportRoute>().ToTable("transport_routes");
+        b.Entity<VehicleTrip>(e =>
+        {
+            e.ToTable("vehicle_trips");
+            e.Property(x => x.SeatsBooked).ValueGeneratedOnAddOrUpdate();
+            e.Ignore(x => x.SeatsLeft);
+        });
+        b.Entity<TripPassenger>().ToTable("trip_passengers");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

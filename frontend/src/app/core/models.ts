@@ -850,3 +850,34 @@ export interface EquipmentAssignment {
 }
 export interface EquipmentBoard { types: EquipmentType[]; items: EquipmentItem[]; out: EquipmentAssignment[]; }
 export interface EquipmentItemHistory { item: EquipmentItem; assignments: EquipmentAssignment[]; }
+
+// ---------------------------------------------------------------- Sprint 21: beach transport
+
+export type TripStatus = 'SCHEDULED' | 'DEPARTED' | 'COMPLETED' | 'CANCELLED';
+export type PassengerStatus = 'BOOKED' | 'BOARDED' | 'NO_SHOW' | 'CANCELLED';
+export interface Vehicle {
+  id: string; code: string; name: string; registration: string; seats: number; note: string | null; sortOrder: number; isActive: boolean; version: number;
+}
+export interface TransportRoute {
+  id: string; code: string; name: string; origin: string; destination: string; distanceKm: number; durationMinutes: number; price: number;
+  sortOrder: number; isActive: boolean; version: number;
+}
+export interface Driver { userId: string; name: string; isDriver: boolean; }
+export interface Trip {
+  id: string; routeId: string; routeCode: string; routeName: string; origin: string; destination: string; date: string; departsAt: string;
+  arrivesAt: string; departTime: string; arriveTime: string; vehicleId: string; vehicleName: string; registration: string; driverUserId: string | null;
+  driverName: string | null; capacity: number; seatsBooked: number; seatsLeft: number; onBoard: number; price: number; status: TripStatus;
+  note: string | null; cancelReason: string | null; departedAt: string | null; completedAt: string | null; actions: string[]; version: number;
+}
+export interface TripPassenger {
+  id: string; code: string; tripId: string; routeName: string; date: string; departTime: string; reservationId: string | null;
+  reservationReference: string | null; room: string | null; guestName: string; seats: number; unitPrice: number; amount: number;
+  settlement: 'ROOM_CHARGE' | 'FREE' | 'COMPLIMENTARY'; complimentaryReason: string | null; folioNumber: string | null; note: string | null;
+  status: PassengerStatus; boardedAt: string | null; boardedBy: string | null; cancelReason: string | null; cancelledAt: string | null;
+  refund: 'REVERSED' | 'NONE' | null; actions: string[]; createdAt: string; by: string | null; version: number;
+}
+export interface TransportDay { date: string; today: string; trips: Trip[]; routes: TransportRoute[]; vehicles: Vehicle[]; drivers: Driver[]; }
+export interface TripDetail { trip: Trip; passengers: TripPassenger[]; }
+export interface MyTrips { date: string; today: string; trips: TripDetail[]; }
+export interface CreateTripsResult { created: number; skipped: string[]; }
+export interface CancelTripResult { trip: Trip; refunded: number; amountRefunded: number; nothingToRefund: number; passengers: TripPassenger[]; }
