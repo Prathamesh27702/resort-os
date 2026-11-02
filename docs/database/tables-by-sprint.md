@@ -128,16 +128,16 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `leave_requests` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
 | `holidays` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
 | `payroll_exports` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
-| `activities` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
-| `activity_schedules` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
-| `activity_bookings` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
-| `equipment_types` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
-| `equipment` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
-| `equipment_assignments` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🔵 In progress |
-| `vehicles` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
-| `transport_routes` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
-| `vehicle_trips` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
-| `trip_passengers` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | ⚪ Planned |
+| `activities` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
+| `activity_schedules` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
+| `activity_bookings` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
+| `equipment_types` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
+| `equipment` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
+| `equipment_assignments` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
+| `vehicles` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
+| `transport_routes` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
+| `vehicle_trips` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
+| `trip_passengers` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
 | `expense_categories` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
 | `cost_centres` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
 | `expenses` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |

@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 20
+current: 21
 
 sprints:
 
@@ -1705,7 +1705,7 @@ sprints:
 - id: 20
   title: Activities and equipment
   phase: 7
-  status: in-progress
+  status: done
   size: M
   module: Activities
   feature: activities
@@ -1713,7 +1713,7 @@ sprints:
   goal: Capacity-safe activity bookings and equipment issue/return (brief §48, §49).
   client: "Activities are booked within capacity, and equipment (kayaks, snorkels, bicycles) is issued and returned with a record."
   progress:
-    now: "Built; pull request into develop waits for the owner's review."
+    now: "Accepted by the owner on 2 Nov 2026 (PR #164). Defaults kept: paid activities only on a staying guest's bill, cancelling until the start with no fee, weather refund on the bill or a move within 14 days, no automatic damage or loss charge, equipment due back at the session's end."
     done:
       - "Migration V022: activities, activity_schedules (seats_booked kept from the bookings by a trigger, a CHECK that it never passes the seats), activity_bookings (AB00001…; on the bill, free or complimentary; cancelled by the guest or the weather with the charge reversed or moved), equipment_types, equipment (tagged items; a trigger allows only the listed status moves), equipment_assignments (one open assignment per item); folio item source ACTIVITY"
       - "Booking locks the session row first (the Sprint 05 approach), so the last seat goes to one person; a full session says so (409 ACTIVITY_FULL with the seats left); an Idempotency-Key makes a double tap book once"
@@ -1779,7 +1779,7 @@ sprints:
 - id: 21
   title: Beach transport
   phase: 7
-  status: planned
+  status: in-progress
   size: S
   module: Transport
   feature: transport

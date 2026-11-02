@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 7 — Activities, transport, equipment | S | [Sprint 20](sprint-20-activities-and-equipment.md) |
+| 🔵 In progress — **current sprint** | Phase 7 — Activities, transport, equipment | S | [Sprint 20](sprint-20-activities-and-equipment.md) |
 
 **Goal:** Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 20 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

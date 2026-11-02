@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 7 — Activities, transport, equipment | M | [Sprint 08](sprint-08-folio.md) |
+| 🟢 Done | Phase 7 — Activities, transport, equipment | M | [Sprint 08](sprint-08-folio.md) |
 
 **Goal:** Capacity-safe activity bookings and equipment issue/return (brief §48, §49).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built; pull request into develop waits for the owner's review.
+**Now:** Accepted by the owner on 2 Nov 2026 (PR #164). Defaults kept: paid activities only on a staying guest's bill, cancelling until the start with no fee, weather refund on the bill or a move within 14 days, no automatic damage or loss charge, equipment due back at the session's end.
 
 **Done so far**
 
