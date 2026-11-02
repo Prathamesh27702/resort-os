@@ -121,9 +121,9 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 18 | Attendance | geofences, attendance_events, timesheets, timesheet_lines, timesheet_corrections | 18 | built (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets with approval, corrections and locking; installable app) |
 | 19 | Roster | shift_templates, roster_shifts | 17 | built (weekly roster, overlapping shifts refused by an EXCLUDE constraint unless allowed with a reason, shortages and warnings, copy a week) |
 | 20 | Leave and payroll export | leave_types, leave_policies, leave_requests, leave_ledger, leave_balances, holidays, payroll_exports | 19 | built (leave with half days and holidays not counted, an overlap guard, balances kept by an append-only ledger with a monthly accrual, approvals that take shifts off the roster, the monthly payroll CSV in a documented generic format) |
-| 21 | Activities | activities, activity_schedules, activity_bookings | 20 | planned |
+| 21 | Activities | activities, activity_schedules, activity_bookings (charges on folio_items, source ACTIVITY) | 20 | built (sessions that can't be oversold: the session row locked and seats kept by a trigger with a CHECK; bookings on the bill, free or complimentary; weather cancellation with refunds or moves) |
 | 22 | Transport | vehicles, vehicle_trips, trip_passengers | 21 | planned |
-| 23 | Equipment | equipment, equipment_assignments | 20 | planned |
+| 23 | Equipment | equipment_types, equipment, equipment_assignments | 20 | built (tagged items with the allowed status moves checked by a trigger, kept aside, issued, returned good, damaged or lost, maintenance) |
 | 24 | Expenses | expenses, expense_categories, cost_centres | 22 | planned |
 | 25 | Budgeting | budgets, budget_lines | 22 | planned |
 | 26 | Accounting integration | accounting_sync_records | 25 | planned |

@@ -104,6 +104,9 @@ export const routes: Routes = [
       // /leave, /payroll (Sprint 19)
       { path: 'leave', canActivate: [permissionGuard('leave.create')], loadComponent: () => import('./features/leave/leave.page').then(m => m.LeavePage) },
       { path: 'payroll', canActivate: [permissionGuard('payroll.export')], loadComponent: () => import('./features/leave/payroll.page').then(m => m.PayrollPage) },
+      // /activities, /equipment (Sprint 20)
+      { path: 'activities', canActivate: [permissionGuard('activity.read')], loadComponent: () => import('./features/activities/activities.page').then(m => m.ActivitiesPage) },
+      { path: 'equipment', canActivate: [permissionGuard('equipment.read')], loadComponent: () => import('./features/activities/equipment.page').then(m => m.EquipmentPage) },
 
       { path: 'restaurant/menu', canActivate: [permissionGuard('menu.update')], loadComponent: () => import('./features/restaurant/menu.page').then(m => m.MenuPage) },
 

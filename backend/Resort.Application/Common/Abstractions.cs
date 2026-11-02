@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Resort.Domain.Accommodation;
 using Resort.Domain.Attendance;
 using Resort.Domain.Leave;
+using Resort.Domain.Activities;
 using Resort.Domain.Audit;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
@@ -146,6 +147,12 @@ public interface IAppDbContext
     DbSet<LeaveRequest> LeaveRequests { get; }
     DbSet<LeaveLedgerEntry> LeaveLedger { get; }
     DbSet<LeaveBalance> LeaveBalances { get; }
+    DbSet<Activity> Activities { get; }
+    DbSet<ActivitySchedule> ActivitySchedules { get; }
+    DbSet<ActivityBooking> ActivityBookings { get; }
+    DbSet<EquipmentType> EquipmentTypes { get; }
+    DbSet<EquipmentItem> EquipmentItems { get; }
+    DbSet<EquipmentAssignment> EquipmentAssignments { get; }
     DbSet<Holiday> Holidays { get; }
     DbSet<PayrollExport> PayrollExports { get; }
 

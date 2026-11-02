@@ -1168,6 +1168,63 @@ The roster (Sprint 17) changes: `RosterWeekDto` adds `leave: [{ employeeId, date
 `POST /roster/shifts` refuses a day of approved leave with `409 ON_LEAVE` ("Gauri Gaonkar is on leave on Mon 16 Nov (CL
 LV00005). Choose someone else, or cancel the leave first."); `POST /roster/copy-week` skips those days.
 
+## Built endpoints (Sprint 20 — activities and equipment)
+
+All under `/api/v1/properties/{propertyId}`. An **activity** (KAYAK, YOGA …) has minutes, seats a session, a price a
+person and optionally the **kind of equipment** each person needs. **Sessions** (`activity_schedules`) are put on for a
+range of days at given start times, each with its own seats and price. A **booking** (`AB00001` …) takes seats on a
+session: for a staying guest (confirmed or checked in, the session's date inside the stay) the price goes on the stay's
+bill as one Activity charge; anyone else only on a free session or as complimentary with a reason. Booking locks the
+session row first, so two people can't take the last seat (`409 ACTIVITY_FULL`); the database keeps `seats_booked` from
+the bookings and refuses it above the seats. Cancelling for the **weather** refunds each booking on the bill or moves it
+to another session of the same activity within 14 days (the charge goes with it). **Equipment** is one tagged item each
+(LJ-01 …); it is kept aside (`RESERVED`), handed out (`ISSUED`) and returned good, damaged or lost; damaged items go to
+maintenance and back. A trigger refuses any other status move. How it works:
+[system-design.md → 4.30](architecture/system-design.md#430-activity-seats-weather-cancellation-equipment).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /activities` | The property's activities | `activity.read` | — | `ActivityDto[]` | 403 | — |
+| `POST /activities` · `PUT /activities/{id}` | An activity; switched off rather than deleted. `version` on PUT | `activity.manage` | `SaveActivityRequest` | 201 / 200 `ActivityDto` | 400 `Code` ("Kayaking already has the code KAYAK."), `Name`, `DurationMinutes` (15–720), `Capacity` (1–200), `Price`, `EquipmentTypeId`; 403, 404; 409 | INSERT/UPDATE |
+| `GET /activities/sessions?date` | A day's sessions with seats left (today by default) and the activities | `activity.read` | — | `ActivityDayDto` | 403 | — |
+| `POST /activities/sessions` | Put sessions on: from–to (at most 92 days), start times; times already on or past are skipped and listed | `activity.manage` | `CreateSessionsRequest` | `CreateSessionsResultDto` | 400 `ActivityId` (switched off), `FromDate` (before today), `ToDate`, `Times`, `Capacity`, `Price`; 403 | INSERT |
+| `GET /activities/sessions/{id}` | A session with its bookings and the sessions its bookings can move to | `activity.read` | — | `ActivitySessionDetailDto` | 403, 404 | — |
+| `PUT /activities/sessions/{id}` | Seats (never below what is booked), price for new bookings, note | `activity.manage` | `UpdateSessionRequest` | `ActivitySessionDto` | 400 `Capacity` ("4 seats are booked, so it can't go below 4."); 403, 404; 409; 422 `SESSION_CANCELLED`, `SESSION_OVER` | UPDATE |
+| `POST /activities/sessions/{id}/weather-cancel` | Cancel the session: each booking refunded on the bill, or moved per `moves` | `activity.manage` | `WeatherCancelRequest` | `WeatherCancelResultDto` | 400 `Reason`, `Moves` (another activity, a cancelled or started session, not enough seats there: "Kayaking at 09:00 has 1 seat left and AB00004 is for 4."); 403, 404; 409; 422 `SESSION_CANCELLED`, `SESSION_OVER` | UPDATE + INSERT folio items + INSERT moved bookings |
+| `GET /activities/stays?date` | Stays that can be booked on a date | `activity_booking.create` | — | `ActivityStayDto[]` | 403 | — |
+| `POST /activities/bookings` | Book seats. Needs an `Idempotency-Key` header (a repeat returns the first booking) | `activity_booking.create` | `BookActivityRequest` | 201 `ActivityBookingDto` | 400 (no key), `Seats` (1–50), `ReservationId` (not staying that day; checked out), `GuestName` (a paid session for someone not staying: "Choose the guest's stay …, or make it complimentary"), `ComplimentaryReason`; 403, 404; 409 `ACTIVITY_FULL` ("Kayaking at 07:00 is full (6 of 6 seats booked). Choose another session.", `details: { seatsLeft }`); 422 `SESSION_CANCELLED`, `SESSION_STARTED` | INSERT + INSERT folio item |
+| `GET /activities/bookings?reservationId` | A stay's activity bookings | `activity.read` | — | `ActivityBookingDto[]` | 403 | — |
+| `GET /activities/bookings/{id}` | One booking | `activity.read` | — | `ActivityBookingDto` | 403, 404 | — |
+| `POST /activities/bookings/{id}/cancel` | Cancel before the start: the charge is reversed, kept-aside equipment put back | `activity_booking.create` | `CancelActivityBookingRequest` | `ActivityBookingDto` | 400 `Reason`; 403, 404; 409; 422 `INVALID_STATUS_TRANSITION`, `SESSION_STARTED` | UPDATE + INSERT folio item |
+| `GET /equipment` | Kinds with counts by status, every item, what is out (overdue first) | `equipment.read` | — | `EquipmentBoardDto` | 403 | — |
+| `POST /equipment/types` · `PUT /equipment/types/{id}` | A kind of equipment | `equipment.manage` | `SaveEquipmentTypeRequest` | 201 / 200 `EquipmentTypeDto` | 400 `Code`, `Name`; 403, 404; 409 | INSERT/UPDATE |
+| `POST /equipment/items` | One item by `tag`, or `count` items numbered after the highest tag with `prefix` (LJ-13, LJ-14 …) | `equipment.manage` | `AddEquipmentRequest` | 201 `EquipmentItemDto[]` | 400 `EquipmentTypeId`, `Tag` (already used), `Prefix`, `Count` (1–100); 403 | INSERT |
+| `GET /equipment/items/{id}` | An item with its history | `equipment.read` | — | `EquipmentItemHistoryDto` | 403, 404 | — |
+| `POST /equipment/items/{id}/status` | Move an item by hand (AVAILABLE, DAMAGED, MAINTENANCE, LOST, RETIRED; never to RESERVED or ISSUED) | `equipment.manage` | `ChangeEquipmentStatusRequest` | `EquipmentItemDto` | 400 `Status` (not an allowed step; the message lists the steps it can take), `Note` (needed unless AVAILABLE); 403, 404; 409; 422 `EQUIPMENT_OUT` (reserved or issued: return or release it first) | UPDATE |
+| `POST /equipment/issue` | Keep aside (`reserveOnly`) or hand out items: chosen `equipmentIds`, or `quantity` of one kind (the first available by tag); for a booking, a stay or a name | `equipment.issue` | `IssueEquipmentRequest` | 201 `EquipmentAssignmentDto[]` | 400 `IssuedTo`, `EquipmentTypeId`, `Quantity` (1–50), `DueBackAt`; 403, 404; 409 `EQUIPMENT_UNAVAILABLE` ("Only 2 of life jacket are available and 3 were asked for.", "LJ-01 is issued (Asha Rao). Choose other items.") | INSERT + UPDATE items |
+| `POST /equipment/assignments/{id}/issue` · `/release` | Hand over what was kept aside · put it back on the shelf | `equipment.issue` | `AssignmentStepRequest` | `EquipmentAssignmentDto` | 403, 404; 409; 422 `INVALID_STATUS_TRANSITION` | UPDATE |
+| `POST /equipment/assignments/{id}/return` | Returned `GOOD` (available again), `DAMAGED` or `LOST` (out of use; `note` says what happened) | `equipment.issue` | `ReturnEquipmentRequest` | `EquipmentAssignmentDto` | 400 `Condition`, `Note`; 403, 404; 409; 422 `INVALID_STATUS_TRANSITION` | UPDATE |
+
+`SaveActivityRequest = { code, name, description?, durationMinutes, capacity, price, meetingPoint?, weatherDependent,
+equipmentTypeId?, sortOrder, isActive, version? }`. `CreateSessionsRequest = { activityId, fromDate, toDate, times:
+"HH:mm"[], capacity?, price?, note? }` (capacity and price default to the activity's). `ActivitySessionDto = { id,
+activityId, activityCode, activityName, date, startsAt, endsAt, startTime, endTime, capacity, seatsBooked, seatsLeft, price,
+status: SCHEDULED | CANCELLED, note, cancelReason, cancelledAt, cancelledBy, weatherDependent, meetingPoint,
+equipmentTypeId, started, actions: (book | edit | weather-cancel)[], version }`. `BookActivityRequest = { sessionId, seats,
+reservationId?, guestName?, complimentary, complimentaryReason?, note? }`. `ActivityBookingDto = { id, code, sessionId,
+activityName, date, startTime, reservationId, reservationReference, room, guestName, seats, unitPrice, amount, settlement:
+ROOM_CHARGE | FREE | COMPLIMENTARY, complimentaryReason, folioNumber, note, status: BOOKED | CANCELLED, cancelKind: GUEST
+| WEATHER, cancelReason, cancelledAt, refund: REVERSED | MOVED | NONE, movedToCode, movedFromCode, equipment, actions:
+(equipment | cancel)[], createdAt, by, version }`. `WeatherCancelRequest = { reason, moves?: [{ bookingId, toSessionId }],
+version? }`, `WeatherCancelResultDto = { session, refunded, amountRefunded, moved, nothingToRefund, bookings }`.
+`EquipmentTypeDto = { id, code, name, sortOrder, isActive, total, available, byStatus, version }`. `EquipmentItemDto = {
+id, equipmentTypeId, typeName, tag, note, status, statusNote, statusChangedAt, with, moves, version }`.
+`IssueEquipmentRequest = { activityBookingId?, reservationId?, issuedTo?, equipmentIds?, equipmentTypeId?, quantity?,
+reserveOnly, dueBackAt? }` (for a booking, due back defaults to the session's end). `EquipmentAssignmentDto = { id,
+equipmentId, tag, typeName, issuedTo, activityBookingId, bookingCode, reservationId, reservationReference, status: RESERVED
+| ISSUED | RETURNED | LOST | RELEASED, reservedAt, issuedAt, issuedBy, dueBackAt, overdue, closedAt, closedBy,
+returnCondition: GOOD | DAMAGED | LOST, returnNote, version }`. `ReturnEquipmentRequest = { condition, note?, version? }`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
