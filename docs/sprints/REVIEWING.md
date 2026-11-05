@@ -678,6 +678,42 @@ e2e/sprint-21.spec.ts` (names S21-01 … S21-04). Database checks: `database/que
 | 16 | Driver phone: **Trips** → open a trip that isn't his → look for **Left** | No **Left**; from the API: *… has no driver yet, so only a transport manager can run it.* |
 | 17 | Owner: open tomorrow's 08:00 → **Cancel trip** with *Van broke down* | *The 08:00 Beach shuttle is cancelled.*; TP00001 cancelled, nothing charged; the trip takes no more bookings |
 
+### Sprint 22 — Expenses and budgets
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V024__expenses`).
+Demo data (S019): this financial year's **Budget 2026-27**, the same every month (Front office ₹15,000, Housekeeping
+₹40,000, Food and beverage ₹60,000, Maintenance ₹25,000, Activities ₹10,000, Transport ₹20,000, Sales and marketing
+₹15,000, Administration ₹20,000); ten approved expenses EX00001–EX00010 (EX00006 is a Malvan Fuels GST bill: ₹11,800 paid,
+₹1,800 GST claimable, ₹10,000 counts); two waiting: **EX00011 Bed sheets** ₹1,200 with no receipt and **EX00012 Tea and
+snacks** ₹350. Use two windows: the **owner** on a desktop and a **Manager** in a phone-sized window (360 × 780).
+Screenshots: [sprint-22-screens/](sprint-22-screens/). The browser tests do the same on their own: `cd frontend; npm run
+e2e:headed -- e2e/sprint-22.spec.ts` (names S22-01 … S22-05). Database checks: `database/queries/check-sprint-22.sql`. How
+it works: [system-design.md → 4.32](../architecture/system-design.md#432-expenses-approval-and-budget-against-actual).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Manoj Manager*, role **Manager** | The account |
+| 2 | Owner: **Budget** | Tiles: the budget April to this month, spent (approved), variance, the year at this rate; each department with its budget so far, spent, variance and a standing; *2 expenses (₹1,550) wait for approval and are not counted yet* |
+| 3 | Tap **Transport** | This month, what waits, and spending by category: *Fuel ₹10,000* (the Malvan Fuels bill counts without its GST) |
+| 4 | **Expenses** → **Categories and departments** → **New department** → code *SPA*, name *Spa* → **Save** | *Spa saved.* |
+| 5 | **Budget** → the **Spa** row | *No budget* |
+| 6 | **Plan** → **For the whole year** *12000* | *₹1,000 a month* under it |
+| 7 | **Save** | *Spa: ₹12,000 for 2026-27.*; Spa shows *On track* and its budget so far |
+| 8 | Phone: sign in as Manoj → **Expenses** → **Record expense** → *Plumber: spa shower*, **Amount paid (with GST)** *1180*, category **Repairs and maintenance**, department **Spa**, paid to *Ganesh Plumbing* | The form fits the phone, nothing scrolls sideways |
+| 9 | Tick **It is a GST bill** → GSTIN *30ABCDE1234F1ZA*, bill *GP-114*, **GST on the bill** *180* | *CGST ₹90 + SGST ₹90; taxable value ₹1,000.* under the GST |
+| 10 | **Add receipt** → a photo → **Record** | Under the GSTIN: *The last character (check digit) should be D for this GSTIN; check it for a typing mistake.* |
+| 11 | GSTIN *30ABCDE1234F1ZD* → **Record** | *EX00013 recorded: ₹1,180 to Ganesh Plumbing. It waits for approval.*; the expense *Waiting for approval* with the photo; no **Approve** button (a manager records, doesn't approve) |
+| 12 | Phone: **Record expense** again with the same GSTIN and bill **gp-114** | Under the bill number: *Bill gp-114 of 30ABCDE1234F1ZD is already recorded as EX00013. A bill is recorded once.* (any case matches) → **Cancel** |
+| 13 | Owner: **Budget** → **Spa** | Spent *₹0*; *₹1,000 waits for approval* (what will count once approved) |
+| 14 | Owner: **Expenses** (opens on *Waiting*) → **Bed sheets and pillow covers** | *EX00011 is ₹1,200, over ₹500, so it needs a photo of the receipt before it can be approved. Add the receipt first.* and no **Approve** |
+| 15 | Open **Plumber: spa shower** | The receipt photo (tap it to open it), *CGST ₹90 + SGST ₹90 on ₹1,000 · claimable as input credit*, *Counts in the budget ₹1,000 once approved* |
+| 16 | **Approve** | *EX00013 approved: ₹1,000 counts in Spa's budget.* |
+| 17 | **Budget** → Spa | Spent *₹1,000*, the variance ₹1,000 less *under*; below, the month chart and **The months as a table** |
+| 18 | **Expenses** → **Tea and snacks** → **Reject** with nothing typed | Under the reason: what to fill in |
+| 19 | *No bill, paid from petty cash by mistake* → **Reject** | *EX00012 rejected.*; it never counts; it has no buttons any more |
+| 20 | Phone: **Budget** | The departments read on the phone, no **Plan** buttons (a manager reads budgets, doesn't plan them) |
+| 21 | Owner: **Budget** → **Up to the end of** → an earlier month | The numbers are the budget and spending up to that month; *Year at this rate* uses the days up to it |
+
 ## Part C — Decide
 
 ### Accept

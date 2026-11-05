@@ -881,3 +881,37 @@ export interface TripDetail { trip: Trip; passengers: TripPassenger[]; }
 export interface MyTrips { date: string; today: string; trips: TripDetail[]; }
 export interface CreateTripsResult { created: number; skipped: string[]; }
 export interface CancelTripResult { trip: Trip; refunded: number; amountRefunded: number; nothingToRefund: number; passengers: TripPassenger[]; }
+
+// ---------------------------------------------------------------- Sprint 22: expenses and budgets
+
+export type ExpenseStatus = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+export type ExpensePaymentMethod = 'CASH' | 'UPI' | 'CARD' | 'BANK_TRANSFER' | 'CHEQUE';
+export interface ExpenseCategory { id: string; code: string; name: string; gstClaimable: boolean; sortOrder: number; isActive: boolean; version: number; }
+export interface CostCentre { id: string; code: string; name: string; sortOrder: number; isActive: boolean; version: number; }
+export interface ExpenseSetup {
+  categories: ExpenseCategory[]; costCentres: CostCentre[]; paymentMethods: ExpensePaymentMethod[]; receiptRequiredOver: number; gstRegistered: boolean;
+  stateCode: string | null; canApprove: boolean; canManage: boolean;
+}
+export interface ExpenseReceipt { id: string; fileName: string; contentType: string; sizeBytes: number; createdAt: string; addedBy: string | null; }
+export interface Expense {
+  id: string; code: string; expenseDate: string; categoryId: string; categoryName: string; costCentreId: string; costCentreName: string;
+  description: string; payee: string; paymentMethod: ExpensePaymentMethod; paymentReference: string | null; amount: number; vendorGstin: string | null;
+  billNumber: string | null; gstAmount: number; taxableValue: number; cgst: number; sgst: number; igst: number; itcEligible: boolean; costAmount: number;
+  note: string | null; status: ExpenseStatus; recordedBy: string | null; recordedById: string | null; recordedAt: string; decidedAt: string | null;
+  decidedBy: string | null; decisionReason: string | null; needsReceipt: boolean; receipts: ExpenseReceipt[]; actions: string[];
+  blocked: Record<string, string>; version: number;
+}
+export interface ExpenseList { items: Expense[]; total: number; costTotal: number; waiting: number; waitingAmount: number; }
+export interface BudgetRow { costCentreId: string; costCentreCode: string; costCentreName: string; months: number[]; total: number; }
+export interface Budget { id: string; year: number; label: string; name: string; note: string | null; total: number; months: string[]; rows: BudgetRow[]; version: number; }
+export interface BudgetSummary { id: string; year: number; label: string; name: string; total: number; }
+export type BudgetStanding = 'ON_TRACK' | 'OVER' | 'HEADING_OVER' | 'NO_BUDGET';
+export interface BudgetVarianceRow {
+  costCentreId: string; costCentreCode: string; costCentreName: string; monthBudget: number; monthActual: number; budgetToDate: number;
+  actualToDate: number; variance: number; variancePercent: number | null; annualBudget: number; forecast: number | null; forecastVariance: number | null;
+  standing: BudgetStanding; waiting: number; waitingCount: number; categories: { categoryId: string; name: string; actual: number }[];
+}
+export interface BudgetReport {
+  year: number; label: string; budgetId: string | null; through: string; asOf: string; rows: BudgetVarianceRow[]; total: BudgetVarianceRow;
+  months: { month: string; budget: number; actual: number }[];
+}

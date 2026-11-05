@@ -133,6 +133,8 @@ export class Shell {
     { label: 'Inventory', icon: 'inventory_2', link: '/inventory', perm: 'inventory.read', exact: true },
     { label: 'Purchasing', icon: 'shopping_cart', link: '/inventory/purchases', perm: 'purchase.read' },
     { label: 'Suppliers', icon: 'local_shipping', link: '/inventory/suppliers', perm: 'supplier.read' },
+    { label: 'Expenses', icon: 'account_balance_wallet', link: '/expenses', perm: 'expense.read' },
+    { label: 'Budget', icon: 'insights', link: '/budgets', perm: 'budget.read' },
     { label: 'Employees', icon: 'groups', link: '/employees', perm: 'employee.read' },
     { label: 'Roster', icon: 'calendar_view_week', link: '/roster', perm: 'roster.read' },
     { label: 'Attendance', icon: 'pin_drop', link: '/attendance', perm: 'attendance.self' },

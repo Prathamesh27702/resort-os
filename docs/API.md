@@ -1277,6 +1277,55 @@ BOOKED | BOARDED | NO_SHOW | CANCELLED, boardedAt, boardedBy, cancelReason, canc
 (cancel | board | unboard)[], createdAt, by, version }`. `CancelTripResultDto = { trip, refunded, amountRefunded,
 nothingToRefund, passengers }`. `TripStepRequest = { version? }`.
 
+## Built endpoints (Sprint 22 — expenses and budgets)
+
+All under `/api/v1/properties/{propertyId}`. An **expense** (`EX00001` …) is money paid out: what for, the **category**
+(Fuel, Repairs and maintenance …) and the **department** that spent it (a cost centre: Front office, Housekeeping …), who
+was paid and how. A **GST bill** also has the vendor's GSTIN (checked, including its check digit), the bill number (one
+bill is recorded once) and the GST on it; the API splits it into CGST + SGST when the vendor is in the property's state,
+IGST otherwise, and works out the **cost**: the taxable value when the GST can be claimed back as input credit (the
+property is a regular GST registrant on the day and the category isn't blocked, e.g. staff food), else the amount paid.
+Every expense **waits for approval** (`SUBMITTED`); someone with `expense.approve` approves or rejects it, but not their
+own (unless they also hold `budget.manage`), and not one over ₹500 (`expenses.receipt_required_over`) without a photo or
+PDF of the receipt. A decided expense is frozen by the database. A **budget** is one per financial year (April to March)
+with an amount per department per month. The **report** sets the budget so far against **approved** expenses only (at
+their cost); what waits is shown beside it, never counted. How it works:
+[system-design.md → 4.32](architecture/system-design.md#432-expenses-approval-and-budget-against-actual).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /expenses/setup` | Categories, departments, payment methods, the receipt limit, the GST state, and what the caller can do. Makes the default categories and departments the first time | `expense.read` | — | `ExpenseSetupDto` | 403 | INSERT (first time) |
+| `POST /expenses/categories` · `PUT /expenses/categories/{id}` | A category; switched off rather than deleted. `version` on PUT | `budget.manage` | `SaveExpenseCategoryRequest` | 201 / 200 `ExpenseCategoryDto` | 400 `Code` ("Fuel already has the code FUEL. Choose another code."), `Name` ("There is already a category called Fuel."); 403, 404; 409 | INSERT/UPDATE |
+| `POST /expenses/cost-centres` · `PUT /expenses/cost-centres/{id}` | A department, the same way | `budget.manage` | `SaveCostCentreRequest` | 201 / 200 `CostCentreDto` | as above | INSERT/UPDATE |
+| `GET /expenses?from&to&status&costCentreId&categoryId&mine` | Expenses, newest first, at most 500; `status` = `ALL` (default), `WAITING`, or one status; `mine=true` the caller's own | `expense.read` | — | `ExpenseListDto` | 403 | — |
+| `GET /expenses/{id}` | One expense with its receipts and what the caller can do | `expense.read` | — | `ExpenseDto` | 403, 404 | — |
+| `POST /expenses` | Record an expense; needs an `Idempotency-Key` header (a repeat returns the first) | `expense.create` | `SaveExpenseRequest` | 201 `ExpenseDto` | 400 (no key), `ExpenseDate` ("Fri 6 Nov is in the future. Enter the day the money was spent."; at most 400 days back), `CategoryId`, `CostCentreId` ("Spa is switched off. Choose another department."), `Description`, `Payee`, `PaymentMethod`, `Amount`, `VendorGstin` (the reason the GSTIN is wrong, e.g. its check digit; "GST can only be entered for a GST bill. Enter the vendor's GSTIN from the bill, or set the GST to ₹0."), `BillNumber` ("Bill GP-114 of 30ABCDE1234F1ZD is already recorded as EX00013. A bill is recorded once."), `GstAmount` ("The GST is part of the amount paid, so it must be less than the amount."); 403 | INSERT |
+| `PUT /expenses/{id}` | Change it while it waits (who recorded it, or an approver) | `expense.create` | `SaveExpenseRequest` with `version` | `ExpenseDto` | as above; 403; 404; 409 `CONCURRENCY_CONFLICT`; 422 `EXPENSE_DECIDED` | UPDATE |
+| `POST /expenses/{id}/approve` | Approve: it counts in the department's budget from now | `expense.approve` | `ExpenseDecisionRequest` (`version`) | `ExpenseDto` | 403 ("You recorded EX00013 yourself, so someone else who approves expenses has to approve it."), 404; 409; 422 `EXPENSE_DECIDED`, `RECEIPT_REQUIRED` ("EX00011 is ₹1,200, over ₹500, so it needs a photo of the receipt before it can be approved. Add the receipt first.") | UPDATE (reason "EX00013 approved: ₹1,000 for Maintenance") |
+| `POST /expenses/{id}/reject` | Reject with the reason; it never counts | `expense.approve` | `ExpenseDecisionRequest` | `ExpenseDto` | 400 `Reason` (3–300); 403, 404; 409; 422 `EXPENSE_DECIDED` | UPDATE |
+| `POST /expenses/{id}/cancel` | Withdraw it while it waits (who recorded it, or an approver) | `expense.create` | `ExpenseDecisionRequest` | `ExpenseDto` | 400 `Reason`; 403, 404; 409; 422 `EXPENSE_DECIDED` | UPDATE |
+| `POST /expenses/{id}/receipts` | Add a receipt (multipart field `file`): JPEG, PNG, WebP or PDF, at most 2 MB, at most 4; only while it waits. Stored encrypted | `expense.create` | `multipart/form-data` | 201 `ExpenseReceiptDto` | 400 `File` (type sniffed from the bytes; size); 403, 404; 422 `EXPENSE_DECIDED`, `TOO_MANY_RECEIPTS` | INSERT |
+| `GET /expenses/{id}/receipts/{receiptId}` | The receipt file | `expense.read` | — | the image or PDF | 403, 404 | — |
+| `GET /budgets` | The property's budgets, newest year first | `budget.read` | — | `BudgetSummaryDto[]` | 403 | — |
+| `POST /budgets` | Make a year's budget (last, this or next year), empty or copied from another with an increase in % (whole rupees) | `budget.manage` | `CreateBudgetRequest` | 201 `BudgetDto` | 400 `Year` ("There is already a budget for 2026-27. Open it to change it."; "A budget can be made for last year, this year or next year (2025-26 to 2027-28)."), `CopyFromId`, `IncreasePercent` (−50 to 100); 403 | INSERT |
+| `GET /budgets/{id}` | A budget with each department's twelve months | `budget.read` | — | `BudgetDto` | 403, 404 | — |
+| `PUT /budgets/{id}/rows` | Set one department's twelve months (April to March); the total is kept | `budget.manage` | `SaveBudgetRowRequest` | `BudgetDto` | 400 `CostCentreId`, `Months` ("Give twelve amounts, April to March."; not negative, paise at most); 403, 404; 409 `CONCURRENCY_CONFLICT` | INSERT/UPDATE lines (reason "Budget 2026-27: Spa set to ₹12,000 for the year") |
+| `GET /budgets/report?year&through` | Budget against actual by department, April to the end of the `through` month (this financial year and month by default): budget, spent (approved), variance, the year at this rate (run rate), standing, what waits, by category; and each month for the chart | `budget.read` | — | `BudgetReportDto` | 400 `Through` ("Choose a month of 2026-27 (April 2026 to March 2027)."); 403 | — |
+
+`SaveExpenseRequest = { expenseDate, categoryId, costCentreId, description, payee, paymentMethod: CASH | UPI | CARD |
+BANK_TRANSFER | CHEQUE, amount (with GST), paymentReference?, vendorGstin?, billNumber?, gstAmount, note?, version? }`.
+`ExpenseDto = { id, code, expenseDate, categoryId, categoryName, costCentreId, costCentreName, description, payee,
+paymentMethod, paymentReference, amount, vendorGstin, billNumber, gstAmount, taxableValue, cgst, sgst, igst, itcEligible,
+costAmount, note, status: SUBMITTED | APPROVED | REJECTED | CANCELLED, recordedBy, recordedById, recordedAt, decidedAt,
+decidedBy, decisionReason, needsReceipt, receipts: ExpenseReceiptDto[], actions: (edit | receipt | cancel | approve |
+reject)[], blocked (why approve is not possible, e.g. a receipt is missing), version }`. `ExpenseListDto = { items, total,
+costTotal, waiting, waitingAmount }`. `ExpenseDecisionRequest = { reason?, version? }`. `CreateBudgetRequest = { year,
+name?, note?, copyFromId?, increasePercent }`. `SaveBudgetRowRequest = { costCentreId, months: number[12], version }`.
+`BudgetVarianceRowDto = { costCentreId, costCentreCode, costCentreName, monthBudget, monthActual, budgetToDate,
+actualToDate, variance (budget − spent; negative = over), variancePercent, annualBudget, forecast, forecastVariance,
+standing: ON_TRACK | HEADING_OVER | OVER | NO_BUDGET, waiting, waitingCount, categories: [{ categoryId, name, actual }] }`.
+`BudgetReportDto = { year, label, budgetId, through, asOf, rows, total, months: [{ month, budget, actual }] }`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
