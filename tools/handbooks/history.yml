@@ -63,3 +63,6 @@
 - version: "1.21"
   date: 2026-11-05
   change: "Sprint 21 (Beach transport) accepted: the beach shuttle runs on trips with a vehicle, a driver and a seat limit, and the last seat can't be sold twice; a staying guest's seats go straight on their room bill and come off if cancelled; the driver sees today's passengers on a phone, ticks each one as they board and marks the trip as left; each trip's passenger list prints as a manifest PDF. Transport flow diagram. Sprint 22 started."
+- version: "1.22"
+  date: 2026-11-05
+  change: "Sprint 22 (Expenses and budgets) accepted: staff record money paid out, on a phone too, against a department and a category with a photo of the bill; a GST bill's GSTIN is checked and its tax split, and only what the resort really bears counts; every expense waits for approval, nobody approves their own, and over ₹500 the receipt comes first; each department has a budget for the year, and the Budget screen shows spent against plan, over or under, and where the year is heading. Expense flow diagram. Sprint 23 started."

@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 8 — Expenses, budgets, reports | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 15](sprint-15-inventory-and-recipe-costing.md), [Sprint 19](sprint-19-leave-holidays-and-payroll-export.md), [Sprint 22](sprint-22-expenses-and-budgets.md) |
+| 🔵 In progress — **current sprint** | Phase 8 — Expenses, budgets, reports | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 15](sprint-15-inventory-and-recipe-costing.md), [Sprint 19](sprint-19-leave-holidays-and-payroll-export.md), [Sprint 22](sprint-22-expenses-and-budgets.md) |
 
 **Goal:** Owner and role dashboards plus the report list in brief §50–55, Power-BI-ready.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 12, Sprint 15, Sprint 19, Sprint 22 are accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

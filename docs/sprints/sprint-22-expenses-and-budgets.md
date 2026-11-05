@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 8 — Expenses, budgets, reports | M | [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
+| 🟢 Done | Phase 8 — Expenses, budgets, reports | M | [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
 
 **Goal:** Expense capture with approval and budget vs actual (brief §40, §41).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review (pull request into develop). Defaults for the owner to confirm: every expense waits for approval; nobody approves their own unless they plan budgets (owner, general manager); a receipt is needed over ₹500; receipts are photos or PDFs, 2 MB each, at most 4; an approved, rejected or cancelled expense can't be changed (record a new one), and approved ones can't be reversed yet; the budget counts the cost (the taxable value when the GST is claimed back); budgets are per department and month, one per financial year, for last, this or next year; the forecast is the run rate; supplier bills and payroll are not in the actuals yet (Sprint 23).
+**Now:** Accepted by the owner on 5 Nov 2026 (PR #171). Defaults kept: every expense waits for approval; nobody approves their own unless they plan budgets (owner, general manager); a receipt is needed over ₹500; receipts are photos or PDFs, 2 MB each, at most 4; an approved, rejected or cancelled expense can't be changed (record a new one), and approved ones can't be reversed yet; the budget counts the cost (the taxable value when the GST is claimed back); budgets are per department and month, one per financial year, for last, this or next year; the forecast is the run rate; supplier bills and payroll are not in the actuals yet (Sprint 23).
 
 **Done so far**
 
