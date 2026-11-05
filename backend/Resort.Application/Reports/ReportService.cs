@@ -52,7 +52,7 @@ public static class ReportMath
     /// <summary>The nightly rebuild: from the start of last financial year to 90 days ahead.</summary>
     public static (DateOnly From, DateOnly To) FullRange(DateOnly today) => (FinanceMath.YearStart(today).AddYears(-1), today.AddDays(90));
 
-    public const int MaxRefreshDays = 800;
+    public const int MaxRefreshDays = 900;
 }
 
 /// <summary>Runs the database function reporting.refresh for one property (the job, Refresh now and saving commission).</summary>
@@ -369,7 +369,7 @@ public sealed class ReportService(IAppDbContext db, CallerAccess access, ICurren
         var to = r.To ?? defTo;
         if (to < from) throw ReservationService.Field(nameof(r.To), "The end date must be on or after the start date.");
         if (to.DayNumber - from.DayNumber > ReportMath.MaxRefreshDays)
-            throw ReservationService.Field(nameof(r.To), $"Refresh at most {ReportMath.MaxRefreshDays} days at a time (about two years).");
+            throw ReservationService.Field(nameof(r.To), $"Refresh at most {ReportMath.MaxRefreshDays} days at a time (about two and a half years).");
         await refresher.RefreshAsync(propertyId, from, to, r.From is null && r.To is null, ct);
         return await FreshnessAsync(propertyId, ct);
     }

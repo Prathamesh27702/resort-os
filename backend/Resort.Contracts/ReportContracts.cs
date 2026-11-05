@@ -116,7 +116,7 @@ public sealed record MonthReportDto(DateOnly Month, string Label, ReportAccessDt
 
 // ---------------------------------------------------------------- refresh and commission
 
-/// <summary>Refresh now: adds up the days From..To again (at most 800; default the last financial year to 90 days ahead).</summary>
+/// <summary>Refresh now: adds up the days From..To again (at most 900; default the last financial year to 90 days ahead).</summary>
 public sealed record RefreshReportsRequest(DateOnly? From = null, DateOnly? To = null);
 
 /// <summary>A booking source's commission: Percent as set for this property, else the source's own, else the default

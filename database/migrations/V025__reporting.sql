@@ -25,7 +25,7 @@
 --                        of the month they were employed, a daily rate (basic + allowances) for each day worked on a
 --                        timesheet that wasn't rejected. Employer PF/ESI and unpaid leave are not in it; payroll itself
 --                        is done outside Resort OS (docs/PAYROLL.md).
---   refresh()            recomputes the days from..to (at most 800) of one property in one transaction, under a lock per
+--   refresh()            recomputes the days from..to (at most 900) of one property in one transaction, under a lock per
 --                        property so two refreshes of the same property queue.
 --   v_daily, v_monthly, v_channels_monthly, v_costs_monthly, v_gst_monthly   the views Power BI reads.
 --
@@ -226,8 +226,8 @@ DECLARE
     v_start timestamptz := clock_timestamp();
     v_rows  integer;
 BEGIN
-    IF p_from IS NULL OR p_to IS NULL OR p_to < p_from OR p_to - p_from > 800 THEN
-        RAISE EXCEPTION 'refresh at most 800 days at a time (from % to %)', p_from, p_to
+    IF p_from IS NULL OR p_to IS NULL OR p_to < p_from OR p_to - p_from > 900 THEN
+        RAISE EXCEPTION 'refresh at most 900 days at a time (from % to %)', p_from, p_to
             USING ERRCODE = 'check_violation', CONSTRAINT = 'ck_reporting_refresh_range';
     END IF;
     SELECT organization_id, timezone INTO v_org, v_tz FROM properties WHERE id = p_property;

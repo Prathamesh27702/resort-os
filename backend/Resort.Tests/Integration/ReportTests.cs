@@ -352,11 +352,11 @@ public class ReportTests(FrontDeskFactory app) : IClassFixture<FrontDeskFactory>
         Assert.Equal(2, dash.Ahead.Sum(x => x.UnitsSold));
         Assert.Equal((2, 0), (dash.TodayStats.UnitsAvailable, dash.TodayStats.UnitsSold));
 
-        // More than 800 days at once is refused, under the field.
-        Assert.Equal("Refresh at most 800 days at a time (about two years).", await FieldErrorAsync(await s.Owner.PostAsync($"{Url(s.Pid)}/reports/refresh",
-            new RefreshReportsRequest(Today.AddDays(-900), Today)), "To"));
+        // More than 900 days at once is refused, under the field.
+        Assert.Equal("Refresh at most 900 days at a time (about two and a half years).", await FieldErrorAsync(await s.Owner.PostAsync($"{Url(s.Pid)}/reports/refresh",
+            new RefreshReportsRequest(Today.AddDays(-1000), Today)), "To"));
         // And the database refuses it too.
-        var ex = await Assert.ThrowsAsync<PostgresException>(() => ScalarAsync($"SELECT reporting.refresh('{s.Pid}', current_date - 900, current_date)"));
+        var ex = await Assert.ThrowsAsync<PostgresException>(() => ScalarAsync($"SELECT reporting.refresh('{s.Pid}', current_date - 1000, current_date)"));
         Assert.Equal("ck_reporting_refresh_range", ex.ConstraintName);
     }
 
