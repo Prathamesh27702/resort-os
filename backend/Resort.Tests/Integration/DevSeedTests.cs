@@ -31,7 +31,7 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
             await db.Guests.IgnoreQueryFilters().CountAsync(),
             await db.Guests.IgnoreQueryFilters().CountAsync(g => g.Nationality != "IN"),
             await db.GuestAddresses.IgnoreQueryFilters().CountAsync()));
-        Assert.Equal(20, guests);
+        Assert.Equal(84, guests);   // 20 demo guests and the 64 of the year of history (S020, Sprint 23)
         Assert.Equal(6, foreign);
         Assert.Equal(20, withAddress);
     }
