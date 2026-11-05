@@ -15,7 +15,7 @@ namespace Resort.Application.Finance;
 /// <see cref="ExpenseService"/>) by department, from April to the month chosen, and shows the variance and a simple
 /// run-rate forecast for the year. Expenses still waiting for approval are shown beside the actuals, never in them.
 /// </summary>
-public sealed class BudgetService(IAppDbContext db, AuditContext audit, TimeProvider clock, ExpenseService expenses)
+public sealed class BudgetService(IAppDbContext db, AuditContext audit, TimeProvider clock, ExpenseService expenses, CallerAccess access)
 {
     public async Task<IReadOnlyList<BudgetSummaryDto>> ListAsync(Guid propertyId, CancellationToken ct)
     {
@@ -157,20 +157,33 @@ public sealed class BudgetService(IAppDbContext db, AuditContext audit, TimeProv
             .Where(e => e.PropertyId == propertyId && e.ExpenseDate >= start && e.ExpenseDate <= end
                         && (e.Status == ExpenseStatuses.Approved || e.Status == ExpenseStatuses.Submitted))
             .Select(e => new { e.CostCentreId, e.CategoryId, e.ExpenseDate, e.CostAmount, e.Status }).ToListAsync(ct);
-        var actual = spent.Where(e => e.Status == ExpenseStatuses.Approved).ToList();
+        var actual = spent.Where(e => e.Status == ExpenseStatuses.Approved)
+            .Select(e => new Spend((Guid?)e.CostCentreId, e.CategoryId, e.ExpenseDate, e.CostAmount, SpendKind.Expense)).ToList();
+        // Sprint 23: supplier bills at cost (the taxable value when the GST comes back as input credit), on the bill's date,
+        // and, for those who may see pay, the pay bill estimated day by day (reporting.labour_cost).
+        actual.AddRange((await db.SupplierInvoices.AsNoTracking()
+                .Where(i => i.PropertyId == propertyId && i.InvoiceDate >= start && i.InvoiceDate <= end)
+                .Select(i => new { i.CostCentreId, i.InvoiceDate, Cost = i.ItcEligible ? i.TaxableValue : i.Total }).ToListAsync(ct))
+            .Select(i => new Spend(i.CostCentreId, null, i.InvoiceDate, i.Cost, SpendKind.SupplierBill)));
+        var payIncluded = (await access.GetAsync(ct)).Has(Perm.EmployeeSalaryRead, propertyId);
+        if (payIncluded && asOf >= start)
+            actual.AddRange((await db.Database.SqlQuery<LabourRow>(
+                    $"SELECT work_date AS \"WorkDate\", cost_centre_id AS \"CostCentreId\", amount AS \"Amount\" FROM reporting.labour_cost({propertyId}, {start}, {asOf})")
+                .ToListAsync(ct)).Select(l => new Spend(l.CostCentreId, null, l.WorkDate, l.Amount, SpendKind.Pay)));
         var waiting = spent.Where(e => e.Status == ExpenseStatuses.Submitted && e.ExpenseDate <= monthEnd).ToList();
         var centres = await db.CostCentres.AsNoTracking().Where(c => c.PropertyId == propertyId).OrderBy(c => c.SortOrder).ThenBy(c => c.Name).ToListAsync(ct);
         var categories = await db.ExpenseCategories.AsNoTracking().Where(c => c.PropertyId == propertyId).ToDictionaryAsync(c => c.Id, c => c.Name, ct);
 
-        BudgetVarianceRowDto Row(Guid id, string code, string name, Func<Guid, bool> mine)
+        BudgetVarianceRowDto Row(Guid id, string code, string name, Func<Guid?, bool> mine)
         {
             var l = lines.Where(x => mine(x.CostCentreId)).ToList();
             var a = actual.Where(x => mine(x.CostCentreId)).ToList();
             var w = waiting.Where(x => mine(x.CostCentreId)).ToList();
             var monthBudget = l.Where(x => x.Month == month).Sum(x => x.Amount);
-            var monthActual = a.Where(x => x.ExpenseDate >= month && x.ExpenseDate <= monthEnd).Sum(x => x.CostAmount);
+            var monthActual = a.Where(x => x.Date >= month && x.Date <= monthEnd).Sum(x => x.Amount);
             var budgetToDate = l.Where(x => x.Month <= month).Sum(x => x.Amount);
-            var actualToDate = a.Where(x => x.ExpenseDate <= monthEnd).Sum(x => x.CostAmount);
+            var toDate = a.Where(x => x.Date <= monthEnd).ToList();
+            var actualToDate = toDate.Sum(x => x.Amount);
             var annual = l.Sum(x => x.Amount);
             var forecast = FinanceMath.Forecast(actualToDate, start, asOf);
             var variance = budgetToDate - actualToDate;
@@ -178,18 +191,36 @@ public sealed class BudgetService(IAppDbContext db, AuditContext audit, TimeProv
                 budgetToDate == 0 ? null : decimal.Round(variance * 100 / budgetToDate, 1),
                 annual, forecast, forecast is { } f ? annual - f : null, FinanceMath.Standing(budgetToDate, actualToDate, annual, forecast),
                 w.Sum(x => x.CostAmount), w.Count,
-                a.Where(x => x.ExpenseDate <= monthEnd).GroupBy(x => x.CategoryId)
-                    .Select(g => new BudgetCategoryActualDto(g.Key, categories.GetValueOrDefault(g.Key, ""), g.Sum(x => x.CostAmount)))
-                    .OrderByDescending(x => x.Actual).ThenBy(x => x.Name).ToList());
+                toDate.Where(x => x.Kind == SpendKind.Expense).GroupBy(x => x.CategoryId!.Value)
+                    .Select(g => new BudgetCategoryActualDto(g.Key, categories.GetValueOrDefault(g.Key, ""), g.Sum(x => x.Amount)))
+                    .OrderByDescending(x => x.Actual).ThenBy(x => x.Name).ToList(),
+                toDate.Where(x => x.Kind == SpendKind.Expense).Sum(x => x.Amount),
+                toDate.Where(x => x.Kind == SpendKind.SupplierBill).Sum(x => x.Amount),
+                payIncluded ? toDate.Where(x => x.Kind == SpendKind.Pay).Sum(x => x.Amount) : null);
         }
 
-        // Every active department, and a switched-off one that still has a plan or spending this year.
-        var used = lines.Select(l => l.CostCentreId).Concat(spent.Select(e => e.CostCentreId)).ToHashSet();
+        // Every active department, and a switched-off one that still has a plan or spending this year; bills and pay not
+        // given a department are a row of their own.
+        var used = lines.Select(l => (Guid?)l.CostCentreId).Concat(spent.Select(e => (Guid?)e.CostCentreId)).Concat(actual.Select(a => a.CostCentreId)).ToHashSet();
         var rows = centres.Where(c => c.IsActive || used.Contains(c.Id)).Select(c => Row(c.Id, c.Code, c.Name, x => x == c.Id)).ToList();
+        if (actual.Any(a => a.CostCentreId is null && a.Amount != 0))
+            rows.Add(Row(Guid.Empty, "NONE", "No department", x => x is null));
         var total = Row(Guid.Empty, "ALL", "All departments", _ => true);
         var byMonth = months.Select(m => new BudgetMonthDto(m, lines.Where(l => l.Month == m).Sum(l => l.Amount),
-            actual.Where(e => e.ExpenseDate >= m && e.ExpenseDate < m.AddMonths(1)).Sum(e => e.CostAmount))).ToList();
-        return new BudgetReportDto(start.Year, FinanceMath.YearLabel(start), budget?.Id, month, asOf, rows, total, byMonth);
+            actual.Where(e => e.Date >= m && e.Date < m.AddMonths(1)).Sum(e => e.Amount))).ToList();
+        return new BudgetReportDto(start.Year, FinanceMath.YearLabel(start), budget?.Id, month, asOf, rows, total, byMonth, payIncluded);
+    }
+
+    private enum SpendKind { Expense, SupplierBill, Pay }
+
+    /// <summary>Money that counts as an actual: an approved expense (with its category), a supplier bill or a day's pay.</summary>
+    private sealed record Spend(Guid? CostCentreId, Guid? CategoryId, DateOnly Date, decimal Amount, SpendKind Kind);
+
+    private sealed class LabourRow
+    {
+        public DateOnly WorkDate { get; set; }
+        public Guid? CostCentreId { get; set; }
+        public decimal Amount { get; set; }
     }
 
     private async Task<BudgetDto> DtoAsync(Property property, Budget b, CancellationToken ct)

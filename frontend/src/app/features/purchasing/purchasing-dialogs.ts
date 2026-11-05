@@ -307,6 +307,8 @@ export class OrderDialog {
         : [this.line()]),
   });
   get lines() { return this.form.controls.lines as FormArray<FormGroup>; }
+  centres = signal<{ id: string; code: string; name: string }[]>([]);
+  constructor() { this.api.budgetDepartments(this.data.propertyId).subscribe({ next: c => this.centres.set(c), error: () => this.centres.set([]) }); }
   private value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
   supplier = computed(() => this.suppliers.find(s => s.id === this.value().supplierId) ?? null);
   intra = computed(() => !this.supplier() || !this.data.propertyState || this.supplier()!.stateCode === this.data.propertyState);
@@ -448,6 +450,12 @@ export class ReceiveDialog {
         <mat-form-field appearance="outline"><mat-label>Due (optional)</mat-label><input matInput type="date" formControlName="dueDate" />
           <mat-hint>Empty: {{ terms }}</mat-hint>
           <mat-error>{{ server(form.get('dueDate')) }}</mat-error></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Counts in the budget for</mat-label>
+          <mat-select formControlName="costCentreId" aria-label="Counts in the budget for">
+            <mat-option [value]="''">As before (this supplier's last bill, or the kitchen's)</mat-option>
+            @for (c of centres(); track c.id) { <mat-option [value]="c.id">{{ c.name }}</mat-option> }
+          </mat-select>
+          <mat-error>{{ server(form.get('costCentreId')) }}</mat-error></mat-form-field>
       </div>
       <p class="mute">Lines that came in and are not billed yet. Change the price if the bill says another; leave a line empty if it isn't on this bill.</p>
       <div formArrayName="lines">
@@ -499,6 +507,7 @@ export class BillDialog {
     supplierNumber: ['', Validators.required],
     invoiceDate: [this.data.today, Validators.required],
     dueDate: [''],
+    costCentreId: [''],
     lines: this.fb.array(this.open.map(l => this.fb.group({
       quantity: [l.toBill as number | null, Validators.min(0.001)], unitPrice: [l.unitPrice, [Validators.required, Validators.min(0)]], gstRate: [l.gstRate],
     }))),
@@ -518,11 +527,53 @@ export class BillDialog {
     this.busy.set(true);
     this.error.set('');
     this.api.recordBill(this.data.propertyId, this.data.order.id, {
-      supplierNumber: v.supplierNumber.trim(), invoiceDate: v.invoiceDate, dueDate: v.dueDate || null, note: null,
+      supplierNumber: v.supplierNumber.trim(), invoiceDate: v.invoiceDate, dueDate: v.dueDate || null, note: null, costCentreId: v.costCentreId || null,
       lines: rows.map(x => ({ orderItemId: this.open[x.n].id, quantity: Number(x.l['quantity']), unitPrice: Number(x.l['unitPrice']), gstRate: Number(x.l['gstRate']) })),
     }).subscribe({
       next: b => this.ref.close(b),
       error: e => { this.busy.set(false); report(this.form, e, m => this.error.set(m), rows.map(x => x.n)); },
+    });
+  }
+}
+
+// ------------------------------------------------------------------ the bill's budget department (Sprint 23)
+
+/** Which budget department a recorded bill counts against. Only that moves; the bill itself never changes. */
+@Component({
+  selector: 'app-bill-department-dialog',
+  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatSelectModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.invoice.number }} in the budget</h2>
+    <div mat-dialog-content class="body">
+      <p class="mute">{{ data.invoice.supplierName }}'s bill {{ data.invoice.supplierNumber }} counts for this department in the budget against actual.</p>
+      <mat-form-field appearance="outline"><mat-label>Budget department</mat-label>
+        <mat-select [value]="choice()" (selectionChange)="choice.set($event.value)" aria-label="Budget department">
+          <mat-option [value]="''">No department</mat-option>
+          @for (c of centres(); track c.id) { <mat-option [value]="c.id">{{ c.name }}</mat-option> }
+        </mat-select></mat-form-field>
+      @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close type="button">Cancel</button>
+      <button mat-flat-button type="button" (click)="save()" [disabled]="busy()">Save</button>
+    </div>
+  `,
+  styles: `.body { min-width: min(420px, 84vw); } .mute { color: #5b6b6e; } .err { color: #b3261e; } mat-form-field { width: 100%; }`,
+})
+export class BillDepartmentDialog {
+  data = inject<{ propertyId: string; invoice: SupplierInvoice }>(MAT_DIALOG_DATA);
+  private ref = inject(MatDialogRef<BillDepartmentDialog, SupplierInvoice>);
+  private api = inject(PurchasingApi);
+  centres = signal<{ id: string; code: string; name: string }[]>([]);
+  choice = signal(this.data.invoice.costCentreId ?? '');
+  busy = signal(false);
+  error = signal('');
+  constructor() { this.api.budgetDepartments(this.data.propertyId).subscribe({ next: c => this.centres.set(c), error: e => this.error.set(toProblem(e).detail) }); }
+  save() {
+    this.busy.set(true);
+    this.api.setBillDepartment(this.data.propertyId, this.data.invoice.id, this.choice() || null, this.data.invoice.version).subscribe({
+      next: b => this.ref.close(b),
+      error: e => { this.busy.set(false); this.error.set(toProblem(e).detail); },
     });
   }
 }

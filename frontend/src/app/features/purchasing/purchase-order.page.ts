@@ -13,7 +13,7 @@ import { PropertyContext } from '../../core/property-context';
 import { InventoryApi, qty } from '../inventory/inventory.api';
 import { ReasonData, ReasonDialog } from '../restaurant/order-dialogs';
 import { rupees, rupeesExact } from '../settings/rates/rates.api';
-import { BillDialog, OrderDialog, PaySupplierDialog, ReceiveDialog } from './purchasing-dialogs';
+import { BillDepartmentDialog, BillDialog, OrderDialog, PaySupplierDialog, ReceiveDialog } from './purchasing-dialogs';
 import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi, orderActions, todayAt } from './purchasing.api';
 
 /**
@@ -119,6 +119,8 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
                       · <b>{{ rupeesExact(i.total) }}</b>@if (i.inputTax > 0) { · input tax {{ i.itcEligible ? 'claimable' : 'not claimable (no regular GST registration)' }} }</small>
                     @for (l of i.lines; track l.orderItemId) { @if (l.priceDiffers) { <small class="warn">{{ l.itemName }} billed at {{ rupeesExact(l.unitPrice) }}, ordered at {{ rupeesExact(l.orderPrice) }}</small> } }
                     @for (p of i.payments; track p.id) { <small class="mute">{{ p.number }} {{ dayText(p.paidOn) }} · {{ rupeesExact(p.amount) }} by {{ method[p.method] }}@if (p.reference) { ({{ p.reference }}) }</small> }
+                    <small class="mute" data-testid="bill-department">Counts in the budget for {{ i.costCentreName ?? 'no department' }}
+                      @if (can('supplier_invoice.manage')) { · <button type="button" class="linkish" (click)="department(i)" [attr.aria-label]="'Budget department of ' + i.number">change</button> }</small>
                   </div>
                   <span class="right"><small [class]="'st ' + i.status + (i.overdue ? ' late' : '')">{{ i.overdue ? 'Overdue' : billLabel[i.status] }}</small>
                     @if (i.balance > 0) { <small>{{ rupees(i.balance) }} left</small> }
@@ -132,6 +134,7 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
     </div>
   `,
   styles: `
+    .linkish { background: none; border: 0; padding: 0; font: inherit; color: #0e6b77; text-decoration: underline; cursor: pointer; }
     .po { max-width: 980px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     h1 { margin: 4px 0; } .sup { font-weight: 400; color: #34484b; }
@@ -245,6 +248,15 @@ export class PurchaseOrderPage {
       }),
       error: e => this.error.set(toProblem(e).detail),
     });
+  }
+
+  department(i: SupplierInvoice) {
+    this.dialog.open(BillDepartmentDialog, { data: { propertyId: this.pid(), invoice: i }, maxWidth: '100vw' }).afterClosed()
+      .subscribe((b?: SupplierInvoice) => {
+        if (!b) return;
+        this.snack.open(`${b.number} counts for ${b.costCentreName ?? 'no department'} in the budget.`, 'OK', { duration: 4000 });
+        this.load();
+      });
   }
 
   pay(i: SupplierInvoice) {

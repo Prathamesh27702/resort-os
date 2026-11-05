@@ -62,6 +62,8 @@ public class Department : AuditableEntity, IPropertyScoped, IAudited, IVersioned
     public string Name { get; set; } = default!;
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>The budget department (cost centre, Sprint 22) this department's pay counts against (Sprint 23).</summary>
+    public Guid? CostCentreId { get; set; }
     public uint Version { get; set; }
 }
 
