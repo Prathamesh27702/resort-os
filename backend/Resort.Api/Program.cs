@@ -177,6 +177,7 @@ app.MapAttendanceEndpoints();
 app.MapLeaveEndpoints();
 app.MapActivityEndpoints();
 app.MapTransportEndpoints();
+app.MapFinanceEndpoints();
 
 app.Run();
 

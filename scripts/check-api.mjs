@@ -48,6 +48,9 @@
 //   - Sprint 21 changes nothing: it reads vehicles, routes and tomorrow's trips, and checks refusals (a booking without an
 //     Idempotency-Key, more seats than a trip has, a vehicle with a bad registration, a receptionist putting trips on or
 //     marking a trip as left); no vehicle, booking, trip or boarding is saved
+//   - Sprint 22 changes nothing: it reads the expense setup, this year's expenses and the budget against actual, and checks
+//     refusals (an expense without an Idempotency-Key, GST on a bill with no GSTIN, a GSTIN with a wrong check digit, a
+//     rejection without a reason, a receptionist reading expenses or making a budget); no expense or budget is saved
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -936,6 +939,32 @@ await expectCall('Receptionist can’t put trips on → 403', 'POST', `${P}/tran
 await expectCall('Receptionist can’t mark a trip as left → 403', 'POST', `${P}/transport/trips/${tripOpen?.id ?? NONE}/depart`, 403, { token: R, body: {} });
 await expectCall('A vehicle with a bad registration → 400 under Registration (nothing saved)', 'POST', `${P}/transport/vehicles`, 400,
   { token: T, body: { code: 'APICHK', name: 'API check', registration: 'X', seats: 4 } }, b => (b.details?.Registration?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+
+// ---------------------------------------------------------------- Sprint 22 — expenses and budgets
+title('Sprint 22 — expenses that wait for approval, budget against actual by department');
+const exSetup = await expectCall('Expense setup: categories, departments, receipt needed over ₹500', 'GET', `${P}/expenses/setup`, 200, { token: T },
+  b => (Array.isArray(b?.categories) && b.categories.length > 0 && Array.isArray(b.costCentres) && b.costCentres.length > 0 && b.receiptRequiredOver >= 0)
+    || JSON.stringify(b).slice(0, 200));
+await expectCall('This year’s expenses: cost never above what was paid, waiting counted', 'GET', `${P}/expenses?status=ALL`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.items.every(x => x.costAmount <= x.amount && Math.abs(x.taxableValue + x.gstAmount - x.amount) < 0.005)
+    && b.waiting === b.items.filter(x => x.status === 'SUBMITTED').length) || JSON.stringify(b).slice(0, 200));
+await expectCall('Budget against actual: only approved expenses counted, variance = budget − spent', 'GET', `${P}/budgets/report`, 200, { token: T },
+  b => (Array.isArray(b?.rows) && b.rows.every(r => Math.abs(r.variance - (r.budgetToDate - r.actualToDate)) < 0.005 && r.waiting >= 0)
+    && Math.abs(b.total.actualToDate - b.rows.reduce((t, r) => t + r.actualToDate, 0)) < 0.01) || JSON.stringify(b).slice(0, 300));
+const exCat = exSetup?.json?.categories?.[0]?.id ?? NONE, exCentre = exSetup?.json?.costCentres?.[0]?.id ?? NONE;
+const exBody = (extra = {}) => ({ expenseDate: today, categoryId: exCat, costCentreId: exCentre, description: 'API check', payee: 'API check',
+  paymentMethod: 'CASH', amount: 118, gstAmount: 0, ...extra });
+await expectCall('An expense without an Idempotency-Key → 400 (nothing saved)', 'POST', `${P}/expenses`, 400, { token: T, body: exBody() });
+await expectCall('GST on a bill with no GSTIN → 400 under VendorGstin (nothing saved)', 'POST', `${P}/expenses`, 400,
+  { token: T, headers: { 'Idempotency-Key': `apicheck-${randomBytes(6).toString('hex')}` }, body: exBody({ gstAmount: 18, billNumber: 'API-1' }) },
+  b => (b.details?.VendorGstin?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+await expectCall('A GSTIN with a wrong check digit → 400 under VendorGstin saying so (nothing saved)', 'POST', `${P}/expenses`, 400,
+  { token: T, headers: { 'Idempotency-Key': `apicheck-${randomBytes(6).toString('hex')}` }, body: exBody({ gstAmount: 18, billNumber: 'API-1', vendorGstin: '30ABCDE1234F1ZA' }) },
+  b => /check digit/.test(b.details?.VendorGstin?.[0] ?? '') || JSON.stringify(b.details));
+await expectCall('Rejecting without a reason → 400 under Reason (nothing changed)', 'POST', `${P}/expenses/${NONE}/reject`, 400,
+  { token: T, body: { reason: '' } }, b => (b.details?.Reason?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+await expectCall('Receptionist can’t read expenses → 403', 'GET', `${P}/expenses`, 403, { token: R });
+await expectCall('Receptionist can’t make a budget → 403', 'POST', `${P}/budgets`, 403, { token: R, body: { year: 2030, increasePercent: 0 } });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

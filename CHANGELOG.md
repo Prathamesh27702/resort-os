@@ -2,6 +2,42 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-22] — Expenses and budgets (in review)
+
+### Added
+- Migration V024: `expense_categories` (whether the GST can be claimed back) and `cost_centres` (departments),
+  `expenses` (`EX00001` …; the amount with GST, the vendor's GSTIN and bill number recorded once, the CGST/SGST or IGST
+  split, the taxable value, the input-credit flag and the cost that counts; `SUBMITTED` → `APPROVED`, `REJECTED` or
+  `CANCELLED`, frozen by a trigger once decided), `expense_attachments` (receipts, append-only, only while waiting),
+  `budgets` (one per financial year) and `budget_lines` (a department's amount for a month). Setting
+  `expenses.receipt_required_over` = ₹500.
+- Recording an expense on a phone or desktop, with an Idempotency-Key: the GSTIN checked including its check digit
+  ("The last character (check digit) should be D for this GSTIN; check it for a typing mistake."), the split shown before
+  saving, receipt photos shrunk on the phone or a PDF, stored encrypted.
+- Approval: someone with `expense.approve` approves or rejects with the reason; nobody approves their own unless they
+  plan budgets; over ₹500 the receipt comes first. Audited with what counted ("EX00013 approved: ₹1,000 for Spa").
+- Budgets: one per financial year (April to March), made empty or copied from another year with an increase; each
+  department planned for the year (spread evenly) or month by month.
+- Budget against actual by department, April to the end of a chosen month: budget so far, spent (approved expenses only,
+  at cost: the taxable value when the GST is claimed back), variance, the year at this rate, standing (on track, heading
+  over, over budget, no budget), what waits for approval beside it, spending by category, and a month chart with a
+  table view.
+- API: `GET /expenses/setup`, `POST /expenses/categories`, `PUT /expenses/categories/{id}`, `POST
+  /expenses/cost-centres`, `PUT /expenses/cost-centres/{id}`, `GET|POST /expenses`, `GET|PUT /expenses/{id}`, `POST
+  /expenses/{id}/approve`, `/reject`, `/cancel`, `POST /expenses/{id}/receipts`, `GET /expenses/{id}/receipts/{receiptId}`,
+  `GET|POST /budgets`, `GET /budgets/report`, `GET /budgets/{id}`, `PUT /budgets/{id}/rows`.
+- Staff app: **Expenses** (`/expenses`: Waiting, All, Mine; record, approve, reject, change, cancel; receipts;
+  categories and departments) and **Budget** (`/budgets`). Works on a 360 px phone.
+- Dev seed S019: the default categories and departments, this year's budget (₹2,05,000 a month across 8 departments),
+  ten approved expenses including a Malvan Fuels GST bill (₹11,800 paid, ₹10,000 counts) and two waiting.
+- Tests: backend `FinanceUnitTests` (the financial year, split, cost, spread, forecast, standing; the status moves match
+  the migration) and `FinanceTests` (an unapproved expense is left out of the actuals; the GST split and input credit;
+  approval needs a receipt and someone else, is audited, and freezes the expense; receipts checked by their bytes,
+  encrypted, at most four; recording is idempotent; the budget report with variance and run rate) and a dev seed check;
+  frontend `expenses.spec.ts`; browser steps S22-01 … S22-05; `check-api.mjs` Sprint 22 block; `check-sprint-22.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-22.md, system design Sprint 22 and 4.32 with the expense flow diagram,
+  ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
 ## [sprint-21] — 2026-11-05 — Beach transport (accepted)
 
 ### Added

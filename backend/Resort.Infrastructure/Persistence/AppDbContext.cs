@@ -8,6 +8,7 @@ using Resort.Domain.Attendance;
 using Resort.Domain.Leave;
 using Resort.Domain.Activities;
 using Resort.Domain.Transport;
+using Resort.Domain.Finance;
 using Resort.Domain.Audit;
 using Resort.Domain.Common;
 using Resort.Domain.Employees;
@@ -170,6 +171,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<TransportRoute> TransportRoutes => Set<TransportRoute>();
     public DbSet<VehicleTrip> VehicleTrips => Set<VehicleTrip>();
     public DbSet<TripPassenger> TripPassengers => Set<TripPassenger>();
+    public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
+    public DbSet<CostCentre> CostCentres => Set<CostCentre>();
+    public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<ExpenseAttachment> ExpenseAttachments => Set<ExpenseAttachment>();
+    public DbSet<Budget> Budgets => Set<Budget>();
+    public DbSet<BudgetLine> BudgetLines => Set<BudgetLine>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -718,6 +725,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.Ignore(x => x.SeatsLeft);
         });
         b.Entity<TripPassenger>().ToTable("trip_passengers");
+
+        // Expenses and budgets (Sprint 22). A receipt's relationship only orders the INSERTs of one save (the expense first).
+        b.Entity<ExpenseCategory>().ToTable("expense_categories");
+        b.Entity<CostCentre>().ToTable("cost_centres");
+        b.Entity<Expense>().ToTable("expenses");
+        b.Entity<ExpenseAttachment>(e =>
+        {
+            e.ToTable("expense_attachments");
+            e.HasOne<Expense>().WithMany().HasForeignKey(x => x.ExpenseId);
+        });
+        b.Entity<Budget>().ToTable("budgets");
+        b.Entity<BudgetLine>().ToTable("budget_lines");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

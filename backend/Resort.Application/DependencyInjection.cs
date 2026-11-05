@@ -18,6 +18,7 @@ using Resort.Application.Attendance;
 using Resort.Application.Leave;
 using Resort.Application.Activities;
 using Resort.Application.Transport;
+using Resort.Application.Finance;
 using Resort.Application.Employees;
 using Resort.Application.Rates;
 using Resort.Application.Reservations;
@@ -90,6 +91,8 @@ public static class DependencyInjection
         services.AddScoped<EquipmentService>();
         services.AddScoped<TransportService>();
         services.AddScoped<TransportBookingService>();
+        services.AddScoped<ExpenseService>();
+        services.AddScoped<BudgetService>();
         services.AddScoped<PayrollService>();
         return services;
     }
