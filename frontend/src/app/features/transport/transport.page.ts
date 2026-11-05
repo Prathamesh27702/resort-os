@@ -60,9 +60,10 @@ function addDays(iso: string, n: number): string {
           @for (t of day()?.trips ?? []; track t.id) {
             <li [attr.data-trip]="t.routeCode + '-' + t.departTime" [class.off]="t.status === 'CANCELLED'" [class.open]="openId() === t.id">
               <button class="row" type="button" (click)="toggle(t)" [attr.aria-expanded]="openId() === t.id">
-                <span class="time">{{ t.departTime }}<small>{{ t.arriveTime }}</small></span>
+                <span class="time">{{ t.departTime }}<small>to {{ t.arriveTime }}</small></span>
                 <span class="what"><b>{{ t.routeName }}</b>
-                  <small class="mute">{{ t.vehicleName }} · {{ t.driverName ?? 'no driver yet' }} · {{ t.price ? rupees(t.price) + ' a seat' : 'free' }}@if (t.note) { · {{ t.note }} }</small>
+                  <small class="mute">{{ t.origin }} → {{ t.destination }}</small>
+                  <small class="mute">{{ t.vehicleName }} · {{ t.driverName ? 'driver ' + t.driverName : 'no driver yet' }} · {{ t.price ? rupees(t.price) + ' a seat' : 'free' }}@if (t.note) { · {{ t.note }} }</small>
                   @if (t.status === 'CANCELLED') { <small class="cx">Cancelled: {{ t.cancelReason }}</small> }
                   @else if (t.status !== 'SCHEDULED') { <small class="st">{{ statusText(t) }}</small> }
                 </span>
@@ -71,6 +72,7 @@ function addDays(iso: string, n: number): string {
                   <small>{{ t.status === 'CANCELLED' ? 'cancelled' : t.status !== 'SCHEDULED' ? t.onBoard + ' on board' : t.seatsLeft === 0 ? 'full' : t.seatsLeft + ' left' }}</small>
                   <span class="meter"><span [style.width.%]="100 * t.seatsBooked / t.capacity"></span></span>
                 </span>
+                <mat-icon class="chev" aria-hidden="true">{{ openId() === t.id ? 'expand_less' : 'expand_more' }}</mat-icon>
               </button>
               @if (openId() === t.id) {
                 <div class="detail">
@@ -123,12 +125,15 @@ function addDays(iso: string, n: number): string {
                             [attr.aria-label]="(p.status === 'BOARDED' ? 'Untick ' : 'Tick ') + p.guestName">
                       <mat-icon>{{ p.status === 'BOARDED' ? 'check_box' : p.status === 'NO_SHOW' ? 'block' : 'check_box_outline_blank' }}</mat-icon>
                     </button>
-                    <span class="who"><b>{{ p.guestName }}</b> × {{ p.seats }}
-                      <small>{{ p.room ?? (p.settlement === 'COMPLIMENTARY' ? 'Complimentary' : 'Visitor') }}@if (p.note) { · {{ p.note }} }@if (p.status === 'NO_SHOW') { · no-show }</small></span>
+                    <span class="who">
+                      <span class="line"><b>{{ p.guestName }}</b><span class="n">{{ seats(p.seats) }}</span></span>
+                      <small>{{ p.room ?? (p.settlement === 'COMPLIMENTARY' ? 'Complimentary' : 'Visitor') }}@if (p.note) { · {{ p.note }} }@if (p.status === 'NO_SHOW') { · no-show }</small>
+                    </span>
+                    @if (p.status === 'BOARDED') { <span class="tag ok">On board</span> }
                   </li>
                 } @empty { <li class="mute">Nobody is booked on this trip.</li> }
               </ul>
-              <div class="actions">
+              <div class="actions big-btns">
                 @if (d.trip.actions.includes('depart')) { <button mat-flat-button class="go" (click)="depart(d.trip)"><mat-icon>directions_bus</mat-icon>Left</button> }
                 @if (d.trip.actions.includes('complete')) { <button mat-flat-button class="go" (click)="complete(d.trip)"><mat-icon>where_to_vote</mat-icon>Arrived</button> }
                 <button mat-stroked-button (click)="manifest(d.trip)"><mat-icon>picture_as_pdf</mat-icon>Manifest</button>
@@ -201,8 +206,12 @@ function addDays(iso: string, n: number): string {
     .box:disabled { cursor: default; color: #9aa7a9; } .box:not(:disabled):hover { background: #eef5f4; }
     .box mat-icon { font-size: 32px; width: 32px; height: 32px; }
     .tick li.on .box { color: #1b6e3a; }
-    .who { display: flex; flex-direction: column; min-width: 0; } .who small { color: #5b6b6e; }
-    .go { min-height: 48px; }
+    .who { flex: 1; display: flex; flex-direction: column; min-width: 0; } .who small { color: #5b6b6e; }
+    .who .line { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+    .who .n { font-size: .85rem; color: #0e3b43; background: #eef5f4; border-radius: 10px; padding: 1px 8px; }
+    .tag { font-size: .8rem; border-radius: 10px; padding: 2px 8px; flex: none; } .tag.ok { color: #1b6e3a; background: #e3f0e6; }
+    .big-btns { margin-top: 10px; } .big-btns button { min-height: 48px; border-radius: 24px; }
+    .chev { color: #5b6b6e; flex: none; }
   `,
 })
 export class TransportPage {
