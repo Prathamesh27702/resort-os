@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 7 — Activities, transport, equipment | S | [Sprint 20](sprint-20-activities-and-equipment.md) |
+| 🟢 Done | Phase 7 — Activities, transport, equipment | S | [Sprint 20](sprint-20-activities-and-equipment.md) |
 
 **Goal:** Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built and in review (pull request into develop). Defaults for the owner to confirm: ₹500 a seat one way and children pay the same; a no-show keeps the charge; a cancelled trip refunds everyone and moving is done by booking again; the driver can mark a trip as left from its day and tick boarding any time before; drivers are staff accounts with the Driver role (the demo data has none); visitors ride only free or complimentary; no GST on transport.
+**Now:** Accepted by the owner on 5 Nov 2026 (PR #168), after fixing the trip rows and the driver's card from the owner's screenshots. Defaults kept: ₹500 a seat one way and children pay the same; a no-show keeps the charge; a cancelled trip refunds everyone and moving is done by booking again; the driver can mark a trip as left from its day; drivers are staff accounts with the Driver role (the demo data has none); visitors ride only free or complimentary; no GST on transport.
 
 **Done so far**
 

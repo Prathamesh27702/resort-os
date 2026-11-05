@@ -60,3 +60,6 @@
 - version: "1.20"
   date: 2026-11-02
   change: "Sprint 20 (Activities and equipment) accepted: each session shows the seats left and the last seat can't be sold twice, even when two people book at the same moment; a staying guest's activity goes straight on their room bill and comes off if they cancel; when the weather stops a session, one step refunds everyone on their bills or moves them to another session; every life jacket, kayak and bicycle has a tag, so the resort sees who has it, when it is due back and what came back damaged. Activity flow diagram. Sprint 21 started."
+- version: "1.21"
+  date: 2026-11-05
+  change: "Sprint 21 (Beach transport) accepted: the beach shuttle runs on trips with a vehicle, a driver and a seat limit, and the last seat can't be sold twice; a staying guest's seats go straight on their room bill and come off if cancelled; the driver sees today's passengers on a phone, ticks each one as they board and marks the trip as left; each trip's passenger list prints as a manifest PDF. Transport flow diagram. Sprint 22 started."

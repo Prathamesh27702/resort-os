@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-21] — Beach transport (in review)
+## [sprint-21] — 2026-11-05 — Beach transport (accepted)
 
 ### Added
 - Migration V023: `vehicles` (code, name, registration kept without spaces and unique in the organisation, passenger
@@ -45,6 +45,9 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 
 ### Changed
 - The shell menu adds **Beach transport**.
+- After the owner's review: each trip row shows from → to, the arrival time and the driver, and opens with a chevron;
+  the driver's card shows each passenger on one line with their seats, an *On board* tag, and Left, Arrived and Manifest
+  buttons of the same height.
 
 ### Open points
 - The price is per seat, one way (₹500 to the beach, ₹500 back); children pay the same. A return or child fare comes

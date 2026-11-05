@@ -119,7 +119,7 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `/api/v1/properties/{propertyId}/attendance/*, /timesheets/*` | [Sprint 18](../sprints/sprint-18-attendance-and-timesheets-pwa.md) | 🟢 Done |
 | `/api/v1/properties/{propertyId}/leave/*, /payroll/*` | [Sprint 19](../sprints/sprint-19-leave-holidays-and-payroll-export.md) | 🟢 Done |
 | `/api/v1/properties/{propertyId}/activities/*, /equipment/*` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
-| `/api/v1/properties/{propertyId}/transport/*` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
+| `/api/v1/properties/{propertyId}/transport/*` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🟢 Done |
 | `/api/v1/webhooks/whatsapp` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `/api/v1/webhooks/channel-manager` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
 | `/api/v1/public/* — separate` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |
