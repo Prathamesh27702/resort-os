@@ -307,8 +307,6 @@ export class OrderDialog {
         : [this.line()]),
   });
   get lines() { return this.form.controls.lines as FormArray<FormGroup>; }
-  centres = signal<{ id: string; code: string; name: string }[]>([]);
-  constructor() { this.api.budgetDepartments(this.data.propertyId).subscribe({ next: c => this.centres.set(c), error: () => this.centres.set([]) }); }
   private value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
   supplier = computed(() => this.suppliers.find(s => s.id === this.value().supplierId) ?? null);
   intra = computed(() => !this.supplier() || !this.data.propertyState || this.supplier()!.stateCode === this.data.propertyState);
@@ -513,6 +511,9 @@ export class BillDialog {
     }))),
   });
   get lines() { return this.form.controls.lines as FormArray<FormGroup>; }
+  /** The budget departments (Sprint 23); left empty the server picks the supplier's last one, or Food and beverage for the kitchen. */
+  centres = signal<{ id: string; code: string; name: string }[]>([]);
+  constructor() { this.api.budgetDepartments(this.data.propertyId).subscribe({ next: c => this.centres.set(c), error: () => this.centres.set([]) }); }
   private value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
   totals = computed(() => (this.value().lines ?? []).reduce((t: { taxable: number; tax: number }, l) => {
     const x = lineTotals(Number(l['quantity']) || 0, Number(l['unitPrice']) || 0, Number(l['gstRate']) || 0, this.data.order.intraState);

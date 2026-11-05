@@ -78,3 +78,10 @@ html .mat-horizontal-content-container, html .mat-vertical-content { padding-top
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Printing a report (Sprint 23): only the page, without the menu and the top bar. */
+@media print {
+  .mat-sidenav, .mat-drawer, header.bar, .no-print { display: none !important; }
+  .mat-drawer-content, .mat-sidenav-content { margin-left: 0 !important; }
+  .mat-drawer-container { background: #fff !important; }
+}

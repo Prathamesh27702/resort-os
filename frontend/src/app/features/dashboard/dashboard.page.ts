@@ -11,12 +11,13 @@ import { RoomsApi } from '../rooms/rooms.api';
 import { AttendanceApi, STATUS_LABEL } from '../attendance/attendance.api';
 import { hm, hours } from '../employees/employees.api';
 import { LeaveApi } from '../leave/leave.api';
+import { OwnerBoard } from './owner-board';
 
 interface Step { done: boolean; title: string; detail: string; link: string; action: string; }
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, MatIconModule, MatButtonModule],
+  imports: [RouterLink, MatIconModule, MatButtonModule, OwnerBoard],
   template: `
     <div class="page">
       <div class="page-head">
@@ -68,6 +69,8 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
           <div class="row"><a mat-flat-button routerLink="/leave" [queryParams]="{ view: 'team' }">Look at {{ n === 1 ? 'it' : 'them' }}</a></div>
         </section>
       }
+
+      @if (reportsFor(); as pid) { <app-owner-board [propertyId]="pid" /> }
 
       @if (steps().length) {
         <section class="panel setup">
@@ -123,6 +126,8 @@ export class DashboardPage {
   leaveWaiting = signal(0);
   private leave = inject(LeaveApi);
   hm = hm; hours = hours; statusLabel = STATUS_LABEL;
+  /** The property whose numbers show here (Sprint 23): only for someone who may read the operational reports. */
+  reportsFor = computed(() => { const p = this.props.current(); return p && this.auth.can('report.operational.read', p.id) ? p.id : null; });
   showInstall = computed(() => !this.install.installed() && !this.install.dismissed() && (this.install.canInstall() || this.install.iosHint()));
 
   constructor() {
