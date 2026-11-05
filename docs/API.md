@@ -1225,6 +1225,58 @@ equipmentId, tag, typeName, issuedTo, activityBookingId, bookingCode, reservatio
 | ISSUED | RETURNED | LOST | RELEASED, reservedAt, issuedAt, issuedBy, dueBackAt, overdue, closedAt, closedBy,
 returnCondition: GOOD | DAMAGED | LOST, returnNote, version }`. `ReturnEquipmentRequest = { condition, note?, version? }`.
 
+## Built endpoints (Sprint 21 — beach transport)
+
+All under `/api/v1/properties/{propertyId}/transport`. A **vehicle** has a registration number (kept without spaces,
+unique in the organisation) and passenger seats. A **route** (BEACH …) goes from somewhere to somewhere, with km, minutes
+and a price a seat (one way). **Trips** (`vehicle_trips`) are put on for a range of days at departure times, each with a
+vehicle (its seats are the trip's capacity) and a **driver**: a staff account that can run trips here
+(`transport.trip_operate`, e.g. the Driver role). A vehicle, and a driver, is on one trip at a time (EXCLUDE). A
+**passenger** line (`TP00001` …) takes seats on a trip: for a staying guest (confirmed or checked in, the trip's date
+inside the stay) the price goes on the stay's bill as one Transport charge (no GST: transport has no tax category); anyone
+else only on a free trip or as complimentary with a reason. Booking locks the trip row first, so two people can't take the
+last seat (`409 TRIP_FULL`); the database keeps `seats_booked` from the passengers and refuses it above the seats. The
+driver ticks passengers as they board and marks the trip as **left** (anyone not on board becomes a no-show, and keeps the
+charge) and **arrived**. A driver can run only their own trips; a transport manager any trip. How it works:
+[system-design.md → 4.31](architecture/system-design.md#431-beach-trips-seats-the-drivers-manifest-boarding).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /vehicles` · `GET /routes` | The property's vehicles · routes | `transport.read` | — | `VehicleDto[]` · `TransportRouteDto[]` | 403 | — |
+| `POST /vehicles` · `PUT /vehicles/{id}` | A vehicle; switched off rather than deleted. `version` on PUT | `transport.manage` | `SaveVehicleRequest` | 201 / 200 `VehicleDto` | 400 `Code`, `Name`, `Registration` ("The registration number is 4–12 letters and digits, e.g. MH 07 AB 1234."; "Force Traveller already has the registration MH07AB1234."), `Seats` (1–60; "The 08:00 trip on Tue 3 Nov already has 8 seats booked in it, so it can't have fewer than 8 seats."); 403, 404; 409 | INSERT/UPDATE |
+| `POST /routes` · `PUT /routes/{id}` | A route | `transport.manage` | `SaveTransportRouteRequest` | 201 / 200 `TransportRouteDto` | 400 `Code`, `Name`, `Origin`, `Destination`, `DistanceKm` (0–500, one decimal), `DurationMinutes` (5–360), `Price`; 403, 404; 409 | INSERT/UPDATE |
+| `GET /trips?date` | A day's trips with seats left (today by default), with the routes, vehicles and (for managers) the drivers | `transport.read` | — | `TransportDayDto` | 403 | — |
+| `POST /trips` | Put trips on: route, vehicle, driver (optional), from–to (at most 92 days), departure times; times past, or when the vehicle or driver is on another trip, are skipped and listed ("Tue 3 Nov 08:10: Santosh Naik is on the 08:00 Beach shuttle") | `transport.manage` | `CreateTripsRequest` | `CreateTripsResultDto` | 400 `RouteId` (switched off), `VehicleId` (switched off), `DriverUserId` ("Ravi can't run trips at Palm Grove … Give them the Driver role first."), `FromDate` (before today), `ToDate`, `Times`, `Price`; 403 | INSERT |
+| `GET /trips/{id}` | A trip with its passengers (the manifest) | `transport.read` | — | `TripDetailDto` | 403, 404 | — |
+| `GET /trips/{id}/manifest.pdf` | The manifest as an A4 PDF, `manifest-BEACH-20261103-0800.pdf` | `transport.read` | — | `application/pdf` | 403, 404 | — |
+| `PUT /trips/{id}` | Vehicle, driver, seats (not above the vehicle's, not below what is booked), price for new bookings, note | `transport.manage` | `UpdateTripRequest` | `TripDto` | 400 `VehicleId` ("Mahindra Bolero is on the 10:00 trip then."), `DriverUserId`, `Capacity` ("Mahindra Bolero has 7 passenger seats, so the trip can't have more than 7."; "8 seats are already booked, so it can't have fewer than 8."); 403, 404; 409 `CONCURRENCY_CONFLICT`; 422 `TRIP_CLOSED` | UPDATE |
+| `POST /trips/{id}/cancel` | Cancel before it leaves: every passenger's charge reversed on the bill | `transport.manage` | `CancelTripRequest` | `CancelTripResultDto` | 400 `Reason`; 403, 404; 409; 422 `TRIP_CANCELLED`, `TRIP_DEPARTED` | UPDATE + INSERT folio items |
+| `POST /trips/{id}/depart` | The trip left: everyone not on board becomes a no-show. From the trip's day | `transport.trip_operate` (own trip, or `transport.manage`) | `TripStepRequest` | `TripDetailDto` | 403 ("… is Santosh Naik's trip, so only Santosh Naik or a transport manager can run it."), 404; 409; 422 `INVALID_STATUS_TRANSITION`, `TRIP_NOT_TODAY` | UPDATE |
+| `POST /trips/{id}/complete` | The trip arrived | as above | `TripStepRequest` | `TripDetailDto` | 403, 404; 422 `INVALID_STATUS_TRANSITION` ("… hasn't left yet. Mark it as left first.") | UPDATE |
+| `GET /my-trips?date` | The caller's own trips on a day (today by default) with their passengers: the driver's phone view | `transport.trip_operate` | — | `MyTripsDto` | 403 | — |
+| `GET /stays?date` | Stays that can be booked on a date | `transport_booking.create` | — | `ActivityStayDto[]` | 403 | — |
+| `POST /bookings` | Book seats. Needs an `Idempotency-Key` header (a repeat returns the first booking) | `transport_booking.create` | `BookTransportRequest` | 201 `TripPassengerDto` | 400 (no key), `Seats` (1–60), `ReservationId` (not staying that day: "R00008 stays from Mon 2 Nov to Thu 5 Nov, so it can't be booked on Fri 6 Nov."; a paid trip for someone not staying: "A seat on Beach shuttle costs ₹500. Choose the guest's stay so it goes on their bill, or make it complimentary with the reason."), `GuestName`, `ComplimentaryReason`, `Note`; 403, 404; 409 `TRIP_FULL` ("Beach shuttle at 08:00 on Tue 3 Nov is full (12 of 12 seats booked). Choose another trip.", `details: { seatsLeft }`); 422 `TRIP_CANCELLED`, `TRIP_DEPARTED` | INSERT + INSERT folio item |
+| `GET /bookings?reservationId` | A stay's seats | `transport.read` | — | `TripPassengerDto[]` | 403 | — |
+| `GET /bookings/{id}` | One passenger line | `transport.read` | — | `TripPassengerDto` | 403, 404 | — |
+| `POST /bookings/{id}/cancel` | Cancel before the trip leaves: the charge is reversed | `transport_booking.create` | `CancelPassengerRequest` | `TripPassengerDto` | 400 `Reason`; 403, 404; 409; 422 `INVALID_STATUS_TRANSITION`, `TRIP_DEPARTED`, `PASSENGER_ON_BOARD` ("Asha Rao (TP00001) is ticked as on board. Untick them first if they got off, then cancel.") | UPDATE + INSERT folio item |
+| `POST /bookings/{id}/board` · `/unboard` | Tick a passenger as on board · untick them, before the trip leaves | `transport.trip_operate` (own trip, or `transport.manage`) | `TripStepRequest` | `TripPassengerDto` | 403, 404; 409; 422 `TRIP_DEPARTED`, `INVALID_STATUS_TRANSITION` | UPDATE |
+
+`SaveVehicleRequest = { code, name, registration, seats, note?, sortOrder, isActive, version? }`. `SaveTransportRouteRequest
+= { code, name, origin, destination, distanceKm, durationMinutes, price, sortOrder, isActive, version? }`.
+`CreateTripsRequest = { routeId, vehicleId, driverUserId?, fromDate, toDate, times: "HH:mm"[], price? }` (capacity is the
+vehicle's seats, price the route's). `UpdateTripRequest = { vehicleId, driverUserId?, capacity, price, note?, version? }`.
+`TripDto = { id, routeId, routeCode, routeName, origin, destination, date, departsAt, arrivesAt, departTime, arriveTime,
+vehicleId, vehicleName, registration, driverUserId, driverName, capacity, seatsBooked, seatsLeft, onBoard, price, status:
+SCHEDULED | DEPARTED | COMPLETED | CANCELLED, note, cancelReason, departedAt, completedAt, actions: (book | edit | cancel |
+board | depart | complete | manifest)[], version }`. `TransportDayDto = { date, today, trips, routes, vehicles, drivers: [{
+userId, name, isDriver }] }`. `TripDetailDto = { trip, passengers }`, `MyTripsDto = { date, today, trips: TripDetailDto[]
+}`. `BookTransportRequest = { tripId, seats, reservationId?, guestName?, complimentary, complimentaryReason?, note? }`.
+`TripPassengerDto = { id, code, tripId, routeName, date, departTime, reservationId, reservationReference, room, guestName,
+seats, unitPrice, amount, settlement: ROOM_CHARGE | FREE | COMPLIMENTARY, complimentaryReason, folioNumber, note, status:
+BOOKED | BOARDED | NO_SHOW | CANCELLED, boardedAt, boardedBy, cancelReason, cancelledAt, refund: REVERSED | NONE, actions:
+(cancel | board | unboard)[], createdAt, by, version }`. `CancelTripResultDto = { trip, refunded, amountRefunded,
+nothingToRefund, passengers }`. `TripStepRequest = { version? }`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

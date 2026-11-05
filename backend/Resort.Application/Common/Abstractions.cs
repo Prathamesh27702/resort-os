@@ -5,6 +5,7 @@ using Resort.Domain.Accommodation;
 using Resort.Domain.Attendance;
 using Resort.Domain.Leave;
 using Resort.Domain.Activities;
+using Resort.Domain.Transport;
 using Resort.Domain.Audit;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
@@ -153,6 +154,10 @@ public interface IAppDbContext
     DbSet<EquipmentType> EquipmentTypes { get; }
     DbSet<EquipmentItem> EquipmentItems { get; }
     DbSet<EquipmentAssignment> EquipmentAssignments { get; }
+    DbSet<Vehicle> Vehicles { get; }
+    DbSet<TransportRoute> TransportRoutes { get; }
+    DbSet<VehicleTrip> VehicleTrips { get; }
+    DbSet<TripPassenger> TripPassengers { get; }
     DbSet<Holiday> Holidays { get; }
     DbSet<PayrollExport> PayrollExports { get; }
 

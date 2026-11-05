@@ -1276,5 +1276,38 @@
   <text class="s" x="46" y="650"><tspan class="b">Who:</tspan> reception books, issues and takes back; the activity manager puts sessions on, cancels for the weather and moves items through maintenance.</text>
   <text class="s" x="46" y="672"><tspan class="b">Not automatic:</tspan> no damage or loss charge is posted by itself, and there is no cancellation fee.</text>
 </svg>
+<svg id="transport-flow" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 21: beach transport. The last seat on the van, the driver's manifest, and boarding</text>
+  <rect class="lane" x="30" y="56" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="82">Booking seats (one transaction; an Idempotency-Key makes a double tap book once)</text>
+  <rect class="step" x="46" y="98" width="230" height="88" rx="8"/><text class="s b" x="58" y="122">Lock the trip row</text><text class="xs" x="58" y="142">SELECT vehicle_trips …</text><text class="xs" x="58" y="160">FOR UPDATE, then the stay:</text><text class="xs" x="58" y="178">the last seat queues here</text>
+  <rect class="ask" x="306" y="98" width="250" height="88" rx="8"/><text class="s b" x="318" y="122">Seats left ≥ seats asked?</text><text class="xs" x="318" y="142">trip SCHEDULED, not left;</text><text class="xs" x="318" y="160">the stay confirmed or in house</text><text class="xs" x="318" y="178">on the trip's date</text>
+  <rect class="lose" x="586" y="98" width="250" height="88" rx="8"/><text class="s b" x="598" y="122">No: 409 TRIP_FULL</text><text class="xs" x="598" y="142">"Beach shuttle at 08:00 is full</text><text class="xs" x="598" y="160">(12 of 12 seats booked). Choose</text><text class="xs" x="598" y="178">another trip." Nothing saved</text>
+  <rect class="win" x="866" y="98" width="290" height="88" rx="8"/><text class="s b" x="878" y="122">Yes: TP00002 + the charge</text><text class="xs" x="878" y="142">3 × ₹500 on the stay's bill (Transport);</text><text class="xs" x="878" y="160">the trigger adds 3 to seats_booked</text><text class="xs" x="878" y="178">(CHECK seats_booked ≤ capacity)</text>
+  <path class="arrow" d="M276,142 L304,142"/><path class="arrow" d="M556,142 L584,142"/><path class="arrow" d="M431,98 L431,90 L1011,90 L1011,96"/><text class="xs" x="700" y="86">yes</text><text class="xs" x="560" y="136">no</text>
+  <text class="xs" x="46" y="212"><tspan class="b">Two guards:</tspan> the lock answers with the reason; the database CHECK refuses an oversell even from code that skipped the lock.</text>
+  <text class="xs" x="46" y="230"><tspan class="b">Not staying?</tspan> Only free, or complimentary with a reason. Cancelling a seat (or the whole trip) reverses the charge on the same bill.</text>
+  <rect class="lane" x="30" y="262" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="288">Putting trips on (the transport manager): one vehicle and one driver on one trip at a time</text>
+  <rect class="step" x="46" y="304" width="300" height="88" rx="8"/><text class="s b" x="58" y="328">Route + vehicle + driver</text><text class="xs" x="58" y="348">from / to dates (up to 92 days)</text><text class="xs" x="58" y="366">and departure times, e.g.</text><text class="xs" x="58" y="384">08:00, 10:00, 16:00</text>
+  <rect class="win" x="376" y="304" width="330" height="88" rx="8"/><text class="s b" x="388" y="328">Put on</text><text class="xs" x="388" y="348">capacity = the vehicle's seats;</text><text class="xs" x="388" y="366">arrives = departs + the route's minutes;</text><text class="xs" x="388" y="384">price = the route's fare</text>
+  <rect class="lose" x="736" y="304" width="420" height="88" rx="8"/><text class="s b" x="748" y="328">Skipped, each with the reason</text><text class="xs" x="748" y="348">"08:10: Santosh Driver is on the 08:00 Beach shuttle"</text><text class="xs" x="748" y="366">times already past; the vehicle on another trip</text><text class="xs" x="748" y="384">(EXCLUDE on tstzrange(departs_at, arrives_at))</text>
+  <path class="arrow" d="M346,348 L374,348"/><path class="arrow" d="M706,348 L734,348"/>
+  <text class="xs" x="46" y="418"><tspan class="b">Editing a trip:</tspan> capacity can't go below the seats booked or above the vehicle's seats. A cancelled trip refunds every passenger.</text>
+  <text class="xs" x="46" y="436"><tspan class="b">Trip moves:</tspan> SCHEDULED → DEPARTED → COMPLETED, or SCHEDULED → CANCELLED. trg_vehicle_trips_status refuses any other (a test checks C# matches).</text>
+  <rect class="lane" x="30" y="468" width="1140" height="146" rx="10"/>
+  <text class="t b" x="46" y="494">The driver, on a phone: My trips → today's manifest</text>
+  <rect class="step" x="46" y="510" width="230" height="64" rx="8"/><text class="s b" x="58" y="534">BOOKED</text><text class="xs" x="58" y="554">name, room, seats, note</text>
+  <rect class="win" x="306" y="510" width="230" height="64" rx="8"/><text class="s b" x="318" y="534">BOARDED (ticked)</text><text class="xs" x="318" y="554">who and when; untick if wrong</text>
+  <rect class="ask" x="566" y="510" width="270" height="64" rx="8"/><text class="s b" x="578" y="534">Left (from the trip's day)</text><text class="xs" x="578" y="554">anyone still BOOKED → NO_SHOW</text>
+  <rect class="win" x="866" y="510" width="290" height="64" rx="8"/><text class="s b" x="878" y="534">Arrived → COMPLETED</text><text class="xs" x="878" y="554">a no-show keeps the charge</text>
+  <path class="arrow" d="M276,542 L304,542"/><path class="arrow" d="M536,542 L564,542"/><path class="arrow" d="M836,542 L864,542"/>
+  <text class="xs" x="46" y="598"><tspan class="b">Only their own trips:</tspan> a driver can tick and leave only trips where driver_user_id is them; the manager can do any trip. A boarded seat can't be cancelled.</text>
+  <rect class="zone" x="30" y="630" width="1140" height="56" rx="8"/>
+  <text class="s" x="46" y="654"><tspan class="b">Who:</tspan> reception books seats; the transport manager adds vehicles, routes and trips and downloads the manifest PDF; the driver boards and leaves.</text>
+  <text class="s" x="46" y="674"><tspan class="b">Money:</tspan> ₹500 a seat, one way, on the stay's bill (category Transport, source TRANSPORT), no GST added.</text>
+</svg>
 </body>
 </html>

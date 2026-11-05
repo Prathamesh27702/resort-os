@@ -98,6 +98,11 @@ public static class Perm
     public const string EquipmentManage = "equipment.manage";
     public const string EquipmentIssue = "equipment.issue";
 
+    public const string TransportRead = "transport.read";
+    public const string TransportManage = "transport.manage";
+    public const string TransportBookingCreate = "transport_booking.create";
+    public const string TransportTripOperate = "transport.trip_operate";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
@@ -134,6 +139,7 @@ public static class Perm
         SupplierRead, SupplierManage, PurchaseRead, PurchaseCreate, PurchaseApprove, GrnCreate, SupplierInvoiceManage,
         FolioRead, FolioPostCharge, FolioAdjust,
         ActivityRead, ActivityManage, ActivityBookingCreate, EquipmentRead, EquipmentManage, EquipmentIssue,
+        TransportRead, TransportManage, TransportBookingCreate, TransportTripOperate,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,
         InvoiceRead, InvoiceCreate, InvoiceCancel, CreditNoteCreate,

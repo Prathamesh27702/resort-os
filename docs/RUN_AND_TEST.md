@@ -969,6 +969,56 @@ second browser and try booking the same session from the API, or book 1 seat on 
 By hand: [REVIEWING.md → Sprint 20](sprints/REVIEWING.md#sprint-20--activities-and-equipment).
 Screenshots: [sprint-20-screens/](sprints/sprint-20-screens/).
 
+### Sprint 21: Beach transport
+
+**New:** **Beach transport** in the menu (`/transport`). **Trips**: the day's trips (◀ ▶ to move a day, **Today**) with the
+vehicle, driver and seats left (*9 left*, *Full*); tap a trip to see its passengers, then **Book** (a guest staying that
+day; the price for the seats shows before you book and goes on the guest's bill; anyone by name only free or complimentary
+with a reason), **Cancel** a seat (the charge comes off the bill) and **Manifest** (the passenger list as a PDF). Managers
+also **Put trips on** (a route, a vehicle, a driver, from–to and departure times like *08:00, 10:00*; clashes are skipped
+and named), change a trip's **Vehicle, driver, seats** and **Cancel trip** (everyone is refunded). **My trips** is the driver's phone view: today's own
+trips with each passenger's name, room, seats and note, a big tick box as they board, **Left** (anyone not ticked becomes a
+no-show) and **Arrived**. A Driver account starts on **My trips**. **Vehicles and routes** (managers) keeps the list.
+Demo data (S018): a 12-seat Force Traveller and a 7-seat Bolero, the beach shuttle and its return (8 km, 20 minutes, ₹500 a
+seat), trips today and the next 7 days (to the beach 08:00, 10:00, 11:00 in the jeep, 16:00; back 12:00, 18:30), and
+tomorrow's 08:00 has 4 seats for an agent group. No driver is set. Restart the API and watch for `Applying migration
+V023__transport`.
+
+```powershell
+# Backend (TransportUnitTests and TransportTests: a transfer booking posts ₹500 a seat to the folio and cancelling reverses
+# it; the last seat booked by two people at once, 10 times, goes to one; the database guards on their own; the driver sees
+# today's manifest, ticks who boarded and leaves with the rest as no-shows; a driver runs only their own trips; a vehicle
+# or driver can't be on two trips at once; a cancelled trip refunds everyone; the manifest PDF)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Transport"
+
+# Frontend unit tests (where a fare went, trip and passenger states in words, a full trip's message)
+cd frontend
+npm run test:ci
+
+# Browser, a transport manager on a desktop, a receptionist and a driver on 360 px phones (4 steps, S21-01 … S21-04: the
+# manager adds a van (a wrong registration refused under the field) and puts a trip on tonight at 23:30 with the driver →
+# the receptionist books 3 seats for a staying guest (₹1,500 on the bill) → the manager downloads the manifest PDF → the
+# driver opens My trips, sees the passengers and the note, ticks them on board (3/3) and marks the trip as left)
+npm run e2e -- e2e/sprint-21.spec.ts
+cd ..
+
+# API checks: the Sprint 21 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6, 8 and 9 must return no rows)
+Get-Content database/queries/check-sprint-21.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §47, *driver sees today's manifest*): reset the database and sign in as the owner.
+**Staff accounts** → **New** → a user with the **Driver** role. **Beach transport** → **Today** → open the next **Beach
+shuttle** → **Vehicle, driver, seats** → pick the driver → **Save**. **Book** → a guest staying today, 2 seats → *₹1,000 on R…'s bill*. Sign
+in as the driver on a phone (or a narrow window): **My trips** shows the trip with the guest, room and seats → tick them →
+*2/2 on board* → **Left** → *On the road* → **Arrived**. How it works:
+[system-design.md → 4.31](architecture/system-design.md#431-beach-trips-seats-the-drivers-manifest-boarding).
+
+By hand: [REVIEWING.md → Sprint 21](sprints/REVIEWING.md#sprint-21--beach-transport).
+Screenshots: [sprint-21-screens/](sprints/sprint-21-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -981,7 +1031,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 525 backend passed, 116 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 556 backend passed, 122 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -989,7 +1039,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–19 (expected: 151 passed, about 23 minutes)
+# 3. Every browser test, Sprints 01–21 (expected: 160 passed, about 26 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -1004,14 +1054,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–19:
+Expected totals for Sprints 01–21:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 525 passed, 0 failed |
-| Frontend unit tests | 116 of 116 SUCCESS |
-| Browser tests | 151 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5) |
-| API checks | 242 passed, 0 failed |
+| Backend tests | 556 passed, 0 failed |
+| Frontend unit tests | 122 of 122 SUCCESS |
+| Browser tests | 160 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4) |
+| API checks | 258 passed, 0 failed |
 
 Other useful commands:
 
