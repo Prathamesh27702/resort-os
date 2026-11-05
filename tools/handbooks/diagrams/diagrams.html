@@ -1309,5 +1309,39 @@
   <text class="s" x="46" y="654"><tspan class="b">Who:</tspan> reception books seats; the transport manager adds vehicles, routes and trips and downloads the manifest PDF; the driver boards and leaves.</text>
   <text class="s" x="46" y="674"><tspan class="b">Money:</tspan> ₹500 a seat, one way, on the stay's bill (category Transport, source TRANSPORT), no GST added.</text>
 </svg>
+<svg id="expense-flow" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 22: expenses and budgets. Recorded, approved, then counted against the department's plan</text>
+  <rect class="lane" x="30" y="56" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="82">Recording (anyone with expense.create, on a phone too; an Idempotency-Key makes a double tap record once)</text>
+  <rect class="step" x="46" y="98" width="250" height="88" rx="8"/><text class="s b" x="58" y="122">₹1,180 to Ganesh Plumbing</text><text class="xs" x="58" y="142">category Repairs, department Spa;</text><text class="xs" x="58" y="160">a photo of the receipt (shrunk</text><text class="xs" x="58" y="178">on the phone, stored encrypted)</text>
+  <rect class="ask" x="326" y="98" width="250" height="88" rx="8"/><text class="s b" x="338" y="122">A GST bill?</text><text class="xs" x="338" y="142">GSTIN check digit, bill number</text><text class="xs" x="338" y="160">(one bill recorded once), GST</text><text class="xs" x="338" y="178">less than the amount</text>
+  <rect class="step" x="606" y="98" width="260" height="88" rx="8"/><text class="s b" x="618" y="122">Split and cost</text><text class="xs" x="618" y="142">same state: CGST ₹90 + SGST ₹90,</text><text class="xs" x="618" y="160">else IGST ₹180; taxable ₹1,000</text><text class="xs" x="618" y="178">cost ₹1,000 if credit can be claimed</text>
+  <rect class="win" x="896" y="98" width="260" height="88" rx="8"/><text class="s b" x="908" y="122">EX00013: SUBMITTED</text><text class="xs" x="908" y="142">waits for approval;</text><text class="xs" x="908" y="160">not in the budget yet</text><text class="xs" x="908" y="178">(shown beside it as "waits")</text>
+  <path class="arrow" d="M296,142 L324,142"/><path class="arrow" d="M576,142 L604,142"/><path class="arrow" d="M866,142 L894,142"/>
+  <text class="xs" x="46" y="212"><tspan class="b">Credit:</tspan> the GST comes back only for a regular GST registrant on the day and a claimable category (staff food is blocked: then the whole ₹ counts).</text>
+  <text class="xs" x="46" y="230"><tspan class="b">Refused under the field:</tspan> a wrong GSTIN with the reason, GST with no bill, a day in the future or over 400 days back, a switched-off category.</text>
+  <rect class="lane" x="30" y="262" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="288">Approval (expense.approve: owner, general manager, accountant)</text>
+  <rect class="ask" x="46" y="304" width="300" height="88" rx="8"/><text class="s b" x="58" y="328">Can it be approved?</text><text class="xs" x="58" y="348">not your own (unless you plan budgets);</text><text class="xs" x="58" y="366">over ₹500 needs a receipt first;</text><text class="xs" x="58" y="384">still SUBMITTED (version checked)</text>
+  <rect class="win" x="376" y="304" width="250" height="88" rx="8"/><text class="s b" x="388" y="328">APPROVED</text><text class="xs" x="388" y="348">counts from now: ₹1,000</text><text class="xs" x="388" y="366">in Spa's budget; audited</text><text class="xs" x="388" y="384">"EX00013 approved: ₹1,000 for Spa"</text>
+  <rect class="lose" x="656" y="304" width="230" height="88" rx="8"/><text class="s b" x="668" y="328">REJECTED / CANCELLED</text><text class="xs" x="668" y="348">with the reason;</text><text class="xs" x="668" y="366">never counts</text>
+  <rect class="step" x="916" y="304" width="240" height="88" rx="8"/><text class="s b" x="928" y="328">Frozen by the database</text><text class="xs" x="928" y="348">trg_expenses_frozen: no change;</text><text class="xs" x="928" y="366">trg_expense_attachments_open:</text><text class="xs" x="928" y="384">no more receipts; no delete</text>
+  <path class="arrow" d="M346,348 L374,348"/><text class="s b" x="632" y="353">or</text><path class="arrow" d="M886,348 L914,348"/><path class="arrow" d="M501,392 L501,400 L1036,400 L1036,394"/>
+  <text class="xs" x="46" y="418"><tspan class="b">While it waits</tspan> whoever recorded it (or an approver) can change it, add receipts (up to 4: photos or PDF, 2 MB each) or cancel it.</text>
+  <text class="xs" x="46" y="436"><tspan class="b">Moves:</tspan> SUBMITTED → APPROVED, REJECTED or CANCELLED, and nothing after (a test checks the C# list matches the migration).</text>
+  <rect class="lane" x="30" y="468" width="1140" height="146" rx="10"/>
+  <text class="t b" x="46" y="494">Budget against actual (budget.read), April to the end of the month chosen</text>
+  <rect class="step" x="46" y="510" width="250" height="64" rx="8"/><text class="s b" x="58" y="534">Budget so far</text><text class="xs" x="58" y="554">budget_lines: department × month</text>
+  <rect class="step" x="326" y="510" width="250" height="64" rx="8"/><text class="s b" x="338" y="534">Spent</text><text class="xs" x="338" y="554">APPROVED only, at cost</text>
+  <rect class="ask" x="606" y="510" width="260" height="64" rx="8"/><text class="s b" x="618" y="534">Variance = budget − spent</text><text class="xs" x="618" y="554">"₹7,000 under", "₹400 over"</text>
+  <rect class="win" x="896" y="510" width="260" height="64" rx="8"/><text class="s b" x="908" y="534">Year at this rate</text><text class="xs" x="908" y="554">spent × days in year ÷ days gone</text>
+  <path class="arrow" d="M296,542 L324,542"/><path class="arrow" d="M576,542 L604,542"/><path class="arrow" d="M866,542 L894,542"/>
+  <text class="xs" x="46" y="598"><tspan class="b">Standing:</tspan> Over budget (spent past the plan so far), Heading over (the year at this rate past the year's plan), On track, or No budget.</text>
+  <rect class="zone" x="30" y="630" width="1140" height="56" rx="8"/>
+  <text class="s" x="46" y="654"><tspan class="b">Who:</tspan> staff and managers record; approvers approve or reject; the owner (budget.manage) plans the year per department and keeps the lists.</text>
+  <text class="s" x="46" y="674"><tspan class="b">Not yet:</tspan> supplier bills and payroll are not in the actuals (reports, Sprint 23); an approved expense can't be reversed.</text>
+</svg>
 </body>
 </html>

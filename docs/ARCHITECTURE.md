@@ -124,8 +124,8 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 21 | Activities | activities, activity_schedules, activity_bookings (charges on folio_items, source ACTIVITY) | 20 | built (sessions that can't be oversold: the session row locked and seats kept by a trigger with a CHECK; bookings on the bill, free or complimentary; weather cancellation with refunds or moves) |
 | 22 | Transport | vehicles, transport_routes, vehicle_trips, trip_passengers (charges on folio_items, source TRANSPORT) | 21 | built (trips that can't be overbooked: the trip row locked and seats kept by a trigger with a CHECK; a vehicle or driver on one trip at a time by EXCLUDE; seats on the bill; the driver's phone manifest with boarding; manifest PDF) |
 | 23 | Equipment | equipment_types, equipment, equipment_assignments | 20 | built (tagged items with the allowed status moves checked by a trigger, kept aside, issued, returned good, damaged or lost, maintenance) |
-| 24 | Expenses | expenses, expense_categories, cost_centres | 22 | planned |
-| 25 | Budgeting | budgets, budget_lines | 22 | planned |
+| 24 | Expenses | expenses, expense_categories, cost_centres, expense_attachments | 22 | built (every expense waits for approval; the GST split and the cost after input credit; a receipt over ₹500 and no self-approval; frozen once decided by a trigger; encrypted receipts) |
+| 25 | Budgeting | budgets, budget_lines | 22 | built (one budget a financial year, department × month; budget against approved actuals with variance, run-rate forecast and standing) |
 | 26 | Accounting integration | accounting_sync_records | 25 | planned |
 | 27 | OTA integration | ota_channels, ota_reservations, ota_events | 26 | planned |
 | 28 | WhatsApp | whatsapp_messages, message_templates | 24 | planned |

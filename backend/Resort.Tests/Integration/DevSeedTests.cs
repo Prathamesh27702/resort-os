@@ -434,4 +434,27 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var eight = day.Trips[0];
         Assert.Equal((12, 4, 8, null), (eight.Capacity, eight.SeatsBooked, eight.SeatsLeft, eight.DriverName));
     }
+    /// <summary>Sprint 22: the usual categories and departments, this year's budget (₹2,05,000 a month), ten approved expenses
+    /// this year so far (one GST bill whose tax is claimable) and two waiting for approval, the linen one without its receipt.</summary>
+    [Fact]
+    public async Task Dev_seed_has_a_budget_for_this_year_and_expenses_approved_and_waiting()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var setup = await owner.GetJsonAsync<ExpenseSetupDto>($"/api/v1/properties/{pid}/expenses/setup");
+        Assert.Equal((11, 8), (setup.Categories.Count, setup.CostCentres.Count));
+        var report = await owner.GetJsonAsync<BudgetReportDto>($"/api/v1/properties/{pid}/budgets/report");
+        Assert.NotNull(report.BudgetId);
+        Assert.Equal(2_460_000m, report.Total.AnnualBudget);
+        Assert.Equal(25_000m, report.Rows.Single(r => r.CostCentreCode == "MNT").MonthBudget);
+        var list = await owner.GetJsonAsync<ExpenseListDto>($"/api/v1/properties/{pid}/expenses");
+        Assert.Equal((12, 2, 1_550m), (list.Items.Count, list.Waiting, list.WaitingAmount));
+        var diesel = list.Items.Single(e => e.VendorGstin == "30MALVF5521K1ZB");
+        Assert.Equal((true, 10_000m, 900m, 900m), (diesel.ItcEligible, diesel.CostAmount, diesel.Cgst, diesel.Sgst));
+        var linen = list.Items.Single(e => e.Description == "Bed sheets and pillow covers");
+        Assert.Equal(("SUBMITTED", true), (linen.Status, linen.NeedsReceipt));
+    }
 }

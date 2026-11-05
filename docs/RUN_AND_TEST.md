@@ -1019,6 +1019,58 @@ in as the driver on a phone (or a narrow window): **My trips** shows the trip wi
 By hand: [REVIEWING.md → Sprint 21](sprints/REVIEWING.md#sprint-21--beach-transport).
 Screenshots: [sprint-21-screens/](sprints/sprint-21-screens/).
 
+### Sprint 22: Expenses and budgets
+
+**New:** **Expenses** and **Budget** in the menu (`/expenses`, `/budgets`). **Record expense** (on a phone too): what it was
+for, the amount paid with GST, the day, the category (Fuel, Repairs and maintenance …) and the **department** that spent
+it, who was paid and how; tick **It is a GST bill** to add the vendor's GSTIN (checked as you type, check digit included),
+the bill number and the GST: the split (*CGST ₹90 + SGST ₹90; taxable value ₹1,000.*) shows before you save. **Add
+receipt** takes a photo (shrunk on the phone) or a PDF; over ₹500 a receipt is needed before approval. Everything waits
+for approval: someone who approves expenses (owner, general manager, accountant) opens it, looks at the receipt and
+**Approve**s or **Reject**s it with the reason; nobody approves their own unless they plan budgets. Whoever recorded it
+can **Change** or **Cancel it** while it waits. **Categories and departments** (owner) keeps the lists. **Budget**: the
+financial year's budget against what was spent, April to the end of a month you choose: tiles, then each department's
+budget so far, spent (approved only, at cost: the taxable value when the GST is claimed back), the variance (*₹24,300
+under*, *₹400 over*), the year at this rate and a standing (*On track*, *Heading over*, *Over budget*, *No budget*); tap a
+department for this month, what waits and spending by category; a month chart (with a table view) below. **Plan** sets a
+department's year (the same every month, or month by month); **Make the budget** starts a year, empty or copied from
+another with an increase. Demo data (S019): this year's budget (₹2,05,000 a month across 8 departments), ten approved
+expenses (one Malvan Fuels GST bill: ₹11,800 paid, ₹10,000 counts) and two waiting (bed sheets ₹1,200 that needs a
+receipt, tea ₹350). Restart the API and watch for `Applying migration V024__expenses`.
+
+```powershell
+# Backend (FinanceUnitTests and FinanceTests: an unapproved expense is left out of the actuals; the GST split, input
+# credit and cost; nobody approves their own; no approval over ₹500 without a receipt; a decided expense is frozen by
+# the database; receipts sniffed and encrypted; a double tap records once; budget against actual, run rate and standing)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Finance"
+
+# Frontend unit tests (the GST split, the yearly spread, the financial year, variance in words)
+cd frontend
+npm run test:ci
+
+# Browser, the owner on a desktop and a manager on a 360 px phone (5 steps, S22-01 … S22-05: the owner adds a department
+# and plans ₹12,000 for the year → the manager records ₹1,180 to a plumber on a GST bill with a photo of the receipt (a
+# GSTIN with a wrong check digit refused under the field) → the budget counts nothing while it waits → the owner looks at
+# the receipt and approves: ₹1,000 counts, the variance moves → the budget reads on the phone with no Plan button)
+npm run e2e -- e2e/sprint-22.spec.ts
+cd ..
+
+# API checks: the Sprint 22 block must be all PASS (reads and refusals only; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6, 7 and 8 must return no rows)
+Get-Content database/queries/check-sprint-22.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §40–41, *owner sees budget vs actual per department*): reset the database and sign in as the
+owner. **Budget** shows each department's budget from April to this month against what was spent, with the variance and
+the year at this rate. **Expenses** → *Waiting* → **Tea and snacks** → **Approve** → *counts in Food and beverage's
+budget* → **Budget**: Food and beverage's spent is ₹350 higher. **Bed sheets** can't be approved until **Add receipt**.
+How it works: [system-design.md → 4.32](architecture/system-design.md#432-expenses-approval-and-budget-against-actual).
+
+By hand: [REVIEWING.md → Sprint 22](sprints/REVIEWING.md#sprint-22--expenses-and-budgets).
+Screenshots: [sprint-22-screens/](sprints/sprint-22-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -1031,7 +1083,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 556 backend passed, 122 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 582 backend passed, 126 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -1039,7 +1091,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–21 (expected: 160 passed, about 26 minutes)
+# 3. Every browser test, Sprints 01–22 (expected: 165 passed, about 27 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -1054,14 +1106,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–21:
+Expected totals for Sprints 01–22:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 556 passed, 0 failed |
-| Frontend unit tests | 122 of 122 SUCCESS |
-| Browser tests | 160 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4) |
-| API checks | 258 passed, 0 failed |
+| Backend tests | 582 passed, 0 failed |
+| Frontend unit tests | 126 of 126 SUCCESS |
+| Browser tests | 165 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4; 22: 5) |
+| API checks | 267 passed, 0 failed |
 
 Other useful commands:
 

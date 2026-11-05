@@ -10,27 +10,35 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built and in review (pull request into develop). Defaults for the owner to confirm: every expense waits for approval; nobody approves their own unless they plan budgets (owner, general manager); a receipt is needed over ₹500; receipts are photos or PDFs, 2 MB each, at most 4; an approved, rejected or cancelled expense can't be changed (record a new one), and approved ones can't be reversed yet; the budget counts the cost (the taxable value when the GST is claimed back); budgets are per department and month, one per financial year, for last, this or next year; the forecast is the run rate; supplier bills and payroll are not in the actuals yet (Sprint 23).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V024: expense_categories (GST claimable or not) and cost_centres (departments), expenses (EX00001…; GSTIN and bill recorded once; CGST/SGST or IGST split, taxable value, input credit and cost held by CHECKs; SUBMITTED → APPROVED, REJECTED or CANCELLED and frozen by a trigger afterwards), expense_attachments (append-only, only while waiting), budgets (one per financial year) and budget_lines (department × month inside the year); setting expenses.receipt_required_over = 500
+- Recording on a phone with an Idempotency-Key: the GSTIN checked including its check digit, the split shown before saving, receipt photos shrunk on the phone or a PDF, sniffed and stored encrypted
+- Approval audited with what counted ("EX00013 approved: ₹1,000 for Spa"); no approval of your own expense or over ₹500 without a receipt, with the reason shown in place of the button; reject or cancel with a reason
+- Budgets made empty or copied with an increase; each department planned for the year or month by month
+- Budget against actual per department, April to a chosen month: budget so far, spent (approved only, at cost), variance, the year at this rate, standing, what waits, spending by category, a month chart with a table view
+- Screens /expenses and /budgets on a 360 px phone
+- Dev seed S019: default categories and departments, this year's budget (₹2,05,000 a month), ten approved expenses including a GST bill and two waiting
+- [done] Docs: API.md, DATABASE.md, schema-sprint-22.md, system design Sprint 22 and 4.32 with the expense flow diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__finance.sql — new tables (next free number)
-- backend/Resort.Domain/Finance/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Finance/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/FinanceEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/FinanceTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/expenses/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-22.md, this guide, CHANGELOG.md
+- database/migrations/V024__expenses.sql; database/seed/dev/S019__expenses.sql; database/queries/check-sprint-22.sql
+- backend/Resort.Domain/Finance/Finance.cs; backend/Resort.Contracts/FinanceContracts.cs
+- backend/Resort.Application/ — Finance/ (ExpenseService.cs, BudgetService.cs), Validation/FinanceValidators.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/FinanceEndpoints.cs, Infrastructure/Problems.cs, Program.cs
+- backend/Resort.Tests/ — Unit/FinanceUnitTests.cs, Integration/FinanceTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/expenses/ (expenses.page.ts, budgets.page.ts, expense-dialogs.ts, expenses.api.ts, expenses.spec.ts), core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-22.spec.ts; scripts/check-api.mjs (Sprint 22 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-22.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-22-screens/; tools/handbooks/diagrams (expense-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 582 passed, 0 failed on real PostgreSQL 16 (an unapproved expense left out of the actuals until approved, rejected and cancelled ones never counted; the GST split by the vendor's state and only the taxable value counted when the credit can be claimed; approval needs the receipt over ₹500 and someone else, is audited and freezes the expense in the database; receipts checked by their bytes, encrypted, at most four; recording is idempotent; the budget report's variance, run rate and standing; the status moves in code match the migration; dev seed check). Release build with warnings as errors and dotnet format clean
+- Frontend: 126 of 126 unit tests passed (4 new); ESLint clean; production build OK
+- Browser tests: Sprint 22's 5 steps pass (the owner adds a department and plans ₹12,000; a manager on a 360 px phone records ₹1,180 on a GST bill with a photo, a wrong GSTIN check digit refused under the field; the budget counts nothing while it waits; the owner approves and ₹1,000 counts; the budget reads on the phone). Full run 164 of 165: S19-05 missed its payroll warning once and passes on a rerun (Sprint 19, not touched here). API checks 267 of 267 (9 new); database checks clean; screenshots in docs/sprints/sprint-22-screens
 
 **Outcome**
 
@@ -49,6 +57,10 @@ Expected when accepted:
 - `budgets`
 - `budget_lines`
 
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/expenses/*, /budgets/*`
+
 **Screens / routes**
 
 - `/expenses`
@@ -60,8 +72,8 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Receipt upload; GST info; approval (expense.approve) audited
-- [ ] Monthly/annual/department budgets; variance and simple forecast
+- [x] Receipt upload; GST info; approval (expense.approve) audited
+- [x] Monthly/annual/department budgets; variance and simple forecast
 
 ## How to run this sprint
 

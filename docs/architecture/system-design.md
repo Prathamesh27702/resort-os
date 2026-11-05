@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll, activity seats and equipment, beach trips |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll, activity seats and equipment, beach trips, expenses and budgets |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–21 built and accepted (October–November 2026); Sprint 22 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–21 built and accepted (October–November 2026); Sprint 22 built and in review. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -549,6 +549,36 @@ flowchart LR
   for its passengers, Book, Manifest, Vehicle, driver, seats, Cancel trip; putting trips on), **My trips** (the driver's phone view with a
   big tick box per passenger, Left and Arrived; a driver-only account starts here) and **Vehicles and routes**. Dialogs in
   `transport-dialogs.ts`. [4.31](#431-beach-trips-seats-the-drivers-manifest-boarding) explains the rules.
+
+---
+
+### Sprint 22: Expenses and budgets
+
+![Expenses and budgets: recorded, approved, then counted against the department's plan](../../tools/handbooks/assets/expense-flow.png)
+
+- Migration V024: `expense_categories` (with `gst_claimable`) and `cost_centres` (the departments that have a budget),
+  `expenses` (`EX00001` …; the amount with GST, the vendor's GSTIN and bill with `ux_expenses_bill` so a bill is recorded
+  once, the GST split and taxable value checked by `ck_expenses_gst`, `itc_eligible` and `cost_amount` by
+  `ck_expenses_cost`; `SUBMITTED` → `APPROVED`, `REJECTED` or `CANCELLED`, frozen afterwards by `trg_expenses_frozen`),
+  `expense_attachments` (receipts, append-only, only while the expense waits), `budgets` (one per financial year) and
+  `budget_lines` (department × month, inside the budget's year). Setting `expenses.receipt_required_over` = 500. Details:
+  [schema-sprint-22.md](../database/schema-sprint-22.md).
+- `Domain/Finance/Finance.cs` (the entities, `ExpenseStatuses.Moves`, and `FinanceMath`: the financial year, the GST
+  split, the cost, the yearly spread, the run-rate forecast and the standing). `Application/Finance/ExpenseService.cs`
+  (setup with the default lists, record with an Idempotency-Key, change, approve, reject, cancel, receipts sniffed and
+  encrypted through `IFileStore`) and `BudgetService.cs` (make a year's budget, empty or copied with an increase; set a
+  department's months; the budget-against-actual report). `Validation/FinanceValidators.cs` (the GSTIN through
+  `Gstin.Problem`, 4.19).
+- Endpoints: `FinanceEndpoints.cs` (`/expenses` with `/setup`, `/categories`, `/cost-centres`, `/{id}/approve|reject|cancel`,
+  `/{id}/receipts`; `/budgets` with `/report`, `/{id}/rows`). The permissions `expense.read`, `expense.create`,
+  `expense.approve`, `budget.read` and `budget.manage` already existed from Sprint 01's catalogue (Managers record and read;
+  Accountants also approve; Owner and General Manager do everything).
+- Screens: **Expenses** (`/expenses`, `features/expenses/`: Waiting, All, Mine; record on a phone with the GST split shown
+  before saving and receipt photos shrunk on the phone; open one for its receipts, Approve, Reject, Change, Cancel it;
+  Categories and departments) and **Budget** (`/budgets`: tiles, each department's budget so far against spent with the
+  variance, the year at this rate and a standing; a department's month and categories; a month chart with a table view;
+  Plan and Make the budget). Dialogs in `expense-dialogs.ts`. [4.32](#432-expenses-approval-and-budget-against-actual)
+  explains the rules.
 
 ---
 
@@ -1373,6 +1403,39 @@ Code: `Application/Transport/` (`TransportService.cs`, `TransportBookingService.
    cancel seats), `transport.trip_operate` (the Driver role: board, left, arrived on their own trips),
    `transport.manage` (manager: vehicles, routes, putting on, editing and cancelling trips, and any trip's steps).
 
+### 4.32 Expenses: approval and budget against actual
+
+Code: `Application/Finance/` (`ExpenseService.cs`, `BudgetService.cs`), `Domain/Finance/Finance.cs`,
+`database/migrations/V024__expenses.sql`, `features/expenses/`. Diagram: section 3 (Sprint 22). Tests:
+`FinanceUnitTests`, `FinanceTests`, `expenses.spec.ts`, `e2e/sprint-22.spec.ts`.
+
+1. **Only approved spending counts.** The report sums `cost_amount` of `APPROVED` expenses only, by department and month;
+   what waits (`SUBMITTED`) is shown beside each department and never added to "spent". Test:
+   `An_unapproved_expense_is_left_out_of_the_actuals_until_it_is_approved_…` (the sprint's required test).
+2. **The cost is what the resort really bears.** The API splits the GST (CGST truncated to the paisa, SGST the rest
+   inside the state; IGST when the GSTIN's first two digits are another state) and sets `itc_eligible` when the property
+   is a regular GST registrant on the expense's day (4.19) and the category is claimable (staff food isn't, CGST section
+   17(5)). Then the cost is the taxable value, else the amount paid. CHECKs hold the sums and the cost rule.
+3. **Approval rules.** `ApproveAsync` checks the version the screen loaded (two approvers at once: the second gets a
+   conflict, and `trg_expenses_frozen` refuses it even without a version), then refuses, with the reason: an expense already decided (`EXPENSE_DECIDED`), your own expense unless you hold `budget.manage` (403), and one
+   over `expenses.receipt_required_over` with no receipt (`RECEIPT_REQUIRED`). The list sends the reason in `blocked`, so
+   the screen shows it instead of an Approve button. The audit row's reason says what counted: "EX00013 approved: ₹1,000
+   for Spa".
+4. **What was counted can't change behind the report.** `trg_expenses_frozen` refuses any update to an expense that isn't
+   `SUBMITTED`; `trg_expense_attachments_open` refuses receipts on it; deletes are refused on every table. A mistake is
+   fixed by recording a new expense. Approved expenses can't be reversed in this sprint.
+5. **Receipts** are sniffed from their bytes (JPEG, PNG, WebP, PDF; 4.23's `SniffImage` plus the PDF header), at most 2 MB
+   and 4 per expense, encrypted at rest under the storage key. The phone shrinks photos before upload (`compressPhoto`).
+6. **One bill once.** `ux_expenses_bill` (property, GSTIN, upper(bill number)) among waiting and approved expenses; the API
+   checks first and names the expense that has it.
+7. **Budgets.** One per financial year (`ux_budgets_year`), allowed for last, this or next year. `SaveRowAsync` locks the
+   budget, checks its version, upserts the department's twelve lines and recomputes the total, so two people planning at
+   once get `CONCURRENCY_CONFLICT`. Copying a budget adds a percentage, rounded to whole rupees.
+8. **The numbers.** Budget so far = the department's lines from April to the end of the chosen month. Variance = budget −
+   spent (negative = over). Year at this rate = spent × days in the year ÷ days gone (to the end of the month, or today).
+   Standing: *No budget* when the year's plan is ₹0, *Over budget* when spent passes the plan so far, *Heading over* when
+   the year at this rate passes the year's plan, else *On track*. `FinanceMath` holds these; unit tests pin them.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1404,3 +1467,4 @@ request:
 | 19 | Leave, holidays and payroll export (kinds and policies, requests with half days and holidays not counted, the overlap guard, balances kept by an append-only ledger, the monthly accrual, approvals that take shifts off the roster, the payroll CSV with its warnings and lock), leave flow diagram; system design 4.29 Leave: balance = ledger, overlap guard, payroll export (accepted 1 Nov 2026) |
 | 20 | Activities and equipment (sessions whose seats can't be oversold, bookings on the bill, weather cancellation with refunds or moves, tagged equipment issued and returned with its allowed moves), activity flow diagram; system design 4.30 Activity seats, weather cancellation, equipment (accepted 2 Nov 2026) |
 | 21 | Beach transport (vehicles, routes, trips whose seats can't be oversold, a vehicle and a driver on one trip at a time, seats on the bill, the driver's phone manifest with boarding, the manifest PDF), transport flow diagram; system design 4.31 Beach trips: seats, the driver's manifest, boarding (accepted 5 Nov 2026) |
+| 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (in review) |
