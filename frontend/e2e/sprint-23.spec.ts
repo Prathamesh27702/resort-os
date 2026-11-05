@@ -87,7 +87,7 @@ test('S23-02 the month at a glance for last month, with the P&L, prints and down
 });
 
 test('S23-03 occupancy by month for the last year, and Refresh now adds it up again', async () => {
-  await own.getByRole('button', { name: 'Occupancy' }).click();
+  await own.getByRole('button', { name: 'Occupancy', exact: true }).click();
   await own.getByRole('radio', { name: 'By month' }).click();
   const t = own.getByTestId('occupancy');
   await expect(t.locator('tbody tr')).toHaveCount(13);   // 12 months and the total
@@ -98,7 +98,7 @@ test('S23-03 occupancy by month for the last year, and Refresh now adds it up ag
 });
 
 test('S23-04 booking sources: the owner sets Booking.com\'s commission, the net follows, and puts it back', async () => {
-  await own.getByRole('button', { name: 'Booking sources' }).click();
+  await own.getByRole('button', { name: 'Booking sources', exact: true }).click();
   const row = own.getByTestId('channels').locator('[data-source="BOOKING_COM"]');
   await expect(row).toContainText('18 %');
   await own.getByRole('button', { name: 'Commission rates' }).click();
@@ -117,11 +117,11 @@ test('S23-04 booking sources: the owner sets Booking.com\'s commission, the net 
 });
 
 test('S23-05 GST, costs and the profit and loss by month', async () => {
-  await own.getByRole('button', { name: 'GST' }).click();
+  await own.getByRole('button', { name: 'GST', exact: true }).click();
   await expect(own.getByTestId('gst')).toContainText('Total');
-  await own.getByRole('button', { name: 'Food and labour cost' }).click();
+  await own.getByRole('button', { name: 'Food and labour cost', exact: true }).click();
   await expect(own.getByTestId('costs')).toContainText('Pay %');
-  await own.getByRole('button', { name: 'Profit and loss' }).click();
+  await own.getByRole('button', { name: 'Profit and loss', exact: true }).click();
   await expect(own.getByTestId('pnl').locator('[data-line="PAY"]')).toBeVisible();
   await shot(own, '05-profit-and-loss');
 });
@@ -134,7 +134,7 @@ test('S23-06 the manager, on a phone: tonight and the next two weeks, no money',
   await shot(mgr, '06-manager-today-on-phone');
   await mgr.goto('/reports?tab=occupancy');
   await expect(mgr.getByTestId('occupancy')).toBeVisible();
-  await expect(mgr.getByRole('button', { name: 'Revenue' })).toHaveCount(0);
+  await expect(mgr.getByRole('button', { name: 'Revenue', exact: true })).toHaveCount(0);
   await expect(mgr.getByTestId('occupancy')).not.toContainText('ADR');
   await noSideScroll(mgr);
 });
