@@ -134,16 +134,16 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `equipment_types` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
 | `equipment` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
 | `equipment_assignments` | [Sprint 20](../sprints/sprint-20-activities-and-equipment.md) | 🟢 Done |
-| `vehicles` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
-| `transport_routes` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
-| `vehicle_trips` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
-| `trip_passengers` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🔵 In progress |
-| `expense_categories` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
-| `cost_centres` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
-| `expenses` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
-| `expense_attachments` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
-| `budgets` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
-| `budget_lines` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | ⚪ Planned |
+| `vehicles` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🟢 Done |
+| `transport_routes` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🟢 Done |
+| `vehicle_trips` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🟢 Done |
+| `trip_passengers` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🟢 Done |
+| `expense_categories` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🔵 In progress |
+| `cost_centres` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🔵 In progress |
+| `expenses` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🔵 In progress |
+| `expense_attachments` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🔵 In progress |
+| `budgets` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🔵 In progress |
+| `budget_lines` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🔵 In progress |
 | `message_templates` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `outbox_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `notifications` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |

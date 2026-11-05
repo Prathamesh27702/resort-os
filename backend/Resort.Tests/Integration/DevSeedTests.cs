@@ -413,4 +413,25 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal((6, 4, 2), (kayak.Capacity, kayak.SeatsBooked, kayak.SeatsLeft));
         Assert.Equal("06:30", day.Sessions[0].StartTime);
     }
+
+    /// <summary>Sprint 21: two vehicles, the beach shuttle and its return, trips for a week (no driver yet), and tomorrow's
+    /// 08:00 shuttle with 4 of 12 seats taken by the agent's group (complimentary).</summary>
+    [Fact]
+    public async Task Dev_seed_has_vehicles_routes_and_a_week_of_beach_trips()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var vehicles = await owner.GetJsonAsync<List<VehicleDto>>($"/api/v1/properties/{pid}/transport/vehicles");
+        Assert.Equal([("VAN1", 12), ("JEEP1", 7)], vehicles.Select(v => (v.Code, v.Seats)));
+        var routes = await owner.GetJsonAsync<List<TransportRouteDto>>($"/api/v1/properties/{pid}/transport/routes");
+        Assert.Equal([("BEACH", 500m, 8m), ("BACK", 500m, 8m)], routes.Select(r => (r.Code, r.Price, r.DistanceKm)));
+        var tomorrow = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5.5)).AddDays(1);
+        var day = await owner.GetJsonAsync<TransportDayDto>($"/api/v1/properties/{pid}/transport/trips?date={tomorrow:yyyy-MM-dd}");
+        Assert.Equal(["08:00", "10:00", "11:00", "12:00", "16:00", "18:30"], day.Trips.Select(t => t.DepartTime));
+        var eight = day.Trips[0];
+        Assert.Equal((12, 4, 8, null), (eight.Capacity, eight.SeatsBooked, eight.SeatsLeft, eight.DriverName));
+    }
 }

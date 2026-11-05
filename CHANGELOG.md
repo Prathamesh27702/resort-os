@@ -2,6 +2,59 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-21] — 2026-11-05 — Beach transport (accepted)
+
+### Added
+- Migration V023: `vehicles` (code, name, registration kept without spaces and unique in the organisation, passenger
+  seats), `transport_routes` (from, to, km, minutes, price a seat), `vehicle_trips` (one trip with its vehicle and driver;
+  `seats_booked` kept by a trigger from the passengers and a CHECK that it never goes past the seats; EXCLUDE constraints
+  so a vehicle, or a driver, is on one trip at a time; `SCHEDULED` → `DEPARTED` → `COMPLETED`, or `CANCELLED` with the
+  reason, checked by a trigger) and `trip_passengers` (`TP00001` …; on a staying guest's bill, free, or complimentary with
+  a reason; `BOOKED`, `BOARDED`, `NO_SHOW` or `CANCELLED`, with the charge reversed). Folio items get the source
+  `TRANSPORT`.
+- Booking seats locks the trip first (the Sprint 05 and 20 approach: `SELECT … FOR UPDATE` on the trip row, then the
+  stay), so the last seat goes to one person only; the database CHECK is the final guard. A full trip says so: "Beach
+  shuttle at 08:00 on Tue 3 Nov is full (12 of 12 seats booked). Choose another trip." Bookings need an Idempotency-Key.
+- A staying guest's seats go on their bill as one charge (category Transport, ₹500 a seat on the demo route, no GST:
+  transport has no tax category); cancelling before the trip leaves takes the charge off. Cancelling a whole trip (a
+  breakdown) refunds every passenger on their bill.
+- The driver's phone view (**My trips**): today's own trips with the passenger list, a big tick box per passenger as they
+  board (and untick), **Left** (anyone not on board becomes a no-show and keeps the charge) and **Arrived**. A driver can
+  run only their own trips; a manager any trip.
+- Passenger manifest as an A4 PDF (`manifest-BEACH-20261103-0800.pdf`): route, vehicle, driver, each passenger with their
+  room, seats, note and a box to tick.
+- API: `GET|POST /transport/vehicles`, `PUT /transport/vehicles/{id}`, `GET|POST /transport/routes`, `PUT
+  /transport/routes/{id}`, `GET|POST /transport/trips`, `GET|PUT /transport/trips/{id}`, `GET
+  /transport/trips/{id}/manifest.pdf`, `POST /transport/trips/{id}/cancel`, `/depart`, `/complete`, `GET
+  /transport/my-trips`, `GET /transport/stays`, `GET|POST /transport/bookings`, `GET /transport/bookings/{id}`, `POST
+  /transport/bookings/{id}/cancel`, `/board`, `/unboard`.
+- Staff app: **Beach transport** (`/transport`: the day's trips with seats left, Book, the passengers, Manifest, Cancel
+  trip, putting trips on with the vehicle and driver; My trips for drivers; vehicles and routes for managers). Works on
+  a 360 px phone.
+- Dev seed S018: a 12-seat Force Traveller and a 7-seat Mahindra Bolero (made-up registrations), the beach shuttle and
+  its return (8 km, 20 minutes, ₹500), trips for today and the next 7 days (to the beach 08:00, 10:00, 11:00 in the jeep,
+  16:00; back 12:00, 18:30), and tomorrow 4 seats on the 08:00 for the agent group (complimentary).
+- Tests: backend `TransportUnitTests` (the trip and passenger moves in code match the database triggers) and
+  `TransportTests` (a transfer booking posts ₹500 a seat to the folio and cancelling reverses it; the last seat booked by
+  two people at once, 10 times, one wins; the database guards on their own; the driver sees the day's manifest, ticks who
+  boarded and leaves with the rest as no-shows; a driver can't run someone else's trip; a vehicle or driver can't be on
+  two trips at once; a cancelled trip refunds everyone; the manifest PDF) and a dev seed check; frontend
+  `transport.spec.ts`; browser steps S21-01 … S21-04; `check-api.mjs` Sprint 21 block; `check-sprint-21.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-21.md, system design Sprint 21 and 4.31, ARCHITECTURE.md module map,
+  RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The shell menu adds **Beach transport**.
+- After the owner's review: each trip row shows from → to, the arrival time and the driver, and opens with a chevron;
+  the driver's card shows each passenger on one line with their seats, an *On board* tag, and Left, Arrived and Manifest
+  buttons of the same height.
+
+### Open points
+- The price is per seat, one way (₹500 to the beach, ₹500 back); children pay the same. A return or child fare comes
+  later if wanted.
+- A no-show keeps the charge; take it off the bill by hand if the resort waives it.
+- A cancelled trip refunds everyone; moving passengers to another trip is done by booking them again.
+
 ## [sprint-20] — 2026-11-02 — Activities and equipment (accepted)
 
 ### Added

@@ -646,6 +646,38 @@ How it works: [system-design.md → 4.30](../architecture/system-design.md#430-a
 | 19 | Phone: open a cancelled booking | *Weather: Rough sea, red flag* and no buttons |
 | 20 | Phone: open `/equipment` → **Items** | No **Change** buttons (reception issues and takes back; managers change items) |
 
+### Sprint 21 — Beach transport
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V023__transport`).
+Demo data (S018): **VAN1 Force Traveller** (12 seats) and **JEEP1 Mahindra Bolero** (7 seats); routes **Beach shuttle**
+(Resort gate → Tarkarli beach) and **Beach return**, 8 km, 20 minutes, ₹500 a seat. Trips today and the next 7 days:
+to the beach 08:00, 10:00, 11:00 (jeep) and 16:00; back 12:00 and 18:30. Tomorrow's 08:00 already has **TP00001**, 4 seats
+for an agent group, complimentary. No trip has a driver yet. Use three windows: the **owner** (or a Manager) on a
+desktop, a **receptionist** and a **driver** in phone-sized windows (360 × 780). Screenshots:
+[sprint-21-screens/](sprint-21-screens/). The browser tests do the same on their own: `cd frontend; npm run e2e:headed --
+e2e/sprint-21.spec.ts` (names S21-01 … S21-04). Database checks: `database/queries/check-sprint-21.sql`. How it works:
+[system-design.md → 4.31](../architecture/system-design.md#431-beach-trips-seats-the-drivers-manifest-boarding).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Staff accounts** → **New** → *Rekha Desk*, role **Receptionist**; *Santosh Driver*, role **Driver** | Their accounts |
+| 2 | Owner: **Beach transport** → **Vehicles and routes** | VAN1 *12 seats · MH07AB1234*, JEEP1 *7 seats*; the two routes *8 km · 20 min · ₹500 a seat* |
+| 3 | **New vehicle** → code *VAN2*, name *Tempo Traveller*, **Registration number** *MH* → **Save** | Under the field: *The registration number is 4–12 letters and digits, e.g. MH 07 AB 1234.* |
+| 4 | *MH 07 EF 5678*, seats 12 → **Save** | *Tempo Traveller saved.*; the list shows *MH07EF5678* |
+| 5 | **Trips** → **Today** → open the next **Beach shuttle** → **Vehicle, driver, seats** → **Driver** *Santosh Driver* → **Save** | The trip shows *Santosh Driver* |
+| 6 | **Put trips on** → Beach shuttle, VAN2, Santosh Driver, today to today, a time 10 minutes after the trip in step 5 → **Put on** | *0 trips put on. Skipped: … Santosh Driver is on the … Beach shuttle.* (one driver, one trip at a time) |
+| 7 | Phone: sign in as Rekha → **Beach transport** → open the same trip → **Book** → a guest staying today, **Seats** 13 | Under **Seats**: *Book 1–12 seats.* (the seats left on this trip) |
+| 8 | **Seats** 2, **Note for the driver** *Pick up at the cottages* → **Book** | *₹1,000* shows before booking; then *TP…: … booked on the … Beach shuttle (2 seats). ₹1,000 on R…'s bill.*; the trip shows *2/12, 10 left*. Nothing scrolls sideways |
+| 9 | Owner: **Front desk** → that guest's bill | A line *Beach shuttle, … (TP…)* ₹1,000 (Transport), no GST |
+| 10 | Owner: open the trip → **Manifest** | A PDF *manifest-BEACH-…pdf*: route, vehicle, driver, the guest with room, seats, note and a box to tick |
+| 11 | Phone: Rekha's trip | No **Left**, **Arrived** or tick boxes (reception books; the driver boards) |
+| 12 | Driver phone: sign in as Santosh → **Beach transport** | It opens on **My trips**: today's trip with the guest, room, *2 seats*, *Pick up at the cottages*, *0/2 on board* |
+| 13 | Tick the guest | *… is on board.*; *2/2 on board*; untick and tick again works |
+| 14 | **Left** | *The … Beach shuttle left with 2 on board.*; the card says *On the road* with **Arrived** |
+| 15 | **Arrived** | *The … Beach shuttle has arrived.* |
+| 16 | Driver phone: **Trips** → open a trip that isn't his → look for **Left** | No **Left**; from the API: *… has no driver yet, so only a transport manager can run it.* |
+| 17 | Owner: open tomorrow's 08:00 → **Cancel trip** with *Van broke down* | *The 08:00 Beach shuttle is cancelled.*; TP00001 cancelled, nothing charged; the trip takes no more bookings |
+
 ## Part C — Decide
 
 ### Accept

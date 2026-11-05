@@ -9,11 +9,11 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [1. The system in one picture](#1-the-system-in-one-picture) | What runs where, and how a click becomes a database row |
 | [2. The code base map](#2-the-code-base-map) | Which folder holds what, and the rules between layers |
 | [3. Built sprint by sprint](#3-built-sprint-by-sprint) | Each sprint's architecture: tables, services, screens, diagram |
-| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll, activity seats and equipment |
+| [4. System design: how the hard parts work](#4-system-design-how-the-hard-parts-work) | Passwords, sign-in, permissions, tenants, audit, encryption, no double booking, idempotency, money, time, errors, room moves, the front desk, folios, GST, payments, Razorpay, invoices, housekeeping, restaurant, inventory, purchasing, roster, attendance, leave and payroll, activity seats and equipment, beach trips |
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–20 built and accepted (October–November 2026); Sprint 21 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–21 built and accepted (October–November 2026); Sprint 22 in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -521,6 +521,34 @@ flowchart LR
   (`/equipment`: what is out with Return, Hand over and Release; every item by kind with Change; Issue). Dialogs in
   `activity-dialogs.ts` and `equipment-dialogs.ts`. [4.30](#430-activity-seats-weather-cancellation-equipment) explains
   the rules.
+
+---
+
+### Sprint 21: Beach transport
+
+![Beach transport: the last seat on the van, the driver's manifest, and boarding](../../tools/handbooks/assets/transport-flow.png)
+
+- Migration V023: `vehicles` (registration kept without spaces, `ux_vehicles_reg` unique in the organisation),
+  `transport_routes` (from, to, km, minutes, price a seat), `vehicle_trips` (one trip with its vehicle and optional driver;
+  `seats_booked` kept from the passengers by `trg_trip_passengers_seats`, `ck_vehicle_trips_capacity` keeps it within the
+  seats; `ex_vehicle_trips_vehicle` and `ex_vehicle_trips_driver` keep a vehicle and a driver on one trip at a time;
+  `trg_vehicle_trips_status` allows only the listed moves) and `trip_passengers` (`TP00001` …; on the bill, free or
+  complimentary; booked, boarded, no-show or cancelled with the charge reversed); folio items may come from `TRANSPORT`.
+  Details: [schema-sprint-21.md](../database/schema-sprint-21.md).
+- `Domain/Transport/Transport.cs` (vehicles, routes, trips with `SeatsLeft`, passengers, `TripStatuses.Moves` and
+  `PassengerStatuses.Moves`, the same lists as the triggers). `Application/Transport/TransportService.cs` (vehicles,
+  routes, putting trips on with the clashes skipped and named, editing a trip, the day, a trip with its passengers, my
+  trips, the manifest PDF) and `TransportBookingService.cs` (book under the trip lock with an Idempotency-Key, cancel a
+  seat, cancel a trip with refunds, board and unboard, left and arrived). `Validation/TransportValidators.cs`. Charges go
+  through `FolioPosting` (category Transport, source `TRANSPORT`).
+- Endpoints: `TransportEndpoints.cs` (`/transport` with `/vehicles`, `/routes`, `/trips`, `/trips/{id}/manifest.pdf`,
+  `/trips/{id}/cancel|depart|complete`, `/my-trips`, `/stays`, `/bookings`, `/bookings/{id}/cancel|board|unboard`). The
+  permissions `transport.read`, `transport.manage`, `transport_booking.create` and `transport.trip_operate` (the Driver
+  role) already existed from Sprint 01's catalogue.
+- Screens: **Beach transport** (`/transport`, `features/transport/`): **Trips** (the day's trips with seats left; open one
+  for its passengers, Book, Manifest, Vehicle, driver, seats, Cancel trip; putting trips on), **My trips** (the driver's phone view with a
+  big tick box per passenger, Left and Arrived; a driver-only account starts here) and **Vehicles and routes**. Dialogs in
+  `transport-dialogs.ts`. [4.31](#431-beach-trips-seats-the-drivers-manifest-boarding) explains the rules.
 
 ---
 
@@ -1309,6 +1337,42 @@ Tests: `ActivityUnitTests`, `ActivitiesTests`, `activities.spec.ts`, `e2e/sprint
    manager, manager: activities, sessions, the weather), `equipment.read`, `equipment.issue` (reception: issue, hand over,
    release, return), `equipment.manage` (kinds, items, status by hand).
 
+### 4.31 Beach trips: seats, the driver's manifest, boarding
+
+Code: `Application/Transport/` (`TransportService.cs`, `TransportBookingService.cs`), `Domain/Transport/`,
+`database/migrations/V023__transport.sql`, `features/transport/`. Diagram: section 3 (Sprint 21). Tests:
+`TransportUnitTests`, `TransportTests`, `transport.spec.ts`, `e2e/sprint-21.spec.ts`.
+
+1. **The last seat goes to one person** (4.7, 4.30). `BookAsync` locks the trip row (`SELECT … FROM vehicle_trips WHERE
+   id = … FOR UPDATE`), then the stay, then checks the trip is scheduled and has the seats. The second of two people on
+   the last seat gets `409 TRIP_FULL` with the seats left in `details.seatsLeft`. Test:
+   `The_last_seat_booked_twice_at_the_same_moment_goes_to_exactly_one_of_them_10_times`.
+2. **The database is the final guard.** `trg_trip_passengers_seats` adds a passenger's seats to `seats_booked` (and takes
+   them off on cancel) and refuses a new passenger on a trip that isn't scheduled (`ck_trip_passengers_trip_open`);
+   `ck_vehicle_trips_capacity` refuses more than the seats. A passenger keeps their trip and seats
+   (`ck_trip_passengers_fixed`). Because the trigger updates the trip row, the trip's version (`xmin`) changes when a seat
+   is booked: an edit made from a screen loaded before that gets `409 CONCURRENCY_CONFLICT` and reloads.
+3. **One vehicle, one driver, one trip at a time.** Two EXCLUDE constraints (btree_gist) on
+   `tstzrange(departs_at, arrives_at)` for trips that aren't cancelled. Putting trips on checks first and skips each clash
+   with the reason ("08:10: Santosh Driver is on the 08:00 Beach shuttle"), so a run over 30 days doesn't fail on one bad
+   slot; the constraint catches a race and maps to `VEHICLE_BUSY` or `DRIVER_BUSY` in plain words.
+4. **Money.** A staying guest's seats post one charge (seats × the trip's price) to the stay's main folio through
+   `FolioPosting.ChargeAsync` (category Transport, source `TRANSPORT`, no GST: transport has no tax category). Cancelling
+   a seat, or the whole trip, posts a reversal on the same bill and records it in `reversal_item_id`. A no-show keeps the
+   charge. Visitors ride only free or complimentary with a reason.
+5. **The driver.** `/my-trips` returns the day's trips where `driver_user_id` is the caller, with the passengers (the
+   manifest). Ticking boarded (`BOOKED` ↔ `BOARDED`) records who and when. **Left** (`DEPARTED`, from the trip's day on;
+   `TRIP_NOT_TODAY` before) turns anyone still booked into `NO_SHOW`; **Arrived** completes the trip. `RequireOperatorAsync`
+   lets a driver run only their own trips and `transport.manage` run any; anyone else gets `403` with the reason.
+6. **Moves.** `TripStatuses.Moves` and `PassengerStatuses.Moves` are the same lists as `fn_vehicle_trips_status` and
+   `fn_trip_passengers_seats` (unit tests parse the migration and compare). A boarded passenger can't be cancelled
+   (`PASSENGER_ON_BOARD`): untick first.
+7. **The manifest PDF** is built with the shared `PrintDocument` renderer (4.22): route, vehicle, driver, departure, and
+   each passenger with their room, seats, note and a box to tick; named `manifest-{ROUTE}-{yyyyMMdd}-{HHmm}.pdf`.
+8. **Permissions.** `transport.read` (reception, driver, manager: the day, the trips and the manifest), `transport_booking.create` (reception: book and
+   cancel seats), `transport.trip_operate` (the Driver role: board, left, arrived on their own trips),
+   `transport.manage` (manager: vehicles, routes, putting on, editing and cancelling trips, and any trip's steps).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1339,3 +1403,4 @@ request:
 | 18 | Attendance and timesheets (clock in and out on a phone with the geofence checked by the server, manager entries with a reason, weekly timesheets worked out per day, approve all, corrections that keep the old times, locked for payroll; installable app), attendance flow diagram; system design 4.28 Attendance: geofence and timesheet maths (accepted 31 Oct 2026) |
 | 19 | Leave, holidays and payroll export (kinds and policies, requests with half days and holidays not counted, the overlap guard, balances kept by an append-only ledger, the monthly accrual, approvals that take shifts off the roster, the payroll CSV with its warnings and lock), leave flow diagram; system design 4.29 Leave: balance = ledger, overlap guard, payroll export (accepted 1 Nov 2026) |
 | 20 | Activities and equipment (sessions whose seats can't be oversold, bookings on the bill, weather cancellation with refunds or moves, tagged equipment issued and returned with its allowed moves), activity flow diagram; system design 4.30 Activity seats, weather cancellation, equipment (accepted 2 Nov 2026) |
+| 21 | Beach transport (vehicles, routes, trips whose seats can't be oversold, a vehicle and a driver on one trip at a time, seats on the bill, the driver's phone manifest with boarding, the manifest PDF), transport flow diagram; system design 4.31 Beach trips: seats, the driver's manifest, boarding (accepted 5 Nov 2026) |

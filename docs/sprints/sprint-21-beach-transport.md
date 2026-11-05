@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 7 — Activities, transport, equipment | S | [Sprint 20](sprint-20-activities-and-equipment.md) |
+| 🟢 Done | Phase 7 — Activities, transport, equipment | S | [Sprint 20](sprint-20-activities-and-equipment.md) |
 
 **Goal:** Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
 
@@ -10,27 +10,36 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Accepted by the owner on 5 Nov 2026 (PR #168), after fixing the trip rows and the driver's card from the owner's screenshots. Defaults kept: ₹500 a seat one way and children pay the same; a no-show keeps the charge; a cancelled trip refunds everyone and moving is done by booking again; the driver can mark a trip as left from its day; drivers are staff accounts with the Driver role (the demo data has none); visitors ride only free or complimentary; no GST on transport.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V023: vehicles (registration unique in the organisation), transport_routes, vehicle_trips (seats_booked kept from the passengers by a trigger and a CHECK that it never passes the seats; EXCLUDE so a vehicle or a driver is on one trip at a time; forward-only moves checked by a trigger) and trip_passengers (TP00001…; on the bill, free or complimentary; booked, boarded, no-show or cancelled with the charge reversed); folio item source TRANSPORT
+- Booking locks the trip row first (the Sprint 05 approach), so the last seat goes to one person; a full trip says so (409 TRIP_FULL with the seats left); an Idempotency-Key makes a double tap book once
+- A staying guest's seats go on their bill as one Transport charge (₹500 a seat on the demo route, no GST); cancelling a seat or the whole trip reverses it; a no-show keeps it
+- The driver's phone view (My trips): today's own trips with the passengers, a big tick box as each boards, Left (the rest become no-shows) and Arrived; a driver runs only their own trips
+- Passenger manifest PDF (manifest-BEACH-20261103-0800.pdf) with room, seats, note and a box to tick
+- Putting trips on for a range of days and times with clashes skipped and named; editing a trip's vehicle, driver, seats and price within the vehicle's seats and the seats booked
+- Screen /transport (Trips, My trips, Vehicles and routes) on a 360 px phone
+- Dev seed S018: a 12-seat van and a 7-seat jeep, the beach shuttle and its return, trips today and 7 days ahead, tomorrow's agent group on the 08:00
+- [done] Docs: API.md, DATABASE.md, schema-sprint-21.md, system design Sprint 21 and 4.31 with the transport flow diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__transport.sql — new tables (next free number)
-- backend/Resort.Domain/Transport/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Transport/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/TransportEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/TransportTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/transport/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-21.md, this guide, CHANGELOG.md
+- database/migrations/V023__transport.sql; database/seed/dev/S018__transport.sql; database/queries/check-sprint-21.sql
+- backend/Resort.Domain/Transport/Transport.cs, Folios/Folios.cs; backend/Resort.Contracts/TransportContracts.cs
+- backend/Resort.Application/ — Transport/ (TransportService.cs, TransportBookingService.cs), Validation/TransportValidators.cs, Common/Permissions.cs, Common/Abstractions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Persistence/AppDbContext.cs; backend/Resort.Api/ — Endpoints/TransportEndpoints.cs, Infrastructure/Problems.cs, Program.cs
+- backend/Resort.Tests/ — Unit/TransportUnitTests.cs, Integration/TransportTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/transport/ (transport.page.ts, transport-dialogs.ts, transport.api.ts, transport.spec.ts), features/invoices/invoices.api.ts, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-21.spec.ts; scripts/check-api.mjs (Sprint 21 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-21.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-21-screens/; tools/handbooks/diagrams (transport-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 556 passed, 0 failed on real PostgreSQL 16 (12 new: the trip and passenger moves in code match the triggers; nothing moves back; a transfer booking posts ₹500 a seat to the folio and cancelling reverses it; the last seat booked twice at the same moment going to exactly one, 10 times; the database refusing an extra passenger over the seats or on a trip that left on its own; the driver seeing today's manifest, ticking who boarded and leaving with the rest as no-shows; a driver running only their own trips; trips put on with vehicle and driver clashes skipped; a cancelled trip refunding everyone; the manifest PDF; dev seed check). Release build with warnings as errors and dotnet format clean
+- Frontend: 121 of 122 unit tests passed (3 new); the one failure is the calendar 200 ms timing test, which is slow only on the cloud machine; ESLint clean; production build OK
+- Browser tests: Sprint 21's 4 steps pass: a transport manager adding a van (a wrong registration refused under the field) and putting a trip on with the driver, a receptionist on a 360 px phone booking 3 seats (₹1,500 on the bill), the manifest PDF downloaded, the driver on a phone seeing the passengers, ticking them on board and marking the trip as left; API checks 258 of 258 (8 new); database checks clean; screenshots in docs/sprints/sprint-21-screens
 
 **Outcome**
 
@@ -47,6 +56,10 @@ Expected when accepted:
 - `vehicle_trips`
 - `trip_passengers`
 
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/transport/*`
+
 **Screens / routes**
 
 - `/transport`
@@ -57,10 +70,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Trip capacity locking; driver view (DRIVER role) on phone
-- [ ] Charge ₹500 to folio (brief §73)
-- [ ] Passenger manifest PDF
-- [ ] Seed: sample vehicles
+- [x] Trip capacity locking; driver view (DRIVER role) on phone
+- [x] Charge ₹500 to folio (brief §73)
+- [x] Passenger manifest PDF
+- [x] Seed: sample vehicles
 
 ## How to run this sprint
 

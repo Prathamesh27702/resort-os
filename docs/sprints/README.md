@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 21 — Beach transport](sprint-21-beach-transport.md)** · status: 🔵 In progress
+> **Current sprint: [Sprint 22 — Expenses and budgets](sprint-22-expenses-and-budgets.md)** · status: 🔵 In progress
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -32,8 +32,8 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 18 | [Attendance and timesheets (PWA)](sprint-18-attendance-and-timesheets-pwa.md) | Phase 6 | L | 🟢 Done |
 | 19 | [Leave, holidays and payroll export](sprint-19-leave-holidays-and-payroll-export.md) | Phase 6 | M | 🟢 Done |
 | 20 | [Activities and equipment](sprint-20-activities-and-equipment.md) | Phase 7 | M | 🟢 Done |
-| 21 | [Beach transport](sprint-21-beach-transport.md) | Phase 7 | S | 🔵 In progress |
-| 22 | [Expenses and budgets](sprint-22-expenses-and-budgets.md) | Phase 8 | M | ⚪ Planned |
+| 21 | [Beach transport](sprint-21-beach-transport.md) | Phase 7 | S | 🟢 Done |
+| 22 | [Expenses and budgets](sprint-22-expenses-and-budgets.md) | Phase 8 | M | 🔵 In progress |
 | 23 | [Reports and dashboards](sprint-23-reports-and-dashboards.md) | Phase 8 | L | ⚪ Planned |
 | 24 | [Notification engine, WhatsApp, email, background jobs](sprint-24-notification-engine-whatsapp-email.md) | Phase 9 | L | ⚪ Planned |
 | 25 | [Zoho Books, Tally export, e-invoice reconciliation](sprint-25-zoho-books-tally-export-e-invoice.md) | Phase 9 | L | ⚪ Planned |

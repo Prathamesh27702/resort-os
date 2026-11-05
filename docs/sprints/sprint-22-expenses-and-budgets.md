@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 8 — Expenses, budgets, reports | M | [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
+| 🔵 In progress — **current sprint** | Phase 8 — Expenses, budgets, reports | M | [Sprint 10](sprint-10-payments-refunds-cash-drawer.md) |
 
 **Goal:** Expense capture with approval and budget vs actual (brief §40, §41).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 10 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 

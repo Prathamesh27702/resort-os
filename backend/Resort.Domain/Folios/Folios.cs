@@ -43,6 +43,8 @@ public static class FolioItemSources
     public const string Restaurant = "RESTAURANT";
     /// <summary>An activity booking charged to the room (Sprint 20): seats × the price per person, its number in the description.</summary>
     public const string Activity = "ACTIVITY";
+    /// <summary>A transfer seat charged to the room (Sprint 21): seats × the price per seat, its number in the description.</summary>
+    public const string Transport = "TRANSPORT";
 }
 
 /// <summary>When a stay's room nights are put on the bill (property setting <c>folio.room_charge_posting</c>).</summary>
