@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 22
+current: 23
 
 sprints:
 
@@ -1850,7 +1850,7 @@ sprints:
 - id: 22
   title: Expenses and budgets
   phase: 8
-  status: in-progress
+  status: done
   size: M
   module: Finance
   feature: expenses
@@ -1858,7 +1858,7 @@ sprints:
   goal: Expense capture with approval and budget vs actual (brief §40, §41).
   client: "Expenses are captured with receipts and approval, and spending is compared with the budget."
   progress:
-    now: "Built and in review (pull request into develop). Defaults for the owner to confirm: every expense waits for approval; nobody approves their own unless they plan budgets (owner, general manager); a receipt is needed over ₹500; receipts are photos or PDFs, 2 MB each, at most 4; an approved, rejected or cancelled expense can't be changed (record a new one), and approved ones can't be reversed yet; the budget counts the cost (the taxable value when the GST is claimed back); budgets are per department and month, one per financial year, for last, this or next year; the forecast is the run rate; supplier bills and payroll are not in the actuals yet (Sprint 23)."
+    now: "Accepted by the owner on 5 Nov 2026 (PR #171). Defaults kept: every expense waits for approval; nobody approves their own unless they plan budgets (owner, general manager); a receipt is needed over ₹500; receipts are photos or PDFs, 2 MB each, at most 4; an approved, rejected or cancelled expense can't be changed (record a new one), and approved ones can't be reversed yet; the budget counts the cost (the taxable value when the GST is claimed back); budgets are per department and month, one per financial year, for last, this or next year; the forecast is the run rate; supplier bills and payroll are not in the actuals yet (Sprint 23)."
     done:
       - "Migration V024: expense_categories (GST claimable or not) and cost_centres (departments), expenses (EX00001…; GSTIN and bill recorded once; CGST/SGST or IGST split, taxable value, input credit and cost held by CHECKs; SUBMITTED → APPROVED, REJECTED or CANCELLED and frozen by a trigger afterwards), expense_attachments (append-only, only while waiting), budgets (one per financial year) and budget_lines (department × month inside the year); setting expenses.receipt_required_over = 500"
       - "Recording on a phone with an Idempotency-Key: the GSTIN checked including its check digit, the split shown before saving, receipt photos shrunk on the phone or a PDF, sniffed and stored encrypted"
@@ -1896,11 +1896,30 @@ sprints:
   debug: []
   demo:
     - Submit expense with photo → approve → budget variance
+  handbook:
+    highlights:
+      - "Anyone allowed records money paid out, on a phone too, against a department and a category, with a photo of the bill"
+      - "A GST bill's GSTIN is checked, its tax split into CGST and SGST or IGST, and only the part the resort really bears counts"
+      - "Every expense waits for approval; nobody approves their own, and over ₹500 the receipt comes first"
+      - "Each department has a budget for the year; the Budget screen shows spent against plan, over or under, and where the year is heading"
+    design:
+      ui: "Expenses (/expenses): Waiting, All and Mine; Record expense with the GST split shown before saving and receipt photos; open one to see the receipt and Approve, Reject, Change or Cancel it; Categories and departments. Budget (/budgets): tiles, each department's budget so far, spent, variance, the year at this rate and a standing; Plan a department's year; a month chart with a table view."
+      api: "/expenses with /setup, /categories, /cost-centres, /{id}/approve, /reject, /cancel and /{id}/receipts; /budgets with /report and /{id}/rows. Approving your own expense or one over ₹500 without a receipt is refused with the reason."
+      database: "Migration V024 adds expense categories and departments, expenses with their GST split and the cost that counts (frozen by a trigger once approved, rejected or cancelled), encrypted receipts, and one budget a financial year with an amount per department and month."
+    diagrams:
+      - {file: tools/handbooks/assets/expense-flow.png, caption: "Expenses and budgets: recorded, approved, then counted against the department's plan"}
+    screenshots:
+      - {file: docs/sprints/sprint-22-screens/01-budget-planned.png, caption: "A new department planned at ₹12,000 for the year"}
+      - {file: docs/sprints/sprint-22-screens/02-record-on-phone.png, caption: "Recording a GST bill on a phone"}
+      - {file: docs/sprints/sprint-22-screens/03-waiting-on-phone.png, caption: "The expense waits for approval with its receipt"}
+      - {file: docs/sprints/sprint-22-screens/04-approve.png, caption: "The owner looks at the receipt and approves"}
+      - {file: docs/sprints/sprint-22-screens/05-budget-vs-actual.png, caption: "Budget against actual by department"}
+      - {file: docs/sprints/sprint-22-screens/06-budget-on-phone.png, caption: "The budget on a phone"}
 
 - id: 23
   title: Reports and dashboards
   phase: 8
-  status: planned
+  status: in-progress
   size: L
   module: Reports
   feature: reports

@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-22] — Expenses and budgets (in review)
+## [sprint-22] — 2026-11-05 — Expenses and budgets (accepted)
 
 ### Added
 - Migration V024: `expense_categories` (whether the GST can be claimed back) and `cost_centres` (departments),

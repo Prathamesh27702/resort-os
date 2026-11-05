@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–21 built and accepted (October–November 2026); Sprint 22 built and in review. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–22 built and accepted (October–November 2026); Sprint 23 in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -1467,4 +1467,4 @@ request:
 | 19 | Leave, holidays and payroll export (kinds and policies, requests with half days and holidays not counted, the overlap guard, balances kept by an append-only ledger, the monthly accrual, approvals that take shifts off the roster, the payroll CSV with its warnings and lock), leave flow diagram; system design 4.29 Leave: balance = ledger, overlap guard, payroll export (accepted 1 Nov 2026) |
 | 20 | Activities and equipment (sessions whose seats can't be oversold, bookings on the bill, weather cancellation with refunds or moves, tagged equipment issued and returned with its allowed moves), activity flow diagram; system design 4.30 Activity seats, weather cancellation, equipment (accepted 2 Nov 2026) |
 | 21 | Beach transport (vehicles, routes, trips whose seats can't be oversold, a vehicle and a driver on one trip at a time, seats on the bill, the driver's phone manifest with boarding, the manifest PDF), transport flow diagram; system design 4.31 Beach trips: seats, the driver's manifest, boarding (accepted 5 Nov 2026) |
-| 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (in review) |
+| 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (accepted 5 Nov 2026) |
