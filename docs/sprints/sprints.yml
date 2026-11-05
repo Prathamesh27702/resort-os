@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 21
+current: 22
 
 sprints:
 
@@ -1779,7 +1779,7 @@ sprints:
 - id: 21
   title: Beach transport
   phase: 7
-  status: in-progress
+  status: done
   size: S
   module: Transport
   feature: transport
@@ -1787,7 +1787,7 @@ sprints:
   goal: Vehicles, drivers, trips, capacity and manifests for the 8 km beach run (brief §47).
   client: "The beach shuttle runs on scheduled trips with seat limits, drivers and passenger lists."
   progress:
-    now: "Built and in review (pull request into develop). Defaults for the owner to confirm: ₹500 a seat one way and children pay the same; a no-show keeps the charge; a cancelled trip refunds everyone and moving is done by booking again; the driver can mark a trip as left from its day and tick boarding any time before; drivers are staff accounts with the Driver role (the demo data has none); visitors ride only free or complimentary; no GST on transport."
+    now: "Accepted by the owner on 5 Nov 2026 (PR #168), after fixing the trip rows and the driver's card from the owner's screenshots. Defaults kept: ₹500 a seat one way and children pay the same; a no-show keeps the charge; a cancelled trip refunds everyone and moving is done by booking again; the driver can mark a trip as left from its day; drivers are staff accounts with the Driver role (the demo data has none); visitors ride only free or complimentary; no GST on transport."
     done:
       - "Migration V023: vehicles (registration unique in the organisation), transport_routes, vehicle_trips (seats_booked kept from the passengers by a trigger and a CHECK that it never passes the seats; EXCLUDE so a vehicle or a driver is on one trip at a time; forward-only moves checked by a trigger) and trip_passengers (TP00001…; on the bill, free or complimentary; booked, boarded, no-show or cancelled with the charge reversed); folio item source TRANSPORT"
       - "Booking locks the trip row first (the Sprint 05 approach), so the last seat goes to one person; a full trip says so (409 TRIP_FULL with the seats left); an Idempotency-Key makes a double tap book once"
@@ -1828,11 +1828,29 @@ sprints:
   debug: []
   demo:
     - Book transfer → manifest → driver marks boarded
+  handbook:
+    highlights:
+      - "The beach shuttle runs on trips with a vehicle, a driver and a seat limit; the last seat can't be sold twice"
+      - "A staying guest's seats go straight on their room bill (₹500 a seat) and come off if the seat or the trip is cancelled"
+      - "The driver sees today's passengers on a phone, ticks each one as they board, and marks the trip as left and arrived"
+      - "The passenger list prints as a manifest PDF for each trip"
+    design:
+      ui: "Beach transport (/transport): Trips shows the day's trips with from → to, vehicle, driver and seats left; a trip opens to its passengers with Book, Manifest, Vehicle, driver, seats, Left, Arrived and Cancel trip; managers put trips on for days and times. My trips is the driver's phone view with a big tick box per passenger. Vehicles and routes keeps the lists."
+      api: "/transport with /vehicles, /routes, /trips, /trips/{id}/manifest.pdf, /trips/{id}/cancel, /depart, /complete, /my-trips, /stays, /bookings and /bookings/{id}/cancel, /board, /unboard. A full trip is 409 TRIP_FULL; a driver on someone else's trip gets 403 with the reason."
+      database: "Migration V023 adds vehicles, routes, trips whose seats are kept from the passengers by a trigger and can never pass the seats (with EXCLUDE constraints so a vehicle or a driver is on one trip at a time), and passengers with how they paid, whether they boarded and what happened when cancelled."
+    diagrams:
+      - {file: tools/handbooks/assets/transport-flow.png, caption: "Beach transport: the last seat on the van, the driver's manifest, and boarding"}
+    screenshots:
+      - {file: docs/sprints/sprint-21-screens/01-trip-put-on.png, caption: "A trip put on with its van and driver"}
+      - {file: docs/sprints/sprint-21-screens/02-book-on-phone.png, caption: "Booking 3 seats for a staying guest on a phone"}
+      - {file: docs/sprints/sprint-21-screens/03-trip-with-passengers.png, caption: "The trip with its passengers and the manifest button"}
+      - {file: docs/sprints/sprint-21-screens/04-driver-manifest.png, caption: "The driver's phone: today's passengers to tick"}
+      - {file: docs/sprints/sprint-21-screens/05-driver-left.png, caption: "On the road with everyone on board"}
 
 - id: 22
   title: Expenses and budgets
   phase: 8
-  status: planned
+  status: in-progress
   size: M
   module: Finance
   feature: expenses
