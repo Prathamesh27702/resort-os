@@ -125,12 +125,12 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 22 | Transport | vehicles, transport_routes, vehicle_trips, trip_passengers (charges on folio_items, source TRANSPORT) | 21 | built (trips that can't be overbooked: the trip row locked and seats kept by a trigger with a CHECK; a vehicle or driver on one trip at a time by EXCLUDE; seats on the bill; the driver's phone manifest with boarding; manifest PDF) |
 | 23 | Equipment | equipment_types, equipment, equipment_assignments | 20 | built (tagged items with the allowed status moves checked by a trigger, kept aside, issued, returned good, damaged or lost, maintenance) |
 | 24 | Expenses | expenses, expense_categories, cost_centres, expense_attachments | 22 | built (every expense waits for approval; the GST split and the cost after input credit; a receipt over ₹500 and no self-approval; frozen once decided by a trigger; encrypted receipts) |
-| 25 | Budgeting | budgets, budget_lines | 22 | built (one budget a financial year, department × month; budget against approved actuals with variance, run-rate forecast and standing) |
+| 25 | Budgeting | budgets, budget_lines | 22, 23 | built (one budget a financial year, department × month; budget against actuals with variance, run-rate forecast and standing; from Sprint 23 the actuals are approved expenses, supplier bills and, for the owner and HR, pay) |
 | 26 | Accounting integration | accounting_sync_records | 25 | planned |
 | 27 | OTA integration | ota_channels, ota_reservations, ota_events | 26 | planned |
 | 28 | WhatsApp | whatsapp_messages, message_templates | 24 | planned |
 | 29 | Notifications | notifications, outbox_messages | 24 | planned |
-| 30 | Reports | reporting.* views | 23 | planned |
+| 30 | Reports | reporting.daily_stats, daily_channel_stats, daily_costs, refresh_state; views reporting.v_*; role resort_reporting | 23 | built (a summary row per property and day refreshed every 15 minutes and nightly, so no report scans the raw tables; the role-aware dashboard, occupancy, ADR, RevPAR, revenue, OTA net, GST, food and labour cost, P&L, the month at a glance; Power BI reads the views through a read-only role) |
 | 31 | Audit | audit_logs | 1 | built |
 | 32 | System administration | system_settings, schema_migrations | 1 | built |
 

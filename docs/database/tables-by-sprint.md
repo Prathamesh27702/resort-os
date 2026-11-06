@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-152 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+156 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -144,6 +144,10 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `expense_attachments` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🟢 Done |
 | `budgets` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🟢 Done |
 | `budget_lines` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🟢 Done |
+| `reporting.daily_stats` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🔵 In progress |
+| `reporting.daily_channel_stats` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🔵 In progress |
+| `reporting.daily_costs` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🔵 In progress |
+| `reporting.refresh_state` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🔵 In progress |
 | `message_templates` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `outbox_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |
 | `notifications` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | ⚪ Planned |

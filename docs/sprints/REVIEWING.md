@@ -714,6 +714,42 @@ it works: [system-design.md → 4.32](../architecture/system-design.md#432-expen
 | 20 | Phone: **Budget** | The departments read on the phone, no **Plan** buttons (a manager reads budgets, doesn't plan them) |
 | 21 | Owner: **Budget** → **Up to the end of** → an earlier month | The numbers are the budget and spending up to that month; *Year at this rate* uses the days up to it |
 
+### Sprint 23 — Reports and dashboards
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V025__reporting`; the
+numbers are added up within a minute, or press **Refresh now**). Demo data (S020): a year of past stays (about 1,600, from
+the 1st of the month a year ago to a week ago), checked out and paid, from Booking.com, MakeMyTrip, Agoda, the website,
+phone, walk-in and a travel agent; pay from the Sprint 17 employees. Use two windows: the **owner** on a desktop and a
+**Manager** in a phone-sized window (360 × 780). Screenshots: [sprint-23-screens/](sprint-23-screens/). The browser tests
+do the same on their own: `cd frontend; npm run e2e:headed -- e2e/sprint-23.spec.ts` (names S23-01 … S23-07). Database
+checks: `database/queries/check-sprint-23.sql`. Power BI: [REPORTING.md](../REPORTING.md). How it works:
+[system-design.md → 4.33](../architecture/system-design.md#433-reports-the-daily-summary-and-power-bi).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Today** | **Tonight**: occupancy (*4 of 16 rooms and beds*), guests in house, arriving, leaving, out of order; the next 14 nights as bars; *Updated … (every 15 min)* |
+| 2 | Scroll to **November so far** | Occupancy, ADR, RevPAR, revenue, food cost, pay of revenue, payments, arrivals, each with the change on last month and on a year ago (green better, red worse); revenue each day; the last 12 months; booking sources; GST; the budget card |
+| 3 | Time it: reload **Today** | The numbers are there at once (under a second; the acceptance test) |
+| 4 | **Reports** → **Month at a glance** → **Month** last month | The month beside the month before and a year ago: occupancy, nights sold, guest nights, arrivals, ADR, RevPAR, revenue by kind, payments, food cost %, pay; then the profit and loss, booking sources, GST, spending by department and the budget |
+| 5 | Check one figure by hand: ADR = room revenue ÷ nights sold | They agree (to the rupee) |
+| 6 | **Print** | The page alone, without the menu and top bar |
+| 7 | **CSV** | A file *palm…-month-2026-10.csv* that opens in Excel |
+| 8 | **Occupancy** → **By month** | 12 months and the total; a dorm bed counts as a unit like a room; ADR and RevPAR at the end |
+| 9 | **From** after **To** | Under **From**: *The start date must be on or before the end date.* |
+| 10 | **Refresh now** | *Added up again in 0.3 s.* |
+| 11 | **Booking sources** → last month | Each source's nights, share, room revenue, ADR, commission (*18 %* for Booking.com) and the net; by kind below |
+| 12 | **Commission rates** → Booking.com *15* → **Save** | *Commission rates saved…*; Booking.com's commission now at 15 % and its net higher |
+| 13 | **Commission rates** → Booking.com *60* → **Save** | Under it: *Enter the commission as 0 to 50 %…* → clear it → **Save** (back to 18 %) |
+| 14 | **GST** | By month: output on invoices, restaurant bills at the table, input, payable or credit, and *On the bills* (the history has no invoices, so mostly there) |
+| 15 | **Food and labour cost** | Food cost % of restaurant sales; pay and pay % of revenue; expenses and supplier bills; by department |
+| 16 | **Profit and loss** | Revenue by kind, cost of sales, gross profit, expenses by department, *Pay (estimate)*, operating profit, month by month |
+| 17 | Phone: sign in as the manager → **Today** | Tonight and the next 14 nights; no money; nothing scrolls sideways |
+| 18 | Phone: **Reports** | Only *Month at a glance* and *Occupancy*; no revenue, ADR or RevPAR |
+| 19 | Owner: **Budget** → tap **Food and beverage** | *This year: expenses ₹… · supplier bills ₹… · pay ₹…*; under the table: what counts, and that pay shows for the owner and HR only |
+| 20 | Sign in as the accountant → **Budget** | Supplier bills count; pay is left out (*Pay is left out: only the owner and HR see pay.*) |
+| 21 | Owner: **Purchasing** → an order with a bill | *Counts in the budget for Food and beverage · change* → **change** → **Housekeeping** → **Save** |
+| 22 | **Employees** → **Departments** | Each department has *Pay counts in the budget for …* |
+
 ## Part C — Decide
 
 ### Accept

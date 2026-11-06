@@ -10,26 +10,36 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built, in review (PR to develop). Defaults to confirm: the numbers are added up every 15 minutes (and nightly from April last year), not live; a dorm bed counts as one unit like a room; money is before GST; revenue is counted by the day of the service; commission is worked out at 18 % for an OTA and 10 % for a travel agent unless set on Reports (until OTA statements, Sprint 24 on); GST is an estimate for the accountant; pay is an estimate (monthly salary spread over the days, daily rate per day worked, no PF/ESI) shown only to the owner and HR; the budget now counts supplier bills (by the bill date) and pay; the P&L counts stock when used, not when bought; Power BI reads five views through a read-only login (scripts/powerbi-user.sql).
 
 **Done so far**
 
-_Nothing yet._
+- Migration V025: schema reporting with daily_stats, daily_channel_stats, daily_costs and refresh_state (one row per property and day), the functions refresh (one transaction, a lock per property, at most 900 days), labour_cost and commission_percent, the views v_daily, v_monthly, v_channels_monthly, v_costs_monthly, v_gst_monthly, the read-only role resort_reporting; date indexes; departments.cost_centre_id and supplier_invoices.cost_centre_id
+- ReportRefreshJob: every 15 minutes the 1st of last month to 90 days ahead, nightly from 1 April of last financial year; Refresh now
+- Reports from the summary only (brief §88): role-aware dashboard on Today, occupancy and revenue by day or month, booking sources with commission and net, GST by month, food and labour cost, P&L, the month at a glance (printable); CSV of each
+- Budget actuals with supplier bills and pay (owner and HR); budget departments on supplier bills and employee departments
+- Commission rates per booking source, audited
+- Screens /reports and the dashboard sections on Today, on a 360 px phone
+- Dev seed S020: a year of past stays (about 1,600) for the dashboards
+- Power BI: scripts/powerbi-user.sql and docs/REPORTING.md
+- [done] Docs: API.md, DATABASE.md, schema-sprint-23.md, REPORTING.md, system design Sprint 23 and 4.33 with the reporting diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- backend/Resort.Domain/Reports/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Reports/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Api/Endpoints/ReportsEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/ReportsTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/reports/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-23.md, this guide, CHANGELOG.md
+- database/migrations/V025__reporting.sql; database/seed/dev/S020__report_history.sql; database/queries/check-sprint-23.sql; scripts/powerbi-user.sql
+- backend/Resort.Domain/Reports/Reports.cs; backend/Resort.Contracts/ReportContracts.cs
+- backend/Resort.Application/ — Reports/ReportService.cs, Validation/ReportValidators.cs, Finance/BudgetService.cs, Finance/ExpenseService.cs, Purchasing/SupplierInvoiceService.cs, Employees/EmployeeService.cs, Common/Permissions.cs, DependencyInjection.cs
+- backend/Resort.Api/ — Endpoints/ReportEndpoints.cs, Infrastructure/ReportRefreshJob.cs, Program.cs
+- backend/Resort.Tests/ — Unit/ReportUnitTests.cs, Integration/ReportTests.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/reports/ (reports.page.ts, report-bits.ts, reports.api.ts, reports.spec.ts), features/dashboard/owner-board.ts, features/expenses/budgets.page.ts, purchasing and employee dialogs, core/models.ts, app.routes.ts, layout/shell.ts
+- frontend/e2e/sprint-23.spec.ts; scripts/check-api.mjs (Sprint 23 checks)
+- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-23.md, docs/REPORTING.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-23-screens/; tools/handbooks/diagrams (report-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- RESULTS_BACKEND
+- RESULTS_FRONTEND
+- RESULTS_BROWSER
 
 **Outcome**
 
@@ -38,6 +48,17 @@ Expected when accepted:
 - Owner dashboard loads < 1 s on a year of seed data
 
 ## Scope
+
+**Tables**
+
+- `reporting.daily_stats`
+- `reporting.daily_channel_stats`
+- `reporting.daily_costs`
+- `reporting.refresh_state`
+
+**API endpoints**
+
+- `/api/v1/properties/{propertyId}/reports/*`
 
 **Screens / routes**
 
@@ -55,9 +76,9 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] reporting.* views: occupancy, ADR, RevPAR, revenue splits, OTA net, food/labour cost, GST, P&L
-- [ ] No dashboard query scans raw transaction tables unbounded (brief §88)
-- [ ] Read-only DB role for Power BI
+- [x] reporting.* views: occupancy, ADR, RevPAR, revenue splits, OTA net, food/labour cost, GST, P&L
+- [x] No dashboard query scans raw transaction tables unbounded (brief §88)
+- [x] Read-only DB role for Power BI
 
 ## How to run this sprint
 
