@@ -95,9 +95,9 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
       <!-- ------------------------------------------------------------ month at a glance -->
       @if (tab() === 'month' && monthR(); as m) {
         <section class="print-page" data-testid="month-report">
-          <h2 class="title">{{ propName() }}: {{ m.label }}@if (m.this.to !== monthEndOf(m.month)) { <small> (to {{ dayShort(m.this.to) }})</small> }</h2>
-          <table class="grid cmp" aria-label="The month beside the month before and a year ago">
-            <thead><tr><th></th><th>{{ m.label }}</th><th>{{ labelOf(m.previous.from) }}</th><th>Change</th><th>{{ labelOf(m.lastYear.from) }}</th><th>Change</th></tr></thead>
+          <h2 class="title">{{ propName() }}: {{ labelOf(m.month) }}@if (m.this.to !== monthEndOf(m.month)) { <small> (to {{ dayShort(m.this.to) }})</small> }</h2>
+          <table class="rt cmp" aria-label="The month beside the month before and a year ago">
+            <thead><tr><th></th><th>{{ labelOf(m.month) }}</th><th>{{ labelOf(m.previous.from) }}</th><th>Change</th><th>{{ labelOf(m.lastYear.from) }}</th><th>Change</th></tr></thead>
             <tbody>
               @for (k of kpiRows(m.access.financial, m.access.pay); track k.label) {
                 <tr [attr.data-kpi]="k.key">
@@ -109,7 +109,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
           </table>
           @if (m.pnl; as p) {
             <h3>Profit and loss</h3>
-            <table class="grid pnl" aria-label="Profit and loss for the month">
+            <table class="rt pnl" aria-label="Profit and loss for the month">
               <tbody>@for (l of p.lines; track l.key) { <tr [class]="l.kind.toLowerCase()" [attr.data-line]="l.key"><th>{{ l.label }}</th><td>{{ rs(l.total) }}</td></tr> }</tbody>
             </table>
             @if (!p.payIncluded) { <p class="mute small">Pay is left out: only the owner and HR see pay.</p> }
@@ -117,13 +117,13 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
           <div class="two">
             @if (m.channels; as cs) {
               <div><h3>Booking sources</h3>
-                <table class="grid" aria-label="Booking sources"><thead><tr><th>Source</th><th>Nights</th><th>Room revenue</th><th>Net of commission</th></tr></thead>
+                <table class="rt" aria-label="Booking sources"><thead><tr><th>Source</th><th>Nights</th><th>Room revenue</th><th>Net of commission</th></tr></thead>
                   <tbody>@for (c of cs; track c.sourceId) { <tr><th>{{ c.name }}</th><td>{{ c.unitsSold }}</td><td>{{ rs(c.roomRevenue) }}</td><td>{{ rs(c.net) }}</td></tr> }
                     @empty { <tr><td colspan="4" class="mute">No nights sold.</td></tr> }</tbody></table></div>
             }
             @if (m.gst; as g) {
               <div><h3>GST (estimate)</h3>
-                <table class="grid" aria-label="GST"><tbody>
+                <table class="rt" aria-label="GST"><tbody>
                   <tr><th>Output on invoices</th><td>{{ rs(g.outputTotal - g.posUninvoiced) }}</td></tr>
                   <tr><th>Restaurant bills paid at the table</th><td>{{ rs(g.posUninvoiced) }}</td></tr>
                   <tr><th>Input that can be claimed</th><td>{{ rs(g.inputTotal) }}</td></tr>
@@ -133,7 +133,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
             }
             @if (m.departments; as ds) {
               <div><h3>Spending by department</h3>
-                <table class="grid" aria-label="Spending by department"><thead><tr><th>Department</th><th>Expenses</th><th>Bills</th>@if (m.access.pay) { <th>Pay</th> }<th>Total</th></tr></thead>
+                <table class="rt" aria-label="Spending by department"><thead><tr><th>Department</th><th>Expenses</th><th>Bills</th>@if (m.access.pay) { <th>Pay</th> }<th>Total</th></tr></thead>
                   <tbody>@for (d of ds; track d.code) { <tr><th>{{ d.name }}</th><td>{{ rs(d.expenses) }}</td><td>{{ rs(d.supplierBills) }}</td>@if (m.access.pay) { <td>{{ rs(d.labour) }}</td> }<td>{{ rs(d.total) }}</td></tr> }
                     @empty { <tr><td colspan="5" class="mute">Nothing spent.</td></tr> }</tbody></table></div>
             }
@@ -149,7 +149,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
       <!-- ------------------------------------------------------------ occupancy -->
       @if (tab() === 'occupancy' && occ(); as o) {
         <app-bars [bars]="occBars()" [max]="100" label="Occupancy" [every]="o.by === 'day' ? 7 : 1" />
-        <div class="scroll"><table class="grid wide" aria-label="Occupancy" data-testid="occupancy">
+        <div class="scroll"><table class="rt wide" aria-label="Occupancy" data-testid="occupancy">
           <thead><tr><th>{{ o.by === 'day' ? 'Day' : 'Month' }}</th><th>Available</th><th>Sold</th><th>Occupancy</th><th>Out of order</th><th>Guest nights</th>
             <th>Arrivals</th><th>Departures</th>@if (financial()) { <th>Room revenue</th><th>ADR</th><th>RevPAR</th> }</tr></thead>
           <tbody>
@@ -170,7 +170,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
       <!-- ------------------------------------------------------------ revenue -->
       @if (tab() === 'revenue' && rev(); as v) {
         <app-bars [bars]="revBars()" label="Revenue" [every]="v.by === 'day' ? 7 : 1" />
-        <div class="scroll"><table class="grid wide" aria-label="Revenue" data-testid="revenue">
+        <div class="scroll"><table class="rt wide" aria-label="Revenue" data-testid="revenue">
           <thead><tr><th>{{ v.by === 'day' ? 'Day' : 'Month' }}</th><th>Rooms</th><th>Food and drink</th><th>Activities</th><th>Transport</th><th>Other</th>
             <th>Total</th><th>GST charged</th><th>Payments received</th><th>Refunds paid</th></tr></thead>
           <tbody>
@@ -189,7 +189,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
 
       <!-- ------------------------------------------------------------ booking sources -->
       @if (tab() === 'channels' && ch(); as c) {
-        <div class="scroll"><table class="grid wide" aria-label="Booking sources" data-testid="channels">
+        <div class="scroll"><table class="rt wide" aria-label="Booking sources" data-testid="channels">
           <thead><tr><th>Source</th><th>Kind</th><th>Nights sold</th><th>Share</th><th>Room revenue</th><th>ADR</th><th>Commission</th><th>Net</th></tr></thead>
           <tbody>
             @for (r of c.rows; track r.sourceId) {
@@ -199,7 +199,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
           </tbody>
         </table></div>
         <h3>By kind of source</h3>
-        <table class="grid" aria-label="By kind of source" data-testid="groups">
+        <table class="rt" aria-label="By kind of source" data-testid="groups">
           <thead><tr><th>Kind</th><th>Nights</th><th>Room revenue</th><th>Commission</th><th>Net</th></tr></thead>
           <tbody>
             @for (g of c.groups; track g.channel) { <tr><th>{{ channel(g.channel) }}</th><td>{{ g.unitsSold }}</td><td>{{ rs(g.roomRevenue) }}</td><td>{{ rs(g.commission) }}</td><td>{{ rs(g.net) }}</td></tr> }
@@ -212,7 +212,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
 
       <!-- ------------------------------------------------------------ GST -->
       @if (tab() === 'gst' && gst(); as g) {
-        <div class="scroll"><table class="grid wide" aria-label="GST by month" data-testid="gst">
+        <div class="scroll"><table class="rt wide" aria-label="GST by month" data-testid="gst">
           <thead><tr><th>Month</th><th>Taxable (invoices)</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Cess</th><th>At the table</th><th>Output</th>
             <th>Input</th><th>Payable</th><th>Credit</th><th>On the bills</th></tr></thead>
           <tbody>
@@ -230,7 +230,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
 
       <!-- ------------------------------------------------------------ costs -->
       @if (tab() === 'costs' && cost(); as c) {
-        <div class="scroll"><table class="grid wide" aria-label="Food and labour cost by month" data-testid="costs">
+        <div class="scroll"><table class="rt wide" aria-label="Food and labour cost by month" data-testid="costs">
           <thead><tr><th>Month</th><th>Revenue</th><th>Restaurant sales</th><th>Food cost</th><th>Food cost %</th><th>Written off</th>
             @if (c.payIncluded) { <th>Pay</th><th>Pay % of revenue</th> }<th>Expenses</th><th>Supplier bills</th></tr></thead>
           <tbody>
@@ -242,7 +242,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
           </tbody>
         </table></div>
         <h3>By department</h3>
-        <table class="grid" aria-label="Spending by department" data-testid="departments">
+        <table class="rt" aria-label="Spending by department" data-testid="departments">
           <thead><tr><th>Department</th><th>Expenses</th><th>Supplier bills</th>@if (c.payIncluded) { <th>Pay</th> }<th>Total</th></tr></thead>
           <tbody>@for (d of c.departments; track d.code) { <tr [attr.data-centre]="d.code"><th>{{ d.name }}</th><td>{{ rs(d.expenses) }}</td><td>{{ rs(d.supplierBills) }}</td>
             @if (c.payIncluded) { <td>{{ rs(d.labour) }}</td> }<td>{{ rs(d.total) }}</td></tr> }
@@ -255,7 +255,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
 
       <!-- ------------------------------------------------------------ P&L -->
       @if (tab() === 'pnl' && pnl(); as p) {
-        <div class="scroll"><table class="grid wide pnl" aria-label="Profit and loss by month" data-testid="pnl">
+        <div class="scroll"><table class="rt wide pnl" aria-label="Profit and loss by month" data-testid="pnl">
           <thead><tr><th></th>@for (l of p.labels; track $index) { <th>{{ l }}</th> }<th>Total</th></tr></thead>
           <tbody>@for (l of p.lines; track l.key) {
             <tr [class]="l.kind.toLowerCase()" [attr.data-line]="l.key"><th>{{ l.label }}</th>@for (v of l.months; track $index) { <td>{{ rs(v) }}</td> }<td>{{ rs(l.total) }}</td></tr>
@@ -275,10 +275,10 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
     .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err, .bad { color: #b3261e; }
     h2.title { margin: 8px 0; } h3 { font-size: 1rem; margin: 18px 0 4px; }
     .scroll { overflow-x: auto; margin-top: 10px; }
-    table.grid { border-collapse: collapse; background: #fff; font-variant-numeric: tabular-nums; }
-    table.grid th, table.grid td { padding: 5px 10px; border-bottom: 1px solid #eef2f1; text-align: right; white-space: nowrap; }
-    table.grid th:first-child { text-align: left; font-weight: 500; }
-    table.grid thead th { color: #5b6b6e; font-weight: 500; font-size: .85rem; }
+    table.rt { border-collapse: collapse; background: #fff; font-variant-numeric: tabular-nums; }
+    table.rt th, table.rt td { padding: 5px 10px; border-bottom: 1px solid #eef2f1; text-align: right; white-space: nowrap; }
+    table.rt th:first-child { text-align: left; font-weight: 500; }
+    table.rt thead th { color: #5b6b6e; font-weight: 500; font-size: .85rem; }
     table.wide { width: 100%; }
     tr.total th, tr.total td { font-weight: 700; border-top: 2px solid #d9e0de; }
     tr.profit th, tr.profit td { font-weight: 700; color: #0e3b43; background: #eef6f4; }
@@ -289,7 +289,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
     @media print {
       .no-print { display: none !important; }
       .rep { max-width: none; padding: 0; }
-      table.grid th, table.grid td { padding: 2px 6px; }
+      table.rt th, table.rt td { padding: 2px 6px; }
     }
   `,
 })

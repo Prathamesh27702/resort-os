@@ -32,6 +32,13 @@ const lastMonth = () => {
   return d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 };
 
+/** The first and last day of last month, as yyyy-mm-dd. */
+const lastMonthRange = () => {
+  const now = new Date(Date.now() + 5.5 * 3600_000);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  return [iso(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))), iso(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0)))];
+};
+
 test.beforeAll(async ({ browser }: { browser: Browser }) => {
   const { api } = await apiAs(owner.email, owner.password);
   const pid = (await (await api.get('/api/v1/properties')).json())[0].id;
@@ -99,6 +106,12 @@ test('S23-03 occupancy by month for the last year, and Refresh now adds it up ag
 
 test('S23-04 booking sources: the owner sets Booking.com\'s commission, the net follows, and puts it back', async () => {
   await own.getByRole('button', { name: 'Booking sources', exact: true }).click();
+  // Last month: the seeded history has Booking.com stays then (it ends a week ago).
+  const [first, last] = lastMonthRange();
+  await own.getByTestId('from').fill(first);
+  await own.getByTestId('from').dispatchEvent('change');
+  await own.getByTestId('to').fill(last);
+  await own.getByTestId('to').dispatchEvent('change');
   const row = own.getByTestId('channels').locator('[data-source="BOOKING_COM"]');
   await expect(row).toContainText('18 %');
   await own.getByRole('button', { name: 'Commission rates' }).click();
