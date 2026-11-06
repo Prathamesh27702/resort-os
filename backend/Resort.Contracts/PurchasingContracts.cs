@@ -107,7 +107,8 @@ public sealed record SupplierInvoiceDto(
     Guid Id, string Number, Guid SupplierId, string SupplierName, string? SupplierGstin, Guid OrderId, string OrderNumber, string SupplierNumber,
     DateOnly InvoiceDate, DateOnly DueDate, bool IntraState, bool ItcEligible, decimal TaxableValue, decimal Cgst, decimal Sgst, decimal Igst,
     decimal InputTax, decimal Total, decimal AmountPaid, decimal Balance, string Status, bool Overdue, string? Note,
-    IReadOnlyList<SupplierInvoiceLineDto> Lines, IReadOnlyList<SupplierPaymentDto> Payments, string? ByName, DateTimeOffset CreatedAt, uint Version);
+    IReadOnlyList<SupplierInvoiceLineDto> Lines, IReadOnlyList<SupplierPaymentDto> Payments, string? ByName, DateTimeOffset CreatedAt, uint Version,
+    Guid? CostCentreId = null, string? CostCentreName = null);
 
 /// <summary>Supplier invoices, latest first. Outstanding / Overdue: still to pay (of the listed); InputTax: GST on the
 /// listed invoices that can be claimed.</summary>
@@ -118,8 +119,14 @@ public sealed record SupplierInvoiceListDto(IReadOnlyList<SupplierInvoiceDto> It
 /// not been billed, the supplier's price before GST and GST rate. An unregistered supplier's bill carries no GST.
 /// DueDate: the invoice date plus the supplier's payment terms when left out.
 /// </summary>
+/// <summary>CostCentreId (Sprint 23): the budget department the bill counts against. Not given: the department of this
+/// supplier's last bill, or Food and beverage for the kitchen store, else none (choose it later on the bill).</summary>
 public sealed record RecordSupplierInvoiceRequest(
-    string SupplierNumber, DateOnly InvoiceDate, DateOnly? DueDate, string? Note, IReadOnlyList<SupplierInvoiceLineRequest> Lines);
+    string SupplierNumber, DateOnly InvoiceDate, DateOnly? DueDate, string? Note, IReadOnlyList<SupplierInvoiceLineRequest> Lines,
+    Guid? CostCentreId = null);
+
+/// <summary>Sets the budget department a supplier bill counts against (Sprint 23). Null: no department.</summary>
+public sealed record SetSupplierInvoiceDepartmentRequest(Guid? CostCentreId, uint? Version = null);
 
 public sealed record SupplierInvoiceLineRequest(Guid OrderItemId, decimal Quantity, decimal UnitPrice, decimal GstRate);
 

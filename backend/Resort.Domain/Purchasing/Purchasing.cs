@@ -223,6 +223,8 @@ public class SupplierInvoice : AuditableEntity, IPropertyScoped, IAudited, IVers
     public decimal AmountPaid { get; set; }
     public string Status { get; set; } = SupplierInvoiceStatuses.Unpaid;
     public string? Note { get; set; }
+    /// <summary>The budget department (cost centre) the bill counts against (Sprint 23); null: none chosen yet.</summary>
+    public Guid? CostCentreId { get; set; }
     public uint Version { get; set; }
     public List<SupplierInvoiceItem> Items { get; set; } = [];
 }

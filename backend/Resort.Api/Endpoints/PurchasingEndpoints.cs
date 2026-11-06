@@ -80,6 +80,12 @@ public static class PurchasingEndpoints
         p.MapGet("/invoices", (Guid propertyId, string? status, Guid? supplierId, DateOnly? from, DateOnly? to, SupplierInvoiceService s, CancellationToken ct) =>
                 s.ListAsync(propertyId, status, supplierId, from, to, ct))
             .RequirePermission(Perm.PurchaseRead);
+        // Sprint 23: the budget department a bill counts against.
+        p.MapGet("/budget-departments", (Guid propertyId, SupplierInvoiceService s, CancellationToken ct) => s.BudgetDepartmentsAsync(propertyId, ct))
+            .RequirePermission(Perm.PurchaseRead);
+        p.MapPut("/invoices/{id:guid}/department", (Guid propertyId, Guid id, SetSupplierInvoiceDepartmentRequest body, SupplierInvoiceService s, CancellationToken ct) =>
+                s.SetDepartmentAsync(propertyId, id, body, ct))
+            .RequirePermission(Perm.SupplierInvoiceManage);
         p.MapPost("/invoices/{id:guid}/payments", async (Guid propertyId, Guid id, [FromHeader(Name = Idempotency.Header)] string? idempotencyKey,
                 PaySupplierRequest body, SupplierInvoiceService s, HttpContext http, CancellationToken ct) =>
             {

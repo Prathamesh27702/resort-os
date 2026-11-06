@@ -20,6 +20,7 @@ using Resort.Domain.Payments;
 using Resort.Domain.Employees;
 using Resort.Domain.Purchasing;
 using Resort.Domain.Rates;
+using Resort.Domain.Reports;
 using Resort.Domain.Reservations;
 using Resort.Domain.Restaurant;
 using Resort.Domain.Tax;
@@ -165,6 +166,12 @@ public interface IAppDbContext
     DbSet<ExpenseAttachment> ExpenseAttachments { get; }
     DbSet<Budget> Budgets { get; }
     DbSet<BudgetLine> BudgetLines { get; }
+
+    // Sprint 23 — the reporting summary (read only; written by reporting.refresh)
+    DbSet<DailyStat> DailyStats { get; }
+    DbSet<DailyChannelStat> DailyChannelStats { get; }
+    DbSet<DailyCost> DailyCosts { get; }
+    DbSet<ReportRefreshState> ReportRefreshStates { get; }
     DbSet<Holiday> Holidays { get; }
     DbSet<PayrollExport> PayrollExports { get; }
 

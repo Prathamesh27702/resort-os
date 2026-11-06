@@ -20,7 +20,7 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
 /**
  * Budget against actual (Sprint 22, brief §41). For the financial year chosen, from April to the month chosen: each
  * department's budget so far, what it actually spent (approved expenses only, their cost after GST credit), the variance and
- * where the year is heading at this rate, with what still waits for approval beside it. The owner plans each department's
+ * where the year is heading at this rate (Sprint 23: supplier bills and, for the owner and HR, pay count too), with what still waits for approval beside it. The owner plans each department's
  * months here. The months chart puts the plan and the spending side by side.
  */
 @Component({
@@ -57,7 +57,7 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
         }
         <div class="tiles" data-testid="tiles">
           <div class="tile"><small>Budget, April to {{ monthShort(r.through) }}</small><b>{{ inr(r.total.budgetToDate) }}</b></div>
-          <div class="tile"><small>Spent (approved)</small><b>{{ inr(r.total.actualToDate) }}</b></div>
+          <div class="tile"><small>Spent</small><b>{{ inr(r.total.actualToDate) }}</b></div>
           <div class="tile" [class.bad]="r.total.variance < 0"><small>Variance</small><b>{{ varianceText(r.total.variance) }}</b></div>
           <div class="tile"><small>Year at this rate</small><b>{{ r.total.forecast === null ? '—' : inr(r.total.forecast) }}</b>
             <small>of {{ inr(r.total.annualBudget) }} planned</small></div>
@@ -87,12 +87,13 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
                 @if (d.variancePercent !== null && d.variance !== 0) { <small>{{ Math.abs(d.variancePercent) }} %</small> }</span>
               <span role="cell" class="num" data-label="Year at this rate">{{ d.forecast === null ? '—' : inr(d.forecast) }}<small>of {{ inr(d.annualBudget) }}</small></span>
               <span role="cell" class="act">
-                @if (canManage() && budget()) { <button mat-stroked-button (click)="plan(d)">Plan</button> }
+                @if (canManage() && budget() && d.costCentreCode !== 'NONE') { <button mat-stroked-button (click)="plan(d)">Plan</button> }
               </span>
               @if (openId() === d.costCentreId) {
                 <div class="more" role="cell">
                   <p>{{ monthShort(r.through, true) }}: {{ inr(d.monthActual) }} spent of {{ inr(d.monthBudget) }} planned.
                     @if (d.waitingCount) { {{ inr(d.waiting) }} waits for approval. }</p>
+                  <p class="split" data-testid="split">This year: expenses {{ inr(d.expenses) }} · supplier bills {{ inr(d.supplierBills) }}@if (r.payIncluded) { · pay {{ inr(d.pay ?? 0) }} }</p>
                   @if (d.categories.length) {
                     <ul class="cats">@for (c of d.categories; track c.categoryId) { <li><span>{{ c.name }}</span><b>{{ inr(c.actual) }}</b></li> }</ul>
                   } @else { <p class="mute">Nothing approved yet this year.</p> }
@@ -103,7 +104,7 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
         </div>
 
         <h2>Month by month</h2>
-        <div class="legend"><span class="key plan"></span>Budget <span class="key spent"></span>Spent (approved)</div>
+        <div class="legend"><span class="key plan"></span>Budget <span class="key spent"></span>Spent</div>
         <div class="chart" role="img" [attr.aria-label]="chartLabel()" data-testid="months">
           @for (m of r.months; track m.month) {
             <div class="col" [class.after]="m.month > r.through" [title]="monthShort(m.month, true) + ': budget ' + inr(m.budget) + ', spent ' + inr(m.actual)">
@@ -120,7 +121,10 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
             <tbody>@for (m of r.months; track m.month) { <tr><td>{{ monthShort(m.month, true) }}</td><td>{{ inr(m.budget) }}</td><td>{{ inr(m.actual) }}</td></tr> }</tbody>
           </table>
         </details>
-        <p class="mute small">Only approved expenses count, at their cost: when the GST on a bill is claimed back as input credit, only the taxable value.
+        <p class="mute small" data-testid="footnote">Spent is approved expenses, supplier bills (by the bill's date, in the department chosen on the bill)
+          @if (r.payIncluded) { and pay (by each person's department) } at their cost: when the GST on a bill is claimed back as input credit, only the taxable value.
+          @if (!r.payIncluded) { Pay is left out: only the owner and HR see pay. }
+          "No department" is bills and pay that are not set to a department yet.
           "Year at this rate" is the spending so far spread over the whole year (up to {{ short(r.asOf) }}).</p>
       }
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
@@ -148,7 +152,7 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
     .meter { width: 100%; max-width: 110px; height: 5px; background: #eef2f1; border-radius: 3px; margin-top: 3px; overflow: hidden; }
     .meter span { display: block; height: 100%; background: #0090a0; border-radius: 3px; } .meter span.over { background: #b3261e; }
     .act { text-align: right; }
-    .more { grid-column: 1 / -1; background: #f5f7f6; border-radius: 10px; padding: 8px 12px; } .more p { margin: 0 0 6px; }
+    .more { grid-column: 1 / -1; background: #f5f7f6; border-radius: 10px; padding: 8px 12px; } .more p { margin: 0 0 6px; } .split { color: #33474a; font-size: .88rem; }
     .cats { list-style: none; margin: 0; padding: 0; columns: 2; } .cats li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; break-inside: avoid; }
     .legend { display: flex; gap: 6px; align-items: center; color: #33474a; font-size: .85rem; }
     .key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-left: 8px; }

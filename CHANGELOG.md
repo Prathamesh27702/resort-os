@@ -2,6 +2,42 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-23] — Reports and dashboards (in review)
+
+### Added
+- Migration V025: the schema `reporting` with a summary row per property and day (`daily_stats`: rooms and dorm beds
+  available and sold, out of order, guests, arrivals, departures, revenue by kind before GST, GST charged, payments,
+  refunds, restaurant sales, food cost, stock written off, output and input GST), per booking source
+  (`daily_channel_stats`: nights, room revenue, commission) and per budget department (`daily_costs`: expenses, supplier
+  bills, pay); `refresh_state`; the functions `refresh`, `labour_cost` and `commission_percent`; the views `v_daily`,
+  `v_monthly`, `v_channels_monthly`, `v_costs_monthly`, `v_gst_monthly`; the read-only role `resort_reporting`; indexes so
+  a refresh reads ranges of days. `departments.cost_centre_id` and `supplier_invoices.cost_centre_id`.
+- `ReportRefreshJob`: every 15 minutes the 1st of last month to 90 days ahead, nightly from 1 April of last financial year;
+  Refresh now on demand. One refresh of a property at a time.
+- Reports on the summary only (brief §88): the role-aware dashboard on Today (tonight, the next 14 nights; with money
+  access the month so far against the same days of last month and a year ago, the days of the month, the last 12 months,
+  booking sources, GST, the budget card); occupancy and revenue by day or month; booking sources with commission and net;
+  GST by month (an estimate for the accountant); food and labour cost; profit and loss; the month at a glance (printable).
+  CSV of every report. A dorm bed counts as a unit like a room; ADR and RevPAR on room revenue before GST.
+- Commission rates per booking source (default 18 % for an OTA, 10 % for a travel agent), audited.
+- Budget against actual now counts supplier bills (at cost, by the bill date, in the department chosen on the bill) and,
+  for the owner and HR, pay (by each person's department; an estimate before PF and ESI); a "No department" row. Supplier
+  bills and employee departments say which budget department they count for.
+- Power BI: `scripts/powerbi-user.sql` makes a read-only login for the views; how to connect in docs/REPORTING.md.
+- API: `GET /reports/dashboard`, `/occupancy`, `/revenue`, `/channels`, `/gst`, `/costs`, `/pnl`, `/month`, `POST
+  /reports/refresh`, `GET|PUT /reports/commission`, `GET /departments/budget-departments`, `GET
+  /purchasing/budget-departments`, `PUT /purchasing/invoices/{id}/department`.
+- Staff app: **Reports** (`/reports`) and the dashboard sections on Today; the budget's split by expenses, supplier bills
+  and pay. Works on a 360 px phone.
+- Dev seed S020: a year of past stays (about 1,600, checked out and paid, from seven booking sources) and 64 guests for
+  them; demo departments mapped to budget departments.
+- Tests: backend `ReportUnitTests`, `ReportTests` (ADR and RevPAR of a month worked out by hand, in the API and the Power BI
+  view; the Power BI role sees only the views; money and pay hidden by permission; supplier bills and pay in the budget;
+  commission; refresh) and `ReportSpeedTests` (the owner dashboard under a second on the year of seed data); frontend
+  `reports.spec.ts`; browser steps S23-01 … S23-07; `check-api.mjs` Sprint 23 block; `check-sprint-23.sql`.
+- Docs: API.md, DATABASE.md, schema-sprint-23.md, REPORTING.md, system design Sprint 23 and 4.33 with the reporting
+  diagram, ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING.
+
 ## [sprint-22] — 2026-11-05 — Expenses and budgets (accepted)
 
 ### Added

@@ -1071,6 +1071,57 @@ How it works: [system-design.md → 4.32](architecture/system-design.md#432-expe
 By hand: [REVIEWING.md → Sprint 22](sprints/REVIEWING.md#sprint-22--expenses-and-budgets).
 Screenshots: [sprint-22-screens/](sprints/sprint-22-screens/).
 
+### Sprint 23: Reports and dashboards
+
+**New:** **Reports** in the menu (`/reports`) and numbers on **Today**. Today (for the owner and managers): **Tonight**
+(occupancy, guests in house, arriving, leaving, out of order) and the next 14 nights on the books; with money access
+**November so far** (occupancy, ADR, RevPAR, revenue, food cost, pay of revenue for the owner and HR, payments, arrivals)
+each against the same days of last month and a year ago, revenue each day this month, the last 12 months, the booking
+sources, GST this month and the budget card. **Reports** has tabs: **Month at a glance** (the month beside the month
+before and a year ago, its profit and loss, booking sources, GST, spending by department and the budget; **Print** puts
+it on paper), **Occupancy** and **Revenue** (by day or by month), **Booking sources** (nights, share, room revenue,
+commission and the net; **Commission rates** for the owner), **GST** (an estimate by month for the accountant), **Food and
+labour cost** and **Profit and loss** by month. Each downloads as **CSV**, says when the numbers were last added up and
+has **Refresh now**. A dorm bed counts as one unit, like a room. **Budget** now counts supplier bills and (for the owner
+and HR) pay; tap a department for the split. A supplier bill and an employee department each say which budget department
+they count for. Power BI: [REPORTING.md](REPORTING.md). Demo data (S020): a year of past stays (about 1,600, checked out
+and paid, from Booking.com, MakeMyTrip, Agoda, the website, phone, walk-in and a travel agent) up to a week ago. Restart
+the API and watch for `Applying migration V025__reporting`; the numbers are added up within a minute.
+
+```powershell
+# Backend (ReportTests and ReportUnitTests: ADR and RevPAR of a month worked out by hand, in the API and the Power BI view;
+# the Power BI role reads the views and nothing else; money hidden without financial access and pay without salary
+# access; supplier bills and pay in the budget; commission rates; a refresh replaces its days and two at once are safe;
+# ReportSpeedTests: the owner dashboard in under a second on the dev seed's year)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Report"
+
+# Frontend unit tests (money in lakhs and crores, change and points, CSV, freshness)
+cd frontend
+npm run test:ci
+
+# Browser, the owner on a desktop and a manager on a 360 px phone (7 steps, S23-01 … S23-07: the owner's Today → the
+# month at a glance for last month, printed and as CSV → occupancy by month and Refresh now → Booking.com's commission set
+# to 15 % and back → GST, costs and P&L → the manager's Today on a phone with no money → the budget with supplier bills
+# and pay)
+npm run e2e -- e2e/sprint-23.spec.ts
+cd ..
+
+# API checks: the Sprint 23 block must be all PASS (it adds the numbers up once; nothing else is saved)
+node scripts/check-api.mjs
+
+# Database checks (block 6 must return no rows; block 5's two rows must agree)
+Get-Content database/queries/check-sprint-23.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §50–55, *owner dashboard loads in under a second on a year of seed data*): reset the
+database and sign in as the owner. **Today** opens with tonight and the month so far against last month and a year ago
+at once. **Reports** → **Month at a glance** → last month: occupancy, ADR, RevPAR and revenue beside the month before and
+a year ago, then the profit and loss. **Print** and **CSV**. How it works:
+[system-design.md → 4.33](architecture/system-design.md#433-reports-the-daily-summary-and-power-bi).
+
+By hand: [REVIEWING.md → Sprint 23](sprints/REVIEWING.md#sprint-23--reports-and-dashboards).
+Screenshots: [sprint-23-screens/](sprints/sprint-23-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
