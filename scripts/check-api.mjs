@@ -990,7 +990,7 @@ await expectCall('GST by month: payable or credit is output − input', 'GET', `
 await expectCall('Costs and P&L read (pay included for the owner)', 'GET', `${P}/reports/pnl`, 200, { token: T },
   b => (b?.payIncluded && b.lines?.some(l => l.key === 'PROFIT')) || JSON.stringify(b).slice(0, 300));
 await expectCall('Month at a glance: this month beside last month and a year ago', 'GET', `${P}/reports/month`, 200, { token: T },
-  b => (b?.this && b.previous && b.lastYear && b.pnl) || JSON.stringify(b).slice(0, 300));
+  b => !!(b?.this && b.previous && b.lastYear && b.pnl) || JSON.stringify(b).slice(0, 300));
 await expectCall('A period the wrong way round → 400 under from', 'GET', `${P}/reports/occupancy?from=2026-05-10&to=2026-05-01`, 400, { token: T },
   b => (b.details?.from?.[0] ?? '').length > 0 || JSON.stringify(b.details));
 await expectCall('More than a year by day → 400 under to', 'GET', `${P}/reports/revenue?from=2025-01-01&to=2026-03-01`, 400, { token: T },

@@ -37,9 +37,9 @@
 
 **Test results**
 
-- RESULTS_BACKEND
-- RESULTS_FRONTEND
-- RESULTS_BROWSER
+- Backend: 596 passed, 0 failed on real PostgreSQL 16 (ADR and RevPAR against a hand-calculated fixture month: 17 units sold of which 3 dorm beds, ₹47,900 room revenue, ADR ₹2,817.65, an out-of-order block and a cancelled and a reversed booking left out, a stay across the month end split by night; Booking.com net after 18 % commission; the Power BI role reads the five views only; a manager gets no money; period and commission errors under their fields; supplier bills and pay in the budget actuals; the owner dashboard answers in under 1 s on the year of dev seed history). Release build with warnings as errors and dotnet format clean
+- Frontend: 131 of 131 unit tests passed (5 new); ESLint clean; production build OK
+- Browser tests: Sprint 23's 7 steps pass (the owner's Today with tonight, the month so far against last month and a year ago and the last 12 months; last month at a glance prints and downloads as CSV; occupancy by month and Refresh now; Booking.com commission 18 % to 15 % and back; GST, costs and the P&L; a manager on a 360 px phone sees no money; the budget splits supplier bills and pay). Full run: S03-01 updated for the 64 history guests (the list now shows a first page of 25); S12-04 and S19-05 missed once and pass on a rerun (not touched here). API checks 278 of 278 (11 new); database checks clean; screenshots in docs/sprints/sprint-23-screens
 
 **Outcome**
 
