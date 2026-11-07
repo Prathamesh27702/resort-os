@@ -35,6 +35,11 @@ public static class DependencyInjection
 
         services.AddScoped<CallerAccess>();
         services.AddScoped<SystemActor>();
+        services.AddScoped<Notifications.Outbox>();
+        services.AddScoped<Notifications.OutboxDispatcher>();
+        services.AddScoped<Notifications.NotificationJobs>();
+        services.AddScoped<Notifications.WhatsAppWebhookService>();
+        services.AddScoped<Notifications.MessageService>();
         services.AddScoped<AuditContext>();
         services.AddScoped<AccommodationService>();
         services.AddScoped<BlockService>();

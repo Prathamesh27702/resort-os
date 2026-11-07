@@ -26,12 +26,13 @@ import { FoliosApi } from '../folios/folios.api';
 import { FolioListItem, InvoiceListItem } from '../../core/models';
 import { InvoicesApi } from '../invoices/invoices.api';
 import { PaymentLinksPanel } from '../payments/payment-links-panel';
+import { BookingMessagesPanel } from '../messages/booking-messages-panel';
 
 /** One booking: stay, rooms, the price night by night, guests, notes and every status change. */
 @Component({
   selector: 'app-reservation',
   imports: [RouterLink, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
-            MatSnackBarModule, CanDirective, PaymentLinksPanel],
+            MatSnackBarModule, CanDirective, PaymentLinksPanel, BookingMessagesPanel],
   template: `
     <div class="page">
       @if (r(); as r) {
@@ -100,6 +101,9 @@ import { PaymentLinksPanel } from '../payments/payment-links-panel';
 
         @if (auth.can('payment.read', pid)) {
           <app-payment-links-panel [reservationId]="r.id" (changed)="reload()" />
+        }
+        @if (auth.can('message.read', pid)) {
+          <app-booking-messages-panel [reservationId]="r.id" />
         }
 
         <section class="panel card wide">

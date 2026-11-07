@@ -128,8 +128,8 @@ The 32 modules from brief §7, where they live, and when they're built.
 | 25 | Budgeting | budgets, budget_lines | 22, 23 | built (one budget a financial year, department × month; budget against actuals with variance, run-rate forecast and standing; from Sprint 23 the actuals are approved expenses, supplier bills and, for the owner and HR, pay) |
 | 26 | Accounting integration | accounting_sync_records | 25 | planned |
 | 27 | OTA integration | ota_channels, ota_reservations, ota_events | 26 | planned |
-| 28 | WhatsApp | whatsapp_messages, message_templates | 24 | planned |
-| 29 | Notifications | notifications, outbox_messages | 24 | planned |
+| 28 | WhatsApp | whatsapp_messages, message_templates | 24 | built (template messages with named parameters through the Cloud API, the status webhook signed with the app secret, each status once and forward only; a built-in test WhatsApp without keys) |
+| 29 | Notifications | notifications, outbox_messages, email_messages, scheduled_jobs, job_runs | 24 | built (the outbox written in the business transaction, a sender with retries, a PostgreSQL scheduler with six idempotent daily jobs, email through Resend, the bell; every message says what became of it) |
 | 30 | Reports | reporting.daily_stats, daily_channel_stats, daily_costs, refresh_state; views reporting.v_*; role resort_reporting | 23 | built (a summary row per property and day refreshed every 15 minutes and nightly, so no report scans the raw tables; the role-aware dashboard, occupancy, ADR, RevPAR, revenue, OTA net, GST, food and labour cost, P&L, the month at a glance; Power BI reads the views through a read-only role) |
 | 31 | Audit | audit_logs | 1 | built |
 | 32 | System administration | system_settings, schema_migrations | 1 | built |
@@ -149,7 +149,8 @@ flowchart LR
   Identity --> Employees --> Attendance & Roster & Leave
   Invoicing --> Accounting
   Reservations --> OTA
-  Notifications --> WhatsApp
+  Reservations --> Notifications --> WhatsApp
+  Inventory & Leave -.alerts.-> Notifications
   Reports -.reads.-> Folio & Payments & Inventory & Attendance
 ```
 

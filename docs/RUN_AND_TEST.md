@@ -1122,6 +1122,56 @@ a year ago, then the profit and loss. **Print** and **CSV**. How it works:
 By hand: [REVIEWING.md → Sprint 23](sprints/REVIEWING.md#sprint-23--reports-and-dashboards).
 Screenshots: [sprint-23-screens/](sprints/sprint-23-screens/).
 
+### Sprint 24: Notification engine, WhatsApp, email, background jobs
+
+**New:** **Messages** in the menu (`/messages`) and a **bell** at the top. A booking made or confirmed as **Confirmed**
+sends the guest a **booking confirmation on WhatsApp and by email** within about 10 seconds; the booking page shows
+**Messages to the guest** with what became of each (sent, delivered, read; or why it failed or wasn't sent). Six **daily
+jobs** run at their time (property time): the **day-before reminder** (10:00), **pre-arrival** three days ahead (10:00),
+**check-out reminder** (08:00), **payment reminder** for pending bookings a day after their link (11:00), and for staff
+the **low stock alert** (08:00, in the bell and by email) and **leave reminder** (09:00, in the bell). **Messages** has three tabs:
+**Messages** (filter by what became of them; **Needs a look**; **Send again**; **Send waiting now**), **Templates** (the
+owner changes the words, with the variables and a preview) and **Daily jobs** (**Run now**; the owner changes the time or
+turns one off). A guest can say No to booking messages per channel on their profile. Without WhatsApp or email keys the
+built-in **test WhatsApp and email** answer and nothing reaches a real phone (setup: [WHATSAPP.md](WHATSAPP.md)). Demo data
+(S021): five WhatsApp confirmations as WhatsApp reported them, one failed. Restart the API and watch for `Applying
+migration V026__notifications`.
+
+```powershell
+# Backend (NotificationsTests and NotificationUnitTests: a guest gets the confirmation when booked and the reminder the day
+# before; a job run twice, or twice at the same moment, sends each guest one reminder; the scheduler runs a due job once
+# and moves it to tomorrow; WhatsApp status webhooks checked by signature, processed once, only forward; why a message
+# can't go and passing failures tried again; templates with field errors; payment, check-out and low stock jobs and the
+# bell; anonymising and another tenant)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~Notification"
+
+# Frontend unit tests (placeholders, preview, times, status colours)
+cd frontend
+npm run test:ci
+
+# Browser, a receptionist and the owner (8 steps, S24-01 … S24-08: a confirmed booking's WhatsApp and email confirmation →
+# delivered and read → the day-before reminder run twice sends once → the seeded failed message sent again → a template
+# with an unknown variable refused under the text → a job moved to 9:30 and back → the owner's bell → the Messages page on
+# a 360 px phone)
+npm run e2e -- e2e/sprint-24.spec.ts
+cd ..
+
+# API checks: the Sprint 24 block must be all PASS (it reads and checks refusals; nothing is saved or sent)
+node scripts/check-api.mjs
+
+# Database checks (blocks 6, 7 and 11 must return no rows)
+Get-Content database/queries/check-sprint-24.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check (brief §73, *the guest gets a confirmation and a day-before reminder*): reset the database, sign
+in, and book a guest with a mobile number for **tomorrow**, confirmed. The booking page shows the WhatsApp and email
+confirmation *Sent*. **Messages** → **Daily jobs** → **Day-before reminder** → **Run now**: the reminder is queued and
+sent; **Run now** again sends nothing twice. How it works:
+[system-design.md → 4.34](architecture/system-design.md#434-messages-the-outbox-and-the-daily-jobs).
+
+By hand: [REVIEWING.md → Sprint 24](sprints/REVIEWING.md#sprint-24--notification-engine-whatsapp-email-background-jobs).
+Screenshots: [sprint-24-screens/](sprints/sprint-24-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter
@@ -1134,7 +1184,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 596 backend passed, 131 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 618 backend passed, 135 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -1142,7 +1192,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–23 (expected: 172 passed, about 27 minutes)
+# 3. Every browser test, Sprints 01–24 (expected: 180 passed, about 30 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -1157,14 +1207,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–23:
+Expected totals for Sprints 01–24:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 596 passed, 0 failed |
-| Frontend unit tests | 131 of 131 SUCCESS |
-| Browser tests | 172 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4; 22: 5; 23: 7) |
-| API checks | 278 passed, 0 failed |
+| Backend tests | 618 passed, 0 failed |
+| Frontend unit tests | 135 of 135 SUCCESS |
+| Browser tests | 180 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4; 22: 5; 23: 7; 24: 8) |
+| API checks | 291 passed, 0 failed |
 
 Other useful commands:
 

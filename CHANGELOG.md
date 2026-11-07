@@ -2,6 +2,43 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [sprint-24] — 2026-11-07 — Notification engine, WhatsApp, email, background jobs (accepted)
+
+### Added
+- Migration V026: `message_templates` (the words of each message per channel, editable; never deleted),
+  `outbox_messages` (every message with a unique key per property, what was sent and what became of it; a guard trigger
+  keeps the key, recipient and channel fixed), `whatsapp_messages`, `email_messages` (append-only), `notifications` (the
+  bell), `scheduled_jobs` and `job_runs` (append-only, unique property + job + business key). `webhook_events` takes
+  WHATSAPP; guest consents take `SERVICE_WHATSAPP` and `SERVICE_EMAIL`.
+- The outbox: the booking confirmation is written in the same transaction as the booking (booked confirmed, confirmed by
+  staff, paid online; not for walk-ins). A sender every 10 seconds takes one row at a time (`FOR UPDATE SKIP LOCKED`);
+  passing failures are tried again after 1, 5, 15 and 60 minutes, at most 5 tries; a message that can't go (no number,
+  no email, the guest said No, template off) is recorded with the reason.
+- A scheduler in PostgreSQL (no Redis) and six daily jobs, each idempotent (a job run twice, or twice at the same moment,
+  sends once): day-before reminder (10:00), pre-arrival three days ahead (10:00, `notifications.pre_arrival_days`),
+  check-out reminder (08:00), payment reminder once per link a day after it was made (11:00), low stock alert (08:00) and
+  leave reminder (09:00) to the staff who can act.
+- WhatsApp Business Platform (Cloud API) template messages with named parameters; the status webhook checked with
+  `X-Hub-Signature-256`, each status once and only forward; Meta's URL check. Email through Resend (the outbox id as the
+  idempotency key). Built-in test WhatsApp and email without keys (never in production), with Delivered / Read / Failed
+  buttons through the real webhook; in production without keys messages fail with the reason.
+- API: `GET /messages/setup`, `GET /messages`, `GET /messages/{id}`, `POST /messages/{id}/retry`, `POST
+  /messages/dispatch`, `POST /messages/{id}/fake-status`, `GET|PUT /message-templates`, `GET /jobs`, `GET /jobs/runs`,
+  `PUT /jobs/{job}`, `POST /jobs/{job}/run`, `GET /api/v1/notifications`, `POST /api/v1/notifications/{id}/read`,
+  `/read-all`, `GET|POST /api/v1/webhooks/whatsapp`.
+- Staff app: **Messages** (`/messages`: messages with their reasons, Needs a look, Send again; templates with variables
+  and a preview; daily jobs with Run now), the **bell**, **Messages to the guest** on the booking page, and *Booking
+  messages on WhatsApp / by email* on the guest's consent. Works on a 360 px phone.
+- Anonymising a guest also blanks their messages.
+- Dev seed S021: five WhatsApp confirmations as WhatsApp reported them (one failed) and a line in the owner's bell.
+- Tests: backend `NotificationsTests` (the acceptance: confirmation and day-before reminder; the required *job run twice
+  sends once* and *WhatsApp status webhook signature check*; the scheduler; reasons and retries; templates; the other
+  jobs and the bell; anonymising and tenants) and `NotificationUnitTests`; frontend `messages.spec.ts`; browser steps
+  S24-01 … S24-08; `check-api.mjs` Sprint 24 block; `check-sprint-24.sql`.
+- Docs: WHATSAPP.md (setup and defaults), API.md, DATABASE.md, schema-sprint-24.md, system design Sprint 24 and 4.34 with
+  the message diagram, ARCHITECTURE.md module map, RUN_AND_TEST, REVIEWING; `.env.example` (`Email__*`,
+  `Notifications__*`).
+
 ## [sprint-23] — 2026-11-07 — Reports and dashboards (accepted)
 
 ### Added

@@ -750,6 +750,38 @@ checks: `database/queries/check-sprint-23.sql`. Power BI: [REPORTING.md](../REPO
 | 21 | Owner: **Purchasing** → an order with a bill | *Counts in the budget for Food and beverage · change* → **change** → **Housekeeping** → **Save** |
 | 22 | **Employees** → **Departments** | Each department has *Pay counts in the budget for …* |
 
+### Sprint 24 — Notification engine, WhatsApp, email, background jobs
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V026__notifications`).
+No WhatsApp or email keys are needed: without them the built-in **test WhatsApp and email** answer, nothing reaches a real
+phone or inbox, and the Messages page says so. Demo data (S021): the WhatsApp confirmations of the five latest demo
+bookings with a mobile number (two read, one delivered, one sent, one failed) and *Messages are on* in the owner's bell.
+Use two windows: a **Receptionist** on a desktop and the **owner**. Screenshots: [sprint-24-screens/](sprint-24-screens/).
+The browser tests do the same on their own: `cd frontend; npm run e2e:headed -- e2e/sprint-24.spec.ts` (names S24-01 …
+S24-08). Database checks: `database/queries/check-sprint-24.sql`. Real WhatsApp and email: [WHATSAPP.md](../WHATSAPP.md).
+How it works: [system-design.md → 4.34](../architecture/system-design.md#434-messages-the-outbox-and-the-daily-jobs).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Receptionist: **Reservations** → **New booking** for **tomorrow**, a guest with a mobile number and an email, status **Confirmed** | The booking page; under **Messages to the guest**, *Booking confirmation* on WhatsApp and by email, *Waiting to be sent*, then *Sent* within about 10 seconds (press the refresh arrow) |
+| 2 | Tap the WhatsApp one | The text as the guest got it (*Hello …, your booking R… at Palm Grove Beach Resort is confirmed: … Check-in is from 2:00 pm.*), the WhatsApp template *booking_confirmation (en)*, and **What happened**: queued, accepted by WhatsApp |
+| 3 | In the dashed box (test WhatsApp): **Delivered**, then **Read** | The status turns *Delivered*, then *Read*; two more steps appear with their times |
+| 4 | **Messages** (menu) → **Daily jobs** | Six jobs: *Day-before reminder* 10:00, *Pre-arrival message* 10:00, *Check-out reminder* 08:00, *Payment reminder* 11:00, *Low stock alert* 08:00, *Leave reminder* 09:00, each with its next run |
+| 5 | **Day-before reminder** → **Run now** | *Day-before reminder: N to do, 2N messages queued.* (your booking from step 1 is one of them) |
+| 6 | **Run now** again | *Day-before reminder: all N already done earlier, so nothing was sent twice.* (the acceptance: run twice, sends once) |
+| 7 | **Messages** tab → search your booking's reference | Booking confirmation and Day-before reminder, each on WhatsApp and by email, once each |
+| 8 | **Needs a look** | The seeded failed message: *WhatsApp couldn't deliver it: Message undeliverable: the number isn't on WhatsApp (error 131026).* |
+| 9 | Open it → **Send again** | *Sent* (the test WhatsApp accepts it) |
+| 10 | Owner: **Messages** → **Templates** → **Booking confirmation** → Email **Change** | The text, the variables it can fill in (tap one to add it) and a preview with sample values |
+| 11 | Add *{{room_number}}* to the text → **Save** | Under the text: *{{room_number}} isn't something this message can fill in. It can use: {{guest_name}}, …* Nothing saved |
+| 12 | Remove it → **Save** | *Booking confirmation (Email) saved.* |
+| 13 | **Daily jobs** → **Day-before reminder** → **Change** → 09:30 → **Save** | *Day-before reminder: daily at 09:30, next …*; put it back to 10:00 |
+| 14 | Receptionist: **Daily jobs** | **Run now** but no **Change** (only the owner changes times and words) |
+| 15 | Owner: the bell (top right) | A red dot; *Messages are on* → tap it → the Messages page; the dot is gone |
+| 16 | A guest with no mobile number: book confirmed | Under the booking: WhatsApp *Not sent*: *… has no mobile number that can get WhatsApp. Add it on the guest's profile.*; the email goes |
+| 17 | **Guests** → a guest → **Consent** → *Booking messages on WhatsApp* → **No**; book them confirmed | WhatsApp *Not sent*: *… asked not to get booking messages on WhatsApp (recorded …).* |
+| 18 | Phone (360 × 780): **Messages** | Filters, the list and the jobs fit; nothing scrolls sideways |
+
 ## Part C — Decide
 
 ### Accept
