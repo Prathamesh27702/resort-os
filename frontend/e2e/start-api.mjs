@@ -38,6 +38,9 @@ const api = spawn('dotnet', [join('bin', 'Release', 'net10.0', 'Resort.Api.dll')
     Razorpay__KeyId: 'rzp_test_fake',
     Razorpay__KeySecret: 'fake-key-secret',
     Razorpay__WebhookSecret: 'fake-webhook-secret',
+    // Sprint 24: always the built-in fake WhatsApp and email, so no browser test messages a real phone or inbox.
+    WhatsApp__Mode: 'Fake',
+    Email__Mode: 'Fake',
   },
 });
 const stop = () => { if (!api.killed) api.kill(); };

@@ -54,9 +54,13 @@ public sealed partial class MessageService(IAppDbContext db, ICurrentUser caller
         if (reservationId is { } rid) query = query.Where(m => m.ReservationId == rid);
         if (Clean(q) is { } text)
         {
-            var like = "%" + text.ToLowerInvariant().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
-            var refs = db.Reservations.Where(r => r.PropertyId == propertyId && EF.Functions.Like(r.Reference.ToLowerInvariant(), like)).Select(r => (Guid?)r.Id);
-            query = query.Where(m => EF.Functions.Like(m.RecipientName.ToLowerInvariant(), like) || refs.Contains(m.ReservationId));
+            var escaped = text.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+            var like = "%" + escaped.ToLowerInvariant() + "%";
+            var refLike = "%" + escaped.ToUpperInvariant() + "%";   // references are upper case (R00042)
+            var refs = db.Reservations.Where(r => r.PropertyId == propertyId && EF.Functions.Like(r.Reference, refLike)).Select(r => (Guid?)r.Id);
+#pragma warning disable CA1304, CA1311 // translated to SQL lower(), not run in .NET
+            query = query.Where(m => EF.Functions.Like(m.RecipientName.ToLower(), like) || refs.Contains(m.ReservationId));
+#pragma warning restore CA1304, CA1311
         }
         var total = await query.LongCountAsync(ct);
         var rows = await query.OrderByDescending(m => m.CreatedAt).ThenByDescending(m => m.Id).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);

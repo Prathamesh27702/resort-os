@@ -94,7 +94,8 @@ export interface RoomStatusBoard { date: string; rooms: RoomStatus[]; }
 // ---------------------------------------------------------------- guests (Sprint 3)
 export const DOCUMENT_TYPES = ['PASSPORT', 'AADHAAR', 'DRIVING_LICENCE', 'VOTER_ID', 'PAN', 'VISA', 'OTHER'] as const;
 export const PREFERENCE_CATEGORIES = ['ROOM', 'FOOD', 'DIETARY', 'ACTIVITY', 'OTHER'] as const;
-export const CONSENT_PURPOSES = ['MARKETING_WHATSAPP', 'MARKETING_EMAIL', 'DATA_PROCESSING'] as const;
+/** SERVICE_*: booking messages (confirmation, reminders), sent unless the guest said No (Sprint 24). */
+export const CONSENT_PURPOSES = ['SERVICE_WHATSAPP', 'SERVICE_EMAIL', 'MARKETING_WHATSAPP', 'MARKETING_EMAIL', 'DATA_PROCESSING'] as const;
 export const CONSENT_SOURCES = ['FRONT_DESK', 'PHONE', 'WEBSITE', 'OTA', 'EMAIL'] as const;
 export type GuestStatus = 'ACTIVE' | 'MERGED' | 'ANONYMISED';
 
@@ -975,3 +976,45 @@ export interface MonthReport {
   channels: ChannelRow[] | null; gst: GstRow | null; departments: DepartmentCost[] | null; budget: DashboardBudget | null; freshness: ReportFreshness;
 }
 export interface CommissionRate { sourceId: string; code: string; name: string; channel: string; percent: number; defaultPercent: number; isSet: boolean; }
+
+// ---------------------------------------------------------------- messages (Sprint 24)
+
+export type MessageChannel = 'WHATSAPP' | 'EMAIL' | 'IN_APP';
+export type MessageStatus = 'QUEUED' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED' | 'SKIPPED';
+/** LIVE (real keys), FAKE (the built-in test provider, never in production) or OFF (production without keys). */
+export type ProviderMode = 'LIVE' | 'FAKE' | 'OFF';
+export type JobCode = 'reservation_reminder' | 'pre_arrival' | 'checkout_reminder' | 'payment_reminder' | 'inventory_alert' | 'leave_reminder';
+
+export interface MessagingSetup {
+  whatsAppMode: ProviderMode; emailMode: ProviderMode; canSend: boolean; canManage: boolean; preArrivalDays: number;
+  counts: Partial<Record<MessageStatus, number>>;
+}
+export interface MessageListItem {
+  id: string; createdAt: string; templateCode: string; templateName: string; channel: MessageChannel; recipientType: 'GUEST' | 'USER';
+  recipientName: string; to: string; reservationId: string | null; reservationReference: string | null; status: MessageStatus; statusWords: string;
+  reason: string | null; attempts: number; sentAt: string | null; deliveredAt: string | null; readAt: string | null; failedAt: string | null;
+  source: 'EVENT' | 'JOB' | 'MANUAL'; canRetry: boolean;
+}
+export interface MessageStep { at: string; status: MessageStatus; words: string; }
+export interface Message {
+  summary: MessageListItem; subject: string | null; body: string; providerTemplate: string | null; language: string | null;
+  parameters: Record<string, string>; providerMessageId: string | null; nextAttemptAt: string; pricingCategory: string | null; jobName: string | null;
+  steps: MessageStep[]; canFakeStatus: boolean;
+}
+export interface MessageVariable { name: string; description: string; sample: string; }
+export interface MessageTemplate {
+  id: string; code: string; channel: MessageChannel; name: string; when: string; providerTemplate: string | null; language: string;
+  subject: string | null; body: string; isActive: boolean; variables: MessageVariable[]; updatedAt: string; version: number;
+}
+export interface ScheduledJob {
+  job: JobCode; name: string; description: string; enabled: boolean; runAt: string; nextRunAt: string; lastStartedAt: string | null;
+  lastFinishedAt: string | null; lastOutcome: string | null; lastError: string | null; version: number;
+}
+export interface JobRunResult { job: JobCode; name: string; found: number; queued: number; skipped: number; already: number; message: string; notes: string[]; }
+export interface JobRun {
+  id: string; job: JobCode; jobName: string; businessKey: string; reservationId: string | null; reservationReference: string | null;
+  triggeredBy: 'SCHEDULE' | 'MANUAL'; runByName: string | null; outcome: string; createdAt: string;
+}
+export interface Jobs { jobs: ScheduledJob[]; recent: JobRun[]; }
+export interface AppNotification { id: string; title: string; body: string; link: string | null; createdAt: string; readAt: string | null; }
+export interface NotificationList { items: AppNotification[]; unread: number; }

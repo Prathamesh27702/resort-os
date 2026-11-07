@@ -61,6 +61,13 @@ public class NotificationsTests(NotificationsFactory app) : IClassFixture<Notifi
         Assert.StartsWith("Hello Asha, we look forward to welcoming you at " + s.Name + " tomorrow", detail.Body);
         Assert.Equal(["QUEUED", "SENT"], detail.Steps.Select(x => x.Status));
         Assert.True(detail.CanFakeStatus);
+
+        // The Messages page finds them by the booking reference (any case) or the guest's name.
+        var byRef = await s.Owner.GetJsonAsync<PagedResult<MessageListItemDto>>($"{Url(s.Pid)}/messages?q={booking.Reference.ToLowerInvariant()}");
+        Assert.Equal(4, byRef.Total);
+        Assert.All(byRef.Items, m => Assert.Equal(booking.Reference, m.ReservationReference));
+        Assert.Equal(4, (await s.Owner.GetJsonAsync<PagedResult<MessageListItemDto>>($"{Url(s.Pid)}/messages?q=ASHA")).Total);
+        Assert.Equal(0, (await s.Owner.GetJsonAsync<PagedResult<MessageListItemDto>>($"{Url(s.Pid)}/messages?q=nobody")).Total);
     }
 
     // ------------------------------------------------------------------ required: job run twice sends once

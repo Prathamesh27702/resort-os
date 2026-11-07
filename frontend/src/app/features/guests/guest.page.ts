@@ -18,6 +18,7 @@ import { DocumentDialog, MergeDialog } from './guest-dialogs';
 import { GuestsApi, countryName, formatPhone } from './guests.api';
 
 const CONSENT_LABEL: Record<string, string> = {
+  SERVICE_WHATSAPP: 'Booking messages on WhatsApp', SERVICE_EMAIL: 'Booking messages by email',
   MARKETING_WHATSAPP: 'Offers on WhatsApp', MARKETING_EMAIL: 'Offers by email', DATA_PROCESSING: 'Keep profile for future stays',
 };
 
@@ -101,6 +102,7 @@ const CONSENT_LABEL: Record<string, string> = {
                     @if (consent(purpose); as c) {
                       <span class="chip" [class.off]="!c.granted">{{ c.granted ? 'Yes' : 'No' }}</span>
                       <small class="mute when">{{ day(c.recordedAt) }}@if (c.recordedByName) { · {{ c.recordedByName }} }</small>
+                    } @else if (purpose.startsWith('SERVICE_')) { <span class="mute">Not asked, so they are sent</span>
                     } @else { <span class="mute">Not asked</span> }
                   </td>
                   <td class="right">
