@@ -107,6 +107,8 @@ export const routes: Routes = [
       // /activities, /equipment (Sprint 20)
       { path: 'activities', canActivate: [permissionGuard('activity.read')], loadComponent: () => import('./features/activities/activities.page').then(m => m.ActivitiesPage) },
       { path: 'equipment', canActivate: [permissionGuard('equipment.read')], loadComponent: () => import('./features/activities/equipment.page').then(m => m.EquipmentPage) },
+      // /messages (Sprint 24)
+      { path: 'messages', canActivate: [permissionGuard('message.read')], loadComponent: () => import('./features/messages/messages.page').then(m => m.MessagesPage) },
       // /reports (Sprint 23)
       { path: 'reports', canActivate: [permissionGuard('report.operational.read')], loadComponent: () => import('./features/reports/reports.page').then(m => m.ReportsPage) },
       // /expenses, /budgets (Sprint 22)

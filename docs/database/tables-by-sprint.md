@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-156 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+157 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -153,6 +153,7 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `notifications` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `whatsapp_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `email_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
+| `scheduled_jobs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `job_runs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `accounting_connections` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
 | `accounting_sync_records` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |

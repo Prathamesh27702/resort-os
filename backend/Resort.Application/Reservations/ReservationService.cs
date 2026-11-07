@@ -23,7 +23,8 @@ namespace Resort.Application.Reservations;
 ///   4. price every night from the rate grid (<see cref="QuoteEngine"/>), insert, store the response, COMMIT
 /// The EXCLUDE constraints on reservation_units are the final guard: a 23P01 becomes 409 ROOM_UNAVAILABLE.
 /// </summary>
-public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, FolioPosting folios)
+public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, FolioPosting folios,
+    Notifications.Outbox outbox)
 {
     public const int MaxNights = 180;
 
@@ -107,6 +108,8 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
 
         // 2–4. Check, lock, allocate, price, insert.
         var reservation = await BookAsync(property, r, new HashSet<Guid>(), ct);
+        // The guest's confirmation goes out through the outbox once this commits (Sprint 24). Not for walk-ins (they are here).
+        if (reservation.Status == ReservationStatuses.Confirmed) await outbox.BookingConfirmedAsync(reservation, ct);
 
         var dto = await ToDtoAsync(reservation, ct);
         await Idempotency.CompleteAsync(db, orgId, scope, key, 201, dto, reservation.Id, ct);
@@ -275,7 +278,11 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         reservation.StatusChangedAt = clock.GetUtcNow();
         AddHistory(reservation, from, to, reason);
         await db.SaveChangesAsync(ct);
-        if (to == ReservationStatuses.Confirmed) await folios.EnsureMainFolioAsync(reservation, ct);
+        if (to == ReservationStatuses.Confirmed)
+        {
+            await folios.EnsureMainFolioAsync(reservation, ct);
+            await outbox.BookingConfirmedAsync(reservation, ct);
+        }
         await tx.CommitAsync(ct);
         return await ToDtoAsync(reservation, ct);
     }
@@ -295,6 +302,7 @@ public sealed class ReservationService(IAppDbContext db, ICurrentUser caller, Au
         AddHistory(reservation, ReservationStatuses.Pending, ReservationStatuses.Confirmed, reason);
         await db.SaveChangesAsync(ct);
         await folios.EnsureMainFolioAsync(reservation, ct);
+        await outbox.BookingConfirmedAsync(reservation, ct);
     }
 
     // ------------------------------------------------------------------ move to another room (Sprint 6)

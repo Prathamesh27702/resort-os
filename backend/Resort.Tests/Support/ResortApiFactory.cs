@@ -66,6 +66,9 @@ public class ResortApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Leave:AccrualJob:Enabled", "false");
         // Tests add up the reports themselves (POST …/reports/refresh) when they need them.
         builder.UseSetting("Reporting:JobEnabled", "false");
+        // Tests run the scheduled jobs and the message dispatcher themselves (Run now, OutboxDispatcher).
+        builder.UseSetting("Notifications:JobsEnabled", "false");
+        builder.UseSetting("Notifications:DispatchEnabled", "false");
     }
 
     public async Task InitializeAsync()

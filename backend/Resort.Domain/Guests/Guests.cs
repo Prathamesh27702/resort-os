@@ -34,7 +34,12 @@ public static class PreferenceCategories
 
 public static class ConsentPurposes
 {
-    public static readonly string[] All = ["MARKETING_WHATSAPP", "MARKETING_EMAIL", "DATA_PROCESSING"];
+    /// <summary>Booking messages (confirmation, reminders) on WhatsApp and by email (Sprint 24). No row: allowed; the latest
+    /// row with Granted false: the guest opted out.</summary>
+    public const string ServiceWhatsApp = "SERVICE_WHATSAPP";
+    public const string ServiceEmail = "SERVICE_EMAIL";
+
+    public static readonly string[] All = ["MARKETING_WHATSAPP", "MARKETING_EMAIL", "DATA_PROCESSING", ServiceWhatsApp, ServiceEmail];
 }
 
 public static class ConsentSources

@@ -1378,6 +1378,61 @@ net, adr }`. `GstRowDto = { month, label, outputTaxable, outputCgst, outputSgst,
 outputTotal, inputCgst, inputSgst, inputIgst, inputTotal, payable, credit, chargedOnBills }`. `PnlLineDto = { key, label,
 kind: REVENUE | COST | TOTAL | PROFIT, months: number[], total }`. Every report also returns `freshness`.
 
+## Built endpoints (Sprint 24 — notifications, WhatsApp, email, background jobs)
+
+Messages to guests and staff go through the **outbox**: a row written with what caused it (a confirmed booking) or by a
+daily job, then sent within ~10 seconds by a background sender (WhatsApp Cloud API template, Resend email, or a line in
+the bell). Every message says what became of it in words (`statusWords`, and `reason` when it failed or wasn't sent).
+Phone numbers and emails are masked in lists (`+91 98•••••345`, `as•••@example.com`). How it works:
+[system-design.md → 4.34](architecture/system-design.md#434-messages-the-outbox-and-the-daily-jobs); setup and
+defaults: [WHATSAPP.md](WHATSAPP.md). Status: QUEUED ("Waiting to be sent"), SENT, DELIVERED, READ, FAILED, SKIPPED ("Not
+sent"). `message.read` and `message.send`: owner, GM, manager, receptionist; `integration.manage`: the owner.
+
+Under `/api/v1/properties/{propertyId}`:
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /messages/setup` | How WhatsApp and email are connected (`LIVE`, `FAKE` = built-in test service, `OFF` = production without keys), what the caller may do, the pre-arrival days and counts by status | `message.read` | — | `MessagingSetupDto` | 403, 404 | — |
+| `GET /messages?status&channel&reservationId&q&page&pageSize` | Messages newest first. `status` one status or `PROBLEM` (failed or not sent); `q` the recipient's name or a booking reference; `pageSize` at most 100 | `message.read` | — | `PagedResult<MessageListItemDto>` | 400 `Status` ("Show messages by status: QUEUED, … or PROBLEM."), `Channel` ("The channel is WHATSAPP, EMAIL or IN_APP."); 403 | — |
+| `GET /messages/{id}` | One message: subject, text, WhatsApp template and values, the steps (queued, accepted, delivered, read, failed) with times, the next try, the job that made it; `canFakeStatus` with the test WhatsApp | `message.read` | — | `MessageDto` | 403, 404 | — |
+| `POST /messages/{id}/retry` | **Send again** a FAILED message: back to the queue and sent at once | `message.send` | — | `MessageDto` | 422 `MESSAGE_NOT_FAILED` ("This message was never sent: {reason} Once that is fixed, the next message goes; this one stays as it was." / "This message is read, so there is nothing to send again."); 403, 404 | — |
+| `POST /messages/dispatch` | Send what is waiting now (up to 100) instead of within 10 seconds | `message.send` | — | `{ handled }` | 403 | — |
+| `POST /messages/{id}/fake-status` | Test WhatsApp only (no keys, never in production): WhatsApp's signed status webhook says DELIVERED, READ or FAILED, through the real webhook | `message.send` | `{ status }` | `MessageDto` | 400 `Status` ("The test status is DELIVERED, READ or FAILED."), 422 `NOT_SENT_ON_WHATSAPP`; 404 when WhatsApp keys are set | — |
+| `GET /message-templates` | The 12 templates (made with their defaults on first use): the five guest messages on WhatsApp (four also by email; the check-out reminder on WhatsApp only), low stock in the app and by email, leave in the app; each with when it is sent and the variables it can use, with a sample | `message.read` | — | `MessageTemplateDto[]` | 403 | — |
+| `PUT /message-templates/{id}` | Change the words, the WhatsApp template name and language, the subject, or turn it off | `integration.manage` | `SaveMessageTemplateRequest` (`providerTemplate?`, `language?`, `subject?`, `body`, `isActive`, `version?`) | `MessageTemplateDto` | 400 `Body` ("{{room_number}} isn't something this message can fill in. It can use: {{guest_name}}, …"; "Use at least {{guest_name}} or another variable, …"; "A WhatsApp template's text is at most 1,024 characters; this is 1,100."), `ProviderTemplate` ("Give the name of the template approved in WhatsApp Manager, e.g. booking_confirmation."; "A WhatsApp template's name is lower-case letters, digits and _ only, …"), `Subject` ("Give the email a subject, 2–150 characters, …"), `Language` ("The language is WhatsApp's code for it, e.g. en, en_US, hi or mr."); 403, 404; 409 | UPDATE message_templates |
+| `GET /jobs` | The six daily jobs (time, on or off, next run, last outcome) and the 30 most recent items done | `message.read` | — | `JobsDto` | 403 | — |
+| `GET /jobs/runs?job&limit` | Items the jobs did, newest first (at most 200) | `message.read` | — | `JobRunDto[]` | 403 | — |
+| `PUT /jobs/{job}` | Turn a job on or off, or change its time (property time); the next run is worked out again | `integration.manage` | `SaveScheduledJobRequest` (`enabled`, `runAt` "10:00:00", `version?`) | `ScheduledJobDto` | 400 `RunAt` ("Give the time in hours and minutes, e.g. 10:00."); 403; 404 ("There is no job called send_x. The jobs are: reservation_reminder, …"); 409 | UPDATE scheduled_jobs |
+| `POST /jobs/{job}/run` | **Run now**: what the job would do today, at once. Items already done are not done again | `message.send` | — | `JobRunResultDto` (`found`, `queued`, `skipped`, `already`, `message` e.g. "Day-before reminder: 2 to do, 4 messages queued.", `notes`) | 403, 404 | job_runs row per item (MANUAL, by whom) |
+
+The bell, for the signed-in person (any property):
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /api/v1/notifications?unread` | My 30 most recent notifications and how many are unread | signed in | — | `NotificationListDto` | 401 | — |
+| `POST /api/v1/notifications/{id}/read` | Mark one read (its message counts as read) | signed in (own only) | — | `NotificationListDto` | 404 | — |
+| `POST /api/v1/notifications/read-all` | Mark all mine read | signed in | — | `NotificationListDto` | — | — |
+
+WhatsApp → us (no sign-in, rate-limited like other webhooks):
+
+| Method & URL | Purpose | Request | Response | Errors |
+|---|---|---|---|---|
+| `GET /api/v1/webhooks/whatsapp?hub.mode&hub.verify_token&hub.challenge` | Meta's check of the URL: answers the challenge when the token is `WhatsApp__WebhookVerifyToken` | — | the challenge, `text/plain` | 403 ("The verify token doesn't match WhatsApp__WebhookVerifyToken, …") |
+| `POST /api/v1/webhooks/whatsapp` | Message statuses (sent, delivered, read, failed) and replies. `X-Hub-Signature-256: sha256=<hex HMAC-SHA256 of the body with the app secret>`. Each status once; a status only moves a message forward; replies are counted, not stored | WhatsApp's JSON, at most 256 kB | `{ processed, duplicate, ignored, message }` | 401 `BAD_SIGNATURE`; 413 `TOO_LARGE`; 400 `BAD_WEBHOOK`; 500 (WhatsApp tries again) |
+
+`MessageListItemDto = { id, createdAt, templateCode, templateName, channel, recipientType, recipientName, to (masked),
+reservationId, reservationReference, status, statusWords, reason, attempts, sentAt, deliveredAt, readAt, failedAt, source,
+canRetry }`. `MessageDto = { summary, subject, body, providerTemplate, language, parameters, providerMessageId,
+nextAttemptAt, pricingCategory, jobName, steps: [{ at, status, words }], canFakeStatus }`. `MessageTemplateDto = { id,
+code, channel, name, when, providerTemplate, language, subject, body, isActive, variables: [{ name, description, sample }],
+updatedAt, version }`. `ScheduledJobDto = { job, name, description, enabled, runAt, nextRunAt, lastStartedAt,
+lastFinishedAt, lastOutcome, lastError, version }`. `JobRunDto = { id, job, jobName, businessKey, reservationId,
+reservationReference, triggeredBy, runByName, outcome, createdAt }`.
+
+Also in Sprint 24: guest consents take `SERVICE_WHATSAPP` and `SERVICE_EMAIL` (`POST /api/v1/guests/{id}/consents`, as
+before); a booking confirmed by `POST /reservations` (status CONFIRMED), `POST /reservations/{id}/confirm` or a Razorpay payment queues the
+confirmation in the same transaction.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
