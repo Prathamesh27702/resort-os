@@ -2026,9 +2026,9 @@ sprints:
       - "frontend/e2e/sprint-24.spec.ts, frontend/e2e/start-api.mjs; scripts/check-api.mjs (Sprint 24 checks); .env.example"
       - "docs/WHATSAPP.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-24.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-24-screens/; tools/handbooks/diagrams (message-flow)"
     results:
-      - "RESULTS_BACKEND"
-      - "RESULTS_FRONTEND"
-      - "RESULTS_BROWSER"
+      - "Backend: 618 passed, 0 failed on real PostgreSQL 16 (the acceptance: a guest booked for tomorrow gets the WhatsApp and email confirmation and the day-before reminder; the required job run twice, and twice at the same moment, sends each guest one reminder; the required WhatsApp status webhook refused with a wrong signature, each status once, only forward; the scheduler runs a due job once and moves it to tomorrow; no number, no email, opted out and template off say why; passing failures tried again, then failed; template field errors; payment, check-out and low stock jobs and the bell; anonymising blanks messages; another tenant sees nothing). Release build with warnings as errors and dotnet format clean"
+      - "Frontend: 135 of 135 unit tests passed (4 new); ESLint clean; production build OK"
+      - "Browser tests: Sprint 24's 8 steps pass (a confirmed booking's WhatsApp and email confirmation on the booking page; WhatsApp says delivered then read; the day-before reminder run twice sends once; the seeded failed message says why and is sent again; a template with an unknown variable refused under the text; a job moved to 9:30 and back; the owner's bell; the Messages page on a 360 px phone). Full run: 180 passed, 0 failed (27.6 min). API checks 291 of 291 (12 new); database checks clean; screenshots in docs/sprints/sprint-24-screens"
   scope:
     tables: [message_templates, outbox_messages, notifications, whatsapp_messages, email_messages, scheduled_jobs, job_runs]
     api:
