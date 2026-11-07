@@ -1134,7 +1134,7 @@ Run this before you accept a sprint or release `develop` to `main`. It's what CI
 ```powershell
 cd D:\resort-os
 
-# 1. Backend + frontend unit tests (expected: 582 backend passed, 126 frontend SUCCESS, "All tests passed.")
+# 1. Backend + frontend unit tests (expected: 596 backend passed, 131 frontend SUCCESS, "All tests passed.")
 pwsh -ExecutionPolicy Bypass -File scripts/test.ps1
 
 # 2. Lint and production build of the web app (expected: "All files pass linting." and a finished build)
@@ -1142,7 +1142,7 @@ cd frontend
 npm run lint
 npm run build:prod
 
-# 3. Every browser test, Sprints 01–22 (expected: 165 passed, about 27 minutes)
+# 3. Every browser test, Sprints 01–23 (expected: 172 passed, about 27 minutes)
 npm run e2e
 npm run e2e:report        # opens the report: every step with a screenshot; a failed step has a replay and a video
 cd ..
@@ -1157,14 +1157,14 @@ Get-ChildItem database/queries/check-sprint-*.sql | ForEach-Object {
 }
 ```
 
-Expected totals for Sprints 01–22:
+Expected totals for Sprints 01–23:
 
 | Layer | Expected |
 |---|---|
-| Backend tests | 582 passed, 0 failed |
-| Frontend unit tests | 126 of 126 SUCCESS |
-| Browser tests | 165 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4; 22: 5) |
-| API checks | 267 passed, 0 failed |
+| Backend tests | 596 passed, 0 failed |
+| Frontend unit tests | 131 of 131 SUCCESS |
+| Browser tests | 172 passed (Sprints 01–11: 96; 12: 5; 13: 7; 14: 9; 15: 7; 16: 8; 17: 7; 18: 7; 19: 5; 20: 5; 21: 4; 22: 5; 23: 7) |
+| API checks | 278 passed, 0 failed |
 
 Other useful commands:
 

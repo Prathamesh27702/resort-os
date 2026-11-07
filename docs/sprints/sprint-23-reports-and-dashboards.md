@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 8 — Expenses, budgets, reports | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 15](sprint-15-inventory-and-recipe-costing.md), [Sprint 19](sprint-19-leave-holidays-and-payroll-export.md), [Sprint 22](sprint-22-expenses-and-budgets.md) |
+| 🟢 Done | Phase 8 — Expenses, budgets, reports | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 15](sprint-15-inventory-and-recipe-costing.md), [Sprint 19](sprint-19-leave-holidays-and-payroll-export.md), [Sprint 22](sprint-22-expenses-and-budgets.md) |
 
 **Goal:** Owner and role dashboards plus the report list in brief §50–55, Power-BI-ready.
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built, in review (PR to develop). Defaults to confirm: the numbers are added up every 15 minutes (and nightly from April last year), not live; a dorm bed counts as one unit like a room; money is before GST; revenue is counted by the day of the service; commission is worked out at 18 % for an OTA and 10 % for a travel agent unless set on Reports (until OTA statements, Sprint 24 on); GST is an estimate for the accountant; pay is an estimate (monthly salary spread over the days, daily rate per day worked, no PF/ESI) shown only to the owner and HR; the budget now counts supplier bills (by the bill date) and pay; the P&L counts stock when used, not when bought; Power BI reads five views through a read-only login (scripts/powerbi-user.sql).
+**Now:** Accepted by the owner on 7 Nov 2026 (PR #175). Defaults kept: the numbers are added up every 15 minutes (and nightly from April last year), not live; a dorm bed counts as one unit like a room; money is before GST; revenue is counted by the day of the service; commission is worked out at 18 % for an OTA and 10 % for a travel agent unless set on Reports (until OTA statements, Sprint 24 on); GST is an estimate for the accountant; pay is an estimate (monthly salary spread over the days, daily rate per day worked, no PF/ESI) shown only to the owner and HR; the budget now counts supplier bills (by the bill date) and pay; the P&L counts stock when used, not when bought; Power BI reads five views through a read-only login (scripts/powerbi-user.sql).
 
 **Done so far**
 

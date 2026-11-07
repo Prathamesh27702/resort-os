@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-23] — Reports and dashboards (in review)
+## [sprint-23] — 2026-11-07 — Reports and dashboards (accepted)
 
 ### Added
 - Migration V025: the schema `reporting` with a summary row per property and day (`daily_stats`: rooms and dorm beds
