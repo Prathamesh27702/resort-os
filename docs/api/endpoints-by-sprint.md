@@ -122,9 +122,9 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `/api/v1/properties/{propertyId}/transport/*` | [Sprint 21](../sprints/sprint-21-beach-transport.md) | 🟢 Done |
 | `/api/v1/properties/{propertyId}/expenses/*, /budgets/*` | [Sprint 22](../sprints/sprint-22-expenses-and-budgets.md) | 🟢 Done |
 | `/api/v1/properties/{propertyId}/reports/*` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🟢 Done |
-| `/api/v1/webhooks/whatsapp` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `/api/v1/properties/{propertyId}/messages/*, /message-templates/*, /jobs/*` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `/api/v1/notifications/*` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
+| `/api/v1/webhooks/whatsapp` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `/api/v1/properties/{propertyId}/messages/*, /message-templates/*, /jobs/*` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `/api/v1/notifications/*` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
 | `/api/v1/webhooks/channel-manager` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
 | `/api/v1/public/* — separate` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |
 | `rate-limited` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |

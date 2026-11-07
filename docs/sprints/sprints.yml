@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 24
+current: 25
 
 sprints:
 
@@ -1996,7 +1996,7 @@ sprints:
 - id: 24
   title: Notification engine, WhatsApp, email, background jobs
   phase: 9
-  status: in-progress
+  status: done
   size: L
   module: Notifications
   feature: messages
@@ -2004,7 +2004,7 @@ sprints:
   goal: Configurable templates, delivery tracking and idempotent scheduled jobs (brief §32, §69, §70).
   client: "Guests get their booking confirmation and reminders on WhatsApp and by email; staff see what was sent, delivered and read, and why anything wasn't, and get alerts in the bell."
   progress:
-    now: "Built, in review (PR to develop). Defaults to confirm: booking messages go on WhatsApp and by email unless the guest said No on their profile (no confirmation for walk-ins); job times reminder 10:00, pre-arrival 10:00 three days ahead, check-out 08:00, payment 11:00 (once per link, a day after it was made), low stock 08:00 and leave 09:00 (one digest a day to the people who can act); 5 tries at 1, 5, 15 and 60 minutes; templates and job times changed by the owner only (integration.manage), Send again and Run now by managers and receptionists; Resend for email; guest replies counted, not stored; the built-in test WhatsApp and email without keys, and in production without keys messages fail with the reason."
+    now: "Accepted by the owner on 7 Nov 2026 (PR #178). Defaults kept: booking messages go on WhatsApp and by email unless the guest said No on their profile (no confirmation for walk-ins); job times reminder 10:00, pre-arrival 10:00 three days ahead, check-out 08:00, payment 11:00 (once per link, a day after it was made), low stock 08:00 and leave 09:00 (one digest a day to the people who can act); 5 tries at 1, 5, 15 and 60 minutes; templates and job times changed by the owner only (integration.manage), Send again and Run now by managers and receptionists; Resend for email; guest replies counted, not stored; the built-in test WhatsApp and email without keys, and in production without keys messages fail with the reason."
     done:
       - "Migration V026: message_templates, outbox_messages (unique key per property, the guard trigger), whatsapp_messages, email_messages, notifications, scheduled_jobs, job_runs (unique property + job + business key, append-only); WHATSAPP webhooks; consents SERVICE_WHATSAPP and SERVICE_EMAIL"
       - "Outbox: the booking confirmation is written in the booking's transaction (booked confirmed, confirmed by staff, paid online); a sender every 10 s claims rows with FOR UPDATE SKIP LOCKED; passing failures tried again 1, 5, 15, 60 min, at most 5 tries"
@@ -2055,6 +2055,29 @@ sprints:
   debug: []
   demo:
     - Book → WhatsApp confirmation → reminder job
+  handbook:
+    highlights:
+      - "A booking made or confirmed sends the guest a WhatsApp and an email confirmation; walk-ins get none"
+      - "Daily jobs send the day-before reminder, the pre-arrival message, the check-out reminder and the payment reminder, each once, however often they run"
+      - "Staff see on the booking and the Messages page what was sent, delivered and read, and why anything wasn't; Send again"
+      - "The owner changes the words of each message and the time of each job without a release"
+      - "The bell in the header tells staff about low stock, leave waiting for them and messages that couldn't be sent"
+      - "A guest who says No on their profile gets no booking messages on that channel"
+    design:
+      ui: "Messages (/messages): Messages (search by guest or booking, Needs a look, each message with its steps, reason and Send again), Templates (WhatsApp and email text per message with a preview; the owner changes them), Daily jobs (time, on or off, Run now, recent runs). The booking page has a Messages card. The bell in the header lists the person's notifications."
+      api: "/properties/{id}/messages (list, detail, retry), /message-templates (GET, PUT), /jobs (GET, PUT, run, runs), /notifications (the signed-in person's own, with read and read-all), and the webhook /webhooks/whatsapp (GET verify, POST signed status). A template with a variable the message can't fill in is refused under the text."
+      database: "Migration V026 adds message_templates, outbox_messages (one per property and dedupe key, written in the booking's transaction), whatsapp_messages, email_messages, notifications, scheduled_jobs (the time and next run per property and job) and job_runs (one per property, job and business key, so a job run twice sends once)."
+    diagrams:
+      - {file: tools/handbooks/assets/message-flow.png, caption: "Messages: written to the outbox with the booking or by a daily job, sent with retries, and followed by WhatsApp's status webhooks"}
+    screenshots:
+      - {file: docs/sprints/sprint-24-screens/01-booking-messages.png, caption: "The booking's Messages card: the WhatsApp and email confirmation sent"}
+      - {file: docs/sprints/sprint-24-screens/02-message-read.png, caption: "A message with each step: waiting, sent, delivered, read"}
+      - {file: docs/sprints/sprint-24-screens/03-reminder-run.png, caption: "The day-before reminder run by hand"}
+      - {file: docs/sprints/sprint-24-screens/04-needs-a-look.png, caption: "Needs a look: a message WhatsApp couldn't deliver, with the reason"}
+      - {file: docs/sprints/sprint-24-screens/05a-templates.png, caption: "The owner's message templates"}
+      - {file: docs/sprints/sprint-24-screens/05-template-refused.png, caption: "A template change refused: the variable is named under the text"}
+      - {file: docs/sprints/sprint-24-screens/06-bell.png, caption: "The bell with its notifications"}
+      - {file: docs/sprints/sprint-24-screens/07-phone-messages.png, caption: "The Messages page on a phone"}
 
 - id: 25
   title: Zoho Books, Tally export, e-invoice reconciliation

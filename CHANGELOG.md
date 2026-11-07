@@ -2,7 +2,7 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-24] — Notification engine, WhatsApp, email, background jobs (in review)
+## [sprint-24] — 2026-11-07 — Notification engine, WhatsApp, email, background jobs (accepted)
 
 ### Added
 - Migration V026: `message_templates` (the words of each message per channel, editable; never deleted),
