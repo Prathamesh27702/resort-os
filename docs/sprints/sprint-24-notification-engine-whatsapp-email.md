@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| 🔵 In progress — **current sprint** | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
+| 🟢 Done | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
 
 **Goal:** Configurable templates, delivery tracking and idempotent scheduled jobs (brief §32, §69, §70).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Built, in review (PR to develop). Defaults to confirm: booking messages go on WhatsApp and by email unless the guest said No on their profile (no confirmation for walk-ins); job times reminder 10:00, pre-arrival 10:00 three days ahead, check-out 08:00, payment 11:00 (once per link, a day after it was made), low stock 08:00 and leave 09:00 (one digest a day to the people who can act); 5 tries at 1, 5, 15 and 60 minutes; templates and job times changed by the owner only (integration.manage), Send again and Run now by managers and receptionists; Resend for email; guest replies counted, not stored; the built-in test WhatsApp and email without keys, and in production without keys messages fail with the reason.
+**Now:** Accepted by the owner on 7 Nov 2026 (PR #178). Defaults kept: booking messages go on WhatsApp and by email unless the guest said No on their profile (no confirmation for walk-ins); job times reminder 10:00, pre-arrival 10:00 three days ahead, check-out 08:00, payment 11:00 (once per link, a day after it was made), low stock 08:00 and leave 09:00 (one digest a day to the people who can act); 5 tries at 1, 5, 15 and 60 minutes; templates and job times changed by the owner only (integration.manage), Send again and Run now by managers and receptionists; Resend for email; guest replies counted, not stored; the built-in test WhatsApp and email without keys, and in production without keys messages fail with the reason.
 
 **Done so far**
 

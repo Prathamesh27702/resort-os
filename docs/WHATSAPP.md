@@ -1,6 +1,6 @@
 # WhatsApp, email and notifications
 
-> Status: **built in Sprint 24** (in review). WhatsApp Business Platform (Meta Cloud API) for guests, Resend for email,
+> Status: **built in Sprint 24** (accepted 7 Nov 2026). WhatsApp Business Platform (Meta Cloud API) for guests, Resend for email,
 > and the bell in the staff app. Keys: `WhatsApp__PhoneNumberId`, `WhatsApp__AccessToken`, `WhatsApp__AppSecret`,
 > `WhatsApp__WebhookVerifyToken`; `Email__ApiKey`, `Email__FromAddress`. Without keys in development (and in every test)
 > the built-in **test WhatsApp and test email** are used and nothing reaches a phone or inbox. In production without

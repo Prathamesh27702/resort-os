@@ -69,3 +69,6 @@
 - version: "1.23"
   date: 2026-11-07
   change: "Sprint 23 (Reports and dashboards) accepted: the owner's Today shows tonight, the month so far against last month and a year ago, and the last twelve months; Reports covers occupancy, ADR and RevPAR, revenue, booking sources with OTA commission and net, GST, food and labour cost and a profit and loss, and the month at a glance prints and downloads as CSV; managers see no money and pay is for the owner and HR only; Power BI reads the same numbers through a read-only login; the budget now counts supplier bills and pay. Report flow diagram. Sprint 24 started."
+- version: "1.24"
+  date: 2026-11-07
+  change: "Sprint 24 (Notification engine, WhatsApp, email, background jobs) accepted: guests get their booking confirmation, the day-before reminder, the pre-arrival message, the check-out reminder and the payment reminder on WhatsApp and by email, each once; staff see what was sent, delivered and read and why anything wasn't, and send it again; the owner changes the words and the job times; the bell tells staff about low stock, leave and messages that couldn't be sent. Message flow diagram. Sprint 25 waits for the owner's go-ahead."

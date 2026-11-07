@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 24](sprint-24-notification-engine-whatsapp-email.md) |
+| ⚪ Planned — **current sprint** | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 24](sprint-24-notification-engine-whatsapp-email.md) |
 
 **Goal:** Sync accounting without duplicates on retry (brief §26, §27, §25).
 

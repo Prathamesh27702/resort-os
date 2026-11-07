@@ -148,13 +148,13 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `reporting.daily_channel_stats` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🟢 Done |
 | `reporting.daily_costs` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🟢 Done |
 | `reporting.refresh_state` | [Sprint 23](../sprints/sprint-23-reports-and-dashboards.md) | 🟢 Done |
-| `message_templates` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `outbox_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `notifications` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `whatsapp_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `email_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `scheduled_jobs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
-| `job_runs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
+| `message_templates` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `outbox_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `notifications` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `whatsapp_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `email_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `scheduled_jobs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
+| `job_runs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🟢 Done |
 | `accounting_connections` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
 | `accounting_sync_records` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
 | `ota_channels` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |

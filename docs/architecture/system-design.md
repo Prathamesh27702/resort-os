@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–23 built and accepted (October–November 2026); Sprint 24 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–24 built and accepted (October–November 2026); Sprint 25 not started yet (waits for the owner). Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -1614,4 +1614,4 @@ request:
 | 21 | Beach transport (vehicles, routes, trips whose seats can't be oversold, a vehicle and a driver on one trip at a time, seats on the bill, the driver's phone manifest with boarding, the manifest PDF), transport flow diagram; system design 4.31 Beach trips: seats, the driver's manifest, boarding (accepted 5 Nov 2026) |
 | 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (accepted 5 Nov 2026) |
 | 23 | Reports and dashboards (a daily summary per property refreshed every 15 minutes and nightly, occupancy, ADR, RevPAR, revenue, booking sources with commission and net, GST, food and labour cost, profit and loss, the owner's Today and the Reports page, money hidden from managers, five views for Power BI through a read-only role, supplier bills and pay in the budget), report flow diagram; system design 4.33 Reports: the daily summary and Power BI (accepted 7 Nov 2026) |
-| 24 | Notification engine, WhatsApp, email and background jobs (the outbox written with the booking, a sender with retries, a PostgreSQL scheduler with six idempotent daily jobs, WhatsApp template messages and the signed status webhook, email through Resend, the bell, the Messages page with reasons and Send again), message flow diagram; system design 4.34 Messages: the outbox and the daily jobs (in review) |
+| 24 | Notification engine, WhatsApp, email and background jobs (the outbox written with the booking, a sender with retries, a PostgreSQL scheduler with six idempotent daily jobs, WhatsApp template messages and the signed status webhook, email through Resend, the bell, the Messages page with reasons and Send again), message flow diagram; system design 4.34 Messages: the outbox and the daily jobs (accepted 7 Nov 2026) |
