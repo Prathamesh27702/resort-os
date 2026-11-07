@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
+| 🔵 In progress — **current sprint** | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 05](sprint-05-availability-engine-and-reservations.md) |
 
 **Goal:** Configurable templates, delivery tracking and idempotent scheduled jobs (brief §32, §69, §70).
 
@@ -10,7 +10,7 @@
 
 ## Where this sprint stands
 
-**Now:** Not started. Can start once Sprint 05 is accepted.
+**Now:** In progress — see the open issues in this sprint's milestone.
 
 **Done so far**
 
