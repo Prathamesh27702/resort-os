@@ -1,3 +1,4 @@
+using Resort.Domain.Notifications;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -182,6 +183,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<DailyChannelStat> DailyChannelStats => Set<DailyChannelStat>();
     public DbSet<DailyCost> DailyCosts => Set<DailyCost>();
     public DbSet<ReportRefreshState> ReportRefreshStates => Set<ReportRefreshState>();
+    public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<WhatsAppMessage> WhatsAppMessages => Set<WhatsAppMessage>();
+    public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ScheduledJob> ScheduledJobs => Set<ScheduledJob>();
+    public DbSet<JobRun> JobRuns => Set<JobRun>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -766,6 +774,19 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
             e.ToTable("refresh_state", "reporting");
             e.HasKey(x => x.PropertyId);
         });
+
+        // Notifications (Sprint 24). The dispatcher and webhooks write outbox rows across tenants with explicit ids.
+        b.Entity<MessageTemplate>().ToTable("message_templates");
+        b.Entity<OutboxMessage>(e =>
+        {
+            e.ToTable("outbox_messages");
+            e.Property(x => x.Params).HasColumnType("jsonb");
+        });
+        b.Entity<WhatsAppMessage>().ToTable("whatsapp_messages");
+        b.Entity<EmailMessage>().ToTable("email_messages");
+        b.Entity<Notification>().ToTable("notifications");
+        b.Entity<ScheduledJob>().ToTable("scheduled_jobs");
+        b.Entity<JobRun>().ToTable("job_runs");
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

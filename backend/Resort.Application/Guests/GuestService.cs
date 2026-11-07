@@ -289,6 +289,14 @@ public sealed class GuestService(
         g.AnonymisedAt = now;
         g.AnonymisedBy = caller.UserId;
         await db.SaveChangesAsync(ct);
+        // Their messages (Sprint 24) keep that they were sent, not to whom or what they said.
+        foreach (var gid in ids)
+            await db.Database.ExecuteSqlAsync(
+                $"""
+                 UPDATE outbox_messages SET recipient_name = {AnonymisedName}, to_address = NULL, params = jsonb_build_object(),
+                        body = '(removed: the guest was anonymised)', subject = CASE WHEN subject IS NULL THEN NULL ELSE '(removed)' END
+                  WHERE guest_id = {gid}
+                 """, ct);
 
         // Files go after the commit: if the commit had failed, the scans would still be needed.
         foreach (var key in blobs) await files.DeleteAsync(key, ct);

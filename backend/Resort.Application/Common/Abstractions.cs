@@ -1,3 +1,4 @@
+using Resort.Domain.Notifications;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -172,6 +173,13 @@ public interface IAppDbContext
     DbSet<DailyChannelStat> DailyChannelStats { get; }
     DbSet<DailyCost> DailyCosts { get; }
     DbSet<ReportRefreshState> ReportRefreshStates { get; }
+    DbSet<MessageTemplate> MessageTemplates { get; }
+    DbSet<OutboxMessage> OutboxMessages { get; }
+    DbSet<WhatsAppMessage> WhatsAppMessages { get; }
+    DbSet<EmailMessage> EmailMessages { get; }
+    DbSet<Notification> Notifications { get; }
+    DbSet<ScheduledJob> ScheduledJobs { get; }
+    DbSet<JobRun> JobRuns { get; }
     DbSet<Holiday> Holidays { get; }
     DbSet<PayrollExport> PayrollExports { get; }
 

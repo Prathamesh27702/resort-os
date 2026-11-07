@@ -131,6 +131,10 @@ public static class Perm
     public const string InvoiceCancel = "invoice.cancel";
     public const string CreditNoteCreate = "credit_note.create";
 
+    public const string MessageRead = "message.read";
+    public const string MessageSend = "message.send";
+    public const string IntegrationManage = "integration.manage";
+
     public const string AuditRead = "audit.read";
     public const string SystemSettings = "system.settings";
 
@@ -153,6 +157,7 @@ public static class Perm
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,
         InvoiceRead, InvoiceCreate, InvoiceCancel, CreditNoteCreate,
+        MessageRead, MessageSend, IntegrationManage,
         AuditRead, SystemSettings,
     ];
 }

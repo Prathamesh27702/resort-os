@@ -107,6 +107,8 @@ builder.Services.AddHostedService<RoomChargeJob>();
 builder.Services.AddHostedService<LeaveAccrualJob>();
 builder.Services.Configure<Resort.Application.Reports.ReportingOptions>(builder.Configuration.GetSection(Resort.Application.Reports.ReportingOptions.Section));
 builder.Services.AddHostedService<ReportRefreshJob>();
+builder.Services.AddHostedService<NotificationSchedulerJob>();
+builder.Services.AddHostedService<OutboxDispatchJob>();
 
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecurityTransformer>());
@@ -181,6 +183,7 @@ app.MapActivityEndpoints();
 app.MapTransportEndpoints();
 app.MapFinanceEndpoints();
 app.MapReportEndpoints();
+app.MapNotificationsEndpoints();
 
 app.Run();
 
