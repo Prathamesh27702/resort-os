@@ -1012,7 +1012,7 @@ await expectCall('Messages read newest first, each with its status in words', 'G
   b => (Array.isArray(b?.items) && b.items.every(m => m.statusWords && m.channel)) || JSON.stringify(b).slice(0, 300));
 await expectCall('"Needs a look" lists only failed and not-sent messages, each with its reason', 'GET', `${P}/messages?status=PROBLEM`, 200, { token: T },
   b => (Array.isArray(b?.items) && b.items.every(m => ['FAILED', 'SKIPPED'].includes(m.status) && !!m.reason)) || JSON.stringify(b).slice(0, 300));
-const tpl = await expectCall('12 templates (6 guest messages × WhatsApp and email, 2 staff alerts × in the app and email), each with its variables',
+const tpl = await expectCall('12 templates (5 guest messages on WhatsApp, 4 of them also by email; low stock in the app and by email; leave in the app), each with its variables',
   'GET', `${P}/message-templates`, 200, { token: T },
   b => (Array.isArray(b) && b.length === 12 && b.every(t => t.variables?.length > 0)) || JSON.stringify(b).slice(0, 300));
 const email = tpl?.json?.find?.(t => t.code === 'booking_confirmation' && t.channel === 'EMAIL');

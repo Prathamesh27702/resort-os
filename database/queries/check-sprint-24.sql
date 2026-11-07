@@ -12,7 +12,8 @@ WHERE table_schema = 'public' AND table_name IN ('message_templates','outbox_mes
                                                  'scheduled_jobs','job_runs')
 ORDER BY table_name;
 
--- 3. Templates per property: 12 (six guest messages on WhatsApp and by email; low stock and leave in the app and by email).
+-- 3. Templates per property: 12 (five guest messages on WhatsApp, four of them also by email; low stock in the app and by
+--    email; leave in the app).
 SELECT p.code, count(*) AS templates, count(*) FILTER (WHERE t.is_active) AS turned_on
 FROM message_templates t JOIN properties p ON p.id = t.property_id GROUP BY p.code;
 

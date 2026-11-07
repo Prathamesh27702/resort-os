@@ -141,6 +141,12 @@ test('S24-04 the seeded message WhatsApp couldn\'t deliver says why and is sent 
 test('S24-05 the owner\'s template change with a variable the message can\'t fill in is refused under the text', async () => {
   await own.goto('/messages?tab=templates');
   const card = own.locator('[data-code="booking_confirmation"]');
+  await expect(card).toBeVisible();
+  // The cards stay inside the page however long a template's text is (long lines are cut with …, not stretched).
+  const grid = await own.getByTestId('templates').boundingBox();
+  const head = await own.getByRole('heading', { name: 'Messages', level: 1 }).locator('..').boundingBox();
+  expect(grid!.width).toBeLessThanOrEqual(head!.width + 1);
+  await shot(own, '05a-templates');
   await card.locator('[data-channel="EMAIL"]').getByRole('button', { name: 'Change' }).click();
   const d = await dialog(own);
   const body = d.getByTestId('template-body');

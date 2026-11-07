@@ -14,10 +14,10 @@
 | Booking confirmation | The moment a booking is confirmed: booked as confirmed, a pending booking confirmed by staff (or moved to confirmed), or paid online with a Razorpay link. Not for walk-ins (they are in front of you) | Guest | WhatsApp + email |
 | Day-before reminder | Job `reservation_reminder`, daily at **10:00**: confirmed bookings arriving tomorrow | Guest | WhatsApp + email |
 | Pre-arrival message | Job `pre_arrival`, daily at **10:00**: confirmed bookings arriving in **3 days** (setting `notifications.pre_arrival_days`, 2–30) | Guest | WhatsApp + email |
-| Check-out reminder | Job `checkout_reminder`, daily at **08:00**: guests in house leaving today | Guest | WhatsApp + email |
+| Check-out reminder | Job `checkout_reminder`, daily at **08:00**: guests in house leaving today | Guest | WhatsApp |
 | Payment reminder | Job `payment_reminder`, daily at **11:00**: bookings still pending whose payment link was made over a day ago; **once per link** | Guest | WhatsApp + email |
 | Low stock alert | Job `inventory_alert`, daily at **08:00**: items at or below their reorder level; one a day | Staff with `inventory.manage` | Bell + email |
-| Leave reminder | Job `leave_reminder`, daily at **09:00**: leave requests waiting more than a day; one a day | Staff with `leave.approve` | Bell + email |
+| Leave reminder | Job `leave_reminder`, daily at **09:00**: leave requests waiting more than a day; one a day | Staff with `leave.approve` | Bell |
 
 Times are the property's time. The owner changes the words (**Messages → Templates**) and turns a job off or moves it
 (**Messages → Daily jobs**) without a release; a receptionist or manager can **Run now** and **Send again**.
@@ -45,7 +45,7 @@ page says why.
 4. App settings → Basic → **App secret** → `WhatsApp__AppSecret` (it signs the status webhooks).
 5. Pick any long random text → `WhatsApp__WebhookVerifyToken`. In WhatsApp → Configuration set the callback URL to
    `https://<your API>/api/v1/webhooks/whatsapp` with that verify token, and subscribe to **messages**.
-6. In **WhatsApp Manager → Message templates** create the six templates below, category **Utility**, language English
+6. In **WhatsApp Manager → Message templates** create the five templates below, category **Utility**, language English
    (`en`), with **named** variables exactly as listed (Meta's "Name" parameter format). Wait for approval (minutes to a day).
    The text on the Messages → Templates page should match the approved text: WhatsApp sends its approved words with our
    values filled in; ours is the record of what was sent.

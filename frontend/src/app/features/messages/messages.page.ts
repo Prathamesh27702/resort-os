@@ -192,12 +192,12 @@ const PAGE = 25;
     .side { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
     .empty { padding: 16px; margin: 0; }
     .pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 8px; }
-    .tgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 8px; }
-    .tcard, .job { padding: 12px 16px; } h2 { font-size: 1rem; color: #0e3b43; margin: 0; } .tcard p, .job p { margin: 4px 0; }
+    .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+    .tcard, .job { padding: 12px 16px; min-width: 0; } h2 { font-size: 1rem; color: #0e3b43; margin: 0; } .tcard p, .job p { margin: 4px 0; }
     .tline { display: flex; align-items: center; gap: 8px; border-top: 1px solid #eef2f1; padding: 6px 0; }
     .tmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .jobs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 8px; }
+    .jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
     .jhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .jact { display: flex; gap: 6px; margin-top: 6px; }
     .result { background: #e1f2e8; border-radius: 8px; padding: 6px 10px; }
@@ -207,7 +207,7 @@ const PAGE = 25;
     .chip.ok { background: #e1f2e8; color: #1d5b36; } .chip.wait { background: #fbefd8; color: #8a5a00; }
     .chip.off { background: #eceff0; color: #5b6b6e; } .chip.bad { background: #f3e3e3; color: #7a1f1f; }
     @media (max-width: 720px) {
-      .tgrid, .jobs { grid-template-columns: 1fr; }
+      .tgrid, .jobs { grid-template-columns: minmax(0, 1fr); }
       .row { flex-wrap: wrap; } .side { flex-direction: row; align-items: center; width: 100%; box-sizing: border-box; justify-content: space-between; padding-left: 36px; }
       .sel, .q { width: 100%; flex-basis: 100%; }
     }

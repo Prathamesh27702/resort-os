@@ -1129,7 +1129,7 @@ sends the guest a **booking confirmation on WhatsApp and by email** within about
 **Messages to the guest** with what became of each (sent, delivered, read; or why it failed or wasn't sent). Six **daily
 jobs** run at their time (property time): the **day-before reminder** (10:00), **pre-arrival** three days ahead (10:00),
 **check-out reminder** (08:00), **payment reminder** for pending bookings a day after their link (11:00), and for staff
-the **low stock alert** (08:00) and **leave reminder** (09:00) in the bell and by email. **Messages** has three tabs:
+the **low stock alert** (08:00, in the bell and by email) and **leave reminder** (09:00, in the bell). **Messages** has three tabs:
 **Messages** (filter by what became of them; **Needs a look**; **Send again**; **Send waiting now**), **Templates** (the
 owner changes the words, with the variables and a preview) and **Daily jobs** (**Run now**; the owner changes the time or
 turns one off). A guest can say No to booking messages per channel on their profile. Without WhatsApp or email keys the
