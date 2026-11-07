@@ -66,3 +66,6 @@
 - version: "1.22"
   date: 2026-11-05
   change: "Sprint 22 (Expenses and budgets) accepted: staff record money paid out, on a phone too, against a department and a category with a photo of the bill; a GST bill's GSTIN is checked and its tax split, and only what the resort really bears counts; every expense waits for approval, nobody approves their own, and over ₹500 the receipt comes first; each department has a budget for the year, and the Budget screen shows spent against plan, over or under, and where the year is heading. Expense flow diagram. Sprint 23 started."
+- version: "1.23"
+  date: 2026-11-07
+  change: "Sprint 23 (Reports and dashboards) accepted: the owner's Today shows tonight, the month so far against last month and a year ago, and the last twelve months; Reports covers occupancy, ADR and RevPAR, revenue, booking sources with OTA commission and net, GST, food and labour cost and a profit and loss, and the month at a glance prints and downloads as CSV; managers see no money and pay is for the owner and HR only; Power BI reads the same numbers through a read-only login; the budget now counts supplier bills and pay. Report flow diagram. Sprint 24 started."

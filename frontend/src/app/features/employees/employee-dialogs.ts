@@ -194,7 +194,8 @@ export class EmployeeDialog {
         @for (d of list(); track d.id) {
           <li [class.off]="!d.isActive" [attr.data-dept]="d.code">
             <div><b>{{ d.name }}</b> <small class="mute">{{ d.code }} · {{ d.employeeCount }} working</small>
-              @if (!d.isActive) { <small class="mute"> · switched off</small> }</div>
+              @if (!d.isActive) { <small class="mute"> · switched off</small> }
+              <small class="mute budget"> · pay counts for {{ d.costCentreName ?? 'no budget department' }}</small></div>
             <small class="mute">@for (t of d.designations; track t.id) { <span class="chip" [class.off]="!t.isActive">{{ t.name }}</span> } @empty { No job titles yet. }</small>
             <button mat-button type="button" (click)="editDept(d)">Edit</button>
           </li>
@@ -209,6 +210,13 @@ export class EmployeeDialog {
           <mat-form-field appearance="outline"><mat-label>Code</mat-label><input matInput formControlName="code" maxlength="20" placeholder="e.g. HK" />
             <mat-error>{{ server(dept.get('code')) || 'The code is 1–20 letters, digits, - or _.' }}</mat-error></mat-form-field>
         </div>
+        <mat-form-field appearance="outline"><mat-label>Pay counts in the budget for</mat-label>
+          <mat-select formControlName="costCentreId" aria-label="Pay counts in the budget for">
+            <mat-option [value]="''">No budget department</mat-option>
+            @for (c of centres(); track c.id) { <mat-option [value]="c.id">{{ c.name }}</mat-option> }
+          </mat-select>
+          @if (!centres().length) { <mat-hint>The budget departments are made the first time Expenses or Budget is opened.</mat-hint> }
+          <mat-error>{{ server(dept.get('costCentreId')) }}</mat-error></mat-form-field>
         @if (editing()) { <mat-checkbox formControlName="isActive">In use</mat-checkbox>
           @if (server(dept.get('isActive'))) { <p class="err">{{ server(dept.get('isActive')) }}</p> } }
         <div class="acts">
@@ -253,10 +261,14 @@ export class DepartmentsDialog {
   editing = signal<Department | null>(null);
   busy = signal(false);
   error = signal('');
-  dept = this.fb.group({ name: ['', [Validators.required, Validators.minLength(2)]], code: ['', Validators.required], isActive: [true] });
+  dept = this.fb.group({ name: ['', [Validators.required, Validators.minLength(2)]], code: ['', Validators.required], isActive: [true], costCentreId: [''] });
+  centres = signal<{ id: string; code: string; name: string }[]>([]);
   title = this.fb.group({ departmentId: ['', Validators.required], name: ['', [Validators.required, Validators.minLength(2)]] });
 
-  constructor() { this.load(); }
+  constructor() {
+    this.load();
+    this.api.budgetDepartments(this.data.propertyId).subscribe({ next: c => this.centres.set(c), error: () => this.centres.set([]) });
+  }
 
   load() {
     this.api.departments(this.data.propertyId).subscribe({
@@ -267,7 +279,7 @@ export class DepartmentsDialog {
 
   editDept(d: Department | null) {
     this.editing.set(d);
-    this.dept.reset({ name: d?.name ?? '', code: d?.code ?? '', isActive: d?.isActive ?? true });
+    this.dept.reset({ name: d?.name ?? '', code: d?.code ?? '', isActive: d?.isActive ?? true, costCentreId: d?.costCentreId ?? '' });
   }
 
   saveDept() {
@@ -277,6 +289,7 @@ export class DepartmentsDialog {
     this.error.set('');
     this.api.saveDepartment(this.data.propertyId, d?.id ?? null, {
       code: v.code.trim(), name: v.name.trim(), sortOrder: d?.sortOrder ?? (this.list().length + 1), isActive: v.isActive, version: d?.version ?? null,
+      costCentreId: v.costCentreId || null,
     }).subscribe({
       next: () => { this.busy.set(false); this.editDept(null); this.load(); },
       error: e => { this.busy.set(false); report(this.dept, e, m => this.error.set(m)); },

@@ -505,6 +505,7 @@ public sealed class ExpenseService(IAppDbContext db, ICurrentUser caller, Caller
                     db.CostCentres.Add(new CostCentre { OrganizationId = property.OrganizationId, PropertyId = property.Id, Code = code, Name = name, SortOrder = (++i) * 10 });
             }
             await db.SaveChangesAsync(ct);
+            await MapDepartmentsAsync(property.Id, ct);
             if (outer is not null) await outer.CommitAsync(ct);
         }
         finally
@@ -512,6 +513,25 @@ public sealed class ExpenseService(IAppDbContext db, ICurrentUser caller, Caller
             if (outer is not null) await outer.DisposeAsync();
         }
     }
+
+    /// <summary>Sprint 23: the employee departments not yet given a budget department get the one with the same name or
+    /// code, and a kitchen or restaurant gets Food and beverage, so pay counts in the budget from the start.</summary>
+    private async Task MapDepartmentsAsync(Guid propertyId, CancellationToken ct)
+    {
+        var departments = await db.Departments.Where(d => d.PropertyId == propertyId && d.CostCentreId == null).ToListAsync(ct);
+        if (departments.Count == 0) return;
+        var centres = await db.CostCentres.AsNoTracking().Where(c => c.PropertyId == propertyId && c.IsActive).ToListAsync(ct);
+        foreach (var d in departments)
+        {
+            var name = d.Name.Trim();
+            var match = centres.FirstOrDefault(c => string.Equals(c.Name.Trim(), name, StringComparison.OrdinalIgnoreCase) || c.Code == d.Code)
+                        ?? (FoodWords.Any(w => name.Contains(w, StringComparison.OrdinalIgnoreCase)) ? centres.FirstOrDefault(c => c.Code == "FB") : null);
+            d.CostCentreId = match?.Id;
+        }
+        await db.SaveChangesAsync(ct);
+    }
+
+    private static readonly string[] FoodWords = ["kitchen", "restaurant", "food", "bar"];
 
     internal static readonly (string Code, string Name, bool GstClaimable)[] DefaultCategories =
     [

@@ -64,6 +64,8 @@ public class ResortApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         // Tests run the nightly room charge themselves (RoomChargeRun), at a time they choose.
         builder.UseSetting("Folio:RoomChargeJob:Enabled", "false");
         builder.UseSetting("Leave:AccrualJob:Enabled", "false");
+        // Tests add up the reports themselves (POST …/reports/refresh) when they need them.
+        builder.UseSetting("Reporting:JobEnabled", "false");
     }
 
     public async Task InitializeAsync()

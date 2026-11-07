@@ -19,6 +19,9 @@ public static class EmployeesEndpoints
 
         p.MapGet("/departments", (Guid propertyId, EmployeeService s, CancellationToken ct) => s.DepartmentsAsync(propertyId, ct))
             .RequirePermission(Perm.EmployeeRead);
+        // Sprint 23: the budget departments a department's pay can count against.
+        p.MapGet("/departments/budget-departments", (Guid propertyId, EmployeeService s, CancellationToken ct) => s.BudgetDepartmentsAsync(propertyId, ct))
+            .RequirePermission(Perm.EmployeeRead);
         p.MapPost("/departments", async (Guid propertyId, SaveDepartmentRequest body, EmployeeService s, CancellationToken ct) =>
             {
                 var x = await s.SaveDepartmentAsync(propertyId, null, body, ct);

@@ -17,6 +17,8 @@ export interface Receive { receivedOn: string | null; locationId: string | null;
 export interface RecordBill {
   supplierNumber: string; invoiceDate: string; dueDate: string | null; note: string | null;
   lines: { orderItemId: string; quantity: number; unitPrice: number; gstRate: number }[];
+  /** Sprint 23: the budget department; null or missing: this supplier's last bill's, or the kitchen's. */
+  costCentreId?: string | null;
 }
 export interface PaySupplier { amount: number; paidOn: string | null; method: SupplierPaymentMethod; reference: string | null; note: string | null; version: number | null; }
 
@@ -56,6 +58,11 @@ export class PurchasingApi {
   }
   receive(pid: string, id: string, body: Receive) { return this.http.post<PurchaseOrder>(`${this.base(pid)}/orders/${id}/receipts`, body); }
   recordBill(pid: string, id: string, body: RecordBill) { return this.http.post<SupplierInvoice>(`${this.base(pid)}/orders/${id}/invoices`, body); }
+  /** Sprint 23: the budget departments a bill can count against, and changing a bill's. */
+  budgetDepartments(pid: string) { return this.http.get<{ id: string; code: string; name: string }[]>(`${this.base(pid)}/budget-departments`); }
+  setBillDepartment(pid: string, id: string, costCentreId: string | null, version: number | null) {
+    return this.http.put<SupplierInvoice>(`${this.base(pid)}/invoices/${id}/department`, { costCentreId, version });
+  }
 
   invoices(pid: string, status?: SupplierInvoiceStatus | 'OPEN' | null) {
     return this.http.get<SupplierInvoiceList>(`${this.base(pid)}/invoices${status ? `?status=${status}` : ''}`);

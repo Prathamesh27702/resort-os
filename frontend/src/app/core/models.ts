@@ -629,6 +629,8 @@ export interface SupplierInvoice {
   invoiceDate: string; dueDate: string; intraState: boolean; itcEligible: boolean; taxableValue: number; cgst: number; sgst: number; igst: number; inputTax: number;
   total: number; amountPaid: number; balance: number; status: SupplierInvoiceStatus; overdue: boolean; note: string | null; lines: SupplierInvoiceLine[];
   payments: SupplierPayment[]; byName: string | null; createdAt: string; version: number;
+  /** Sprint 23: the budget department the bill counts against. */
+  costCentreId: string | null; costCentreName: string | null;
 }
 export interface SupplierInvoiceList { items: SupplierInvoice[]; outstanding: number; overdue: number; inputTax: number; }
 /** needsApproval: total over approvalLimit, so a second person with purchase.approve must approve it. */
@@ -653,7 +655,11 @@ export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'SEASONAL'
 export type EmployeeDocumentType = 'AADHAAR' | 'PAN' | 'BANK_ACCOUNT' | 'PASSPORT' | 'DRIVING_LICENCE' | 'OFFER_LETTER' | 'OTHER';
 export type PayBasis = 'MONTHLY' | 'DAILY';
 export interface Designation { id: string; departmentId: string; name: string; isActive: boolean; employeeCount: number; version: number; }
-export interface Department { id: string; code: string; name: string; sortOrder: number; isActive: boolean; employeeCount: number; designations: Designation[]; version: number; }
+export interface Department {
+  id: string; code: string; name: string; sortOrder: number; isActive: boolean; employeeCount: number; designations: Designation[]; version: number;
+  /** Sprint 23: the budget department its pay counts against. */
+  costCentreId: string | null; costCentreName: string | null;
+}
 /** Never carries pay. weeklyOff: ISO day 1 Monday … 7 Sunday. */
 export interface Employee {
   id: string; code: string; firstName: string; lastName: string | null; fullName: string; phone: string | null; email: string | null; dateOfBirth: string | null;
@@ -910,8 +916,62 @@ export interface BudgetVarianceRow {
   costCentreId: string; costCentreCode: string; costCentreName: string; monthBudget: number; monthActual: number; budgetToDate: number;
   actualToDate: number; variance: number; variancePercent: number | null; annualBudget: number; forecast: number | null; forecastVariance: number | null;
   standing: BudgetStanding; waiting: number; waitingCount: number; categories: { categoryId: string; name: string; actual: number }[];
+  /** Sprint 23: what the actual is made of. pay null: the caller may not see pay, and it isn't in the actual. */
+  expenses: number; supplierBills: number; pay: number | null;
 }
 export interface BudgetReport {
   year: number; label: string; budgetId: string | null; through: string; asOf: string; rows: BudgetVarianceRow[]; total: BudgetVarianceRow;
-  months: { month: string; budget: number; actual: number }[];
+  months: { month: string; budget: number; actual: number }[]; payIncluded: boolean;
 }
+
+// ---------------------------------------------------------------- Sprint 23: reports and dashboards
+export interface ReportFreshness { refreshedAt: string | null; from: string | null; to: string | null; durationMs: number | null; everyMinutes: number; }
+export interface ReportAccess { operational: boolean; financial: boolean; pay: boolean; budget: boolean; }
+/** Money is before GST; null when the caller may not see it. */
+export interface ReportKpis {
+  from: string; to: string; unitsAvailable: number; unitsSold: number; occupancyPercent: number | null; guestNights: number; arrivals: number;
+  adr: number | null; revPar: number | null; roomRevenue: number | null; fnbRevenue: number | null; activityRevenue: number | null;
+  transportRevenue: number | null; otherRevenue: number | null; totalRevenue: number | null; paymentsReceived: number | null;
+  restaurantSales: number; foodCost: number; foodCostPercent: number | null; labour: number | null; labourPercent: number | null;
+}
+export interface DashboardToday { date: string; unitsAvailable: number; unitsSold: number; occupancyPercent: number | null; guestsInHouse: number; arrivals: number; departures: number; outOfOrder: number; }
+export interface ReportDayPoint { date: string; unitsAvailable: number; unitsSold: number; occupancyPercent: number | null; revenue: number | null; }
+export interface ReportMonthPoint { month: string; label: string; occupancyPercent: number | null; adr: number | null; revenue: number | null; }
+export interface DashboardBudget { month: string; budget: number; spent: number; payIncluded: boolean; }
+export interface ChannelRow {
+  sourceId: string; code: string; name: string; channel: string; unitsSold: number; sharePercent: number | null; roomRevenue: number;
+  commissionPercent: number; commission: number; net: number; adr: number | null;
+}
+export interface ChannelGroup { channel: string; unitsSold: number; roomRevenue: number; commission: number; net: number; }
+export interface GstRow {
+  month: string; label: string; outputTaxable: number; outputCgst: number; outputSgst: number; outputIgst: number; outputCess: number; posUninvoiced: number;
+  outputTotal: number; inputCgst: number; inputSgst: number; inputIgst: number; inputTotal: number; payable: number; credit: number; chargedOnBills: number;
+}
+export interface Dashboard {
+  today: string; access: ReportAccess; freshness: ReportFreshness; todayStats: DashboardToday; ahead: ReportDayPoint[]; monthToDate: ReportKpis;
+  lastMonth: ReportKpis | null; lastYear: ReportKpis | null; days: ReportDayPoint[]; months: ReportMonthPoint[]; channels: ChannelRow[] | null;
+  gst: GstRow | null; budget: DashboardBudget | null;
+}
+export interface OccupancyRow {
+  period: string; label: string; roomsAvailable: number; roomsSold: number; bedsAvailable: number; bedsSold: number; unitsAvailable: number; unitsSold: number;
+  outOfOrder: number; occupancyPercent: number | null; guestNights: number; arrivals: number; departures: number; roomRevenue: number | null; adr: number | null; revPar: number | null;
+}
+export interface OccupancyReport { from: string; to: string; by: 'day' | 'month'; rows: OccupancyRow[]; total: OccupancyRow; freshness: ReportFreshness; }
+export interface RevenueRow { period: string; label: string; room: number; fnb: number; activity: number; transport: number; other: number; total: number; tax: number; paymentsReceived: number; refundsPaid: number; }
+export interface RevenueReport { from: string; to: string; by: 'day' | 'month'; rows: RevenueRow[]; total: RevenueRow; freshness: ReportFreshness; }
+export interface ChannelReport { from: string; to: string; rows: ChannelRow[]; groups: ChannelGroup[]; total: ChannelGroup; freshness: ReportFreshness; }
+export interface GstReport { from: string; to: string; rows: GstRow[]; total: GstRow; freshness: ReportFreshness; }
+export interface CostRow {
+  month: string; label: string; revenue: number; restaurantSales: number; foodCost: number; foodCostPercent: number | null; stockWrittenOff: number;
+  labour: number | null; labourPercent: number | null; expenses: number; supplierBills: number;
+}
+export interface DepartmentCost { costCentreId: string | null; code: string; name: string; expenses: number; supplierBills: number; labour: number | null; total: number; }
+export interface CostReport { from: string; to: string; rows: CostRow[]; total: CostRow; departments: DepartmentCost[]; payIncluded: boolean; freshness: ReportFreshness; }
+export type PnlKind = 'REVENUE' | 'COST' | 'TOTAL' | 'PROFIT';
+export interface PnlLine { key: string; label: string; kind: PnlKind; months: number[]; total: number; }
+export interface PnlReport { from: string; to: string; months: string[]; labels: string[]; lines: PnlLine[]; payIncluded: boolean; freshness: ReportFreshness; }
+export interface MonthReport {
+  month: string; label: string; access: ReportAccess; this: ReportKpis; previous: ReportKpis; lastYear: ReportKpis; pnl: PnlReport | null;
+  channels: ChannelRow[] | null; gst: GstRow | null; departments: DepartmentCost[] | null; budget: DashboardBudget | null; freshness: ReportFreshness;
+}
+export interface CommissionRate { sourceId: string; code: string; name: string; channel: string; percent: number; defaultPercent: number; isSet: boolean; }

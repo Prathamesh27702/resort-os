@@ -109,6 +109,9 @@ public static class Perm
     public const string BudgetRead = "budget.read";
     public const string BudgetManage = "budget.manage";
 
+    public const string ReportOperationalRead = "report.operational.read";
+    public const string FinancialReportRead = "financial_report.read";
+
     public const string FolioRead = "folio.read";
     public const string FolioPostCharge = "folio.post_charge";
     public const string FolioAdjust = "folio.adjust";
@@ -146,7 +149,7 @@ public static class Perm
         FolioRead, FolioPostCharge, FolioAdjust,
         ActivityRead, ActivityManage, ActivityBookingCreate, EquipmentRead, EquipmentManage, EquipmentIssue,
         TransportRead, TransportManage, TransportBookingCreate, TransportTripOperate,
-        ExpenseRead, ExpenseCreate, ExpenseApprove, BudgetRead, BudgetManage,
+        ExpenseRead, ExpenseCreate, ExpenseApprove, BudgetRead, BudgetManage, ReportOperationalRead, FinancialReportRead,
         PaymentRead, PaymentCreate, PaymentRefund, PaymentVoid, CashDrawerOperate, CashDrawerApproveVariance,
         TaxRead, TaxManage,
         InvoiceRead, InvoiceCreate, InvoiceCancel, CreditNoteCreate,

@@ -24,6 +24,7 @@ using Resort.Domain.Organizations;
 using Resort.Domain.Payments;
 using Resort.Domain.Purchasing;
 using Resort.Domain.Rates;
+using Resort.Domain.Reports;
 using Resort.Domain.Reservations;
 using Resort.Domain.Tax;
 
@@ -177,6 +178,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<ExpenseAttachment> ExpenseAttachments => Set<ExpenseAttachment>();
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<BudgetLine> BudgetLines => Set<BudgetLine>();
+    public DbSet<DailyStat> DailyStats => Set<DailyStat>();
+    public DbSet<DailyChannelStat> DailyChannelStats => Set<DailyChannelStat>();
+    public DbSet<DailyCost> DailyCosts => Set<DailyCost>();
+    public DbSet<ReportRefreshState> ReportRefreshStates => Set<ReportRefreshState>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -737,6 +742,30 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
         });
         b.Entity<Budget>().ToTable("budgets");
         b.Entity<BudgetLine>().ToTable("budget_lines");
+
+        // The reporting summary (Sprint 23): read only, filled by the database function reporting.refresh.
+        b.Entity<DailyStat>(e =>
+        {
+            e.ToTable("daily_stats", "reporting");
+            e.HasKey(x => new { x.PropertyId, x.BusinessDate });
+            e.Ignore(x => x.UnitsAvailable);
+            e.Ignore(x => x.UnitsSold);
+        });
+        b.Entity<DailyChannelStat>(e =>
+        {
+            e.ToTable("daily_channel_stats", "reporting");
+            e.HasKey(x => new { x.PropertyId, x.BusinessDate, x.SourceId });
+        });
+        b.Entity<DailyCost>(e =>
+        {
+            e.ToTable("daily_costs", "reporting");
+            e.HasNoKey();
+        });
+        b.Entity<ReportRefreshState>(e =>
+        {
+            e.ToTable("refresh_state", "reporting");
+            e.HasKey(x => x.PropertyId);
+        });
 
         foreach (var entity in b.Model.GetEntityTypes())
         {

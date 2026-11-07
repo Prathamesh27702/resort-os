@@ -51,6 +51,10 @@
 //   - Sprint 22 changes nothing: it reads the expense setup, this year's expenses and the budget against actual, and checks
 //     refusals (an expense without an Idempotency-Key, GST on a bill with no GSTIN, a GSTIN with a wrong check digit, a
 //     rejection without a reason, a receptionist reading expenses or making a budget); no expense or budget is saved
+//   - Sprint 23 adds the numbers up once (Refresh now; the job does the same every 15 minutes) and reads the dashboard,
+//     occupancy, revenue, booking sources, GST, costs, the profit and loss and the month at a glance, checking that they
+//     agree with each other; it checks refusals (a period the wrong way round, more than a year by day, a commission over
+//     50 %, a receptionist reading reports); no commission or other setting is saved
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -965,6 +969,36 @@ await expectCall('Rejecting without a reason → 400 under Reason (nothing chang
   { token: T, body: { reason: '' } }, b => (b.details?.Reason?.[0] ?? '').length > 0 || JSON.stringify(b.details));
 await expectCall('Receptionist can’t read expenses → 403', 'GET', `${P}/expenses`, 403, { token: R });
 await expectCall('Receptionist can’t make a budget → 403', 'POST', `${P}/budgets`, 403, { token: R, body: { year: 2030, increasePercent: 0 } });
+
+// ---------------------------------------------------------------- Sprint 23 — reports and dashboards
+title('Sprint 23 — reports from the daily summary: occupancy, ADR, RevPAR, revenue, GST, costs, P&L');
+await expectCall('Refresh now adds the days up again and says when', 'POST', `${P}/reports/refresh`, 200, { token: T, body: {} },
+  b => (b?.refreshedAt && b.from && b.to && b.everyMinutes > 0) || JSON.stringify(b));
+const rpDash = await expectCall('Owner dashboard: all access, 14 nights ahead, 12 months of trend', 'GET', `${P}/reports/dashboard`, 200, { token: T },
+  b => (b?.access?.financial && b.access.pay && b.ahead?.length === 14 && b.months?.length === 12 && b.monthToDate?.unitsAvailable >= 0) || JSON.stringify(b).slice(0, 300));
+await expectCall('Occupancy by month: sold ≤ available, ADR = room revenue / sold, RevPAR = room revenue / available', 'GET',
+  `${P}/reports/occupancy?by=month`, 200, { token: T },
+  b => (Array.isArray(b?.rows) && b.rows.length >= 12 && b.rows.every(r => r.unitsSold <= r.unitsAvailable
+    && (r.unitsSold === 0 || Math.abs(r.adr - r.roomRevenue / r.unitsSold) < 0.01)
+    && (r.unitsAvailable === 0 || Math.abs(r.revPar - r.roomRevenue / r.unitsAvailable) < 0.01))) || JSON.stringify(b).slice(0, 300));
+await expectCall('Revenue by month: each total is the sum of its kinds', 'GET', `${P}/reports/revenue?by=month`, 200, { token: T },
+  b => (Array.isArray(b?.rows) && b.rows.every(r => Math.abs(r.total - (r.room + r.fnb + r.activity + r.transport + r.other)) < 0.01)) || JSON.stringify(b).slice(0, 300));
+await expectCall('Booking sources: net = room revenue − commission', 'GET', `${P}/reports/channels`, 200, { token: T },
+  b => (Array.isArray(b?.rows) && b.rows.every(r => Math.abs(r.net - (r.roomRevenue - r.commission)) < 0.01)) || JSON.stringify(b).slice(0, 300));
+await expectCall('GST by month: payable or credit is output − input', 'GET', `${P}/reports/gst`, 200, { token: T },
+  b => (Array.isArray(b?.rows) && b.rows.every(r => Math.abs((r.payable - r.credit) - (r.outputTotal - r.inputTotal)) < 0.01)) || JSON.stringify(b).slice(0, 300));
+await expectCall('Costs and P&L read (pay included for the owner)', 'GET', `${P}/reports/pnl`, 200, { token: T },
+  b => (b?.payIncluded && b.lines?.some(l => l.key === 'PROFIT')) || JSON.stringify(b).slice(0, 300));
+await expectCall('Month at a glance: this month beside last month and a year ago', 'GET', `${P}/reports/month`, 200, { token: T },
+  b => !!(b?.this && b.previous && b.lastYear && b.pnl) || JSON.stringify(b).slice(0, 300));
+await expectCall('A period the wrong way round → 400 under from', 'GET', `${P}/reports/occupancy?from=2026-05-10&to=2026-05-01`, 400, { token: T },
+  b => (b.details?.from?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+await expectCall('More than a year by day → 400 under to', 'GET', `${P}/reports/revenue?from=2025-01-01&to=2026-03-01`, 400, { token: T },
+  b => (b.details?.to?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+await expectCall('A commission over 50 % → 400 under Rates[0].Percent (nothing saved)', 'PUT', `${P}/reports/commission`, 400,
+  { token: T, body: { rates: [{ sourceId: rpDash?.json?.channels?.[0]?.sourceId ?? NONE, percent: 75 }] } },
+  b => Object.keys(b.details ?? {}).some(k => k.startsWith('Rates[0]')) || JSON.stringify(b.details));
+await expectCall('Receptionist can’t read reports → 403', 'GET', `${P}/reports/dashboard`, 403, { token: R });
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

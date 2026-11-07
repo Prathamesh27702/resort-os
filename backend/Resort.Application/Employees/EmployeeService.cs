@@ -27,10 +27,19 @@ public sealed class EmployeeService(IAppDbContext db, ICurrentUser caller, TimeP
         var designations = await db.Designations.AsNoTracking().Where(d => d.PropertyId == propertyId).OrderBy(d => d.Name).ToListAsync(ct);
         var active = await db.Employees.AsNoTracking().Where(e => e.PropertyId == propertyId && e.Status == EmployeeStatuses.Active)
             .Select(e => new { e.DepartmentId, e.DesignationId }).ToListAsync(ct);
+        var centres = await db.CostCentres.AsNoTracking().Where(c => c.PropertyId == propertyId).ToDictionaryAsync(c => c.Id, c => c.Name, ct);
         return departments.Select(d => new DepartmentDto(d.Id, d.Code, d.Name, d.SortOrder, d.IsActive, active.Count(e => e.DepartmentId == d.Id),
             designations.Where(x => x.DepartmentId == d.Id)
                 .Select(x => new DesignationDto(x.Id, x.DepartmentId, x.Name, x.IsActive, active.Count(e => e.DesignationId == x.Id), x.Version)).ToList(),
-            d.Version)).ToList();
+            d.Version, d.CostCentreId, d.CostCentreId is { } c ? centres.GetValueOrDefault(c) : null)).ToList();
+    }
+
+    /// <summary>The budget departments (Sprint 22's cost centres) a department's pay can count against (Sprint 23).</summary>
+    public async Task<IReadOnlyList<CostCentreDto>> BudgetDepartmentsAsync(Guid propertyId, CancellationToken ct)
+    {
+        await RequirePropertyAsync(propertyId, ct);
+        return await db.CostCentres.AsNoTracking().Where(c => c.PropertyId == propertyId && c.IsActive).OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
+            .Select(c => new CostCentreDto(c.Id, c.Code, c.Name, c.SortOrder, c.IsActive, c.Version)).ToListAsync(ct);
     }
 
     public async Task<DepartmentDto> SaveDepartmentAsync(Guid propertyId, Guid? id, SaveDepartmentRequest r, CancellationToken ct)
@@ -43,6 +52,8 @@ public sealed class EmployeeService(IAppDbContext db, ICurrentUser caller, TimeP
         var names = await db.Departments.AsNoTracking().Where(d => d.PropertyId == propertyId && d.Id != id).Select(d => d.Name).ToListAsync(ct);
         if (names.Any(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase)))
             throw ReservationService.Field(nameof(r.Name), $"There is already a department called {name}.");
+        if (r.CostCentreId is { } cc && !await db.CostCentres.AnyAsync(c => c.Id == cc && c.PropertyId == propertyId, ct))
+            throw ReservationService.Field(nameof(r.CostCentreId), "Choose a budget department of this property (Budgets → Departments).");
 
         Department dept;
         if (id is { } did)
@@ -64,6 +75,7 @@ public sealed class EmployeeService(IAppDbContext db, ICurrentUser caller, TimeP
         dept.Name = name;
         dept.SortOrder = r.SortOrder;
         dept.IsActive = r.IsActive;
+        dept.CostCentreId = r.CostCentreId;
         await db.SaveChangesAsync(ct);
         return (await DepartmentsAsync(propertyId, ct)).Single(d => d.Id == dept.Id);
     }

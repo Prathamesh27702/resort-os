@@ -81,11 +81,14 @@ public sealed record SaveBudgetRowRequest(Guid CostCentreId, IReadOnlyList<decim
 /// under budget). Forecast: the year's spend if it goes on at the rate so far (actual ÷ days passed × days in the year).
 /// Standing: ON_TRACK, OVER (spent more than planned so far), HEADING_OVER (the forecast passes the year's budget) or
 /// NO_BUDGET (spent with nothing planned). Waiting: expenses not approved yet, which are not in the actuals.
+/// Sprint 23: the actual is approved expenses (Expenses) + supplier bills at cost (SupplierBills) + pay (Pay, estimated;
+/// null when the caller may not see pay and then not in the actual). CostCentreId empty with code NONE: bills and pay not
+/// given a department.
 /// </summary>
 public sealed record BudgetVarianceRowDto(Guid CostCentreId, string CostCentreCode, string CostCentreName,
     decimal MonthBudget, decimal MonthActual, decimal BudgetToDate, decimal ActualToDate, decimal Variance, decimal? VariancePercent,
     decimal AnnualBudget, decimal? Forecast, decimal? ForecastVariance, string Standing, decimal Waiting, int WaitingCount,
-    IReadOnlyList<BudgetCategoryActualDto> Categories);
+    IReadOnlyList<BudgetCategoryActualDto> Categories, decimal Expenses = 0, decimal SupplierBills = 0, decimal? Pay = null);
 
 public sealed record BudgetCategoryActualDto(Guid CategoryId, string Name, decimal Actual);
 
@@ -93,6 +96,7 @@ public sealed record BudgetMonthDto(DateOnly Month, decimal Budget, decimal Actu
 
 /// <summary>The budget report for a year, through a month (Through, the first of the month), with each department, the
 /// property's total and the months of the year. BudgetId null: no budget has been made for the year yet (actuals only).
-/// AsOf: the day the forecast runs to (today, or the end of Through when that is earlier).</summary>
+/// AsOf: the day the forecast runs to (today, or the end of Through when that is earlier). PayIncluded: pay is in the
+/// actuals (the caller has employee_salary.read).</summary>
 public sealed record BudgetReportDto(int Year, string Label, Guid? BudgetId, DateOnly Through, DateOnly AsOf,
-    IReadOnlyList<BudgetVarianceRowDto> Rows, BudgetVarianceRowDto Total, IReadOnlyList<BudgetMonthDto> Months);
+    IReadOnlyList<BudgetVarianceRowDto> Rows, BudgetVarianceRowDto Total, IReadOnlyList<BudgetMonthDto> Months, bool PayIncluded = false);

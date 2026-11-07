@@ -5,10 +5,13 @@ namespace Resort.Contracts;
 public sealed record DesignationDto(Guid Id, Guid DepartmentId, string Name, bool IsActive, int EmployeeCount, uint Version);
 
 /// <summary>A department with its job titles. EmployeeCount: active employees in it.</summary>
+/// <summary>CostCentreId / CostCentreName: the budget department its pay counts against (Sprint 23), null when none.</summary>
 public sealed record DepartmentDto(
-    Guid Id, string Code, string Name, int SortOrder, bool IsActive, int EmployeeCount, IReadOnlyList<DesignationDto> Designations, uint Version);
+    Guid Id, string Code, string Name, int SortOrder, bool IsActive, int EmployeeCount, IReadOnlyList<DesignationDto> Designations, uint Version,
+    Guid? CostCentreId = null, string? CostCentreName = null);
 
-public sealed record SaveDepartmentRequest(string Code, string Name, int SortOrder = 0, bool IsActive = true, uint? Version = null);
+/// <summary>CostCentreId: the budget department (Sprint 22's cost centres) the pay of this department counts against.</summary>
+public sealed record SaveDepartmentRequest(string Code, string Name, int SortOrder = 0, bool IsActive = true, uint? Version = null, Guid? CostCentreId = null);
 
 public sealed record SaveDesignationRequest(Guid DepartmentId, string Name, bool IsActive = true, uint? Version = null);
 

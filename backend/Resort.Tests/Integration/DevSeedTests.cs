@@ -31,7 +31,7 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
             await db.Guests.IgnoreQueryFilters().CountAsync(),
             await db.Guests.IgnoreQueryFilters().CountAsync(g => g.Nationality != "IN"),
             await db.GuestAddresses.IgnoreQueryFilters().CountAsync()));
-        Assert.Equal(20, guests);
+        Assert.Equal(84, guests);   // 20 demo guests and the 64 of the year of history (S020, Sprint 23)
         Assert.Equal(6, foreign);
         Assert.Equal(20, withAddress);
     }
@@ -152,11 +152,15 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var owner = await app.SignInOwnerAsync();
         var pid = await app.MainPropertyIdAsync();
 
-        var all = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios?show=all");
-        var billable = await app.WithDbAsync(db => db.Reservations.IgnoreQueryFilters()
-            .CountAsync(r => r.PropertyId == pid && (r.Status == "CONFIRMED" || r.Status == "CHECKED_IN" || r.Status == "CHECKED_OUT")));
-        Assert.Equal(billable, all.Items.Count(f => f.IsPrimary));
-        Assert.Equal(all.Items.Count, all.Items.Select(f => f.Number).Distinct().Count());
+        // Every billable booking has its one primary folio, numbered once (the year of history, S020, included: counted in the database).
+        var (billable, primary, folios, numbers) = await app.WithDbAsync(async db => (
+            await db.Reservations.IgnoreQueryFilters()
+                .CountAsync(r => r.PropertyId == pid && (r.Status == "CONFIRMED" || r.Status == "CHECKED_IN" || r.Status == "CHECKED_OUT")),
+            await db.Folios.IgnoreQueryFilters().CountAsync(f => f.PropertyId == pid && f.IsPrimary),
+            await db.Folios.IgnoreQueryFilters().CountAsync(f => f.PropertyId == pid),
+            await db.Folios.IgnoreQueryFilters().Where(f => f.PropertyId == pid).Select(f => f.Number).Distinct().CountAsync()));
+        Assert.Equal(billable, primary);
+        Assert.Equal(folios, numbers);
 
         var inHouse = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios");
         Assert.Equal(["R00007", "R00008"], inHouse.Items.Select(f => f.Reference).Order());
@@ -212,8 +216,9 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         Assert.Equal(("CLOSED", 5000m, 500m, 5500m, 0m), (shift.Status, shift.OpeningFloat, shift.CashIn, shift.Counted!.Value, shift.Variance!.Value));
 
         var payments = await owner.GetJsonAsync<PaymentListDto>($"/api/v1/properties/{pid}/payments");
+        // The two demo payments of Sprint 10 (the year of history, S020, adds one paid at each past check-out after them).
         Assert.Equal(new[] { ("P00001", "R00007", "CASH", 0m), ("P00002", "R00002", "UPI", 2000m) },
-            payments.Items.OrderBy(p => p.Number).Select(p => (p.Number, p.Reference, p.Method, p.OnAccount)));
+            payments.Items.OrderBy(p => p.Number).Take(2).Select(p => (p.Number, p.Reference, p.Method, p.OnAccount)));
         var inHouse = await owner.GetJsonAsync<PagedResult<FolioListItemDto>>($"/api/v1/properties/{pid}/folios");
         var r7 = await owner.GetJsonAsync<FolioDto>($"/api/v1/properties/{pid}/folios/{inHouse.Items.Single(f => f.Reference == "R00007").Id}");
         Assert.Equal((500m, r7.Total - 500m), (r7.Payments, r7.Balance));
@@ -221,7 +226,9 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         // the next payment is numbered after the seeded ones
         var next = await app.WithDbAsync(db => db.Database.SqlQuery<long>(
             $"SELECT last_value AS \"Value\" FROM property_counters WHERE property_id = {pid} AND name = 'payment'").SingleAsync());
-        Assert.Equal(2L, next);
+        var seeded = await app.WithDbAsync(db => db.Payments.IgnoreQueryFilters().CountAsync(p => p.PropertyId == pid));
+        Assert.Equal(seeded, next);   // the two demo payments and one for each past stay of the history (S020)
+        Assert.True(next > 1_000, $"{next} payments");
     }
     /// <summary>Sprint 14: a sample menu with portions, choices and a sold-out drink; six tables; and one open order whose
     /// ticket is on the kitchen display, with GST because the demo property is registered.</summary>

@@ -13,7 +13,7 @@ at the end of every sprint (see [How this guide stays current](#how-this-guide-s
 | [5. Changing the system safely](#5-changing-the-system-safely) | Adding a table, an endpoint or a screen without breaking these guarantees |
 | [6. Where to read more](#6-where-to-read-more) | The detailed documents behind each part |
 
-Status: Sprints 01–22 built and accepted (October–November 2026); Sprint 23 in progress. Anything marked *planned* is design that a later sprint
+Status: Sprints 01–23 built and accepted (October–November 2026); Sprint 24 in progress. Anything marked *planned* is design that a later sprint
 builds; [ARCHITECTURE.md](../ARCHITECTURE.md) holds the full target design and [decisions.md](decisions.md) the
 decisions behind it.
 
@@ -578,6 +578,33 @@ flowchart LR
   Categories and departments) and **Budget** (`/budgets`: tiles, each department's budget so far against spent with the
   variance, the year at this rate and a standing; a department's month and categories; a month chart with a table view;
   Plan and Make the budget). Dialogs in `expense-dialogs.ts`. [4.32](#432-expenses-approval-and-budget-against-actual)
+  explains the rules.
+
+### Sprint 23: Reports and dashboards
+
+![Reports: the raw tables added up into a daily summary that every report reads](../../tools/handbooks/assets/report-flow.png)
+
+- Migration V025: the schema `reporting` with `daily_stats` (one row per property and day: rooms and dorm beds available
+  and sold, out of order, guests, arrivals, departures, revenue by kind before GST, GST charged, payments, refunds,
+  restaurant sales, food cost, stock written off, output and input GST), `daily_channel_stats` (per booking source),
+  `daily_costs` (per budget department: expenses, supplier bills, pay) and `refresh_state`; the functions
+  `reporting.refresh`, `reporting.labour_cost` and `reporting.commission_percent`; the views `v_daily`, `v_monthly`,
+  `v_channels_monthly`, `v_costs_monthly`, `v_gst_monthly` and the read-only role `resort_reporting`; date indexes so a
+  refresh reads ranges. `departments.cost_centre_id` and `supplier_invoices.cost_centre_id` say which budget department
+  pay and bills count for. Details: [schema-sprint-23.md](../database/schema-sprint-23.md). Dev seed S020: a year of past
+  stays.
+- `Domain/Reports/Reports.cs` (the summary entities, read-only to the app). `Application/Reports/ReportService.cs`
+  (`ReportMath`: occupancy, ADR, RevPAR, default commission, months, refresh ranges; `ReportRefresher` calls
+  `reporting.refresh`; `ReportService`: dashboard, occupancy, revenue, booking sources, GST, costs, P&L, the month at a
+  glance, refresh, commission). `Api/Infrastructure/ReportRefreshJob.cs` (every `Reporting:RefreshMinutes`, nightly full
+  rebuild). `BudgetService` now adds supplier bills and pay to the actuals.
+- Endpoints: `ReportEndpoints.cs` (`/reports/dashboard|occupancy|revenue|channels|gst|costs|pnl|month|refresh|commission`);
+  `/departments/budget-departments`, `/purchasing/budget-departments`, `/purchasing/invoices/{id}/department`. The
+  permissions `report.operational.read` and `financial_report.read` existed since Sprint 01's catalogue; pay needs
+  `employee_salary.read`.
+- Screens: **Reports** (`/reports`, `features/reports/`: tabs, CSV, Refresh now, the commission dialog; the month at a
+  glance prints) and the owner's sections on **Today** (`features/dashboard/owner-board.ts`). Bars and the freshness line
+  are `report-bits.ts`. The Budget screen shows each department's split. [4.33](#433-reports-the-daily-summary-and-power-bi)
   explains the rules.
 
 ---
@@ -1436,6 +1463,51 @@ Code: `Application/Finance/` (`ExpenseService.cs`, `BudgetService.cs`), `Domain/
    Standing: *No budget* when the year's plan is ₹0, *Over budget* when spent passes the plan so far, *Heading over* when
    the year at this rate passes the year's plan, else *On track*. `FinanceMath` holds these; unit tests pin them.
 
+### 4.33 Reports: the daily summary and Power BI
+
+Code: `Application/Reports/ReportService.cs`, `Api/Infrastructure/ReportRefreshJob.cs`,
+`database/migrations/V025__reporting.sql`, `features/reports/`, `features/dashboard/owner-board.ts`. Diagram: section 3
+(Sprint 23). Tests: `ReportUnitTests`, `ReportTests`, `ReportSpeedTests`, `reports.spec.ts`, `e2e/sprint-23.spec.ts`.
+
+1. **Reports never add up the raw tables when a page opens** (brief §88). `reporting.refresh(property, from, to)` adds
+   one property's days into the summary tables: it deletes the days and inserts them again in one transaction, so a
+   report sees the old numbers or the new ones, never half. Every query in it is bounded by the days (date indexes in
+   V025). The API's reports and the dashboard read only `reporting.*`, so a year is 365 rows. Test:
+   `The_owner_dashboard_loads_in_under_a_second_on_a_year_of_seed_data` (the acceptance).
+2. **When it runs.** `ReportRefreshJob` every 15 minutes refreshes the 1st of last month to 90 days ahead for every
+   property, and once a local day (the first run after midnight) from 1 April of last financial year to 90 days ahead, so
+   a late bill or a correction shows within 15 minutes, an old one by the morning. **Refresh now** does the default range
+   at once. `pg_advisory_xact_lock` per property makes refreshes of one property queue, so the job on several API
+   instances and Refresh now can meet safely. At most 900 days at once (`ck_reporting_refresh_range`), enough for the
+   nightly range on 31 March.
+3. **Occupancy.** A dorm bed counts as one unit, like a room. Available = active rooms sold whole + active beds, less
+   those in an `OUT_OF_ORDER` or `MAINTENANCE` block that night. Sold = current `reservation_units` rows of bookings
+   confirmed, in house or checked out that cover the night (cancelled and no-shows sell nothing). Capacity is today's
+   rooms: a room added later counts back in history too.
+4. **Revenue, ADR, RevPAR.** Revenue is `folio_items.amount` (before GST) by `service_date` and category: charges,
+   reversals and credit lines, so a night given free or credited earns nothing. ADR = room revenue ÷ units sold; RevPAR =
+   room revenue ÷ units available; `ReportMath` rounds (occupancy 1 decimal, money to the paisa) the same as the views.
+   Test: `Adr_and_revpar_of_a_month_match_the_hand_calculation` (the sprint's required test: a month worked out by hand
+   with a dorm bed, a block, a reversed night, a cancelled booking and a stay running into the next month).
+5. **Booking sources.** Room revenue per source and day, times `reporting.commission_percent` (the property setting
+   `reports.commission_percent`, else the source's own, else 18 % OTA / 10 % travel agent). Saving rates audits the change
+   and refreshes, so the net follows at once.
+6. **GST** is an estimate: output on invoices and debit notes less credit notes by their date, GST on restaurant bills paid
+   at the table (no invoice yet), input that can be claimed on supplier bills and approved expenses; payable or credit.
+   "On the bills" shows the GST charged by the day of service, which runs ahead of invoices until check-out.
+7. **Pay** (`reporting.labour_cost`) is an estimate: a monthly salary spread over the days of the month the person was
+   employed; a daily rate for each day worked on a timesheet that wasn't rejected; no PF, ESI or loss of pay. It is in the
+   reports, P&L and budget only for `employee_salary.read`; for others the fields are `null` and the totals leave it out,
+   so nothing can be worked back.
+8. **Budget actuals** (Sprint 22's open point): approved expenses + supplier bills (cost: the taxable value when ITC can
+   be claimed, else the total; by the bill date; in `supplier_invoices.cost_centre_id`, defaulted from the supplier's last
+   bill or Food and beverage for a kitchen store) + pay (by `departments.cost_centre_id`). A "No department" row shows what
+   has none. The P&L treats supplier bills differently: what they bought counts when used (food cost) or written off.
+9. **Power BI.** The views have the property's code and name and no secrets; the role `resort_reporting` has `USAGE` on the
+   schema and `SELECT` on the five views only (test: `The_power_bi_role_reads_the_views_and_nothing_else`).
+   `scripts/powerbi-user.sql` makes a read-only login in it. `v_costs_monthly` includes pay, so only people who may see pay
+   should get that login. How to connect: [REPORTING.md](../REPORTING.md).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1468,3 +1540,4 @@ request:
 | 20 | Activities and equipment (sessions whose seats can't be oversold, bookings on the bill, weather cancellation with refunds or moves, tagged equipment issued and returned with its allowed moves), activity flow diagram; system design 4.30 Activity seats, weather cancellation, equipment (accepted 2 Nov 2026) |
 | 21 | Beach transport (vehicles, routes, trips whose seats can't be oversold, a vehicle and a driver on one trip at a time, seats on the bill, the driver's phone manifest with boarding, the manifest PDF), transport flow diagram; system design 4.31 Beach trips: seats, the driver's manifest, boarding (accepted 5 Nov 2026) |
 | 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (accepted 5 Nov 2026) |
+| 23 | Reports and dashboards (a daily summary per property refreshed every 15 minutes and nightly, occupancy, ADR, RevPAR, revenue, booking sources with commission and net, GST, food and labour cost, profit and loss, the owner's Today and the Reports page, money hidden from managers, five views for Power BI through a read-only role, supplier bills and pay in the budget), report flow diagram; system design 4.33 Reports: the daily summary and Power BI (accepted 7 Nov 2026) |
