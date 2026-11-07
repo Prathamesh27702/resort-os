@@ -55,6 +55,10 @@
 //     occupancy, revenue, booking sources, GST, costs, the profit and loss and the month at a glance, checking that they
 //     agree with each other; it checks refusals (a period the wrong way round, more than a year by day, a commission over
 //     50 %, a receptionist reading reports); no commission or other setting is saved
+//   - Sprint 24 changes nothing: it reads the messaging setup, the messages, the templates, the daily jobs and the bell,
+//     and checks refusals (a template with a variable the message can't fill in, a job time with seconds, a job that
+//     doesn't exist, a WhatsApp webhook with a wrong signature or verify token, a receptionist changing a template); no
+//     template, job or message is saved or sent
 // Docs: docs/testing/VERIFYING.md → "API checks".
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -999,6 +1003,37 @@ await expectCall('A commission over 50 % → 400 under Rates[0].Percent (nothing
   { token: T, body: { rates: [{ sourceId: rpDash?.json?.channels?.[0]?.sourceId ?? NONE, percent: 75 }] } },
   b => Object.keys(b.details ?? {}).some(k => k.startsWith('Rates[0]')) || JSON.stringify(b.details));
 await expectCall('Receptionist can’t read reports → 403', 'GET', `${P}/reports/dashboard`, 403, { token: R });
+
+// ---------------------------------------------------------------- Sprint 24 — notifications, WhatsApp, email, jobs
+title('Sprint 24 — messages to guests and staff: outbox, templates, daily jobs, WhatsApp webhook, the bell');
+await expectCall('Messaging setup says how WhatsApp and email are connected', 'GET', `${P}/messages/setup`, 200, { token: T },
+  b => (['LIVE', 'FAKE', 'OFF'].includes(b?.whatsAppMode) && ['LIVE', 'FAKE', 'OFF'].includes(b.emailMode) && b.canManage === true) || JSON.stringify(b));
+await expectCall('Messages read newest first, each with its status in words', 'GET', `${P}/messages?pageSize=10`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.items.every(m => m.statusWords && m.channel)) || JSON.stringify(b).slice(0, 300));
+await expectCall('"Needs a look" lists only failed and not-sent messages, each with its reason', 'GET', `${P}/messages?status=PROBLEM`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.items.every(m => ['FAILED', 'SKIPPED'].includes(m.status) && !!m.reason)) || JSON.stringify(b).slice(0, 300));
+const tpl = await expectCall('12 templates (5 guest messages on WhatsApp, 4 of them also by email; low stock in the app and by email; leave in the app), each with its variables',
+  'GET', `${P}/message-templates`, 200, { token: T },
+  b => (Array.isArray(b) && b.length === 12 && b.every(t => t.variables?.length > 0)) || JSON.stringify(b).slice(0, 300));
+const email = tpl?.json?.find?.(t => t.code === 'booking_confirmation' && t.channel === 'EMAIL');
+await expectCall('A template with {{room_number}} → 400 under Body naming what it can use (nothing saved)', 'PUT', `${P}/message-templates/${email?.id ?? NONE}`, 400,
+  { token: T, body: { providerTemplate: null, language: 'en', subject: email?.subject ?? 'Your booking', body: 'Hello {{guest_name}}, room {{room_number}}', isActive: true, version: email?.version } },
+  b => (b.details?.Body?.[0] ?? '').includes('It can use') || JSON.stringify(b.details));
+await expectCall('Receptionist can’t change a template → 403', 'PUT', `${P}/message-templates/${email?.id ?? NONE}`, 403,
+  { token: R, body: { providerTemplate: null, language: 'en', subject: 'x', body: 'Hello {{guest_name}}', isActive: true, version: email?.version } });
+await expectCall('6 daily jobs, each with its time and next run', 'GET', `${P}/jobs`, 200, { token: T },
+  b => (b?.jobs?.length === 6 && b.jobs.every(j => j.runAt && j.nextRunAt) && Array.isArray(b.recent)) || JSON.stringify(b).slice(0, 300));
+await expectCall('A job time with seconds → 400 under RunAt (nothing saved)', 'PUT', `${P}/jobs/reservation_reminder`, 400,
+  { token: T, body: { enabled: true, runAt: '10:00:30', version: null } },
+  b => (b.details?.RunAt?.[0] ?? '').length > 0 || JSON.stringify(b.details));
+await expectCall('A job that doesn’t exist → 404', 'POST', `${P}/jobs/send_everyone_a_poem/run`, 404, { token: T });
+await expectCall('The bell: my notifications and how many are unread', 'GET', '/api/v1/notifications', 200, { token: T },
+  b => (Array.isArray(b?.items) && typeof b.unread === 'number') || JSON.stringify(b));
+await expectCall('WhatsApp webhook with a wrong signature → 401 (nothing changed)', 'POST', '/api/v1/webhooks/whatsapp', 401,
+  { body: { object: 'whatsapp_business_account', entry: [] }, headers: { 'x-hub-signature-256': 'sha256=' + '0'.repeat(64) } },
+  b => b?.code === 'BAD_SIGNATURE' || JSON.stringify(b));
+await expectCall('WhatsApp URL check with a wrong verify token → 403', 'GET',
+  '/api/v1/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=123', 403, {});
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

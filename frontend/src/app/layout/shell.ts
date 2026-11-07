@@ -10,12 +10,13 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { AuthService } from '../core/auth.service';
 import { PropertyContext, inZone } from '../core/property-context';
 import { InstallPrompt } from '../core/install';
+import { Bell } from './bell';
 
 interface NavItem { label: string; icon: string; link: string; perm?: string; exact?: boolean; }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, MatMenuModule, MatButtonModule, MatSidenavModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, MatMenuModule, MatButtonModule, MatSidenavModule, Bell],
   template: `
     <mat-sidenav-container class="frame">
       <mat-sidenav [mode]="mobile() ? 'over' : 'side'" [opened]="!mobile() || navOpen()" (closed)="navOpen.set(false)" class="rail">
@@ -59,6 +60,7 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
           }
 
           <span class="grow"></span>
+          <app-bell />
           <button mat-button [matMenuTriggerFor]="umenu" class="user">
             <span class="initials">{{ initials() }}</span>
             <span class="who"><b>{{ auth.me()?.fullName }}</b><small>{{ auth.roleLabel() }}</small></span>
@@ -122,6 +124,7 @@ export class Shell {
     { label: 'Payments', icon: 'payments', link: '/payments', perm: 'payment.read' },
     { label: 'Invoices', icon: 'request_quote', link: '/invoices', perm: 'invoice.read' },
     { label: 'Guests', icon: 'group', link: '/guests', perm: 'guest.read' },
+    { label: 'Messages', icon: 'forum', link: '/messages', perm: 'message.read' },
     { label: 'Rooms', icon: 'bed', link: '/rooms', perm: 'accommodation.read', exact: true },
     { label: 'Room status', icon: 'grid_view', link: '/rooms/status', perm: 'accommodation.read' },
     { label: 'Housekeeping', icon: 'cleaning_services', link: '/housekeeping', perm: 'housekeeping.read' },

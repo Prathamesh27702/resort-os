@@ -10,28 +10,37 @@
 
 ## Where this sprint stands
 
-**Now:** In progress — see the open issues in this sprint's milestone.
+**Now:** Built, in review (PR to develop). Defaults to confirm: booking messages go on WhatsApp and by email unless the guest said No on their profile (no confirmation for walk-ins); job times reminder 10:00, pre-arrival 10:00 three days ahead, check-out 08:00, payment 11:00 (once per link, a day after it was made), low stock 08:00 and leave 09:00 (one digest a day to the people who can act); 5 tries at 1, 5, 15 and 60 minutes; templates and job times changed by the owner only (integration.manage), Send again and Run now by managers and receptionists; Resend for email; guest replies counted, not stored; the built-in test WhatsApp and email without keys, and in production without keys messages fail with the reason.
 
 **Done so far**
 
-_Nothing yet._
+- Migration V026: message_templates, outbox_messages (unique key per property, the guard trigger), whatsapp_messages, email_messages, notifications, scheduled_jobs, job_runs (unique property + job + business key, append-only); WHATSAPP webhooks; consents SERVICE_WHATSAPP and SERVICE_EMAIL
+- Outbox: the booking confirmation is written in the booking's transaction (booked confirmed, confirmed by staff, paid online); a sender every 10 s claims rows with FOR UPDATE SKIP LOCKED; passing failures tried again 1, 5, 15, 60 min, at most 5 tries
+- Scheduler in PostgreSQL (no Redis): scheduled_jobs claimed by compare-and-set; six idempotent jobs (day-before reminder, pre-arrival, check-out, payment, low stock, leave) through job_runs and an advisory lock per item
+- WhatsApp Cloud API template messages with named parameters; status webhook signed with the app secret, each status once, forward only; Meta's URL check
+- Email through Resend with the outbox id as the idempotency key; in-app notifications and the bell
+- Built-in test WhatsApp and email (no keys, never in production) with Delivered / Read / Failed buttons through the real webhook
+- Screens: /messages (messages with reasons and Send again, templates with variables and preview, daily jobs with Run now), the bell, the booking's messages card, booking-message consent on the guest; 360 px phone
+- Dev seed S021: five WhatsApp confirmations as WhatsApp reported them and a line in the owner's bell
+- [done] Docs: WHATSAPP.md, API.md, DATABASE.md, schema-sprint-24.md, system design Sprint 24 and 4.34 with the messages diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG
 
-**Files this sprint will add / change** (expected)
+**Files added / changed**
 
-- database/migrations/V###__notifications.sql — new tables (next free number)
-- backend/Resort.Domain/Notifications/ — entities
-- backend/Resort.Contracts/Contracts.cs — request/response records
-- backend/Resort.Application/Notifications/ — services; Validation/Validators.cs; Common/Permissions.cs if new codes; DependencyInjection.cs
-- backend/Resort.Infrastructure/Persistence/AppDbContext.cs — DbSets and mappings
-- backend/Resort.Infrastructure/Notifications/ — external API adapter + fake server for tests
-- backend/Resort.Api/Endpoints/NotificationsEndpoints.cs + Program.cs registration
-- backend/Resort.Tests/Integration/NotificationsTests.cs (+ Unit/ for pure calculations)
-- frontend/src/app/features/integrations/ — screens; app.routes.ts; layout/shell.ts menu entry
-- docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-24.md, this guide, CHANGELOG.md
+- database/migrations/V026__notifications.sql; database/seed/dev/S021__messages.sql; database/queries/check-sprint-24.sql
+- backend/Resort.Domain/Notifications/Notifications.cs; backend/Resort.Contracts/NotificationContracts.cs
+- backend/Resort.Application/ — Notifications/ (NotificationCatalog, Outbox, OutboxDispatcher, NotificationJobs, WhatsAppWebhookService, MessageService, MessageProviders), Validation/NotificationValidators.cs, Reservations/ReservationService.cs, Guests/GuestService.cs, Common/Permissions.cs, DependencyInjection.cs
+- backend/Resort.Infrastructure/Notifications/ (WhatsAppCloudClient, FakeWhatsAppServer, ResendEmailClient); DependencyInjection.cs; Persistence/AppDbContext.cs
+- backend/Resort.Api/ — Endpoints/NotificationsEndpoints.cs, Infrastructure/NotificationJobsHost.cs, Program.cs
+- backend/Resort.Tests/ — Integration/NotificationsTests.cs, Unit/NotificationUnitTests.cs, Support/NotificationsFactory.cs, Integration/DevSeedTests.cs
+- frontend/src/app/ — features/messages/ (messages.page.ts, message-dialogs.ts, booking-messages-panel.ts, messages.api.ts, messages.spec.ts), layout/bell.ts, layout/shell.ts, features/reservations/reservation.page.ts, features/guests/guest.page.ts, core/models.ts, app.routes.ts
+- frontend/e2e/sprint-24.spec.ts, frontend/e2e/start-api.mjs; scripts/check-api.mjs (Sprint 24 checks); .env.example
+- docs/WHATSAPP.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-24.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-24-screens/; tools/handbooks/diagrams (message-flow)
 
 **Test results**
 
-_Not run yet — see How to test below._
+- Backend: 618 passed, 0 failed on real PostgreSQL 16 (the acceptance: a guest booked for tomorrow gets the WhatsApp and email confirmation and the day-before reminder; the required job run twice, and twice at the same moment, sends each guest one reminder; the required WhatsApp status webhook refused with a wrong signature, each status once, only forward; the scheduler runs a due job once and moves it to tomorrow; no number, no email, opted out and template off say why; passing failures tried again, then failed; template field errors; payment, check-out and low stock jobs and the bell; anonymising blanks messages; another tenant sees nothing). Release build with warnings as errors and dotnet format clean
+- Frontend: 135 of 135 unit tests passed (4 new); ESLint clean; production build OK
+- Browser tests: Sprint 24's 8 steps pass (a confirmed booking's WhatsApp and email confirmation on the booking page; WhatsApp says delivered then read; the day-before reminder run twice sends once; the seeded failed message says why and is sent again; a template with an unknown variable refused under the text; a job moved to 9:30 and back; the owner's bell; the Messages page on a 360 px phone). Full run: 180 passed, 0 failed (27.6 min). API checks 291 of 291 (12 new); database checks clean; screenshots in docs/sprints/sprint-24-screens
 
 **Outcome**
 
@@ -48,16 +57,25 @@ Expected when accepted:
 - `notifications`
 - `whatsapp_messages`
 - `email_messages`
+- `scheduled_jobs`
 - `job_runs`
 
 **API endpoints**
 
 - `/api/v1/webhooks/whatsapp`
+- `/api/v1/properties/{propertyId}/messages/*, /message-templates/*, /jobs/*`
+- `/api/v1/notifications/*`
+
+**Screens / routes**
+
+- `/messages`
+- `the bell in the header`
+- `/reservations/{id} (messages to the guest)`
 
 **External APIs used**
 
 - WhatsApp Business Platform (Cloud API)
-- transactional email provider
+- Resend (transactional email)
 
 Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABASE.md). Update both in this sprint.
 
@@ -65,10 +83,10 @@ Full endpoint specs go in [API.md](../API.md); tables in [DATABASE.md](../DATABA
 
 Each task becomes a GitHub issue under this sprint's milestone.
 
-- [ ] Outbox pattern: business transaction writes outbox row; background worker sends
-- [ ] Background jobs with PostgreSQL-backed scheduler (no Redis — brief §76); every job idempotent
-- [ ] Jobs: reservation reminder, pre-arrival, checkout reminder, payment reminder, inventory alert, leave reminder
-- [ ] WhatsApp template messages; status webhooks (sent/delivered/read/failed)
+- [x] Outbox pattern: business transaction writes outbox row; background worker sends
+- [x] Background jobs with PostgreSQL-backed scheduler (no Redis — brief §76); every job idempotent
+- [x] Jobs: reservation reminder, pre-arrival, checkout reminder, payment reminder, inventory alert, leave reminder
+- [x] WhatsApp template messages; status webhooks (sent/delivered/read/failed)
 
 ## How to run this sprint
 

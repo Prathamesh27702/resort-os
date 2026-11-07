@@ -464,4 +464,27 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var linen = list.Items.Single(e => e.Description == "Bed sheets and pillow covers");
         Assert.Equal(("SUBMITTED", true), (linen.Status, linen.NeedsReceipt));
     }
+
+    /// <summary>Sprint 24: the WhatsApp confirmations of the five latest demo bookings with a mobile number, as WhatsApp reported them (one failed
+    /// and can be sent again), and a line in the owner's bell.</summary>
+    [Fact]
+    public async Task Dev_seed_has_whatsapp_confirmations_with_their_delivery_and_a_line_in_the_owners_bell()
+    {
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<DevSeeder>().RunAsync(CancellationToken.None);   // idempotent
+        var owner = await app.SignInOwnerAsync();
+        var pid = await app.MainPropertyIdAsync();
+
+        var list = await owner.GetJsonAsync<PagedResult<MessageListItemDto>>($"/api/v1/properties/{pid}/messages?pageSize=100");
+        Assert.Equal(5, list.Items.Count(m => m.TemplateCode == "booking_confirmation"));
+        Assert.Equal(["DELIVERED", "FAILED", "READ", "READ", "SENT"], list.Items.Select(m => m.Status).Order());
+        var failed = list.Items.Single(m => m.Status == "FAILED");
+        Assert.True(failed.CanRetry);
+        Assert.StartsWith("WhatsApp couldn't deliver it", failed.Reason);
+        Assert.All(list.Items, m => Assert.NotNull(m.ReservationReference));
+        var bell = await owner.GetJsonAsync<NotificationListDto>("/api/v1/notifications");
+        Assert.Contains(bell.Items, n => n.Title == "Messages are on" && n.Link == "/messages");
+        // The templates and jobs are made by the app on first use.
+        Assert.Equal(12, (await owner.GetJsonAsync<List<MessageTemplateDto>>($"/api/v1/properties/{pid}/message-templates")).Count);
+    }
 }
