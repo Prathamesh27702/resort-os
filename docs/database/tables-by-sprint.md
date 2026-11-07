@@ -154,6 +154,7 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `whatsapp_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `email_messages` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `job_runs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
+| `scheduled_jobs` | [Sprint 24](../sprints/sprint-24-notification-engine-whatsapp-email.md) | 🔵 In progress |
 | `accounting_connections` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
 | `accounting_sync_records` | [Sprint 25](../sprints/sprint-25-zoho-books-tally-export-e-invoice.md) | ⚪ Planned |
 | `ota_channels` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |

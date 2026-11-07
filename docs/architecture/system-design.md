@@ -607,6 +607,32 @@ flowchart LR
   are `report-bits.ts`. The Budget screen shows each department's split. [4.33](#433-reports-the-daily-summary-and-power-bi)
   explains the rules.
 
+### Sprint 24: Notification engine, WhatsApp, email, background jobs
+
+![Messages: written to the outbox with the booking, sent by a background sender, tracked by WhatsApp's webhook](../../tools/handbooks/assets/message-flow.png)
+
+- Migration V026: `message_templates` (the words per message and channel, editable), `outbox_messages` (every message
+  to send or sent: unique `dedupe_key` per property, status QUEUED → SENT → DELIVERED → READ, or FAILED / SKIPPED with
+  the reason; a guard trigger keeps the key, recipient and channel fixed), `whatsapp_messages` (WhatsApp's message id and
+  its statuses), `email_messages` (append-only), `notifications` (the bell), `scheduled_jobs` (each daily job's time and
+  next run) and `job_runs` (append-only, unique property + job + business key). `webhook_events` takes WHATSAPP; guest
+  consents take `SERVICE_WHATSAPP` and `SERVICE_EMAIL`. Details: [schema-sprint-24.md](../database/schema-sprint-24.md).
+  Dev seed S021: five WhatsApp confirmations as WhatsApp reported them and a line in the owner's bell.
+- `Domain/Notifications/Notifications.cs`. `Application/Notifications/`: `NotificationCatalog` (the messages, their
+  variables, the 12 default templates, the six jobs and their times; `MessageText` fills `{{variables}}`), `Outbox`
+  (writes rows; `BookingConfirmedAsync` is called by `ReservationService` when a booking becomes confirmed),
+  `OutboxDispatcher` (sends), `NotificationJobs` (the scheduler and the six jobs), `WhatsAppWebhookService`,
+  `MessageService` (the screens' API). `Infrastructure/Notifications/`: `WhatsAppCloudClient`, `ResendEmailClient` and the
+  fakes `FakeWhatsAppServer` and `FakeEmailServer`. `Api/Infrastructure/NotificationJobsHost.cs`: the scheduler (every
+  minute) and the sender (every 10 s) as hosted services.
+- Endpoints: `NotificationsEndpoints.cs` (`/messages`, `/message-templates`, `/jobs`, `/api/v1/notifications`,
+  `/api/v1/webhooks/whatsapp`). The permissions `message.read`, `message.send` and `integration.manage` existed since
+  Sprint 01's catalogue.
+- Screens: **Messages** (`/messages`, `features/messages/`: messages with their reasons and Send again, templates with
+  variables and a preview, daily jobs with Run now), the bell (`layout/bell.ts`), the booking's **Messages to the guest**
+  card, and booking-message consent on the guest's profile. [4.34](#434-messages-the-outbox-and-the-daily-jobs) explains
+  the rules.
+
 ---
 
 ## 4. System design: how the hard parts work
@@ -1508,6 +1534,53 @@ Code: `Application/Reports/ReportService.cs`, `Api/Infrastructure/ReportRefreshJ
    `scripts/powerbi-user.sql` makes a read-only login in it. `v_costs_monthly` includes pay, so only people who may see pay
    should get that login. How to connect: [REPORTING.md](../REPORTING.md).
 
+### 4.34 Messages: the outbox and the daily jobs
+
+Code: `Application/Notifications/` (`Outbox.cs`, `OutboxDispatcher.cs`, `NotificationJobs.cs`, `WhatsAppWebhookService.cs`),
+`Infrastructure/Notifications/`, `Api/Infrastructure/NotificationJobsHost.cs`, `database/migrations/V026__notifications.sql`,
+`features/messages/`. Diagram: section 3 (Sprint 24). Setup and defaults: [WHATSAPP.md](../WHATSAPP.md). Tests:
+`NotificationsTests`, `NotificationUnitTests`, `messages.spec.ts`, `e2e/sprint-24.spec.ts`.
+
+1. **The outbox.** A message is a row in `outbox_messages`, written by the code that caused it **in the same
+   transaction** (`INSERT … ON CONFLICT (property_id, dedupe_key) DO NOTHING`). The booking confirmation's key is
+   `booking_confirmation:{reservationId}:{CHANNEL}`, so confirming twice, or confirming after a Razorpay payment that
+   already did, makes nothing new. A booking that rolls back takes its message with it; one that commits always has it.
+   When a message can't go (no number, no email, the guest said No, the template is off, the guest anonymised) the row is
+   written as SKIPPED with the reason, so the Messages page says why instead of staying silent.
+2. **The sender.** `OutboxDispatcher` takes one due QUEUED row per transaction with `FOR UPDATE SKIP LOCKED`, so two
+   senders (two API copies, or the timer and **Send waiting now**) never take the same row. It fills the template from the
+   booking as it is now, calls WhatsApp (a template with named parameters) or Resend, and saves the answer. A passing
+   failure (WhatsApp's rate limits and temporary codes, HTTP 429/5xx, a timeout) stays QUEUED with `next_attempt_at` 1, 5,
+   15, then 60 minutes later; after 5 tries, or at once for anything else, FAILED with the provider's words. **Send again**
+   (`message.send`) puts a FAILED row back to QUEUED and sends it at once. Email carries the outbox id as Resend's
+   `Idempotency-Key`. WhatsApp has none: if the process dies after WhatsApp accepted a message and before we saved its id,
+   the message goes again (at least once, never lost).
+3. **The scheduler** has no Redis (brief §76). `scheduled_jobs` holds each job's time (property time) and `next_run_at`.
+   Every minute each property's due jobs are claimed with `UPDATE … SET next_run_at = {next} WHERE id = … AND next_run_at
+   = {seen}`: only one API copy wins, and the next run is set before the work starts, so a crash skips at most one day
+   (Run now catches up). The outcome is kept in `last_outcome` / `last_error`.
+4. **Run twice, sends once** (the sprint's required test,
+   `A_job_run_twice_or_twice_at_the_same_moment_sends_each_guest_one_reminder`). Each job lists its work and gives each
+   item a business key: `{reservationId}:{arrival day}` for the reminders, the payment link's id, the day for the low stock
+   and leave digests. Per item, in its own transaction: `pg_advisory_xact_lock(hashtext(job:property:key))`, then `INSERT
+   INTO job_runs … ON CONFLICT DO NOTHING`; only the run that inserted the row writes the messages. Two runs at the same
+   moment queue on the lock; the second finds the row and counts the item as "already done earlier".
+5. **WhatsApp's webhook** (the sprint's other required test,
+   `WhatsApp_status_webhooks_are_checked_by_signature_processed_once_and_only_move_a_message_forward`). `X-Hub-Signature-256`
+   must be `sha256=` + the hex HMAC-SHA256 of the raw body with the app secret, compared in constant time; otherwise 401
+   and nothing is read. Each status is claimed in `webhook_events` as `{wamid}:{status}` (the Razorpay pattern of 4.21), so
+   WhatsApp's retries change nothing. A status only moves a message forward by rank (sent 1, failed 2, delivered 3, read 4):
+   WhatsApp sends them out of order, and a late "delivered" must not undo "read". Phone numbers and reply texts are not
+   kept from the payload; replies are only counted.
+6. **Staff messages.** The low stock and leave jobs write one row per person who holds the permission
+   (`inventory.manage`, `leave.approve`) at the property: an IN_APP row that becomes a `notifications` row (the bell) and an
+   email. Opening a bell line marks it read, and its outbox row READ.
+7. **Keys and fakes.** No WhatsApp or email keys outside production means the built-in fakes answer (`Mode = FAKE`), with
+   test buttons that send a correctly signed webhook through the real endpoint. In production without keys the mode is
+   OFF and each message fails with "WhatsApp isn't connected on this server…", so nothing is silently dropped.
+8. **Privacy.** Anonymising a guest (Sprint 03) also blanks their messages: name, address, body and parameters. The list
+   shows numbers and emails masked (`+91 98•••••345`).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1541,3 +1614,4 @@ request:
 | 21 | Beach transport (vehicles, routes, trips whose seats can't be oversold, a vehicle and a driver on one trip at a time, seats on the bill, the driver's phone manifest with boarding, the manifest PDF), transport flow diagram; system design 4.31 Beach trips: seats, the driver's manifest, boarding (accepted 5 Nov 2026) |
 | 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (accepted 5 Nov 2026) |
 | 23 | Reports and dashboards (a daily summary per property refreshed every 15 minutes and nightly, occupancy, ADR, RevPAR, revenue, booking sources with commission and net, GST, food and labour cost, profit and loss, the owner's Today and the Reports page, money hidden from managers, five views for Power BI through a read-only role, supplier bills and pay in the budget), report flow diagram; system design 4.33 Reports: the daily summary and Power BI (accepted 7 Nov 2026) |
+| 24 | Notification engine, WhatsApp, email and background jobs (the outbox written with the booking, a sender with retries, a PostgreSQL scheduler with six idempotent daily jobs, WhatsApp template messages and the signed status webhook, email through Resend, the bell, the Messages page with reasons and Send again), message flow diagram; system design 4.34 Messages: the outbox and the daily jobs (in review) |
