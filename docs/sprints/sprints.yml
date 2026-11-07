@@ -1926,15 +1926,43 @@ sprints:
   depends: [12, 15, 19, 22]
   goal: Owner and role dashboards plus the report list in brief §50–55, Power-BI-ready.
   client: "Owners and managers get dashboards and reports: occupancy, revenue, GST, food cost, staff hours and more."
+  progress:
+    now: "Built, in review (PR to develop). Defaults to confirm: the numbers are added up every 15 minutes (and nightly from April last year), not live; a dorm bed counts as one unit like a room; money is before GST; revenue is counted by the day of the service; commission is worked out at 18 % for an OTA and 10 % for a travel agent unless set on Reports (until OTA statements, Sprint 24 on); GST is an estimate for the accountant; pay is an estimate (monthly salary spread over the days, daily rate per day worked, no PF/ESI) shown only to the owner and HR; the budget now counts supplier bills (by the bill date) and pay; the P&L counts stock when used, not when bought; Power BI reads five views through a read-only login (scripts/powerbi-user.sql)."
+    done:
+      - "Migration V025: schema reporting with daily_stats, daily_channel_stats, daily_costs and refresh_state (one row per property and day), the functions refresh (one transaction, a lock per property, at most 900 days), labour_cost and commission_percent, the views v_daily, v_monthly, v_channels_monthly, v_costs_monthly, v_gst_monthly, the read-only role resort_reporting; date indexes; departments.cost_centre_id and supplier_invoices.cost_centre_id"
+      - "ReportRefreshJob: every 15 minutes the 1st of last month to 90 days ahead, nightly from 1 April of last financial year; Refresh now"
+      - "Reports from the summary only (brief §88): role-aware dashboard on Today, occupancy and revenue by day or month, booking sources with commission and net, GST by month, food and labour cost, P&L, the month at a glance (printable); CSV of each"
+      - "Budget actuals with supplier bills and pay (owner and HR); budget departments on supplier bills and employee departments"
+      - "Commission rates per booking source, audited"
+      - "Screens /reports and the dashboard sections on Today, on a 360 px phone"
+      - "Dev seed S020: a year of past stays (about 1,600) for the dashboards"
+      - "Power BI: scripts/powerbi-user.sql and docs/REPORTING.md"
+      - "[done] Docs: API.md, DATABASE.md, schema-sprint-23.md, REPORTING.md, system design Sprint 23 and 4.33 with the reporting diagram, ARCHITECTURE.md, RUN_AND_TEST, REVIEWING, CHANGELOG"
+    files:
+      - "database/migrations/V025__reporting.sql; database/seed/dev/S020__report_history.sql; database/queries/check-sprint-23.sql; scripts/powerbi-user.sql"
+      - "backend/Resort.Domain/Reports/Reports.cs; backend/Resort.Contracts/ReportContracts.cs"
+      - "backend/Resort.Application/ — Reports/ReportService.cs, Validation/ReportValidators.cs, Finance/BudgetService.cs, Finance/ExpenseService.cs, Purchasing/SupplierInvoiceService.cs, Employees/EmployeeService.cs, Common/Permissions.cs, DependencyInjection.cs"
+      - "backend/Resort.Api/ — Endpoints/ReportEndpoints.cs, Infrastructure/ReportRefreshJob.cs, Program.cs"
+      - "backend/Resort.Tests/ — Unit/ReportUnitTests.cs, Integration/ReportTests.cs, Integration/DevSeedTests.cs"
+      - "frontend/src/app/ — features/reports/ (reports.page.ts, report-bits.ts, reports.api.ts, reports.spec.ts), features/dashboard/owner-board.ts, features/expenses/budgets.page.ts, purchasing and employee dialogs, core/models.ts, app.routes.ts, layout/shell.ts"
+      - "frontend/e2e/sprint-23.spec.ts; scripts/check-api.mjs (Sprint 23 checks)"
+      - "docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-23.md, docs/REPORTING.md, docs/architecture/system-design.md, docs/ARCHITECTURE.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-23-screens/; tools/handbooks/diagrams (report-flow)"
+    results:
+      - "Backend: 596 passed, 0 failed on real PostgreSQL 16 (ADR and RevPAR against a hand-calculated fixture month: 17 units sold of which 3 dorm beds, ₹47,900 room revenue, ADR ₹2,817.65, an out-of-order block and a cancelled and a reversed booking left out, a stay across the month end split by night; Booking.com net after 18 % commission; the Power BI role reads the five views only; a manager gets no money; period and commission errors under their fields; supplier bills and pay in the budget actuals; the owner dashboard answers in under 1 s on the year of dev seed history). Release build with warnings as errors and dotnet format clean"
+      - "Frontend: 131 of 131 unit tests passed (5 new); ESLint clean; production build OK"
+      - "Browser tests: Sprint 23's 7 steps pass (the owner's Today with tonight, the month so far against last month and a year ago and the last 12 months; last month at a glance prints and downloads as CSV; occupancy by month and Refresh now; Booking.com commission 18 % to 15 % and back; GST, costs and the P&L; a manager on a 360 px phone sees no money; the budget splits supplier bills and pay). Full run: S03-01 updated for the 64 history guests (the list now shows a first page of 25); S12-04 and S19-05 missed once and pass on a rerun (not touched here). API checks 278 of 278 (11 new); database checks clean; screenshots in docs/sprints/sprint-23-screens"
   scope:
+    tables: [reporting.daily_stats, reporting.daily_channel_stats, reporting.daily_costs, reporting.refresh_state]
+    api:
+      - "/api/v1/properties/{propertyId}/reports/*"
     other: [reporting schema with views/materialised views, refreshed by jobs]
     screens:
       - "/dashboard (role-aware)"
       - "/reports"
   tasks:
-    - "reporting.* views: occupancy, ADR, RevPAR, revenue splits, OTA net, food/labour cost, GST, P&L"
-    - "No dashboard query scans raw transaction tables unbounded (brief §88)"
-    - "Read-only DB role for Power BI"
+    - "[done] reporting.* views: occupancy, ADR, RevPAR, revenue splits, OTA net, food/labour cost, GST, P&L"
+    - "[done] No dashboard query scans raw transaction tables unbounded (brief §88)"
+    - "[done] Read-only DB role for Power BI"
   tests:
     - Database — ADR/RevPAR against a hand-calculated fixture month
   acceptance:

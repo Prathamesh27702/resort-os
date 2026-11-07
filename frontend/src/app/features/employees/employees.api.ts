@@ -86,7 +86,9 @@ export class EmployeesApi {
   private base = (pid: string) => `/api/v1/properties/${pid}`;
 
   departments(pid: string) { return this.http.get<Department[]>(`${this.base(pid)}/departments`); }
-  saveDepartment(pid: string, id: string | null, body: { code: string; name: string; sortOrder: number; isActive: boolean; version: number | null }) {
+  /** Sprint 23: the budget departments a department's pay can count against. */
+  budgetDepartments(pid: string) { return this.http.get<{ id: string; code: string; name: string }[]>(`${this.base(pid)}/departments/budget-departments`); }
+  saveDepartment(pid: string, id: string | null, body: { code: string; name: string; sortOrder: number; isActive: boolean; version: number | null; costCentreId: string | null }) {
     return id ? this.http.put<Department>(`${this.base(pid)}/departments/${id}`, body) : this.http.post<Department>(`${this.base(pid)}/departments`, body);
   }
   saveDesignation(pid: string, id: string | null, body: { departmentId: string; name: string; isActive: boolean; version: number | null }) {

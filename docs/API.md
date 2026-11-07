@@ -1326,6 +1326,58 @@ actualToDate, variance (budget − spent; negative = over), variancePercent, ann
 standing: ON_TRACK | HEADING_OVER | OVER | NO_BUDGET, waiting, waitingCount, categories: [{ categoryId, name, actual }] }`.
 `BudgetReportDto = { year, label, budgetId, through, asOf, rows, total, months: [{ month, budget, actual }] }`.
 
+## Built endpoints (Sprint 23 — reports and dashboards)
+
+All under `/api/v1/properties/{propertyId}/reports`. Every figure is read from the **reporting summary**
+(`reporting.daily_stats` and friends: one row per property and day), which a job adds up again every 15 minutes
+(`Reporting:RefreshMinutes`) for the 1st of last month to 90 days ahead, and once a night from 1 April of last financial
+year; **Refresh now** does it on demand. So no report scans the bookings and bills themselves (brief §88), and the owner's
+dashboard answers in milliseconds. Money is **before GST** unless named GST or tax. A **dorm bed is one unit**, like a
+room: occupancy = units sold / units available (active, not out of order or under maintenance); **ADR** = room revenue /
+units sold; **RevPAR** = room revenue / units available. Revenue is what was charged on the guests' bills by the day of
+service (reversals and credit notes take it off), plus restaurant bills paid at the table. Without
+`financial_report.read` money fields are `null`; pay (labour) is `null` without `employee_salary.read` (owner and HR).
+How it works: [system-design.md → 4.33](architecture/system-design.md#433-reports-the-daily-summary-and-power-bi);
+connecting Power BI: [REPORTING.md](REPORTING.md).
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /dashboard` | Today: tonight, the next 14 nights on the books; with money access the month so far beside the same days of last month and a year ago, the days of this month, the last 12 months, the booking sources and GST this month; the budget card with `budget.read` | `report.operational.read` | — | `DashboardDto` | 403, 404 | — |
+| `GET /occupancy?from&to&by` | Occupancy by `day` (default: this month to today; at most 366 days) or `month` (default: the last 12 months; at most 25): rooms and beds available and sold, out of order, guest nights, arrivals, departures; room revenue, ADR, RevPAR with money access | `report.operational.read` | — | `OccupancyReportDto` | 400 `from` ("The start date must be on or before the end date."), `to` ("Choose at most a year by day, or show it by month."; "Choose at most 25 months."), `by` ("Show the report by day or by month."); 403 | — |
+| `GET /revenue?from&to&by` | Revenue by kind (rooms, food and drink, activities, transport, other), GST charged, payments received, refunds paid | `financial_report.read` | — | `RevenueReportDto` | as above | — |
+| `GET /channels?from&to` | Booking sources (OTA net): nights sold, share, room revenue, ADR, commission at the source's rate, net; and by kind of source | `financial_report.read` | — | `ChannelReportDto` | as above | — |
+| `GET /gst?from&to` | GST by month (an estimate for the accountant, not a return): output on invoices and debit notes less credit notes, restaurant bills paid at the table, input that can be claimed (supplier bills, approved expenses), payable or credit, and the GST on the bills by the day of service | `financial_report.read` | — | `GstReportDto` | as above (by month) | — |
+| `GET /costs?from&to` | Food and labour cost by month: restaurant sales, the stock the dishes used, food cost %, stock written off, pay and pay % of revenue, approved expenses, supplier bills; and by budget department | `financial_report.read` | — | `CostReportDto` | as above | — |
+| `GET /pnl?from&to` | Profit and loss by month: revenue by kind, cost of sales (stock used and written off), gross profit, expenses by department, pay (owner and HR), operating profit. Supplier bills are not a cost here: what they bought counts when it is used or written off | `financial_report.read` | — | `PnlReportDto` | as above | — |
+| `GET /month?month` | The month at a glance (default this month to today): the month beside the month before and the same month a year ago; with money access its P&L, booking sources, GST, spending by department and the budget | `report.operational.read` | — | `MonthReportDto` | 400 `month` ("Dec 2026 hasn't started yet. Choose this month or an earlier one."; "Choose a month in the last five years."); 403 | — |
+| `POST /refresh` | Refresh now: add the days up again (default 1 April of last financial year to 90 days ahead; at most 900 days). Safe at the same time as the job: one refresh of a property at a time | `report.operational.read` | `RefreshReportsRequest` (`from?`, `to?`) | `ReportFreshnessDto` | 400 `To` ("The end date must be on or after the start date."; "Refresh at most 900 days at a time (about two and a half years)."); 403 | — |
+| `GET /commission` | Each booking source's commission: set here, else the source's own, else 18 % for an OTA and 10 % for a travel agent | `financial_report.read` | — | `CommissionRateDto[]` | 403 | — |
+| `PUT /commission` | Set rates (`percent: null` puts a source back to its default); the reports are added up again with them | `property_settings.update` | `SaveCommissionRatesRequest` | `CommissionRateDto[]` | 400 `Rates[0].Percent` ("Enter Booking.com's commission as 0 to 50 % with at most two decimals, e.g. 18 or 17.5."), `Rates[0].SourceId`; 403 | UPDATE setting `reports.commission_percent` (reason "Booking.com 15 %") |
+
+Also in Sprint 23, for the budget's actuals (Sprint 22 left supplier bills and pay out):
+
+| Method & URL | Purpose | Permission | Request | Response | Errors | Audit |
+|---|---|---|---|---|---|---|
+| `GET /departments/budget-departments` | The budget departments an employee department's pay can count for | `employee.read` | — | `{ id, code, name }[]` | 403 | — |
+| `POST /departments` · `PUT /departments/{id}` | Now with `costCentreId`: the budget department its pay counts for | as before | `SaveDepartmentRequest` + `costCentreId?` | `DepartmentDto` + `costCentreId`, `costCentreName` | 400 `CostCentreId` ("Choose a budget department of this property (Budgets → Departments).") | as before |
+| `GET /purchasing/budget-departments` | The budget departments a supplier bill can count for | `purchase.read` | — | `{ id, code, name }[]` | 403 | — |
+| `POST /purchasing/orders/{id}/invoices` | Now with `costCentreId`: left out, the supplier's last bill's department, else Food and beverage for a kitchen store | as before | `RecordSupplierInvoiceRequest` + `costCentreId?` | `SupplierInvoiceDto` + `costCentreId`, `costCentreName` | as before; 400 `CostCentreId` | as before |
+| `PUT /purchasing/invoices/{id}/department` | Move a recorded bill to another budget department (only that changes) | `supplier_invoice.manage` | `SetSupplierInvoiceDepartmentRequest` (`costCentreId?`, `version?`) | `SupplierInvoiceDto` | 400 `CostCentreId`; 403, 404; 409 | UPDATE (reason "SI00004 counts for Housekeeping") |
+| `GET /budgets/report` | Spent now = approved expenses + supplier bills (at cost, by the bill's date) + pay (only for owner and HR; by each person's department, an estimate before PF and ESI); a "No department" row for bills and pay not set to one | `budget.read` | — | `BudgetReportDto` + `payIncluded`; rows + `expenses`, `supplierBills`, `pay` | as before | — |
+
+`ReportKpisDto = { from, to, unitsAvailable, unitsSold, occupancyPercent, guestNights, arrivals, adr, revPar, roomRevenue,
+fnbRevenue, activityRevenue, transportRevenue, otherRevenue, totalRevenue, paymentsReceived, restaurantSales, foodCost,
+foodCostPercent, labour, labourPercent }`. `DashboardDto = { today, access: { operational, financial, pay, budget },
+freshness: { refreshedAt, from, to, durationMs, everyMinutes }, todayStats: { date, unitsAvailable, unitsSold,
+occupancyPercent, guestsInHouse, arrivals, departures, outOfOrder }, ahead: ReportDayPointDto[14], monthToDate, lastMonth,
+lastYear, days, months: [{ month, label, occupancyPercent, adr, revenue }], channels, gst, budget: { month, budget, spent,
+payIncluded } }`. `OccupancyRowDto = { period, label, roomsAvailable, roomsSold, bedsAvailable, bedsSold, unitsAvailable,
+unitsSold, outOfOrder, occupancyPercent, guestNights, arrivals, departures, roomRevenue, adr, revPar }`.
+`ChannelRowDto = { sourceId, code, name, channel, unitsSold, sharePercent, roomRevenue, commissionPercent, commission,
+net, adr }`. `GstRowDto = { month, label, outputTaxable, outputCgst, outputSgst, outputIgst, outputCess, posUninvoiced,
+outputTotal, inputCgst, inputSgst, inputIgst, inputTotal, payable, credit, chargedOnBills }`. `PnlLineDto = { key, label,
+kind: REVENUE | COST | TOTAL | PROFIT, months: number[], total }`. Every report also returns `freshness`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).

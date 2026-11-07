@@ -23,6 +23,7 @@ using Resort.Application.Employees;
 using Resort.Application.Rates;
 using Resort.Application.Reservations;
 using Resort.Application.Restaurant;
+using Resort.Application.Reports;
 
 namespace Resort.Application;
 
@@ -93,6 +94,8 @@ public static class DependencyInjection
         services.AddScoped<TransportBookingService>();
         services.AddScoped<ExpenseService>();
         services.AddScoped<BudgetService>();
+        services.AddScoped<ReportRefresher>();
+        services.AddScoped<ReportService>();
         services.AddScoped<PayrollService>();
         return services;
     }

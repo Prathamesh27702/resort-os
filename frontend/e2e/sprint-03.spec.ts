@@ -36,10 +36,11 @@ async function search(q: string) {
   await p.getByLabel('Search guests').fill(q);
 }
 
-test('S03-01 Guests lists the 20 demo guests', async () => {
+test('S03-01 Guests lists the demo guests, a page of 25 at a time', async () => {
   await p.goto('/guests');
   await expect(p.locator('nav a', { hasText: /Guests$/ })).toBeVisible();
-  await expect(p.locator('table.data tbody tr')).toHaveCount(20);
+  // 20 demo guests (S002) and 64 more from the year of history (S020), so the first page is full.
+  await expect(p.locator('table.data tbody tr')).toHaveCount(25);
   await shot(p, '01-guest-list');
   await expect(p.locator('tr', { hasText: 'Ananya Iyer' })).toBeVisible();
 });

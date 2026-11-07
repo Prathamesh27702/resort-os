@@ -1343,5 +1343,36 @@
   <text class="s" x="46" y="654"><tspan class="b">Who:</tspan> staff and managers record; approvers approve or reject; the owner (budget.manage) plans the year per department and keeps the lists.</text>
   <text class="s" x="46" y="674"><tspan class="b">Not yet:</tspan> supplier bills and payroll are not in the actuals (reports, Sprint 23); an approved expense can't be reversed.</text>
 </svg>
+<svg id="report-flow" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#fff"/>
+  <style>.lane{fill:#F5F7F6;stroke:#DCE3E1}.step{fill:#fff;stroke:#0E3B43;stroke-width:1.6}.win{fill:#E3F0E6;stroke:#2E6B3C;stroke-width:1.6}.lose{fill:#FBEAEA;stroke:#8A2449;stroke-width:1.6}.ask{fill:#FBEFD8;stroke:#8A5A00;stroke-width:1.6}</style>
+  <text class="h" x="30" y="34">Sprint 23: reports and dashboards. Added up into a daily summary, then every report reads only that</text>
+  <rect class="lane" x="30" y="56" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="82">The raw tables (written by the front desk, bills, restaurant, purchasing, expenses, timesheets)</text>
+  <rect class="step" x="46" y="98" width="250" height="88" rx="8"/><text class="s b" x="58" y="122">Stays</text><text class="xs" x="58" y="142">reservation_units (current rows,</text><text class="xs" x="58" y="160">confirmed, in house, checked out);</text><text class="xs" x="58" y="178">unit_blocks out of order</text>
+  <rect class="step" x="326" y="98" width="250" height="88" rx="8"/><text class="s b" x="338" y="122">Money</text><text class="xs" x="338" y="142">folio_items by service day,</text><text class="xs" x="338" y="160">payments, refunds, invoices,</text><text class="xs" x="338" y="178">credit and debit notes, orders</text>
+  <rect class="step" x="606" y="98" width="260" height="88" rx="8"/><text class="s b" x="618" y="122">Costs</text><text class="xs" x="618" y="142">stock used and written off,</text><text class="xs" x="618" y="160">approved expenses, supplier bills,</text><text class="xs" x="618" y="178">pay (labour_cost: an estimate)</text>
+  <rect class="ask" x="896" y="98" width="260" height="88" rx="8"/><text class="s b" x="908" y="122">reporting.refresh(property, days)</text><text class="xs" x="908" y="142">every 15 min: last month to +90 days</text><text class="xs" x="908" y="160">nightly: from April last year</text><text class="xs" x="908" y="178">Refresh now; one at a time (lock)</text>
+  <path class="arrow" d="M296,142 L324,142"/><path class="arrow" d="M576,142 L604,142"/><path class="arrow" d="M866,142 L894,142"/>
+  <text class="xs" x="46" y="212"><tspan class="b">Only ranges of days are read</tspan> (indexes on the dates), and the days are replaced in one transaction: a report never sees half a refresh.</text>
+  <text class="xs" x="46" y="230"><tspan class="b">A dorm bed is one unit, like a room.</tspan> Out of order and maintenance are not available. Money before GST.</text>
+  <rect class="lane" x="30" y="262" width="1140" height="190" rx="10"/>
+  <text class="t b" x="46" y="288">The summary (schema reporting): one row per property and day</text>
+  <rect class="win" x="46" y="304" width="340" height="88" rx="8"/><text class="s b" x="58" y="328">daily_stats</text><text class="xs" x="58" y="348">available, sold, guests, arrivals, departures;</text><text class="xs" x="58" y="366">revenue by kind, GST, payments, food cost;</text><text class="xs" x="58" y="384">output and input GST</text>
+  <rect class="win" x="416" y="304" width="320" height="88" rx="8"/><text class="s b" x="428" y="328">daily_channel_stats</text><text class="xs" x="428" y="348">per booking source: nights sold,</text><text class="xs" x="428" y="366">room revenue, commission</text><text class="xs" x="428" y="384">(18 % OTA, 10 % agent, or as set)</text>
+  <rect class="win" x="766" y="304" width="390" height="88" rx="8"/><text class="s b" x="778" y="328">daily_costs</text><text class="xs" x="778" y="348">per budget department: expenses, supplier bills, pay</text><text class="xs" x="778" y="366">(departments.cost_centre_id, supplier_invoices.cost_centre_id)</text><text class="xs" x="778" y="384">refresh_state: when, which days, how long</text>
+  <text class="xs" x="46" y="418"><tspan class="b">Occupancy</tspan> = sold ÷ available · <tspan class="b">ADR</tspan> = room revenue ÷ sold · <tspan class="b">RevPAR</tspan> = room revenue ÷ available (the same formulas in the API and the views).</text>
+  <text class="xs" x="46" y="436"><tspan class="b">A year is 365 rows</tspan> however many bookings it had: the owner's dashboard answers in milliseconds.</text>
+  <rect class="lane" x="30" y="468" width="1140" height="146" rx="10"/>
+  <text class="t b" x="46" y="494">Who reads it</text>
+  <rect class="step" x="46" y="510" width="250" height="64" rx="8"/><text class="s b" x="58" y="534">Today (dashboard)</text><text class="xs" x="58" y="554">tonight, 14 nights, month so far</text>
+  <rect class="step" x="326" y="510" width="250" height="64" rx="8"/><text class="s b" x="338" y="534">Reports</text><text class="xs" x="338" y="554">month, occupancy, revenue, GST, P&amp;L</text>
+  <rect class="step" x="606" y="510" width="260" height="64" rx="8"/><text class="s b" x="618" y="534">Budget against actual</text><text class="xs" x="618" y="554">expenses + supplier bills + pay</text>
+  <rect class="ask" x="896" y="510" width="260" height="64" rx="8"/><text class="s b" x="908" y="534">Power BI (resort_reporting)</text><text class="xs" x="908" y="554">the views v_* and nothing else</text>
+  <text class="xs" x="46" y="598"><tspan class="b">Permissions:</tspan> report.operational.read (no money), financial_report.read (revenue, GST, costs), employee_salary.read (pay: owner and HR).</text>
+  <rect class="zone" x="30" y="630" width="1140" height="56" rx="8"/>
+  <text class="s" x="46" y="654"><tspan class="b">Who:</tspan> the owner and managers on Today; the accountant on Reports; Power BI through a read-only login (scripts/powerbi-user.sql).</text>
+  <text class="s" x="46" y="674"><tspan class="b">Not yet:</tspan> the OTAs' own commission statements (Sprint 24 on); GST invoices for restaurant bills paid at the table.</text>
+</svg>
 </body>
 </html>

@@ -89,6 +89,7 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
         var intra = supplier.StateCode == (buyerState ?? supplier.StateCode);
         var items = await db.InventoryItems.AsNoTracking().Where(i => order.Items.Select(x => x.ItemId).Contains(i.Id)).ToDictionaryAsync(i => i.Id, ct);
         var units = await db.InventoryUnits.AsNoTracking().ToDictionaryAsync(u => u.Id, u => u.Code, ct);
+        var centre = await DepartmentForAsync(propertyId, supplier.Id, order.LocationId, r.CostCentreId, ct);
         var now = clock.GetUtcNow();
         var invoice = new SupplierInvoice
         {
@@ -106,6 +107,7 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
             IntraState = intra,
             ItcEligible = supplier.Gstin is not null && registration?.RegistrationType == RegistrationTypes.Regular,
             Note = ReservationService.Clean(r.Note),
+            CostCentreId = centre,
         };
         for (var n = 0; n < r.Lines.Count; n++)
         {
@@ -154,6 +156,49 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
                        $"({Money.Rupees(invoice.TaxTotal)} GST{(invoice.ItcEligible ? ", input tax claimable" : "")}), due {QuoteEngine.Day(due)}";
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        return (await DtosAsync([invoice], ct)).Single();
+    }
+
+    /// <summary>The budget department of a new bill: the one chosen, else the one of this supplier's last bill, else Food
+    /// and beverage (code FB) when the order was for the kitchen store, else none.</summary>
+    private async Task<Guid?> DepartmentForAsync(Guid propertyId, Guid supplierId, Guid locationId, Guid? chosen, CancellationToken ct)
+    {
+        if (chosen is { } c)
+            return await db.CostCentres.AsNoTracking().AnyAsync(x => x.Id == c && x.PropertyId == propertyId, ct)
+                ? c
+                : throw ReservationService.Field(nameof(RecordSupplierInvoiceRequest.CostCentreId), "Choose a budget department of this property.");
+        var last = await db.SupplierInvoices.AsNoTracking().Where(i => i.SupplierId == supplierId && i.CostCentreId != null)
+            .OrderByDescending(i => i.CreatedAt).Select(i => i.CostCentreId).FirstOrDefaultAsync(ct);
+        if (last is not null) return last;
+        var kitchen = await db.StockLocations.AsNoTracking().AnyAsync(l => l.Id == locationId && l.IsKitchen, ct);
+        return kitchen
+            ? await db.CostCentres.AsNoTracking().Where(x => x.PropertyId == propertyId && x.Code == "FB" && x.IsActive).Select(x => (Guid?)x.Id).FirstOrDefaultAsync(ct)
+            : null;
+    }
+
+    /// <summary>The budget departments a supplier bill can count against (Sprint 23).</summary>
+    public async Task<IReadOnlyList<CostCentreDto>> BudgetDepartmentsAsync(Guid propertyId, CancellationToken ct)
+    {
+        if (!await db.Properties.AnyAsync(p => p.Id == propertyId, ct)) throw new NotFoundAppException("Property", propertyId);
+        return await db.CostCentres.AsNoTracking().Where(c => c.PropertyId == propertyId && c.IsActive).OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
+            .Select(c => new CostCentreDto(c.Id, c.Code, c.Name, c.SortOrder, c.IsActive, c.Version)).ToListAsync(ct);
+    }
+
+    /// <summary>Changes the budget department a supplier bill counts against (supplier_invoice.manage or budget.manage;
+    /// audited). Only the department moves; the bill itself never changes.</summary>
+    public async Task<SupplierInvoiceDto> SetDepartmentAsync(Guid propertyId, Guid id, SetSupplierInvoiceDepartmentRequest r, CancellationToken ct)
+    {
+        var invoice = await db.SupplierInvoices.Include(i => i.Items).SingleOrDefaultAsync(i => i.Id == id && i.PropertyId == propertyId, ct)
+                      ?? throw new NotFoundAppException("That supplier bill doesn't exist at this property. Reload the list.");
+        if (r.Version is { } v && invoice.Version != v)
+            throw new ConflictAppException("CONCURRENCY_CONFLICT", $"Someone else changed {invoice.Number} a moment ago. Reload to see it, then try again.");
+        string? name = null;
+        if (r.CostCentreId is { } c)
+            name = await db.CostCentres.AsNoTracking().Where(x => x.Id == c && x.PropertyId == propertyId).Select(x => x.Name).SingleOrDefaultAsync(ct)
+                   ?? throw ReservationService.Field(nameof(r.CostCentreId), "Choose a budget department of this property.");
+        invoice.CostCentreId = r.CostCentreId;
+        audit.Reason = $"{invoice.Number} counts for {name ?? "no department"} in the budget";
+        await db.SaveChangesAsync(ct);
         return (await DtosAsync([invoice], ct)).Single();
     }
 
@@ -256,6 +301,7 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
         var payments = await db.SupplierPayments.AsNoTracking().Where(p => ids.Contains(p.InvoiceId)).OrderBy(p => p.CreatedAt).ToListAsync(ct);
         var userIds = list.Select(i => i.CreatedBy).Concat(payments.Select(p => p.CreatedBy)).OfType<Guid>().Distinct().ToList();
         var names = await db.Users.IgnoreQueryFilters().AsNoTracking().Where(u => userIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.FullName, ct);
+        var centres = await db.CostCentres.AsNoTracking().Where(c => c.PropertyId == propertyId).ToDictionaryAsync(c => c.Id, c => c.Name, ct);
         return list.Select(i =>
         {
             var balance = i.Total - i.AmountPaid;
@@ -270,7 +316,8 @@ public sealed class SupplierInvoiceService(IAppDbContext db, ICurrentUser caller
                 }).ToList(),
                 payments.Where(p => p.InvoiceId == i.Id).Select(p => new SupplierPaymentDto(p.Id, p.Number, p.PaidOn, p.Amount, p.Method, p.Reference, p.Note,
                     p.CreatedBy is { } u ? names.GetValueOrDefault(u) : null, p.CreatedAt)).ToList(),
-                i.CreatedBy is { } c ? names.GetValueOrDefault(c) : null, i.CreatedAt, i.Version);
+                i.CreatedBy is { } c ? names.GetValueOrDefault(c) : null, i.CreatedAt, i.Version,
+                i.CostCentreId, i.CostCentreId is { } cc ? centres.GetValueOrDefault(cc) : null);
         }).ToList();
     }
 }
