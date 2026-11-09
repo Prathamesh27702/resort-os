@@ -112,18 +112,18 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
     </div>
   `,
   styles: `
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .actions mat-icon { margin-right: 4px; }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .actions mat-icon { margin-right: var(--space-1); }
     a.disabled { pointer-events: none; opacity: .5; }
-    .group { margin-bottom: 16px; overflow: hidden; }
-    .group header { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 16px 8px; gap: 12px; }
+    .group { margin-bottom: var(--space-4); overflow: hidden; }
+    .group header { display: flex; justify-content: space-between; align-items: flex-start; padding: var(--space-4) var(--space-4) var(--space-2); gap: var(--space-3); }
     .group header p { margin: 2px 0 0; }
     .group.inactive { opacity: .7; }
-    .empty { padding: 24px; max-width: 640px; }
+    .empty { padding: var(--space-6); max-width: 640px; }
     .empty p { color: var(--ro-mute); }
     .mute { color: var(--ro-mute); }
-    .name { margin-left: 8px; }
-    .pad { padding: 0 16px 16px; margin: 0; }
+    .name { margin-left: var(--space-2); }
+    .pad { padding: 0 var(--space-4) var(--space-4); margin: 0; }
     .err { color: var(--ro-error); }
     .chip.ok { background: #e3f1e6; color: #1f5130; }
     .chip.warn { background: #fdf0d8; color: #7a4a00; }

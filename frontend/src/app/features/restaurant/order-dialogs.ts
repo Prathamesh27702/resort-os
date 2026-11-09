@@ -75,14 +75,14 @@ export interface DishData { item: MenuItem; }
   `,
   styles: `
     .dish { min-width: min(420px, 84vw); }
-    h3 { margin: 12px 0 4px; font-size: 1rem; }
+    h3 { margin: var(--space-3) 0 var(--space-1); font-size: 1rem; }
     .opts { display: flex; flex-direction: column; }
-    .qty { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+    .qty { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-3) 0; }
     .qty b { font-size: 1.3rem; min-width: 2ch; text-align: center; }
     .full { width: 100%; }
     .mute { color: var(--ro-mute); }
     .err { color: var(--ro-error); }
-    .food { display: inline-block; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: 8px; vertical-align: middle; }
+    .food { display: inline-block; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: var(--space-2); vertical-align: middle; }
     .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
     .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
     .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
@@ -204,7 +204,7 @@ export interface DiscountData<T> {
       <button mat-flat-button type="submit" form="discount-form" [disabled]="busy()">Give discount</button>
     </div>
   `,
-  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: 8px; } .full { width: 100%; }
+  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: var(--space-2); } .full { width: 100%; }
            .err { color: var(--ro-error); margin: 0; } .mute { color: var(--ro-mute); }`,
 })
 export class DiscountDialog<T> {
@@ -269,7 +269,7 @@ export interface PayData<T> { total: number; run: (method: PaymentMethod, refere
       <button mat-flat-button type="submit" form="pay-form" [disabled]="busy()">Settle the bill</button>
     </div>
   `,
-  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: 8px; } .full { width: 100%; }
+  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: var(--space-2); } .full { width: 100%; }
            .methods { flex-wrap: wrap; } .err { color: var(--ro-error); margin: 0; } .mute { color: var(--ro-mute); }`,
 })
 export class PayDialog<T> {
@@ -327,7 +327,7 @@ export interface RoomData<T> {
       <button mat-flat-button type="button" (click)="save()" [disabled]="busy() || !data.rooms.length">{{ data.button }}</button>
     </div>
   `,
-  styles: `.rooms { min-width: min(420px, 84vw); } .opts { display: flex; flex-direction: column; gap: 4px; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
+  styles: `.rooms { min-width: min(420px, 84vw); } .opts { display: flex; flex-direction: column; gap: var(--space-1); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class RoomDialog<T> {
   data = inject<RoomData<T>>(MAT_DIALOG_DATA);

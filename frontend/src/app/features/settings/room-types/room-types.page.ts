@@ -50,7 +50,7 @@ import { RoomsApi } from '../../rooms/rooms.api';
   `,
   styles: `
     .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .code { font-size: .8rem; }
-    .empty { padding: 24px; } .empty p { color: var(--ro-mute); margin-top: 0; }
+    .empty { padding: var(--space-6); } .empty p { color: var(--ro-mute); margin-top: 0; }
     .chip.ok { background: #e3f1e6; color: #1f5130; }
   `,
 })

@@ -121,26 +121,26 @@ const ROW_STATE: Record<AttendanceRowState, string> = {
   styles: `
     .attendance { max-width: 880px; padding-bottom: 60px; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); }
-    .clock { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: 16px 18px; margin-bottom: 18px; }
+    .clock { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: var(--space-4) 18px; margin-bottom: 18px; }
     .clock.on { border-color: #7cb89a; background: #f3faf6; } .clock.brk { border-color: #e0b34a; background: #fffaf0; }
     .who { display: flex; flex-direction: column; } .who b { font-size: 1.1rem; }
-    .state { font-size: 1.35rem; font-weight: 600; margin: 10px 0 4px; } .shift { margin: 0 0 8px; }
-    .buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 4px; }
+    .state { font-size: 1.35rem; font-weight: 600; margin: 10px 0 var(--space-1); } .shift { margin: 0 0 var(--space-2); }
+    .buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: var(--space-3) 0 var(--space-1); }
     .big { flex: 1 1 140px; height: 64px; font-size: 1.15rem; border-radius: 14px; }
     .big.out { --mdc-filled-button-container-color: var(--ro-kokum); --mat-button-filled-container-color: var(--ro-kokum); }
     .big.second { --mdc-filled-button-container-color: #e9efed; --mat-button-filled-container-color: #e9efed;
                   --mdc-filled-button-label-text-color: var(--ro-tide); --mat-button-filled-label-text-color: var(--ro-tide); }
-    .locating { display: flex; align-items: center; gap: 8px; }
-    .events { list-style: none; padding: 0; margin: 12px 0 0; border-top: 1px solid #e3e9e7; } .events li { padding: 6px 0; border-bottom: 1px solid var(--ro-sunk); }
-    .events b { display: inline-block; width: 52px; } .sofar { font-weight: 500; margin: 8px 0 0; } .week { margin: 10px 0 0; }
-    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 12px 16px; }
-    .board { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: 12px 16px; }
+    .locating { display: flex; align-items: center; gap: var(--space-2); }
+    .events { list-style: none; padding: 0; margin: var(--space-3) 0 0; border-top: 1px solid #e3e9e7; } .events li { padding: 6px 0; border-bottom: 1px solid var(--ro-sunk); }
+    .events b { display: inline-block; width: 52px; } .sofar { font-weight: 500; margin: var(--space-2) 0 0; } .week { margin: 10px 0 0; }
+    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) var(--space-4); }
+    .board { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: var(--space-3) var(--space-4); }
     .bhead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; } .bhead h2 { margin: 0; }
-    .tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; } .date { margin: 4px 0; font-weight: 500; }
-    .counts { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 8px; }
+    .tools { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; } .date { margin: var(--space-1) 0; font-weight: 500; }
+    .counts { display: flex; gap: 6px; flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); }
     .chip { border-radius: 14px; padding: 2px 10px; font-size: .85rem; } .chip.on { background: #e3f3ea; color: #1e6b3a; }
     .chip.notin { background: var(--ro-error-bg); color: var(--ro-error-strong); } .chip.late { background: #fdf6e6; color: #6b4a00; }
-    .rows { list-style: none; margin: 0; padding: 0; } .rows li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--ro-sunk); }
+    .rows { list-style: none; margin: 0; padding: 0; } .rows li { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; border-top: 1px solid var(--ro-sunk); }
     .nm { flex: 1; display: flex; flex-direction: column; min-width: 0; } .tm { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
     .st { font-weight: 500; } .st-ON_SHIFT .st { color: #1e6b3a; } .st-ON_BREAK .st { color: var(--ro-warn); } .st-NOT_IN .st, .st-MISSING_OUT .st { color: var(--ro-error); }
     .lt { color: var(--ro-warn); }

@@ -50,8 +50,8 @@ export type CheckInProblemResult = Reservation | 'assign';
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .problem { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
+    .problem { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); margin: 0 0 var(--space-3); }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
     .mute { color: var(--ro-mute); }
     .err { color: var(--ro-error); }
@@ -151,12 +151,12 @@ export interface AssignRoomData { propertyId: string; stay: DeskStay; today: str
   `,
   styles: `
     form { min-width: min(480px, 84vw); display: flex; flex-direction: column; }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
     .mute { color: var(--ro-mute); }
-    .warn { color: var(--ro-warn); margin: -8px 0 8px; }
+    .warn { color: var(--ro-warn); margin: -8px 0 var(--space-2); }
     .err { color: var(--ro-error); }
-    mat-checkbox { margin: 0 0 12px; }
+    mat-checkbox { margin: 0 0 var(--space-3); }
   `,
 })
 export class AssignRoomDialog {
@@ -273,11 +273,11 @@ export interface CheckOutData { propertyId: string; stay: DeskStay; today: strin
   `,
   styles: `
     form { min-width: min(420px, 82vw); display: flex; flex-direction: column; }
-    .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 8px; }
+    .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px var(--space-4); margin: 0 0 var(--space-2); }
     .summary dt { color: var(--ro-mute); } .summary dd { margin: 0; }
     .owed { color: var(--ro-error); font-weight: 600; }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
-    .warn { color: var(--ro-warn); margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
+    .warn { color: var(--ro-warn); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
     .mute { color: var(--ro-mute); }
     .err { color: var(--ro-error); }

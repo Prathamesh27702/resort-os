@@ -57,7 +57,7 @@ export class BarsComponent {
       @if (canRefresh()) { <button mat-button type="button" (click)="refresh.emit()" [disabled]="busy()">{{ busy() ? 'Adding up…' : 'Refresh now' }}</button> }
     </p>
   `,
-  styles: `.fresh { color: var(--ro-mute); font-size: .85rem; display: flex; align-items: center; gap: 4px; margin: 2px 0; flex-wrap: wrap; }`,
+  styles: `.fresh { color: var(--ro-mute); font-size: .85rem; display: flex; align-items: center; gap: var(--space-1); margin: 2px 0; flex-wrap: wrap; }`,
 })
 export class FreshComponent {
   freshness = input<ReportFreshness | null | undefined>(null);

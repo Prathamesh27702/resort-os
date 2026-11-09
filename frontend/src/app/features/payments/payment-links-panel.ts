@@ -88,17 +88,17 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
     } @else if (error()) { <p class="err" role="alert">{{ error() }}</p> }
   `,
   styles: `
-    .card { padding: 16px 20px; margin-bottom: 16px; }
-    .head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .card { padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4); }
+    .head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
     h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; }
     .sums { flex: 1; color: var(--ro-mute); }
     .sums b { color: var(--ro-tide); }
     .link { border-top: 1px solid var(--ro-line-soft); padding: 10px 0; }
-    .main { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .actions { display: flex; gap: 4px; flex-wrap: wrap; }
-    .events { background: #f6f8f7; border-radius: 8px; padding: 8px 12px; margin-top: 8px; }
+    .main { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+    .actions { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+    .events { background: #f6f8f7; border-radius: 8px; padding: var(--space-2) var(--space-3); margin-top: var(--space-2); }
     .events p { margin: 6px 0; }
-    .hint { color: var(--ro-mute); font-size: .85rem; margin: 8px 0; }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-2) 0; }
     .mute { color: var(--ro-mute); }
     .bad, .danger, .err { color: var(--ro-error); }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
@@ -224,8 +224,8 @@ export interface SendLinkData { propertyId: string; links: BookingPaymentLinks; 
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
-    .full { width: 100%; margin-top: 8px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
+    .full { width: 100%; margin-top: var(--space-2); }
     .err { color: var(--ro-error); }
   `,
 })
@@ -307,7 +307,7 @@ export interface CancelLinkData { propertyId: string; link: PaymentLink; }
   `,
   styles: `
     form { min-width: min(440px, 82vw); }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
     .err { color: var(--ro-error); }
   `,

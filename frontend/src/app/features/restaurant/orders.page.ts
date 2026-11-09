@@ -52,15 +52,15 @@ import { RestaurantApi } from './restaurant.api';
   styles: `
     .list { max-width: 760px; }
     .back { margin-left: -8px; }
-    .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
     .filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit; min-height: 40px; cursor: pointer; }
     .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
-    .totals { margin: 12px 0 8px; }
+    .totals { margin: var(--space-3) 0 var(--space-2); }
     .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
-    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
     li a { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px;
-           padding: 12px; color: inherit; text-decoration: none; }
+           padding: var(--space-3); color: inherit; text-decoration: none; }
     .amt { font-weight: 600; text-align: right; }
     small { grid-column: 1 / -1; }
     .st { font-weight: 600; color: var(--ro-warn); } .st.SETTLED { color: var(--ro-ok); } .st.VOIDED { color: var(--ro-mute); }

@@ -72,17 +72,17 @@ export interface MessageData { propertyId: string; timezone: string; message: Me
   `,
   styles: `
     .body { width: min(560px, 86vw); }
-    .who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 4px; }
+    .who { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: 0 0 var(--space-1); }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
-    .reason { background: var(--ro-wash); border-radius: 8px; padding: 8px 10px; margin: 8px 0; } .reason.bad { background: #fbeceb; }
-    .subject { margin: 8px 0 4px; }
-    .text { white-space: pre-wrap; font: inherit; background: #e7f6ee; border-radius: 10px; padding: 10px 12px; margin: 6px 0; }
-    h3 { font-size: .95rem; margin: 14px 0 4px; }
+    .reason { background: var(--ro-wash); border-radius: 8px; padding: var(--space-2) 10px; margin: var(--space-2) 0; } .reason.bad { background: #fbeceb; }
+    .subject { margin: var(--space-2) 0 var(--space-1); }
+    .text { white-space: pre-wrap; font: inherit; background: #e7f6ee; border-radius: 10px; padding: 10px var(--space-3); margin: 6px 0; }
+    h3 { font-size: .95rem; margin: 14px 0 var(--space-1); }
     .steps { list-style: none; margin: 0; padding: 0; }
-    .steps li { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
+    .steps li { display: flex; gap: 10px; align-items: flex-start; padding: var(--space-1) 0; }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: #b7791f; flex: none; }
     .dot.ok { background: #1d7a45; } .dot.bad { background: var(--ro-error); } .dot.off { background: #8b9a9c; }
-    .fake { display: flex; flex-direction: column; gap: 6px; border: 1px dashed #b7791f; border-radius: 10px; padding: 8px 10px; margin-top: 12px; }
+    .fake { display: flex; flex-direction: column; gap: 6px; border: 1px dashed #b7791f; border-radius: 10px; padding: var(--space-2) 10px; margin-top: var(--space-3); }
     .fake span { display: flex; gap: 6px; flex-wrap: wrap; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .chip.off { background: #eceff0; color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
@@ -179,15 +179,15 @@ export interface TemplateData { propertyId: string; template: MessageTemplate; }
   `,
   styles: `
     form { display: flex; flex-direction: column; gap: 2px; width: min(600px, 86vw); }
-    .two { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px; }
-    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); } .hint { color: var(--ro-warn); font-size: .85rem; margin: 4px 0; }
-    mat-slide-toggle { margin: 4px 0 10px; }
-    h3 { font-size: .95rem; margin: 8px 0 4px; }
-    .vars { display: flex; flex-wrap: wrap; gap: 4px; }
+    .two { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-2); margin-top: var(--space-2); }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); } .hint { color: var(--ro-warn); font-size: .85rem; margin: var(--space-1) 0; }
+    mat-slide-toggle { margin: var(--space-1) 0 10px; }
+    h3 { font-size: .95rem; margin: var(--space-2) 0 var(--space-1); }
+    .vars { display: flex; flex-wrap: wrap; gap: var(--space-1); }
     .var { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: .8rem; cursor: pointer; color: var(--ro-tide); }
     .var.used { background: var(--ro-ok-bg); border-color: #b9dcc8; }
-    .psub { font-weight: 600; margin: 0 0 4px; }
-    .text { white-space: pre-wrap; font: inherit; background: #e7f6ee; border-radius: 10px; padding: 10px 12px; margin: 0; }
+    .psub { font-weight: 600; margin: 0 0 var(--space-1); }
+    .text { white-space: pre-wrap; font: inherit; background: #e7f6ee; border-radius: 10px; padding: 10px var(--space-3); margin: 0; }
     @media (max-width: 560px) { .two { grid-template-columns: 1fr; } }
   `,
 })
@@ -269,7 +269,7 @@ export interface JobData { propertyId: string; job: ScheduledJob; }
     </div>
   `,
   styles: `
-    form { display: flex; flex-direction: column; gap: 8px; width: min(420px, 86vw); }
+    form { display: flex; flex-direction: column; gap: var(--space-2); width: min(420px, 86vw); }
     .mute { color: var(--ro-mute); margin: 0; } .err { color: var(--ro-error); }
   `,
 })

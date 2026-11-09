@@ -82,9 +82,9 @@ export interface BlockDialogData { propertyId: string; today: string; rooms: Roo
   `,
   styles: `
     form { display: flex; flex-direction: column; min-width: min(420px, 80vw); }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
-    .dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .nights { margin: 0 0 12px; color: var(--ro-ink); min-height: 1.4em; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
+    .dates { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .nights { margin: 0 0 var(--space-3); color: var(--ro-ink); min-height: 1.4em; }
     .err { color: var(--ro-error); }
     @media (max-width: 480px) { .dates { grid-template-columns: 1fr; } }
   `,

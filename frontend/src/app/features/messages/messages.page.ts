@@ -170,18 +170,18 @@ const PAGE = 25;
   `,
   styles: `
     .msg { max-width: 1000px; padding-bottom: 60px; }
-    .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .grow { flex: 1; }
+    .head { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .grow { flex: 1; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
-    .mode { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: 8px 12px; margin: 10px 0; }
+    .mode { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: var(--space-2) var(--space-3); margin: 10px 0; }
     .mode.off { background: #fbeceb; color: var(--ro-off); }
-    .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
-    .chips { display: flex; gap: 4px; flex-wrap: wrap; flex-basis: 100%; }
-    .fchip { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 4px 12px; font: inherit; font-size: .85rem; cursor: pointer; color: var(--ro-ink); }
+    .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-3) 0; }
+    .chips { display: flex; gap: var(--space-1); flex-wrap: wrap; flex-basis: 100%; }
+    .fchip { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-1) var(--space-3); font: inherit; font-size: .85rem; cursor: pointer; color: var(--ro-ink); }
     .fchip b { margin-left: 6px; color: var(--ro-mute); font-weight: 500; }
     .fchip.on { background: var(--ro-tide); border-color: var(--ro-tide); color: var(--ro-paper); } .fchip.on b { color: #cfe0dd; }
     .sel { width: 150px; } .q { flex: 1; min-width: 200px; }
     .rows { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
-    .row { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid var(--ro-sunk); background: none;
+    .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid var(--ro-sunk); background: none;
            font: inherit; text-align: left; cursor: pointer; color: inherit; }
     .row:first-child { border-top: 0; } .row:hover { background: var(--ro-hover); }
     .ch { color: var(--ro-tide); flex: none; }
@@ -190,18 +190,18 @@ const PAGE = 25;
     .ref { font-size: .8rem; background: var(--ro-sunk); border-radius: 6px; padding: 0 6px; }
     .why { color: var(--ro-mute); } .why.bad { color: var(--ro-error); }
     .side { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
-    .empty { padding: 16px; margin: 0; }
-    .pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 8px; }
-    .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
-    .tcard, .job { padding: 12px 16px; min-width: 0; } h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; } .tcard p, .job p { margin: 4px 0; }
-    .tline { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--ro-sunk); padding: 6px 0; }
+    .empty { padding: var(--space-4); margin: 0; }
+    .pager { display: flex; justify-content: center; align-items: center; gap: var(--space-3); margin-top: var(--space-2); }
+    .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-2); }
+    .tcard, .job { padding: var(--space-3) var(--space-4); min-width: 0; } h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; } .tcard p, .job p { margin: var(--space-1) 0; }
+    .tline { display: flex; align-items: center; gap: var(--space-2); border-top: 1px solid var(--ro-sunk); padding: 6px 0; }
     .tmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
-    .jhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-2); }
+    .jhead { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
     .jact { display: flex; gap: 6px; margin-top: 6px; }
     .result { background: var(--ro-ok-bg); border-radius: 8px; padding: 6px 10px; }
-    .sub { margin: 20px 0 6px; }
+    .sub { margin: var(--space-5) 0 6px; }
     .runs { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 6px 14px; }
     .runs p { margin: 6px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }

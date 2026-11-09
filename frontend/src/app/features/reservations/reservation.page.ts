@@ -181,15 +181,15 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
   `,
   styles: `
     .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    h1 .ref { color: var(--ro-mute); font-weight: 500; margin-right: 8px; }
+    h1 .ref { color: var(--ro-mute); font-weight: 500; margin-right: var(--space-2); }
     h1 .name { overflow-wrap: anywhere; }
-    h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: 8px; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
-    .card { padding: 16px 20px; }
-    .wide { margin-bottom: 16px; }
-    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0 0 12px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; margin: 0; }
+    h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: var(--space-2); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4); }
+    .card { padding: var(--space-4) var(--space-5); }
+    .wide { margin-bottom: var(--space-4); }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0 0 var(--space-3); }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px var(--space-3); margin: 0; }
     dt { color: var(--ro-mute); }
     dd { margin: 0; }
     .mute { color: var(--ro-mute); }
@@ -198,8 +198,8 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
     .err { color: var(--ro-error); }
     .danger { color: var(--ro-error); }
     .full { width: 100%; }
-    .note { border-bottom: 1px solid var(--ro-line-soft); padding-bottom: 8px; margin: 0 0 8px; }
-    .hint { color: var(--ro-mute); font-size: .85rem; margin: 8px 0 0; }
+    .note { border-bottom: 1px solid var(--ro-line-soft); padding-bottom: var(--space-2); margin: 0 0 var(--space-2); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-2) 0 0; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
@@ -396,8 +396,8 @@ export interface ChangeStayData { reservation: Reservation; propertyId: string; 
   `,
   styles: `
     form { min-width: min(460px, 80vw); display: flex; flex-direction: column; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; align-items: start; }
-    .room { grid-column: 1 / -1; font-weight: 500; margin: 4px 0 8px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1) var(--space-3); align-items: start; }
+    .room { grid-column: 1 / -1; font-weight: 500; margin: var(--space-1) 0 var(--space-2); }
     .full { width: 100%; }
     .err { color: var(--ro-error); }
   `,

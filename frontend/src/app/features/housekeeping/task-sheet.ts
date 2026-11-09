@@ -104,15 +104,15 @@ export interface TaskSheetData { propertyId: string; room: HousekeepingRoom; can
     .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
     .state.dirty { background: #fbe4e2; color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .state.clean, .state.inspection { background: #e0eff5; color: #134e63; } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .mute { color: var(--ro-mute); margin: 0 0 8px; }
-    h3 { font-size: 1rem; font-weight: 500; margin: 12px 0 4px; }
+    .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+    h3 { font-size: 1rem; font-weight: 500; margin: var(--space-3) 0 var(--space-1); }
     .checklist { display: flex; flex-direction: column; }
     .checklist mat-checkbox { min-height: 44px; }
     .req { font-size: .72rem; color: var(--ro-kokum); margin-left: 6px; font-weight: 500; }
-    .note { background: #eef4f3; padding: 8px 10px; border-radius: 8px; }
+    .note { background: #eef4f3; padding: var(--space-2) 10px; border-radius: 8px; }
     .back { color: var(--ro-error); }
-    .trail { margin: 4px 0; padding-left: 18px; color: var(--ro-mute); font-size: .9rem; }
-    .full { width: 100%; margin-top: 8px; }
+    .trail { margin: var(--space-1) 0; padding-left: 18px; color: var(--ro-mute); font-size: .9rem; }
+    .full { width: 100%; margin-top: var(--space-2); }
     .repair { display: flex; align-items: center; gap: 6px; color: #5b3a00; }
     .err { color: var(--ro-error); }
     .actions { flex-wrap: wrap; gap: 6px; }
@@ -255,7 +255,7 @@ export interface NewTaskData { propertyId: string; rooms: HousekeepingRoom[]; }
       <button mat-flat-button type="submit" form="new-task" [disabled]="busy()">Add task</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(400px, 84vw); } .err { color: var(--ro-error); }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(400px, 84vw); } .err { color: var(--ro-error); }`,
 })
 export class NewTaskDialog {
   private data = inject<NewTaskData>(MAT_DIALOG_DATA);

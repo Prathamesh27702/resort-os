@@ -99,21 +99,21 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
     }
   `,
   styles: `
-    .sheet { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: 14px 16px; }
-    .top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; } .top h2 { margin: 0; font-size: 1.15rem; } .top p { margin: 2px 0 0; }
+    .sheet { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: 14px var(--space-4); }
+    .top { display: flex; justify-content: space-between; gap: var(--space-2); align-items: flex-start; } .top h2 { margin: 0; font-size: 1.15rem; } .top p { margin: 2px 0 0; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
     .status { border-radius: 14px; padding: 3px 10px; font-size: .85rem; white-space: nowrap; background: var(--ro-sunk); }
     .s-SUBMITTED { background: #e6f0ff; color: #0b3d91; } .s-APPROVED { background: #e3f3ea; color: #1e6b3a; } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
     .s-LOCKED { background: #1d3b40; color: var(--ro-paper); }
     .rejected { color: var(--ro-error-strong); } .note { background: #f6f8f7; border-radius: 10px; padding: 6px 10px; }
-    .totals { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; } .totals div { flex: 1 1 90px; background: #f6f8f7; border-radius: 10px; padding: 6px 10px; display: flex; flex-direction: column; }
+    .totals { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 10px 0; } .totals div { flex: 1 1 90px; background: #f6f8f7; border-radius: 10px; padding: 6px 10px; display: flex; flex-direction: column; }
     .totals b { font-size: 1.05rem; } .totals span { color: var(--ro-mute); font-size: .8rem; }
-    .lines { list-style: none; padding: 0; margin: 0; } .lines > li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 8px 0; border-top: 1px solid var(--ro-sunk); }
+    .lines { list-style: none; padding: 0; margin: 0; } .lines > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) 10px; padding: var(--space-2) 0; border-top: 1px solid var(--ro-sunk); }
     .d { width: 150px; display: flex; flex-direction: column; } .t { flex: 1; display: flex; flex-direction: column; min-width: 180px; } .io { font-weight: 500; }
     .l-ABSENT .ls, .l-MISSING_OUT .ls { color: var(--ro-error); } .late { color: var(--ro-warn); } .fix { color: #0b3d91; }
-    details { flex-basis: 100%; padding-left: 150px; font-size: .88rem; } details ol { margin: 4px 0; padding-left: 18px; }
-    h3 { font-size: .95rem; margin: 12px 0 4px; } .corr { margin: 0; padding-left: 18px; font-size: .9rem; } .corr li { margin: 3px 0; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; } .grow { flex: 1; }
+    details { flex-basis: 100%; padding-left: 150px; font-size: .88rem; } details ol { margin: var(--space-1) 0; padding-left: 18px; }
+    h3 { font-size: .95rem; margin: var(--space-3) 0 var(--space-1); } .corr { margin: 0; padding-left: 18px; font-size: .9rem; } .corr li { margin: 3px 0; }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); } .grow { flex: 1; }
     @media (max-width: 760px) { .d { width: auto; flex-basis: 100%; } details { padding-left: 0; } }
   `,
 })
@@ -238,15 +238,15 @@ abstract class TimesheetActions {
   `,
   styles: `
     .timesheets { max-width: 960px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; } .range { margin-left: 8px; font-weight: 500; }
+    .head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .tools { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; margin-bottom: var(--space-2); } .range { margin-left: var(--space-2); font-weight: 500; }
     .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); } .grow { flex: 1; }
-    .submit { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-top: 12px; }
-    .counts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .submit { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; margin-top: var(--space-3); }
+    .counts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); }
     .chip { border-radius: 14px; padding: 2px 10px; font-size: .85rem; background: var(--ro-sunk); white-space: nowrap; }
     .s-SUBMITTED { background: #e6f0ff; color: #0b3d91; } .s-APPROVED { background: #e3f3ea; color: #1e6b3a; } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
     .s-LOCKED { background: #1d3b40; color: var(--ro-paper); }
-    .skipped { border: 1px solid #ecd29a; background: #fdf6e6; border-radius: 12px; padding: 6px 12px; margin-bottom: 8px; color: #6b4a00; } .skipped ul { margin: 4px 0; }
+    .skipped { border: 1px solid #ecd29a; background: #fdf6e6; border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: #6b4a00; } .skipped ul { margin: var(--space-1) 0; }
     .team { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; }
     .team li { border-top: 1px solid var(--ro-sunk); } .team li:first-child { border-top: 0; }
     .team a { display: flex; gap: 10px; align-items: center; padding: 10px 14px; color: inherit; text-decoration: none; flex-wrap: wrap; } .team a:hover { background: #f6f8f7; }
@@ -346,7 +346,7 @@ export class TimesheetsPage extends TimesheetActions {
       <app-timesheet-card [t]="t()" [tz]="tz()" (act)="act($event)" (correct)="correct($event)" />
     </div>
   `,
-  styles: `.one { max-width: 960px; padding-bottom: 60px; } .err { color: var(--ro-error); background: var(--ro-error-bg); border-radius: 10px; padding: 8px 12px; }`,
+  styles: `.one { max-width: 960px; padding-bottom: 60px; } .err { color: var(--ro-error); background: var(--ro-error-bg); border-radius: 10px; padding: var(--space-2) var(--space-3); }`,
 })
 export class TimesheetPage extends TimesheetActions {
   id = input.required<string>();

@@ -103,10 +103,10 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
   `,
   styles: `
     .wide { max-width: 1100px; }
-    .filters { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .filters { display: flex; align-items: center; gap: var(--space-3) var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-2); }
     .q { flex: 1; min-width: 220px; max-width: 420px; }
     .m { width: 170px; }
-    .totals { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .totals { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
     .totals > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 10px 14px; min-width: 130px; }
     .totals span { color: var(--ro-mute); font-size: .8rem; }
     .totals b { font-size: 1.15rem; color: var(--ro-tide); }
@@ -119,9 +119,9 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
     .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
     .chip.off { background: #eceff0; color: var(--ro-mute); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .err { color: var(--ro-error); }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ro-line-soft); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-top: 1px solid var(--ro-line-soft); }
     @media (max-width: 760px) { .m { width: 100%; } .totals > div { flex: 1; } }
   `,
 })

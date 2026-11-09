@@ -32,6 +32,15 @@ html {
   --ro-off: #7a1f1f;
   --ro-off-bg: #f3e3e3;
 
+  // Spacing scale (Hallmark polish): use these for padding, margin and gap.
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
   // Resort OS palette mapped onto Material's system tokens.
   --mat-sys-primary: var(--ro-kokum);          // kokum — primary actions
   --mat-sys-on-primary: var(--ro-paper);
@@ -76,31 +85,37 @@ h2 { font-size: 1.15rem; }
 :where(a:not([class*='mat-']):not([class*='mdc-'])) { color: var(--ro-tide); text-decoration: underline; text-decoration-color: var(--ro-outline); text-underline-offset: 2px; }
 :where(a:not([class*='mat-']):not([class*='mdc-']):hover) { color: var(--ro-kokum); text-decoration-color: currentColor; }
 
+// Hand-styled buttons (room tiles, chips used as buttons, row buttons): a pressed and a disabled look.
+// Material buttons have their own. :where() keeps this at zero specificity so component styles win.
+:where(button:not([class*='mat-']):not([class*='mdc-'])):where(:not(:disabled)) { cursor: pointer; }
+:where(button:not([class*='mat-']):not([class*='mdc-'])):where(:active:not(:disabled)) { filter: brightness(0.94); }
+:where(button:not([class*='mat-']):not([class*='mdc-'])):where(:disabled) { opacity: 0.55; cursor: not-allowed; }
+
 // Page scaffold shared by feature pages
-.page { padding: 24px; max-width: 1100px; }
-.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.page-head p { margin: 4px 0 0; color: var(--ro-mute); }
+.page { padding: var(--space-6); max-width: 1100px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); flex-wrap: wrap; }
+.page-head p { margin: var(--space-1) 0 0; color: var(--ro-mute); }
 .panel { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; }
 
 table.data { width: 100%; border-collapse: collapse; }
 table.data th { text-align: left; font-weight: 500; color: var(--ro-mute); font-size: 0.85rem; padding: 10px 14px; border-bottom: 1px solid var(--ro-line); }
-table.data td { padding: 12px 14px; border-bottom: 1px solid var(--ro-line-soft); vertical-align: top; }
+table.data td { padding: var(--space-3) 14px; border-bottom: 1px solid var(--ro-line-soft); vertical-align: top; }
 table.data tr:last-child td { border-bottom: 0; }
 table.data tr.clickable { cursor: pointer; }
 table.data tr.clickable:hover td { background: var(--ro-hover); }
 
-.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.8rem; background: var(--ro-sunk); color: var(--ro-ink); margin: 0 4px 4px 0; }
+.chip { display: inline-block; padding: 1px var(--space-2); border-radius: 999px; font-size: 0.8rem; background: var(--ro-sunk); color: var(--ro-ink); margin: 0 var(--space-1) var(--space-1) 0; }
 .chip.off { background: var(--ro-off-bg); color: var(--ro-off); }
 
 /* Outlined fields float their label above the border. Dialogs and steppers clip whatever sits above their content
    box, so give the first row room for the label. */
-html .mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content { padding-top: 8px; }
-html .mat-horizontal-content-container, html .mat-vertical-content { padding-top: 8px; }
+html .mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content { padding-top: var(--space-2); }
+html .mat-horizontal-content-container, html .mat-vertical-content { padding-top: var(--space-2); }
 
-.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1) var(--space-4); }
 .form-grid .full { grid-column: 1 / -1; }
 @media (max-width: 640px) {
-  .page { padding: 16px; }
+  .page { padding: var(--space-4); }
   .form-grid { grid-template-columns: 1fr; }
   table.data .hide-sm { display: none; }
 }

@@ -107,12 +107,12 @@ const TIMEZONES = ['Asia/Kolkata', 'Asia/Dubai', 'Asia/Colombo', 'Asia/Kathmandu
   styles: `
     .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; }
     .back::before { content: '‹ '; }
-    .box { padding: 24px; max-width: 820px; }
-    h2 { margin: 8px 0 12px; font-size: 1rem; color: var(--ro-tide); }
-    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--ro-line-soft); }
-    .actions { display: flex; gap: 8px; margin-top: 16px; }
+    .box { padding: var(--space-6); max-width: 820px; }
+    h2 { margin: var(--space-2) 0 var(--space-3); font-size: 1rem; color: var(--ro-tide); }
+    h2:not(:first-child) { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--ro-line-soft); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-4); }
     .error { color: var(--ro-error); }
-    mat-slide-toggle { margin: 8px 0; }
+    mat-slide-toggle { margin: var(--space-2) 0; }
   `,
 })
 export class PropertyEditPage implements OnInit {

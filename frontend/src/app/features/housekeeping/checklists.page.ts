@@ -101,19 +101,19 @@ import { HousekeepingApi, TASK_TYPES, taskTypeLabel } from './housekeeping.api';
   styles: `
     .cl { max-width: 760px; padding-bottom: 40px; }
     .back { margin-left: -8px; }
-    .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
     .mute { color: var(--ro-mute); }
-    .edit { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 14px; margin: 12px 0; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .edit { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 14px; margin: var(--space-3) 0; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
     h2 { font-size: 1rem; font-weight: 600; margin: 14px 0 6px; }
-    .item { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .item { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; }
     .grow { flex: 1 1 220px; }
-    .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
-    .list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-    .tpl { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 12px 14px; }
+    .actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+    .list { display: flex; flex-direction: column; gap: 10px; margin-top: var(--space-3); }
+    .tpl { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) 14px; }
     .tpl.off { opacity: .7; }
-    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    ol { margin: 8px 0 0; padding-left: 20px; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+    ol { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
     .req { font-size: .72rem; color: var(--ro-kokum); margin-left: 6px; }
     .err { color: var(--ro-error); }
     @media (max-width: 480px) { .two { grid-template-columns: 1fr; gap: 0; } }

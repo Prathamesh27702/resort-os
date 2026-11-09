@@ -259,33 +259,33 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
   `,
   styles: `
     .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    mat-stepper { padding: 8px 4px; }
-    .dates { display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: 4px 12px; align-items: start; }
+    mat-stepper { padding: var(--space-2) var(--space-1); }
+    .dates { display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: var(--space-1) var(--space-3); align-items: start; }
     .dates .full { grid-column: 1 / -1; }
-    .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 12px; }
+    .actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-3); }
     .err { color: var(--ro-error); }
     .warn { color: var(--ro-warn); display: block; }
     .mute { color: var(--ro-mute); }
     .none { color: var(--ro-error); }
-    .lead { margin: 4px 0 12px; font-weight: 500; }
-    .types { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
-    .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--ro-line); border-radius: 10px; }
+    .lead { margin: var(--space-1) 0 var(--space-3); font-weight: 500; }
+    .types { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-2); }
+    .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: var(--space-3); align-items: center; padding: var(--space-3); border: 1px solid var(--ro-line); border-radius: 10px; }
     .type.full { background: var(--ro-hover); }
     .type .what small, .type .price small { display: block; }
     .type .price { text-align: right; }
     .pick { width: 100%; }
-    .guest-step { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
-    .guest-step h3 { font-size: 1rem; margin: 4px 0 8px; }
+    .guest-step { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-6); }
+    .guest-step h3 { font-size: 1rem; margin: var(--space-1) 0 var(--space-2); }
     .wide { width: 100%; }
     .found { display: block; width: 100%; text-align: left; margin-bottom: 6px; }
-    .dups { background: var(--ro-warn-bg); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+    .dups { background: var(--ro-warn-bg); border-radius: 8px; padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
     .dups p { margin: 0 0 6px; }
-    .dups button { display: block; margin-bottom: 4px; text-align: left; }
-    .quote { margin: 4px 0 8px; }
+    .dups button { display: block; margin-bottom: var(--space-1); text-align: left; }
+    .quote { margin: var(--space-1) 0 var(--space-2); }
     table.compact td, table.compact th { padding: 6px 10px; }
     .right { text-align: right; }
     tr.sum td { font-weight: 600; border-top: 1px solid var(--ro-line); }
-    .summary { display: grid; grid-template-columns: 120px 1fr; gap: 6px 16px; margin: 8px 0 16px; }
+    .summary { display: grid; grid-template-columns: 120px 1fr; gap: 6px var(--space-4); margin: var(--space-2) 0 var(--space-4); }
     .summary dt { color: var(--ro-mute); }
     .summary dd { margin: 0; }
     @media (max-width: 760px) {
@@ -295,7 +295,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
       .type .price { text-align: left; }
       .guest-step { grid-template-columns: 1fr; }
       .summary { grid-template-columns: 1fr; gap: 0 0; }
-      .summary dd { margin-bottom: 8px; }
+      .summary dd { margin-bottom: var(--space-2); }
     }
   `,
 })

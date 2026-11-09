@@ -59,20 +59,20 @@ type ListFilter = 'OPEN' | 'mine' | 'RESOLVED' | 'ALL';
   `,
   styles: `
     .mt { max-width: 900px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
     .head p { margin: 2px 0 0; }
     .mute { color: var(--ro-mute); }
     .filters { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 8px 14px; font: inherit;
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit;
                       min-height: 40px; color: var(--ro-ink); cursor: pointer; }
     .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
-    .list { display: flex; flex-direction: column; gap: 8px; }
-    .row { display: block; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 12px 14px; color: inherit; text-decoration: none; }
+    .list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .row { display: block; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) 14px; color: inherit; text-decoration: none; }
     .row:hover { border-color: #8fa5a1; }
-    .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .title { font-size: 1.05rem; margin: 4px 0 2px; }
+    .top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .title { font-size: 1.05rem; margin: var(--space-1) 0 2px; }
     .meta { color: var(--ro-mute); font-size: .88rem; }
-    .pri, .st { font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--ro-sunk); }
+    .pri, .st { font-size: .75rem; font-weight: 600; padding: 2px var(--space-2); border-radius: 999px; background: var(--ro-sunk); }
     .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: #fbe4e2; color: var(--ro-error-strong); }
     .st.resolved, .st.closed { background: var(--ro-ok-bg); color: var(--ro-ok); } .st.on-hold { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .st.in-progress, .st.assigned { background: #e0eff5; color: #134e63; }

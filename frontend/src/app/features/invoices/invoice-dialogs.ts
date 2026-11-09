@@ -94,23 +94,23 @@ export interface IssueInvoiceData { propertyId: string; preview: InvoicePreview;
     </div>
   `,
   styles: `
-    form { display: flex; flex-direction: column; gap: 8px; }
+    form { display: flex; flex-direction: column; gap: var(--space-2); }
     form > * { flex-shrink: 0; }
-    h3 { margin: 12px 0 4px; font-size: 1rem; font-weight: 500; }
+    h3 { margin: var(--space-3) 0 var(--space-1); font-size: 1rem; font-weight: 500; }
     .preview { border: 1px solid var(--ro-line); border-radius: 10px; overflow-x: auto; }
     .lines { width: 100%; border-collapse: collapse; }
-    .lines th { text-align: left; color: var(--ro-mute); font-weight: 500; font-size: .8rem; padding: 8px 12px; background: #f6f8f7;
+    .lines th { text-align: left; color: var(--ro-mute); font-weight: 500; font-size: .8rem; padding: var(--space-2) var(--space-3); background: #f6f8f7;
                 border-bottom: 1px solid var(--ro-line); white-space: nowrap; }
-    .lines td { padding: 8px 12px; border-bottom: 1px solid var(--ro-line-soft); vertical-align: top; }
+    .lines td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--ro-line-soft); vertical-align: top; }
     .lines td small { display: block; margin-top: 2px; font-size: .78rem; }
     .lines td.num { white-space: nowrap; }
     .lines tfoot td { border-bottom: 0; font-weight: 600; background: #f6f8f7; }
     .right { text-align: right !important; }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-4); }
     .upper { text-transform: uppercase; }
     .mute { color: var(--ro-mute); }
-    .info { margin: 4px 0 0; padding: 10px 12px; border-radius: 8px; background: #eef4f3; color: var(--ro-ink-soft); font-size: .88rem; line-height: 1.4; }
+    .info { margin: var(--space-1) 0 0; padding: 10px var(--space-3); border-radius: 8px; background: #eef4f3; color: var(--ro-ink-soft); font-size: .88rem; line-height: 1.4; }
     .err { color: var(--ro-error); }
     @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
   `,
@@ -249,18 +249,18 @@ export interface CreditNoteData { propertyId: string; invoice: Invoice; canCance
   `,
   styles: `
     form { display: flex; flex-direction: column; }
-    .mode { margin-bottom: 12px; align-self: flex-start; }
-    .lines { display: flex; flex-direction: column; max-height: 320px; overflow: auto; margin-bottom: 12px; border: 1px solid var(--ro-line);
+    .mode { margin-bottom: var(--space-3); align-self: flex-start; }
+    .lines { display: flex; flex-direction: column; max-height: 320px; overflow: auto; margin-bottom: var(--space-3); border: 1px solid var(--ro-line);
              border-radius: 10px; }
-    .line { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 56px;
-            padding: 6px 12px 6px 4px; border-bottom: 1px solid var(--ro-line-soft); }
+    .line { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; min-height: 56px;
+            padding: 6px var(--space-3) 6px var(--space-1); border-bottom: 1px solid var(--ro-line-soft); }
     .line:last-child { border-bottom: 0; }
     .amt { width: 150px; padding-top: 6px; }
     .full { width: 100%; }
     .hint, .mute { color: var(--ro-mute); }
-    .hint { margin: 0 0 8px; }
-    .warn { color: var(--ro-warn); background: var(--ro-warn-bg); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
-    .amount { margin: 0 0 12px; color: var(--ro-tide); }
+    .hint { margin: 0 0 var(--space-2); }
+    .warn { color: var(--ro-warn); background: var(--ro-warn-bg); border-radius: 8px; padding: 10px var(--space-3); margin: 0 0 var(--space-3); }
+    .amount { margin: 0 0 var(--space-3); color: var(--ro-tide); }
     .err { color: var(--ro-error); }
   `,
 })

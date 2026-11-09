@@ -92,18 +92,18 @@ function loadCheckout(): Promise<RazorpayCtor> {
   `,
   styles: `
     :host { display: block; min-height: 100vh; background: #eef3f2; }
-    .wrap { max-width: 460px; margin: 0 auto; padding: 32px 16px; }
-    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 24px; }
+    .wrap { max-width: 460px; margin: 0 auto; padding: var(--space-8) var(--space-4); }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: var(--space-6); }
     .prop { color: var(--ro-tide); font-weight: 600; margin: 0; }
-    h1 { font-size: 2.2rem; color: var(--ro-tide); margin: 8px 0; }
+    h1 { font-size: 2.2rem; color: var(--ro-tide); margin: var(--space-2) 0; }
     .mute { color: var(--ro-mute); }
     .small { font-size: .85rem; }
-    .msg { margin: 16px 0; }
-    .actions { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 8px; }
+    .msg { margin: var(--space-4) 0; }
+    .actions { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-4) 0 var(--space-2); }
     .actions button { height: 48px; font-size: 1rem; }
-    .methods { margin-top: 4px; }
-    .test { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
-    .state { display: flex; gap: 8px; align-items: flex-start; border-radius: 8px; padding: 10px 12px; margin: 16px 0 8px; }
+    .methods { margin-top: var(--space-1); }
+    .test { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: var(--space-2) var(--space-3); font-size: .9rem; }
+    .state { display: flex; gap: var(--space-2); align-items: flex-start; border-radius: 8px; padding: 10px var(--space-3); margin: var(--space-4) 0 var(--space-2); }
     .state.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .state.wait { background: var(--ro-warn-bg); color: #6b4600; }
     .state.off { background: #eceff0; color: #3c4a4c; }

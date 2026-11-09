@@ -89,16 +89,16 @@ const VIEW_STATUS: Record<View, string | undefined> = {
     </div>
   `,
   styles: `
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filters { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .filters { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-2); }
     .q { flex: 1; min-width: 240px; max-width: 460px; }
     .mute { color: var(--ro-mute); }
     .right { text-align: right; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .err { color: var(--ro-error); }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ro-line-soft); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-top: 1px solid var(--ro-line-soft); }
   `,
 })
 export class ReservationsPage {

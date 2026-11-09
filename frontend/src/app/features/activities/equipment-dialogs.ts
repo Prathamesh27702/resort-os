@@ -55,8 +55,8 @@ export interface IssueData {
       <button mat-flat-button type="submit" form="issue-form" [disabled]="busy()">{{ form.value.reserveOnly ? 'Keep aside' : 'Issue' }}</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .row .qty { flex: 0 1 110px; } .err { color: var(--ro-error); } p { margin: 4px 0 10px; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(440px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 180px; } .row .qty { flex: 0 1 110px; } .err { color: var(--ro-error); } p { margin: var(--space-1) 0 10px; }`,
 })
 export class IssueEquipmentDialog {
   data = inject<IssueData>(MAT_DIALOG_DATA);
@@ -116,8 +116,8 @@ export interface ReturnData { propertyId: string; assignment: EquipmentAssignmen
       <button mat-flat-button type="submit" form="return-form" [disabled]="busy()">Return</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 8px; min-width: min(400px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
-           p { margin: 4px 0; } mat-button-toggle-group { align-self: flex-start; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-2); min-width: min(400px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
+           p { margin: var(--space-1) 0; } mat-button-toggle-group { align-self: flex-start; }`,
 })
 export class ReturnEquipmentDialog {
   data = inject<ReturnData>(MAT_DIALOG_DATA);
@@ -233,7 +233,7 @@ export interface TypeData { propertyId: string; type: EquipmentType | null; }
       <button mat-flat-button type="submit" form="type-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 6px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: 6px; min-width: min(440px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 150px; } .code { flex: 0 1 120px; } .err { color: var(--ro-error); }`,
 })
 export class EquipmentTypeDialog {

@@ -79,18 +79,18 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
     @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
   `,
   styles: `
-    .board { padding: 16px 20px; max-width: 980px; margin-bottom: 12px; }
-    .h { display: flex; align-items: center; gap: 8px; } .h h2 { margin: 0; } .grow { flex: 1; }
+    .board { padding: var(--space-4) var(--space-5); max-width: 980px; margin-bottom: var(--space-3); }
+    .h { display: flex; align-items: center; gap: var(--space-2); } .h h2 { margin: 0; } .grow { flex: 1; }
     h3 { font-size: .95rem; margin: 14px 0 6px; color: var(--ro-ink-soft); }
-    .tiles { display: grid; gap: 8px; margin-top: 8px; } .five { grid-template-columns: repeat(5, 1fr); } .four { grid-template-columns: repeat(4, 1fr); }
-    .tile { background: #f7faf9; border: 1px solid #e3e9e7; border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; min-width: 0; }
+    .tiles { display: grid; gap: var(--space-2); margin-top: var(--space-2); } .five { grid-template-columns: repeat(5, 1fr); } .four { grid-template-columns: repeat(4, 1fr); }
+    .tile { background: #f7faf9; border: 1px solid #e3e9e7; border-radius: 12px; padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; min-width: 0; }
     .tile small { color: var(--ro-mute); font-size: .8rem; } .tile b { font-size: 1.3rem; color: var(--ro-tide); font-variant-numeric: tabular-nums; }
     .vs { font-size: .74rem !important; } .up { color: #1b6e3a; } .down { color: #8a1c1c; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
-    .list { list-style: none; margin: 0; padding: 0; } .list li { display: grid; grid-template-columns: 1fr auto 90px; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--ro-sunk); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-6); }
+    .list { list-style: none; margin: 0; padding: 0; } .list li { display: grid; grid-template-columns: 1fr auto 90px; gap: var(--space-2); padding: 3px 0; border-bottom: 1px solid var(--ro-sunk); }
     .list b { text-align: right; font-variant-numeric: tabular-nums; }
     .mute { color: var(--ro-mute); } .small { font-size: .82rem; } .err { color: var(--ro-error); }
-    .gst { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin: 0; }
+    .gst { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; margin: 0; }
     .meter { display: inline-block; vertical-align: middle; width: 120px; height: 6px; background: var(--ro-sunk); border-radius: 3px; overflow: hidden; margin: 0 6px; }
     .meter span { display: block; height: 100%; background: #0090a0; } .meter span.over { background: var(--ro-error); }
     @media (max-width: 720px) { .five, .four { grid-template-columns: 1fr 1fr; } .two { grid-template-columns: 1fr; } }

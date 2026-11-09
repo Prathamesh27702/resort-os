@@ -106,15 +106,15 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
     </div>
   `,
   styles: `
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    h2 { margin: 20px 0 8px; }
-    .note { background: var(--ro-off-bg); color: var(--ro-off); border-radius: 8px; padding: 10px 12px; }
-    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
-            padding: 12px 16px; margin-bottom: 12px; }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    h2 { margin: var(--space-5) 0 var(--space-2); }
+    .note { background: var(--ro-off-bg); color: var(--ro-off); border-radius: 8px; padding: 10px var(--space-3); }
+    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
+            padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3); }
     .sums div { display: flex; flex-direction: column; }
     .sums span { color: var(--ro-mute); font-size: .8rem; }
     .sums b { font-size: 1.15rem; color: var(--ro-tide); }
-    .facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 0 0 8px; }
+    .facts { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-4); margin: 0 0 var(--space-2); }
     .facts dt { color: var(--ro-mute); }
     .facts dd { margin: 0; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
@@ -124,7 +124,7 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
     .mute { color: var(--ro-mute); }
     .bad, .sums b.bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .empty { color: var(--ro-mute); padding: 16px; }
+    .empty { color: var(--ro-mute); padding: var(--space-4); }
     .err { color: var(--ro-error); }
     @media (max-width: 760px) { .sums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   `,

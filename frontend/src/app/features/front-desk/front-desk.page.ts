@@ -162,19 +162,19 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
   `,
   styles: `
     .wide { max-width: 1200px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .tile { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-radius: 10px; background: var(--ro-paper); border: 1px solid var(--ro-line);
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+    .tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); border-radius: 10px; background: var(--ro-paper); border: 1px solid var(--ro-line);
             color: var(--ro-ink); text-decoration: none; }
     .tile:hover { box-shadow: 0 1px 6px rgba(14,59,67,.12); }
     .tile b { font-size: 1.5rem; letter-spacing: -0.01em; color: var(--ro-tide); }
     .tile span { color: var(--ro-mute); font-size: .85rem; }
     .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; font-size: .8rem; }
     .tile small { color: var(--ro-mute); font-size: .8rem; }
-    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--ro-line); margin-bottom: 12px; overflow-x: auto; }
+    .tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--ro-line); margin-bottom: var(--space-3); overflow-x: auto; }
     .tabs a { padding: 10px 14px; color: var(--ro-mute); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap; }
     .tabs a.on { color: var(--ro-tide); border-bottom-color: var(--ro-tide); font-weight: 500; }
-    .day { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+    .day { display: flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-2); }
     .day .when { font-weight: 500; min-width: 150px; text-align: center; }
     .mute { color: var(--ro-mute); }
     .warn { color: var(--ro-warn); display: block; }
@@ -184,9 +184,9 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .row-err { margin: 6px 0 0; text-align: left; white-space: normal; max-width: 280px; margin-left: auto; }
     .right { text-align: right; }
     .actions { white-space: nowrap; }
-    .actions button { margin-left: 4px; }
+    .actions button { margin-left: var(--space-1); }
     .rm { margin-bottom: 2px; }
-    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .chip.vip { background: #f6e3ec; color: var(--ro-kokum); }
@@ -194,15 +194,15 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .chip.hk.READY { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.hk.DIRTY { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .chip.hk.OUT_OF_ORDER { background: var(--ro-off-bg); color: var(--ro-off); }
-    .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-    .room { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 120px; padding: 12px 14px; border-radius: 10px;
+    .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
+    .room { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-height: 120px; padding: var(--space-3) 14px; border-radius: 10px;
             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; }
     .room.VACANT { border-left-color: #2e6b3c; }
     .room.OCCUPIED { border-left-color: var(--ro-tide); background: #f2f7f8; }
     .room.ARRIVING { border-left-color: #d29a2c; }
     .room.BLOCKED { border-left-color: #b45309; background: #fffaf0; }
     .room.INACTIVE { border-left-color: var(--ro-outline); color: var(--ro-mute); background: var(--ro-wash); }
-    .room .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: 100%; }
+    .room .top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); width: 100%; }
     .room .code { font-size: 1.25rem; white-space: nowrap; }
     .room .code .bed, .room .who .ref { margin-left: 6px; font-weight: 400; color: var(--ro-mute); }
     .room .code .bed { font-size: .9rem; }
@@ -214,8 +214,8 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
       .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .actions { white-space: normal; }
-      .actions button { margin: 0 0 4px 0; display: block; width: 100%; }
-      table.data td, table.data th { padding: 10px 8px; }
+      .actions button { margin: 0 0 var(--space-1) 0; display: block; width: 100%; }
+      table.data td, table.data th { padding: 10px var(--space-2); }
     }
   `,
 })

@@ -117,13 +117,13 @@ function addDays(iso: string, n: number): string {
   `,
   styles: `
     .acts { max-width: 900px; padding-bottom: 60px; }
-    .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .head { justify-content: space-between; }
+    .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; }
     .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: #8a1c1c; }
-    .sessions, .list, .bookings { list-style: none; margin: 8px 0 0; padding: 0; }
-    .sessions > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+    .sessions, .list, .bookings { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
+    .sessions > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
     .sessions > li.empty { padding: 14px; }
     .sessions > li.off { opacity: .7; }
-    .row { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
     .row:hover { background: #f4f8f7; }
     .time { display: flex; flex-direction: column; font-weight: 600; font-size: 1.05rem; min-width: 52px; } .time small { font-weight: 400; color: var(--ro-mute); font-size: .8rem; }
     .what { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -131,14 +131,14 @@ function addDays(iso: string, n: number): string {
     .seats.full b, .seats.full small { color: #8a1c1c; }
     .meter { width: 72px; height: 5px; background: var(--ro-sunk); border-radius: 3px; margin-top: 3px; overflow: hidden; }
     .meter span { display: block; height: 100%; background: #0e7c86; }
-    .detail { border-top: 1px solid var(--ro-sunk); padding: 8px 14px 12px; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-    .bookings li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid #f1f4f3; }
+    .detail { border-top: 1px solid var(--ro-sunk); padding: var(--space-2) 14px var(--space-3); }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: 6px; }
+    .bookings li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-2) 0; border-top: 1px solid #f1f4f3; }
     .bookings li:first-child { border-top: 0; } .bookings li.off { opacity: .65; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; } .kit { color: var(--ro-tide); }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
     .list { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
-    .list li { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
+    .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; }
   `,
 })

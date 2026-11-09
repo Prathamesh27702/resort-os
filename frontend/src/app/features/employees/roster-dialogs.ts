@@ -105,10 +105,10 @@ export interface ShiftData {
       <button mat-flat-button type="submit" form="shift-form" [disabled]="busy()">{{ s ? 'Save' : 'Add' }}</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); margin: 0 0 8px; }
-           .clash { border: 1px solid #e3a6a1; background: var(--ro-error-bg); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; flex-direction: column; }
-           .clash p { margin: 0 0 4px; color: var(--ro-error-strong); } .rm { margin-right: auto; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); margin: 0 0 var(--space-2); }
+           .clash { border: 1px solid #e3a6a1; background: var(--ro-error-bg); border-radius: 10px; padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); display: flex; flex-direction: column; }
+           .clash p { margin: 0 0 var(--space-1); color: var(--ro-error-strong); } .rm { margin-right: auto; }`,
 })
 export class ShiftDialog {
   data = inject<ShiftData>(MAT_DIALOG_DATA);
@@ -254,10 +254,10 @@ export class ShiftDialog {
     </div>
     <div mat-dialog-actions align="end"><button mat-button [mat-dialog-close]="changed()" type="button">Done</button></div>
   `,
-  styles: `.body { min-width: min(620px, 84vw); display: flex; flex-direction: column; gap: 12px; } ul { list-style: none; margin: 0; padding: 0; }
-           li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #e3e8e6; } li.off { opacity: .6; }
-           .box { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 12px; }
-           .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 130px; } .acts { display: flex; justify-content: flex-end; gap: 8px; }
+  styles: `.body { min-width: min(620px, 84vw); display: flex; flex-direction: column; gap: var(--space-3); } ul { list-style: none; margin: 0; padding: 0; }
+           li { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); padding: 6px 0; border-bottom: 1px solid #e3e8e6; } li.off { opacity: .6; }
+           .box { display: flex; flex-direction: column; gap: var(--space-1); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); }
+           .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 130px; } .acts { display: flex; justify-content: flex-end; gap: var(--space-2); }
            .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class TemplatesDialog {

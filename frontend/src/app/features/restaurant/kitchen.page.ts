@@ -71,33 +71,33 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
   `,
   styles: `
     .kds { max-width: 1400px; padding-bottom: 40px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
     .head p { margin: 2px 0 0; }
-    .tools { display: flex; align-items: center; gap: 4px; }
+    .tools { display: flex; align-items: center; gap: var(--space-1); }
     .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
-    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-    .col { background: var(--ro-sunk); border-radius: 12px; padding: 8px; min-height: 160px; }
+    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
+    .col { background: var(--ro-sunk); border-radius: 12px; padding: var(--space-2); min-height: 160px; }
     .col.READY { background: #e0eff5; }
-    h2 { font-size: 1rem; margin: 4px 4px 8px; display: flex; justify-content: space-between; }
-    .ticket { background: var(--ro-paper); border-radius: 10px; border-top: 6px solid #d29a2c; padding: 10px 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+    h2 { font-size: 1rem; margin: var(--space-1) var(--space-1) var(--space-2); display: flex; justify-content: space-between; }
+    .ticket { background: var(--ro-paper); border-radius: 10px; border-top: 6px solid #d29a2c; padding: 10px var(--space-3); margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
     .PREPARING .ticket { border-top-color: #1f6f8b; } .READY .ticket { border-top-color: #2e6b3c; }
     .ticket.late { border-top-color: var(--ro-error); box-shadow: 0 0 0 2px var(--ro-error) inset; }
     .ticket.late .age { color: var(--ro-error); font-weight: 700; }
-    header { display: flex; align-items: baseline; gap: 8px; }
+    header { display: flex; align-items: baseline; gap: var(--space-2); }
     .num { font-size: 1.2rem; } .where { font-weight: 600; } .age { margin-left: auto; font-variant-numeric: tabular-nums; }
     ul { list-style: none; margin: 0; padding: 0; font-size: 1.05rem; }
-    li { padding: 4px 0; border-bottom: 1px dashed #e3e7e6; }
+    li { padding: var(--space-1) 0; border-bottom: 1px dashed #e3e7e6; }
     li small { display: block; font-size: .85rem; color: var(--ro-ink-soft); }
     li.voided { text-decoration: line-through; color: #7a8a8d; }
     .void { color: var(--ro-error); text-decoration: none; display: inline-block; }
     .note { color: #5b3a00; margin: 0; }
     footer { font-size: .8rem; }
     .go { min-height: 52px; font-size: 1.1rem; border-radius: 10px; }
-    .food { display: inline-block; width: 11px; height: 11px; border: 2px solid; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+    .food { display: inline-block; width: 11px; height: 11px; border: 2px solid; border-radius: 2px; margin-right: var(--space-1); vertical-align: middle; }
     .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
     .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
     .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
-    .empty { margin: 4px; }
+    .empty { margin: var(--space-1); }
     @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .col { min-height: 0; } h1 { font-size: 1.35rem; } }
   `,
 })

@@ -78,31 +78,31 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
   styles: `
     :host { display: block; }
     .frame { height: 100vh; width: 100%; background: var(--ro-wash); --mat-sidenav-container-shape: 0; }
-    .rail { width: 232px; background: var(--ro-tide); color: #cfe0dd; border: 0; padding: 20px 12px; display: flex; flex-direction: column; }
-    .logo { color: var(--ro-paper); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; padding: 0 12px; }
-    .org { font-size: 0.8rem; color: #8fb0ab; padding: 2px 12px 20px; }
+    .rail { width: 232px; background: var(--ro-tide); color: #cfe0dd; border: 0; padding: var(--space-5) var(--space-3); display: flex; flex-direction: column; }
+    .logo { color: var(--ro-paper); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; padding: 0 var(--space-3); }
+    .org { font-size: 0.8rem; color: #8fb0ab; padding: 2px var(--space-3) var(--space-5); }
     nav { display: flex; flex-direction: column; gap: 2px; }
-    nav a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px; color: #cfe0dd; text-decoration: none; }
+    nav a { display: flex; align-items: center; gap: var(--space-3); padding: 9px var(--space-3); border-radius: 8px; color: #cfe0dd; text-decoration: none; }
     nav a mat-icon { font-size: 20px; width: 20px; height: 20px; }
     nav a:hover { background: var(--ro-tide-soft); color: var(--ro-paper); }
     nav a.active { background: var(--ro-wash); color: var(--ro-tide); font-weight: 500; }
     /* The global kokum ring is too dark on the tide rail (1.4:1); use a light ring here. */
     nav a:focus-visible { outline: 2px solid var(--ro-paper); outline-offset: 2px; }
-    .later { margin: 24px 12px 0; font-size: 0.78rem; color: #7fa29d; line-height: 1.4; }
-    .bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; padding: 8px 20px; background: var(--ro-paper); border-bottom: 1px solid var(--ro-line); min-height: 56px; }
+    .later { margin: var(--space-6) var(--space-3) 0; font-size: 0.78rem; color: #7fa29d; line-height: 1.4; }
+    .bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) var(--space-5); background: var(--ro-paper); border-bottom: 1px solid var(--ro-line); min-height: 56px; }
     .prop { font-weight: 600; font-size: 1rem; }
-    .prop.static { padding: 0 8px; }
-    .clock { display: flex; align-items: baseline; gap: 8px; padding: 4px 12px; border-left: 3px solid var(--ro-kokum); }
+    .prop.static { padding: 0 var(--space-2); }
+    .clock { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-1) var(--space-3); border-left: 3px solid var(--ro-kokum); }
     .clock .day { color: var(--ro-mute); }
     .clock .time { font-size: 1.15rem; font-weight: 600; color: var(--ro-ink); }
     .clock .tz { font-size: 0.75rem; color: var(--ro-mute); }
     .grow { flex: 1; }
-    .user { height: auto; padding: 4px 8px; }
-    .initials { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ro-tide); color: var(--ro-paper); font-size: 0.8rem; font-weight: 600; margin-right: 8px; }
+    .user { height: auto; padding: var(--space-1) var(--space-2); }
+    .initials { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ro-tide); color: var(--ro-paper); font-size: 0.8rem; font-weight: 600; margin-right: var(--space-2); }
     .who { display: inline-flex; flex-direction: column; text-align: left; line-height: 1.2; }
     .who small { color: var(--ro-mute); font-size: 0.75rem; }
     @media (max-width: 760px) {
-      .bar { padding: 6px 8px; gap: 6px; flex-wrap: wrap; }
+      .bar { padding: 6px var(--space-2); gap: 6px; flex-wrap: wrap; }
       .clock .day, .clock .tz, .who { display: none; }
     }
   `,

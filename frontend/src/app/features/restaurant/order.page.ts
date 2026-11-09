@@ -156,38 +156,38 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
     .order { max-width: 760px; padding-bottom: 80px; }
     .back { margin-left: -8px; }
     .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    h1 { margin: 4px 0 0; } .where { font-weight: 400; color: var(--ro-ink-soft); }
+    h1 { margin: var(--space-1) 0 0; } .where { font-weight: 400; color: var(--ro-ink-soft); }
     .status { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-warn-bg); color: var(--ro-warn); }
     .status.SETTLED { background: var(--ro-ok-bg); color: var(--ro-ok); } .status.VOIDED { background: #e3e7e6; color: var(--ro-ink-soft); }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
-    .banner { padding: 10px 12px; border-radius: 10px; } .banner.ok { background: var(--ro-ok-bg); } .banner.off { background: var(--ro-sunk); }
-    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 4px 14px 14px; margin-top: 12px; }
-    h2 { font-size: 1rem; margin: 12px 0 8px; }
+    .banner { padding: 10px var(--space-3); border-radius: 10px; } .banner.ok { background: var(--ro-ok-bg); } .banner.off { background: var(--ro-sunk); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-1) 14px 14px; margin-top: var(--space-3); }
+    h2 { font-size: 1rem; margin: var(--space-3) 0 var(--space-2); }
     ul { list-style: none; margin: 0; padding: 0; }
-    .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid var(--ro-sunk); }
+    .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); }
     .lines li.voided .nm, .lines li.voided .amt { text-decoration: line-through; color: #7a8a8d; }
     .what small { display: block; }
     .note { color: #5b3a00; }
     .amt { text-align: right; font-variant-numeric: tabular-nums; }
-    .ctl { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; }
+    .ctl { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: var(--space-1); }
     .kstate { font-size: .75rem; font-weight: 600; color: var(--ro-mute); }
     .kstate.NEW, .kstate.unsent { color: var(--ro-warn); } .kstate.READY { color: #134e63; } .kstate.SERVED { color: var(--ro-ok); } .kstate.VOIDED { color: var(--ro-error); }
-    .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--ro-sunk); }
+    .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); }
     .kots .kstate { padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
     .kots .kstate.READY { background: #e0eff5; }
     .serve { margin-left: auto; min-height: 44px; }
-    .big { min-height: 52px; font-size: 1.05rem; border-radius: 10px; margin-top: 12px; width: 100%; }
-    dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; }
+    .big { min-height: 52px; font-size: 1.05rem; border-radius: 10px; margin-top: var(--space-3); width: 100%; }
+    dl { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-3); margin: 0; }
     dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
     .total { font-weight: 700; font-size: 1.15rem; border-top: 1px solid var(--ro-line); padding-top: 6px; }
-    .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .acts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
     .acts .big { flex: 1 1 200px; }
     .danger { color: var(--ro-error); }
     .full { width: 100%; }
     .cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
-    .cats button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
+    .cats button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit; min-height: 40px; cursor: pointer; }
     .cats button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
-    .dish { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 4px;
+    .dish { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: var(--space-2) var(--space-1);
             border-bottom: 1px solid var(--ro-sunk); cursor: pointer; }
     .dish:focus-visible { outline: 2px solid var(--ro-kokum); }
     .dish[disabled] { opacity: .55; cursor: default; }
@@ -195,11 +195,11 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
     .dish .pr { font-variant-numeric: tabular-nums; }
     .dish mat-icon { color: var(--ro-tide); }
     .out { margin-left: 6px; font-size: .75rem; color: var(--ro-error); }
-    .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+    .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: var(--space-1); vertical-align: middle; }
     .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
     .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
     .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
-    @media (max-width: 640px) { h1 { font-size: 1.35rem; } section { padding: 2px 12px 12px; } }
+    @media (max-width: 640px) { h1 { font-size: 1.35rem; } section { padding: 2px var(--space-3) var(--space-3); } }
   `,
 })
 export class OrderPage {

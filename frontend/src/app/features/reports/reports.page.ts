@@ -268,12 +268,12 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
   `,
   styles: `
     .rep { max-width: 1200px; padding-bottom: 60px; }
-    .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .grow { flex: 1; } .sel { width: 180px; }
-    .tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--ro-line); margin: 4px 0 10px; }
-    .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; font: inherit; color: var(--ro-ink-soft); cursor: pointer; white-space: nowrap; }
+    .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .grow { flex: 1; } .sel { width: 180px; }
+    .tabs { display: flex; gap: var(--space-1); overflow-x: auto; border-bottom: 1px solid var(--ro-line); margin: var(--space-1) 0 10px; }
+    .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: var(--space-2) var(--space-3); font: inherit; color: var(--ro-ink-soft); cursor: pointer; white-space: nowrap; }
     .tab.on { border-color: #0090a0; color: var(--ro-tide); font-weight: 600; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
-    h2.title { margin: 8px 0; } h3 { font-size: 1rem; margin: 18px 0 4px; }
+    h2.title { margin: var(--space-2) 0; } h3 { font-size: 1rem; margin: 18px 0 var(--space-1); }
     .scroll { overflow-x: auto; margin-top: 10px; }
     table.rt { border-collapse: collapse; background: var(--ro-paper); font-variant-numeric: tabular-nums; }
     table.rt th, table.rt td { padding: 5px 10px; border-bottom: 1px solid var(--ro-sunk); text-align: right; white-space: nowrap; }
@@ -284,7 +284,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
     tr.profit th, tr.profit td { font-weight: 700; color: var(--ro-tide); background: #eef6f4; }
     tr.cost th:first-child, tr.revenue th:first-child { padding-left: 22px; }
     td.up { color: #1b6e3a; } td.down { color: #8a1c1c; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-6); }
     @media (max-width: 720px) { .two { grid-template-columns: 1fr; } .cmp { font-size: .85rem; } .sel { width: 46%; } }
     @media print {
       .no-print { display: none !important; }
@@ -561,7 +561,7 @@ function signed(n: number | null, unit: string) { return n === null ? '—' : `$
     </div>
   `,
   styles: `
-    .row { display: flex; align-items: center; gap: 12px; padding: 4px 0; min-width: min(420px, 84vw); }
+    .row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-1) 0; min-width: min(420px, 84vw); }
     .name { flex: 1; display: flex; flex-direction: column; } .name small, .mute { color: var(--ro-mute); } .pct { width: 120px; } .bad { color: var(--ro-error); }
   `,
 })

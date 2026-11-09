@@ -80,8 +80,8 @@ const ENTITIES: Partial<Record<string, string>> = {
     .reason { color: var(--ro-ink); font-size: 0.85rem; margin-top: 2px; }
     .meta { color: #8a9a9c; font-size: 0.78rem; }
     .changes { margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--ro-mute); }
-    .changes b { color: var(--ro-ink); font-weight: 500; margin-right: 4px; }
-    .pager { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 12px; color: var(--ro-mute); }
+    .changes b { color: var(--ro-ink); font-weight: 500; margin-right: var(--space-1); }
+    .pager { display: flex; align-items: center; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-3); color: var(--ro-mute); }
   `,
 })
 export class AuditPage {

@@ -69,7 +69,7 @@ export function paymentText(s: CalendarBooking['paymentStatus']): string {
            grid-template-rows: 40px; border-top: 1px solid var(--ro-line-soft); position: relative; }
     .row.head { border-top: 0; grid-template-rows: 44px; position: sticky; top: 0; z-index: 3; background: #f7faf9; }
     .label { grid-column: 1; grid-row: 1; position: sticky; left: 0; z-index: 2; background: var(--ro-paper); padding: 0 10px;
-             display: flex; align-items: center; gap: 4px; font-size: 13px; border-right: 1px solid #dfe6e4; white-space: nowrap;
+             display: flex; align-items: center; gap: var(--space-1); font-size: 13px; border-right: 1px solid #dfe6e4; white-space: nowrap;
              overflow: hidden; text-overflow: ellipsis; }
     .head .label { background: #f7faf9; font-weight: 600; }
     .day { grid-row: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px;
@@ -84,7 +84,7 @@ export function paymentText(s: CalendarBooking['paymentStatus']): string {
              position: sticky; left: 0; }
     .inactive .label { color: #8a979a; }
     .inactive .cell { background: repeating-linear-gradient(135deg, #fafafa 0 6px, #f2f2f2 6px 12px); }
-    .bar, .block { grid-row: 1; margin: 5px 2px; border-radius: 6px; font-size: 12px; padding: 0 8px; min-width: 0; overflow: hidden;
+    .bar, .block { grid-row: 1; margin: 5px 2px; border-radius: 6px; font-size: 12px; padding: 0 var(--space-2); min-width: 0; overflow: hidden;
                    white-space: nowrap; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; z-index: 1; }
     .bar { border: 1px solid transparent; cursor: grab; font: inherit; font-size: 12px; text-align: left; }
     .bar[disabled], .bar.cdk-drag-disabled { cursor: pointer; }
@@ -97,7 +97,7 @@ export function paymentText(s: CalendarBooking['paymentStatus']): string {
     .block { background: repeating-linear-gradient(135deg, #fde3e1 0 6px, #f9d0cc 6px 12px); color: #7f1d1d; border: 1px solid #f2b8b2; }
     .cut-start { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: 0; }
     .cut-end { border-top-right-radius: 0; border-bottom-right-radius: 0; margin-right: 0; }
-    .cdk-drag-preview { box-shadow: 0 6px 18px rgba(0,0,0,.18); border-radius: 6px; display: flex; align-items: center; padding: 0 8px;
+    .cdk-drag-preview { box-shadow: 0 6px 18px rgba(0,0,0,.18); border-radius: 6px; display: flex; align-items: center; padding: 0 var(--space-2);
                         font-size: 12px; }
     .cdk-drag-placeholder { opacity: .35; }
     .row.cdk-drop-list-receiving { background: #f7fbfa; }

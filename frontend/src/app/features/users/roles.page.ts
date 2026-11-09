@@ -50,7 +50,7 @@ import { ROLE_ORDER } from './roles';
     .wide { max-width: none; }
     .scroll { overflow: auto; max-height: calc(100vh - 190px); }
     .matrix { border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
-    .matrix th, .matrix td { border-bottom: 1px solid var(--ro-line-soft); padding: 6px 8px; }
+    .matrix th, .matrix td { border-bottom: 1px solid var(--ro-line-soft); padding: 6px var(--space-2); }
     thead th { position: sticky; top: 0; background: var(--ro-paper); z-index: 1; border-bottom: 1px solid var(--ro-line); }
     th.role { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; font-weight: 500; color: var(--ro-ink); height: 150px; white-space: nowrap; }
     .perm { position: sticky; left: 0; background: var(--ro-paper); min-width: 300px; text-align: left; }

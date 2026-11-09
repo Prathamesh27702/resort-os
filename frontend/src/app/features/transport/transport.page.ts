@@ -170,13 +170,13 @@ function addDays(iso: string, n: number): string {
   `,
   styles: `
     .trans { max-width: 900px; padding-bottom: 60px; }
-    .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .head { justify-content: space-between; }
+    .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; }
     .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: #8a1c1c; }
     .st { color: var(--ro-tide); } .st.ok { color: #1b6e3a; } h2 { margin: 18px 0 0; font-size: 1.1rem; }
-    .trips, .list, .pax, .tick { list-style: none; margin: 8px 0 0; padding: 0; }
-    .trips > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+    .trips, .list, .pax, .tick { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
+    .trips > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
     .trips > li.empty { padding: 14px; } .trips > li.off { opacity: .7; }
-    .row { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
     .row:hover { background: #f4f8f7; }
     .time { display: flex; flex-direction: column; font-weight: 600; font-size: 1.05rem; min-width: 52px; } .time small { font-weight: 400; color: var(--ro-mute); font-size: .8rem; }
     .what { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -184,22 +184,22 @@ function addDays(iso: string, n: number): string {
     .seats.full b, .seats.full small { color: #8a1c1c; }
     .meter { width: 72px; height: 5px; background: var(--ro-sunk); border-radius: 3px; margin-top: 3px; overflow: hidden; }
     .meter span { display: block; height: 100%; background: #0e7c86; }
-    .detail { border-top: 1px solid var(--ro-sunk); padding: 8px 14px 12px; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
-    .pax li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid #f1f4f3; }
+    .detail { border-top: 1px solid var(--ro-sunk); padding: var(--space-2) 14px var(--space-3); }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: 6px 0; }
+    .pax li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-2) 0; border-top: 1px solid #f1f4f3; }
     .pax li:first-child { border-top: 0; } .pax li.off { opacity: .65; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
     .list { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
-    .list li { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
+    .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; }
-    .mine { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; } .empty { padding: 14px 0; }
-    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: 12px 14px; } .card.off { opacity: .7; }
-    .card header { display: flex; gap: 12px; align-items: center; }
+    .mine { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2); } .empty { padding: 14px 0; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: var(--space-3) 14px; } .card.off { opacity: .7; }
+    .card header { display: flex; gap: var(--space-3); align-items: center; }
     .big { font-size: 1.6rem; font-weight: 700; color: var(--ro-tide); }
     .card .what small { color: var(--ro-mute); }
     .count { display: flex; flex-direction: column; align-items: flex-end; } .count b { font-size: 1.3rem; } .count small { color: var(--ro-mute); }
-    .tick li { display: flex; gap: 10px; align-items: center; padding: 4px 0; border-top: 1px solid #f1f4f3; } .tick li:first-child { border-top: 0; }
+    .tick li { display: flex; gap: 10px; align-items: center; padding: var(--space-1) 0; border-top: 1px solid #f1f4f3; } .tick li:first-child { border-top: 0; }
     .tick li.on .who b { color: #1b6e3a; } .tick li.gone { opacity: .6; }
     .box { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: none; cursor: pointer;
            color: var(--ro-tide); border-radius: 10px; flex: none; }
@@ -207,9 +207,9 @@ function addDays(iso: string, n: number): string {
     .box mat-icon { font-size: 32px; width: 32px; height: 32px; }
     .tick li.on .box { color: #1b6e3a; }
     .who { flex: 1; display: flex; flex-direction: column; min-width: 0; } .who small { color: var(--ro-mute); }
-    .who .line { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-    .who .n { font-size: .85rem; color: var(--ro-tide); background: #eef5f4; border-radius: 10px; padding: 1px 8px; }
-    .tag { font-size: .8rem; border-radius: 10px; padding: 2px 8px; flex: none; } .tag.ok { color: #1b6e3a; background: #e3f0e6; }
+    .who .line { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; }
+    .who .n { font-size: .85rem; color: var(--ro-tide); background: #eef5f4; border-radius: 10px; padding: 1px var(--space-2); }
+    .tag { font-size: .8rem; border-radius: 10px; padding: 2px var(--space-2); flex: none; } .tag.ok { color: #1b6e3a; background: #e3f0e6; }
     .big-btns { margin-top: 10px; } .big-btns button { min-height: 48px; border-radius: 24px; }
     .chev { color: var(--ro-mute); flex: none; }
   `,

@@ -129,11 +129,11 @@ export interface ExpenseSaved { expense: Expense; failed: string[]; }
   `,
   styles: `
     form { display: flex; flex-direction: column; gap: 2px; width: min(560px, 86vw); }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .gst { background: var(--ro-wash); border-radius: 10px; padding: 10px 10px 0; margin: 4px 0 10px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .gst { background: var(--ro-wash); border-radius: 10px; padding: 10px 10px 0; margin: var(--space-1) 0 10px; }
     .caps input, input.caps { text-transform: uppercase; }
     h3 { font-size: 1rem; font-weight: 600; margin: 6px 0; }
-    .receipts { display: flex; flex-wrap: wrap; gap: 8px; }
+    .receipts { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     figure { position: relative; margin: 0; width: 84px; height: 84px; }
     figure img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
     figure button { position: absolute; top: -6px; right: -6px; background: var(--ro-paper); transform: scale(.8); }
@@ -142,7 +142,7 @@ export interface ExpenseSaved { expense: Expense; failed: string[]; }
     .add { position: relative; width: 84px; height: 84px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
            align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; text-align: center; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    .hint { color: var(--ro-mute); font-size: .85rem; margin: 4px 0; } .err { color: var(--ro-error); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-1) 0; } .err { color: var(--ro-error); }
     mat-checkbox { margin: 0 0 6px; }
     @media (max-width: 520px) { .two { grid-template-columns: 1fr; gap: 0; } }
   `,
@@ -294,7 +294,7 @@ export interface SetupItemData { propertyId: string; kind: 'category' | 'centre'
       <button mat-flat-button type="submit" form="setup-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 6px; width: min(460px, 84vw); } .two { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+  styles: `form { display: flex; flex-direction: column; gap: 6px; width: min(460px, 84vw); } .two { display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-2); }
            input.caps { text-transform: uppercase; } .hint { color: var(--ro-mute); font-size: .85rem; margin: 0 0 6px; } .err { color: var(--ro-error); }`,
 })
 export class ExpenseSetupDialog {
@@ -359,7 +359,7 @@ export interface NewBudgetData { propertyId: string; year: number; budgets: Budg
       <button mat-flat-button type="submit" form="new-budget-form" [disabled]="busy()">Make the budget</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; width: min(420px, 84vw); } .hint { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); width: min(420px, 84vw); } .hint { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class NewBudgetDialog {
   data = inject<NewBudgetData>(MAT_DIALOG_DATA);
@@ -423,7 +423,7 @@ export interface BudgetRowData { propertyId: string; budget: Budget; costCentreI
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 10px; width: min(560px, 86vw); } .err { color: var(--ro-error); } .total { font-weight: 600; margin: 0; }
-           .months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 8px; }
+           .months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 var(--space-2); }
            @media (max-width: 520px) { .months { grid-template-columns: repeat(2, 1fr); } }`,
 })
 export class BudgetRowDialog {

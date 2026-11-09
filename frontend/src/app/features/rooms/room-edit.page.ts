@@ -138,15 +138,15 @@ import { roomForm } from './rooms.forms';
   styles: `
     .loading { color: var(--ro-mute); }
     .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    .box { padding: 20px 24px; max-width: 820px; margin-bottom: 16px; }
-    h2 { font-size: 1rem; color: var(--ro-tide); margin-bottom: 4px; }
+    .box { padding: var(--space-5) var(--space-6); max-width: 820px; margin-bottom: var(--space-4); }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin-bottom: var(--space-1); }
     .sub, .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
-    .actions { display: flex; gap: 8px; margin-top: 8px; }
-    .toggle { margin: 12px 0; }
-    .note { color: #7a4a00; background: #fdf0d8; padding: 8px 12px; border-radius: 6px; }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+    .toggle { margin: var(--space-3) 0; }
+    .note { color: #7a4a00; background: #fdf0d8; padding: var(--space-2) var(--space-3); border-radius: 6px; }
     .err { color: var(--ro-error); }
-    .cell { width: 100%; padding: 6px 8px; border: 1px solid var(--ro-line); border-radius: 6px; font: inherit; background: var(--ro-paper); }
-    .add-beds { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+    .cell { width: 100%; padding: 6px var(--space-2); border: 1px solid var(--ro-line); border-radius: 6px; font: inherit; background: var(--ro-paper); }
+    .add-beds { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin-top: var(--space-4); }
   `,
 })
 export class RoomEditPage implements OnInit {

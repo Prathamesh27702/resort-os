@@ -86,10 +86,10 @@ export interface AskData {
       <button mat-flat-button type="submit" form="ask-form" [disabled]="busy()">Send</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .halves { display: flex; gap: 12px; flex-wrap: wrap; margin: -4px 0 8px; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .halves { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: -4px 0 var(--space-2); }
            .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
-           .preview { background: #f4f8f7; border-radius: 10px; padding: 8px 12px; margin-top: 4px; } .preview p { margin: 4px 0; }
+           .preview { background: #f4f8f7; border-radius: 10px; padding: var(--space-2) var(--space-3); margin-top: var(--space-1); } .preview p { margin: var(--space-1) 0; }
            .big { font-size: 1.05rem; } .w { color: #5b4a00; } .k-ROSTERED { color: var(--ro-tide); }`,
 })
 export class AskLeaveDialog {
@@ -182,7 +182,7 @@ export interface ApproveData { propertyId: string; request: LeaveRequest; }
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; min-width: min(440px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
-           .w { color: #5b4a00; margin: 4px 0; } p { margin: 4px 0; }`,
+           .w { color: #5b4a00; margin: var(--space-1) 0; } p { margin: var(--space-1) 0; }`,
 })
 export class ApproveLeaveDialog {
   data = inject<ApproveData>(MAT_DIALOG_DATA);
@@ -248,8 +248,8 @@ export interface TypeData { propertyId: string; type: LeaveType | null; }
       <button mat-flat-button type="submit" form="type-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 140px; } .code { flex: 0 1 110px; } .toggles { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 12px; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(520px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 140px; } .code { flex: 0 1 110px; } .toggles { display: flex; gap: var(--space-4); flex-wrap: wrap; margin: 0 0 var(--space-3); }
            .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }`,
 })
 export class LeaveTypeDialog {
@@ -315,7 +315,7 @@ export interface HolidayData { propertyId: string; holiday: Holiday | null; }
       <button mat-flat-button type="submit" form="holiday-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(380px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(380px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class HolidayDialog {
   data = inject<HolidayData>(MAT_DIALOG_DATA);
@@ -393,9 +393,9 @@ export interface LedgerData { propertyId: string; employeeId: string; canAdjust:
     </div>
     <div mat-dialog-actions align="end"><button mat-button type="button" (click)="ref.close(changed)">Close</button></div>
   `,
-  styles: `.bal { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; } .adjust { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  styles: `.bal { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: var(--space-2); } .adjust { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
            .adjust > mat-form-field { flex: 1 1 140px; } .adjust .days { flex: 0 1 120px; } .adjust .why { flex: 2 1 200px; }
-           .ledger { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; } .ledger th, .ledger td { text-align: left; padding: 6px; border-bottom: 1px solid var(--ro-sunk); vertical-align: top; }
+           .ledger { width: 100%; border-collapse: collapse; margin-top: var(--space-2); font-size: .9rem; } .ledger th, .ledger td { text-align: left; padding: 6px; border-bottom: 1px solid var(--ro-sunk); vertical-align: top; }
            .ledger small { display: block; } .n { text-align: right; white-space: nowrap; } .neg { color: var(--ro-error-strong); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            :host { display: block; min-width: min(640px, 88vw); }`,
 })

@@ -136,21 +136,21 @@ const MAX_PHOTOS = 6;
   styles: `
     .rp { max-width: 640px; padding-bottom: 40px; }
     .back { margin-left: -8px; }
-    h1 { margin: 4px 0 12px; }
-    h2 { font-size: 1rem; font-weight: 600; margin: 8px 0; }
+    h1 { margin: var(--space-1) 0 var(--space-3); }
+    h2 { font-size: 1rem; font-weight: 600; margin: var(--space-2) 0; }
     form { display: flex; flex-direction: column; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .ooo { background: var(--ro-wash); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
-    .ooo mat-form-field { width: 100%; margin-top: 8px; }
-    .hint { color: var(--ro-mute); font-size: .85rem; margin: 4px 0 0; }
-    .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .ooo { background: var(--ro-wash); border-radius: 10px; padding: 10px var(--space-3); margin-bottom: var(--space-3); }
+    .ooo mat-form-field { width: 100%; margin-top: var(--space-2); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-1) 0 0; }
+    .photos { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
     figure { position: relative; margin: 0; width: 88px; height: 88px; }
     figure img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
     figure button { position: absolute; top: -6px; right: -6px; background: var(--ro-paper); transform: scale(.8); }
     .add { width: 88px; height: 88px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
            align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    .send { min-height: 52px; font-size: 1.05rem; margin-top: 12px; border-radius: 10px; }
+    .send { min-height: 52px; font-size: 1.05rem; margin-top: var(--space-3); border-radius: 10px; }
     .err { color: var(--ro-error); }
     @media (max-width: 480px) { .two { grid-template-columns: 1fr; gap: 0; } }
   `,

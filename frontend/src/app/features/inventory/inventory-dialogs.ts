@@ -77,7 +77,7 @@ const num = (v: unknown) => (v === '' || v === null || v === undefined ? null : 
       <button mat-flat-button type="submit" form="item-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 180px; } .err { color: var(--ro-error); }`,
 })
 export class StockItemDialog {
@@ -166,7 +166,7 @@ export class StockItemDialog {
       <button mat-flat-button type="submit" form="adjust-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 180px; } .err { color: var(--ro-error); }`,
 })
 export class AdjustDialog {
@@ -249,9 +249,9 @@ export class AdjustDialog {
       <button mat-flat-button type="submit" form="count-form" [disabled]="busy()">Save count</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(620px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 8px; }
-           .line { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
-           .nm { flex: 1 1 140px; display: flex; flex-direction: column; padding-top: 8px; } .q { flex: 0 1 140px; } .r { flex: 1 1 180px; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(620px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+           .line { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
+           .nm { flex: 1 1 140px; display: flex; flex-direction: column; padding-top: var(--space-2); } .q { flex: 0 1 140px; } .r { flex: 1 1 180px; }
            .err { color: var(--ro-error); }`,
 })
 export class CountDialog {
@@ -354,10 +354,10 @@ export class CountDialog {
       <button mat-flat-button type="submit" form="recipe-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(640px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 8px; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(640px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
            .line { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; } .it { flex: 1 1 170px; } .q { flex: 0 1 100px; } .u { flex: 0 1 90px; }
            .c { min-width: 64px; padding-top: 18px; text-align: right; font-variant-numeric: tabular-nums; }
-           .sum { font-weight: 600; margin: 8px 0; } .err { color: var(--ro-error); } .off { color: var(--ro-error); margin-right: auto; }`,
+           .sum { font-weight: 600; margin: var(--space-2) 0; } .err { color: var(--ro-error); } .off { color: var(--ro-error); margin-right: auto; }`,
 })
 export class RecipeDialog {
   data = inject<{ propertyId: string; dish: CostedDish; inventory: Inventory; units: StockUnit[] }>(MAT_DIALOG_DATA);
@@ -477,9 +477,9 @@ export class RecipeDialog {
     </div>
     <div mat-dialog-actions align="end"><button mat-flat-button [mat-dialog-close]="changed">Done</button></div>
   `,
-  styles: `.setup { min-width: min(460px, 84vw); } h3 { margin: 8px 0 4px; font-size: 1rem; } ul { list-style: none; padding: 0; margin: 0 0 6px; }
+  styles: `.setup { min-width: min(460px, 84vw); } h3 { margin: var(--space-2) 0 var(--space-1); font-size: 1rem; } ul { list-style: none; padding: 0; margin: 0 0 6px; }
            .nm { all: unset; cursor: pointer; display: block; padding: 6px 0; } .nm small { color: var(--ro-mute); }
-           .f { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; border-top: 1px solid var(--ro-sunk); padding-top: 8px; }
+           .f { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; border-top: 1px solid var(--ro-sunk); padding-top: var(--space-2); }
            .f mat-form-field { flex: 1 1 160px; } .err { color: var(--ro-error); }`,
 })
 export class StockSetupDialog {

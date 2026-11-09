@@ -69,7 +69,7 @@ export interface BookTripData { propertyId: string; trip: Trip; }
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
-           .total { font-weight: 600; margin: 4px 0; } mat-checkbox { margin: -4px 0 8px; }`,
+           .total { font-weight: 600; margin: var(--space-1) 0; } mat-checkbox { margin: -4px 0 var(--space-2); }`,
 })
 export class BookTripDialog {
   data = inject<BookTripData>(MAT_DIALOG_DATA);
@@ -159,7 +159,7 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
       <button mat-flat-button type="submit" form="trips-form" [disabled]="busy()">Put on</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); }`,
 })
 export class TripsDialog {
@@ -233,7 +233,7 @@ export interface TripEditData { propertyId: string; trip: Trip; vehicles: Vehicl
       <button mat-flat-button type="submit" form="trip-edit-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class TripEditDialog {
@@ -300,8 +300,8 @@ export interface VehicleData { propertyId: string; vehicle: Vehicle | null; }
       <button mat-flat-button type="submit" form="vehicle-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: 4px 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: var(--space-1) 0; }`,
 })
 export class VehicleDialog {
   data = inject<VehicleData>(MAT_DIALOG_DATA);
@@ -371,8 +371,8 @@ export interface RouteData { propertyId: string; route: TransportRoute | null; }
       <button mat-flat-button type="submit" form="route-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 120px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: 4px 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(520px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 120px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: var(--space-1) 0; }`,
 })
 export class RouteDialog {
   data = inject<RouteData>(MAT_DIALOG_DATA);

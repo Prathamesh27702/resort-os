@@ -2,7 +2,18 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
-## [sprint-24] — 2026-11-07 — Notification engine, WhatsApp, email, background jobs (accepted)
+## [Unreleased] — UI polish from the Hallmark audit
+
+### Changed
+- Colour tokens `--ro-*` (22) and a spacing scale `--space-1..8` in `frontend/src/styles.scss`; component styles use
+  them instead of typed hex and pixel values. Material's `--mat-sys-*` tokens point at the same colours.
+- A white focus ring on the sidebar links (the kokum ring was 1.4:1 on tide), links in the app's colours instead of
+  browser blue, `overflow-x: clip` on the page, no capitals labels (roster, calendar groups, invoice).
+- Hand-styled buttons get a pressed and a disabled look.
+- Front desk tiles, room board, housekeeping cards and the reservation header show their details as separate labels
+  instead of joining them with `·`; room and bed codes no longer wrap.
+
+ — 2026-11-07 — Notification engine, WhatsApp, email, background jobs (accepted)
 
 ### Added
 - Migration V026: `message_templates` (the words of each message per channel, editable; never deleted),

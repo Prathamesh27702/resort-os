@@ -77,9 +77,9 @@ export interface DocumentDialogData { guest: Guest; }
   `,
   styles: `
     form { display: flex; flex-direction: column; min-width: min(440px, 80vw); }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .file { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; color: var(--ro-ink); }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .file { display: flex; flex-direction: column; gap: 6px; margin: var(--space-1) 0 var(--space-2); color: var(--ro-ink); }
     .err { color: var(--ro-error); }
     @media (max-width: 480px) { .two { grid-template-columns: 1fr; } }
   `,
@@ -196,9 +196,9 @@ export interface MergeDialogData { survivor: Guest; }
   `,
   styles: `
     .body { min-width: min(480px, 82vw); }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; max-height: 240px; overflow: auto; }
+    .list { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); max-height: 240px; overflow: auto; }
     .mute { color: var(--ro-mute); margin-left: 6px; }
     .err { color: var(--ro-error); }
   `,

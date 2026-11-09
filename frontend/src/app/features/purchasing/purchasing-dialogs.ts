@@ -83,7 +83,7 @@ function report(form: FormGroup, e: unknown, error: (m: string) => void, rows?: 
       <button mat-flat-button type="submit" form="supplier-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(500px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(500px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 180px; } .err { color: var(--ro-error); }`,
 })
 export class SupplierDialog {
@@ -173,8 +173,8 @@ export class SupplierDialog {
       <button mat-flat-button type="submit" form="request-form" [disabled]="busy()">Send request</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(560px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .line { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(560px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 180px; } .line { display: flex; gap: var(--space-2); align-items: flex-start; flex-wrap: wrap; }
            .it { flex: 1 1 220px; } .q { flex: 0 1 130px; } .err { color: var(--ro-error); }`,
 })
 export class RequestDialog {
@@ -276,10 +276,10 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
       <button mat-flat-button type="submit" form="order-form" [disabled]="busy()">Save draft</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(760px, 88vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(760px, 88vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 200px; } .line { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
-           .it { flex: 1 1 200px; } .q { flex: 0 1 110px; } .r { flex: 0 1 96px; } .amt { padding-top: 16px; min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
-           .tot { text-align: right; margin: 4px 0 8px; font-variant-numeric: tabular-nums; } .err { color: var(--ro-error); } .full { flex-basis: 100%; margin: 0 0 6px; }`,
+           .it { flex: 1 1 200px; } .q { flex: 0 1 110px; } .r { flex: 0 1 96px; } .amt { padding-top: var(--space-4); min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+           .tot { text-align: right; margin: var(--space-1) 0 var(--space-2); font-variant-numeric: tabular-nums; } .err { color: var(--ro-error); } .full { flex-basis: 100%; margin: 0 0 6px; }`,
 })
 export class OrderDialog {
   data = inject<OrderData>(MAT_DIALOG_DATA);
@@ -388,10 +388,10 @@ export class OrderDialog {
       <button mat-flat-button type="submit" form="receive-form" [disabled]="busy()">Save delivery</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(600px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 8px; }
-           .line { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
-           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: 8px; } .q { flex: 0 1 150px; } button { margin-top: 8px; }
-           .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(600px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+           .line { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
+           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: var(--space-2); } .q { flex: 0 1 150px; } button { margin-top: var(--space-2); }
+           .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); }`,
 })
 export class ReceiveDialog {
   data = inject<{ propertyId: string; order: PurchaseOrder; inventory: Inventory }>(MAT_DIALOG_DATA);
@@ -482,10 +482,10 @@ export class ReceiveDialog {
       <button mat-flat-button type="submit" form="bill-form" [disabled]="busy()">Record bill</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(700px, 88vw); } .mute { color: var(--ro-mute); margin: 0 0 8px; }
-           .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 160px; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(700px, 88vw); } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+           .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 160px; }
            .line { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
-           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: 8px; } .q { flex: 0 1 120px; } .r { flex: 0 1 96px; }
+           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: var(--space-2); } .q { flex: 0 1 120px; } .r { flex: 0 1 96px; }
            .tot { text-align: right; font-variant-numeric: tabular-nums; } .err { color: var(--ro-error); } .full { flex-basis: 100%; margin: 0 0 6px; }`,
 })
 export class BillDialog {
@@ -613,8 +613,8 @@ export class BillDepartmentDialog {
       <button mat-flat-button type="submit" form="pay-form" [disabled]="busy()">Record payment</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 160px; } .mute { color: var(--ro-mute); margin: 0 0 8px; } .err { color: var(--ro-error); }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 160px; } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); } .err { color: var(--ro-error); }`,
 })
 export class PaySupplierDialog {
   data = inject<{ propertyId: string; invoice: SupplierInvoice; today: string }>(MAT_DIALOG_DATA);

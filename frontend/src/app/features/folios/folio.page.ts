@@ -143,19 +143,19 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
   `,
   styles: `
     .wide { max-width: 1100px; }
-    h2 { margin: 20px 0 8px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .folios { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .folios a { padding: 6px 12px; border: 1px solid var(--ro-line); border-radius: 16px; color: var(--ro-ink); text-decoration: none; background: var(--ro-paper); }
+    h2 { margin: var(--space-5) 0 var(--space-2); }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .folios { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
+    .folios a { padding: 6px var(--space-3); border: 1px solid var(--ro-line); border-radius: 16px; color: var(--ro-ink); text-decoration: none; background: var(--ro-paper); }
     .folios a.on { border-color: var(--ro-tide); background: #e6f0f1; }
-    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px 12px; }
-    .sums { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(220px, 1fr) 2fr; gap: 16px; align-items: start; background: var(--ro-paper);
-            border: 1px solid var(--ro-line); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); }
+    .sums { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(220px, 1fr) 2fr; gap: var(--space-4); align-items: start; background: var(--ro-paper);
+            border: 1px solid var(--ro-line); border-radius: 10px; padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .balance { display: flex; flex-direction: column; gap: 2px; }
     .balance span { color: var(--ro-mute); font-size: .85rem; }
     .balance b { font-size: 1.8rem; color: var(--ro-tide); letter-spacing: -0.01em; }
     .balance b.owed { color: var(--ro-error); }
-    dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; margin: 0; }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-4); margin: 0; }
     dt { color: var(--ro-mute); }
     dd { margin: 0; text-align: right; }
     .cats { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -167,13 +167,13 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
     .why { color: var(--ro-kokum); }
     .right { text-align: right; }
     .err { color: var(--ro-error); }
-    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     tr.reversed .desc, tr.reversed td.num b { text-decoration: line-through; color: #7a8a8c; }
     tr.reversal td.num b { color: var(--ro-error); }
     tfoot td { border-top: 2px solid var(--ro-line); padding-top: 10px; }
     @media (max-width: 760px) {
       .sums { grid-template-columns: 1fr; }
-      table.data td, table.data th { padding: 10px 8px; }
+      table.data td, table.data th { padding: 10px var(--space-2); }
     }
   `,
 })

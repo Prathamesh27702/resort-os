@@ -103,26 +103,26 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
   `,
   styles: `
     .hk { max-width: 1100px; padding-bottom: 80px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-3); }
     .head p { margin: 2px 0 0; }
-    .tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+    .tools { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; justify-content: flex-end; }
     .mute { color: var(--ro-mute); }
-    .filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 8px 14px; font: inherit;
+    .filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: var(--space-1); margin-bottom: var(--space-2); scrollbar-width: none; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit;
                       min-height: 40px; color: var(--ro-ink); cursor: pointer; }
-    .filters button b { margin-left: 4px; }
+    .filters button b { margin-left: var(--space-1); }
     .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
-    .rush-note { display: flex; align-items: center; gap: 6px; margin: 4px 0 12px; color: var(--ro-warn); font-size: .9rem; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .rush-note { display: flex; align-items: center; gap: 6px; margin: var(--space-1) 0 var(--space-3); color: var(--ro-warn); font-size: .9rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
     .card { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-left: 6px solid var(--ro-outline);
             border-radius: 12px; overflow: hidden; }
     .card.rush { box-shadow: 0 0 0 2px #e0a526 inset; }
     .card.dirty { border-left-color: var(--ro-error); } .card.cleaning { border-left-color: #d29a2c; }
     .card.clean, .card.inspection { border-left-color: #1f6f8b; } .card.ready { border-left-color: #2e6b3c; }
     .card.out-of-order { border-left-color: var(--ro-mute); background: var(--ro-wash); }
-    .body { all: unset; display: block; padding: 12px 14px 10px; cursor: pointer; }
+    .body { all: unset; display: block; padding: var(--space-3) 14px 10px; cursor: pointer; }
     .body:focus-visible { outline: 2px solid var(--ro-kokum); outline-offset: -2px; }
-    .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
     .code { font-size: 1.5rem; letter-spacing: -0.01em; white-space: nowrap; }
     .code .bed { margin-left: 6px; font-size: 1rem; font-weight: 400; color: var(--ro-mute); }
     .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); white-space: nowrap; }
@@ -133,9 +133,9 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
     .hot { color: var(--ro-warn); }
     .task { margin-top: 6px; font-size: .9rem; }
     .back { color: var(--ro-error); }
-    .repair { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: .85rem; color: #5b3a00; }
+    .repair { display: flex; align-items: center; gap: var(--space-1); margin-top: 6px; font-size: .85rem; color: #5b3a00; }
     .repair mat-icon { font-size: 18px; width: 18px; height: 18px; }
-    .go { margin: 0 12px 12px; min-height: 52px; font-size: 1.05rem; border-radius: 10px; }
+    .go { margin: 0 var(--space-3) var(--space-3); min-height: 52px; font-size: 1.05rem; border-radius: 10px; }
     .empty { color: var(--ro-mute); grid-column: 1 / -1; }
     .err { color: var(--ro-error); }
     @media (max-width: 640px) {

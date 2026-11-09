@@ -75,9 +75,9 @@ export interface RegistrationData { property: Property; }
     </div>
   `,
   styles: `
-    form { min-width: min(460px, 82vw); display: flex; flex-direction: column; gap: 4px; }
+    form { min-width: min(460px, 82vw); display: flex; flex-direction: column; gap: var(--space-1); }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .caps { text-transform: uppercase; }
     .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
@@ -178,9 +178,9 @@ export class RegistrationDialog {
     </div>
   `,
   styles: `
-    form { min-width: min(500px, 82vw); display: flex; flex-direction: column; gap: 4px; }
+    form { min-width: min(500px, 82vw); display: flex; flex-direction: column; gap: var(--space-1); }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .caps { text-transform: uppercase; }
     .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
@@ -315,12 +315,12 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
     </div>
   `,
   styles: `
-    form { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: 4px; }
+    form { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: var(--space-1); }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .mode { margin: 4px 0 12px; align-self: flex-start; flex-wrap: wrap; }
-    .slabs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-    .slab { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .mode { margin: var(--space-1) 0 var(--space-3); align-self: flex-start; flex-wrap: wrap; }
+    .slabs { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-2); }
+    .slab { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
     .slab mat-form-field { flex: 1 1 160px; }
     .slab .rate { flex: 0 1 140px; }
     .above { flex: 1 1 160px; color: var(--ro-mute); }

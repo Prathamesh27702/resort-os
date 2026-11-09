@@ -95,8 +95,8 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
     </div>
   `,
   styles: `
-    .setup { padding: 20px 24px; max-width: 720px; }
-    .sub { color: var(--ro-mute); margin: 4px 0 16px; }
+    .setup { padding: var(--space-5) var(--space-6); max-width: 720px; }
+    .sub { color: var(--ro-mute); margin: var(--space-1) 0 var(--space-4); }
     ul { list-style: none; margin: 0; padding: 0; }
     li { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--ro-line-soft); }
     li mat-icon { color: var(--ro-outline); }
@@ -104,11 +104,11 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
     li.done b { color: var(--ro-mute); font-weight: 500; }
     .txt { flex: 1; display: flex; flex-direction: column; }
     .txt span { color: var(--ro-mute); font-size: 0.9rem; }
-    .install { display: flex; align-items: center; gap: 12px; padding: 12px 16px; max-width: 720px; margin-bottom: 12px; background: #eef6f4; }
+    .install { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); max-width: 720px; margin-bottom: var(--space-3); background: #eef6f4; }
     .install > mat-icon { color: var(--ro-tide); }
-    .myday { padding: 16px 20px; max-width: 720px; margin-bottom: 12px; } .myday h2 { margin: 0; }
-    .myday .state { font-size: 1.2rem; font-weight: 600; margin: 8px 0 4px; } .myday p { margin: 4px 0; }
-    .myday .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+    .myday { padding: var(--space-4) var(--space-5); max-width: 720px; margin-bottom: var(--space-3); } .myday h2 { margin: 0; }
+    .myday .state { font-size: 1.2rem; font-weight: 600; margin: var(--space-2) 0 var(--space-1); } .myday p { margin: var(--space-1) 0; }
+    .myday .row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-top: 10px; }
     .warn { color: var(--ro-warn); }
   `,
 })

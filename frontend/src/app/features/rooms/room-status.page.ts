@@ -67,30 +67,30 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
   styles: `
     .wide { max-width: 1200px; }
     .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    .nav { display: flex; align-items: center; gap: 4px; }
-    .nav input { font: inherit; padding: 6px 8px; border: 1px solid var(--ro-line); border-radius: 6px; background: var(--ro-paper); }
-    .legend { display: flex; gap: 16px; flex-wrap: wrap; color: var(--ro-mute); font-size: .85rem; margin-bottom: 12px; }
+    .nav { display: flex; align-items: center; gap: var(--space-1); }
+    .nav input { font: inherit; padding: 6px var(--space-2); border: 1px solid var(--ro-line); border-radius: 6px; background: var(--ro-paper); }
+    .legend { display: flex; gap: var(--space-4); flex-wrap: wrap; color: var(--ro-mute); font-size: .85rem; margin-bottom: var(--space-3); }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
-    .tile { display: flex; flex-direction: column; gap: 4px; min-height: 104px; padding: 12px 14px; border-radius: 10px;
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--space-3); }
+    .tile { display: flex; flex-direction: column; gap: var(--space-1); min-height: 104px; padding: var(--space-3) 14px; border-radius: 10px;
             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; color: var(--ro-ink); text-decoration: none; }
     .tile:hover { box-shadow: 0 1px 6px rgba(14,59,67,.12); }
     .tile.AVAILABLE { border-left-color: #2e6b3c; }
     .tile.BLOCKED { border-left-color: #b45309; background: #fffaf0; }
     .tile.PARTLY_BLOCKED { border-left-color: #d29a2c; }
     .tile.INACTIVE { border-left-color: var(--ro-outline); color: var(--ro-mute); background: var(--ro-wash); }
-    .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
     .code { font-size: 1.35rem; letter-spacing: -0.01em; }
     .type { font-size: .78rem; color: var(--ro-mute); text-align: right; }
     .state { font-weight: 500; }
     .until { font-size: .8rem; color: var(--ro-mute); }
-    .hk { display: inline-block; font-size: .75rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-top: 4px; background: var(--ro-sunk); }
+    .hk { display: inline-block; font-size: .75rem; font-weight: 600; padding: 1px var(--space-2); border-radius: 999px; margin-top: var(--space-1); background: var(--ro-sunk); }
     .hk.DIRTY { background: #fbe4e2; color: var(--ro-error-strong); } .hk.CLEANING { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .hk.CLEAN, .hk.INSPECTION { background: #e0eff5; color: #134e63; } .hk.READY { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .hk.OUT_OF_ORDER { background: #e3e7e6; color: var(--ro-ink-soft); }
     .repairs { font-size: .8rem; color: #5b3a00; margin-top: 2px; }
     .why { font-size: .8rem; color: #7a4a00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .beds { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+    .beds { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: auto; }
     .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #2e6b3c; }
     .dot.BLOCKED { background: #b45309; } .dot.PARTLY_BLOCKED { background: #d29a2c; } .dot.INACTIVE { background: var(--ro-outline); }
     .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }

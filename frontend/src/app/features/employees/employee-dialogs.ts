@@ -118,7 +118,7 @@ export function report(form: FormGroup, e: unknown, error: (m: string) => void) 
       <button mat-flat-button type="submit" form="employee-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(560px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(560px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 200px; } .err { color: var(--ro-error); }`,
 })
 export class EmployeeDialog {
@@ -244,12 +244,12 @@ export class EmployeeDialog {
     </div>
     <div mat-dialog-actions align="end"><button mat-button mat-dialog-close type="button">Done</button></div>
   `,
-  styles: `.body { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: 12px; }
-           ul { list-style: none; margin: 0; padding: 0; } .depts li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid #e3e8e6; }
+  styles: `.body { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: var(--space-3); }
+           ul { list-style: none; margin: 0; padding: 0; } .depts li { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid #e3e8e6; }
            .depts li > small { grid-column: 1; } .depts li > button { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
-           .off { opacity: .6; } .chip { display: inline-block; background: #eef3f1; border-radius: 10px; padding: 0 8px; margin: 2px 4px 0 0; }
-           .box { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 12px; }
-           .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 200px; } .acts { display: flex; justify-content: flex-end; gap: 8px; }
+           .off { opacity: .6; } .chip { display: inline-block; background: #eef3f1; border-radius: 10px; padding: 0 var(--space-2); margin: 2px var(--space-1) 0 0; }
+           .box { display: flex; flex-direction: column; gap: var(--space-1); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); }
+           .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 200px; } .acts { display: flex; justify-content: flex-end; gap: var(--space-2); }
            .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class DepartmentsDialog {
@@ -331,7 +331,7 @@ export class DepartmentsDialog {
       <button mat-flat-button color="warn" type="submit" form="leave-form" [disabled]="busy()">Record leaving</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(420px, 84vw); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(420px, 84vw); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class LeaveDialog {
   data = inject<{ propertyId: string; employee: Employee; today: string }>(MAT_DIALOG_DATA);
@@ -393,7 +393,7 @@ export class LeaveDialog {
       <button mat-flat-button type="submit" form="pay-form" [disabled]="busy()">Record pay</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 180px; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class PayDialog {
@@ -469,7 +469,7 @@ export class PayDialog {
       <button mat-flat-button type="submit" form="doc-form" [disabled]="busy()">Save document</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .file { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(440px, 84vw); } .file { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
            .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class DocumentDialog {

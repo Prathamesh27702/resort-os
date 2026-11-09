@@ -99,12 +99,12 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .mode { margin-bottom: 16px; align-self: flex-start; }
+    .mode { margin-bottom: var(--space-4); align-self: flex-start; }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .split { list-style: none; margin: 0 0 12px; padding: 8px 12px; background: #f2f7f8; border-radius: 8px; }
-    .split li { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
-    .amount { margin: 0 0 8px; color: var(--ro-tide); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .split { list-style: none; margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); background: #f2f7f8; border-radius: 8px; }
+    .split li { display: flex; justify-content: space-between; gap: var(--space-3); padding: 2px 0; }
+    .amount { margin: 0 0 var(--space-2); color: var(--ro-tide); }
     .err { color: var(--ro-error); }
   `,
 })
@@ -203,8 +203,8 @@ export interface ReverseData { propertyId: string; folio: Folio; item: FolioItem
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .line { margin: 0 0 8px; }
-    .hint { color: var(--ro-mute); margin: 0 0 12px; }
+    .line { margin: 0 0 var(--space-2); }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
     .err { color: var(--ro-error); }
   `,
@@ -280,11 +280,11 @@ export interface SplitResult { from: Folio; to: Folio; }
   `,
   styles: `
     form { min-width: min(480px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: var(--ro-mute); margin: 0 0 8px; }
-    .lines { display: flex; flex-direction: column; max-height: 260px; overflow: auto; margin-bottom: 12px; }
-    .targets { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+    .lines { display: flex; flex-direction: column; max-height: 260px; overflow: auto; margin-bottom: var(--space-3); }
+    .targets { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); }
     .full { width: 100%; }
-    .amount { margin: 0 0 8px; color: var(--ro-tide); }
+    .amount { margin: 0 0 var(--space-2); color: var(--ro-tide); }
     .err { color: var(--ro-error); }
   `,
 })

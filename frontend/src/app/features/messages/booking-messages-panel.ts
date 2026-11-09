@@ -39,17 +39,17 @@ import { CHANNEL, CHANNEL_ICON, MessagesApi, statusClass } from './messages.api'
     </section>
   `,
   styles: `
-    .card { padding: 16px 20px; margin-bottom: 16px; }
-    .head { display: flex; align-items: center; gap: 8px; } .grow { flex: 1; }
+    .card { padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4); }
+    .head { display: flex; align-items: center; gap: var(--space-2); } .grow { flex: 1; }
     h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; }
-    .line { display: flex; gap: 10px; align-items: center; width: 100%; border: 0; border-top: 1px solid var(--ro-line-soft); background: none; padding: 8px 0;
+    .line { display: flex; gap: 10px; align-items: center; width: 100%; border: 0; border-top: 1px solid var(--ro-line-soft); background: none; padding: var(--space-2) 0;
             font: inherit; text-align: left; cursor: pointer; color: inherit; }
     .ch { flex: none; color: var(--ro-tide); }
     .txt { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
     .line .chip { flex: none; margin: 0; }
     .top { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
     .mute { color: var(--ro-mute); } .why { color: var(--ro-mute); } .bad, .err { color: var(--ro-error); }
-    .all { display: inline-block; margin-top: 8px; font-size: .9rem; }
+    .all { display: inline-block; margin-top: var(--space-2); font-size: .9rem; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .chip.off { background: #eceff0; color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,

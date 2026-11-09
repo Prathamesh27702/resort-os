@@ -56,7 +56,7 @@ export interface RecordData { propertyId: string; row: AttendanceRow; date: stri
       <button mat-flat-button type="submit" form="record-form" [disabled]="busy()">Record</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(440px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class RecordDialog {
@@ -138,9 +138,9 @@ export class RecordDialog {
       <button mat-flat-button type="submit" form="fence-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `.list { list-style: none; padding: 0; margin: 0 0 8px; } .list li { padding: 4px 0; border-bottom: 1px solid var(--ro-sunk); } .list li.off b { color: var(--ro-mute); }
-           form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .radius { margin-top: 8px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } h3 { margin: 8px 0 4px; font-size: 1rem; }`,
+  styles: `.list { list-style: none; padding: 0; margin: 0 0 var(--space-2); } .list li { padding: var(--space-1) 0; border-bottom: 1px solid var(--ro-sunk); } .list li.off b { color: var(--ro-mute); }
+           form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .radius { margin-top: var(--space-2); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } h3 { margin: var(--space-2) 0 var(--space-1); font-size: 1rem; }`,
 })
 export class GeofencesDialog {
   private data = inject<{ propertyId: string }>(MAT_DIALOG_DATA);
@@ -237,7 +237,7 @@ export interface CorrectData { propertyId: string; timesheet: Timesheet; line: T
       <button mat-flat-button type="submit" form="correct-form" [disabled]="busy()">Save correction</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 120px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class CorrectDialog {

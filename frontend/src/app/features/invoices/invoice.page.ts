@@ -155,28 +155,28 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
   `,
   styles: `
     .wide { max-width: 1100px; }
-    h2 { margin: 20px 0 8px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    h2 { margin: var(--space-5) 0 var(--space-2); }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .doc-actions { white-space: nowrap; }
-    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px 12px; }
-    .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
-               padding: 14px 16px; margin-bottom: 16px; }
+    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); }
+    .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
+               padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .parties > div { display: flex; flex-direction: column; gap: 2px; }
     .parties small { color: var(--ro-mute); font-size: .8rem; }
-    .sums { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 0; }
+    .sums { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-4) 0 0; }
     .sums > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 10px 14px; min-width: 140px; }
     .sums span { color: var(--ro-mute); font-size: .8rem; }
     .sums b { font-size: 1.2rem; color: var(--ro-tide); }
-    .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 14px 16px 16px;
+    .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-6); padding: 14px var(--space-4) var(--space-4);
             border-top: 1px solid var(--ro-line); }
     .words { font-style: italic; color: var(--ro-ink-soft); max-width: 460px; }
     .words span { display: block; font-style: normal; color: var(--ro-mute); font-size: .8rem; margin-bottom: 2px; }
-    .words p { margin: 8px 0 0; font-style: normal; }
+    .words p { margin: var(--space-2) 0 0; font-style: normal; }
     .totals { margin: 0; min-width: 280px; }
-    .totals > div { display: flex; justify-content: space-between; gap: 24px; padding: 3px 0; }
+    .totals > div { display: flex; justify-content: space-between; gap: var(--space-6); padding: 3px 0; }
     .totals dt { color: var(--ro-mute); }
     .totals dd { margin: 0; text-align: right; }
-    .totals .grand { border-top: 2px solid var(--ro-line); margin-top: 6px; padding-top: 8px; font-size: 1.1rem; }
+    .totals .grand { border-top: 2px solid var(--ro-line); margin-top: 6px; padding-top: var(--space-2); font-size: 1.1rem; }
     .totals .grand dt { color: var(--ro-ink); font-weight: 600; }
     .totals .grand dd { font-weight: 700; color: var(--ro-tide); }
     .mute { color: var(--ro-mute); }
@@ -184,7 +184,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .bad, .sums b.bad { color: var(--ro-error); }
     .right { text-align: right; }
     .err { color: var(--ro-error); }
-    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .chip { margin-left: 6px; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
@@ -195,7 +195,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
       .parties { grid-template-columns: 1fr; }
       .foot { flex-direction: column-reverse; }
       .totals { width: 100%; min-width: 0; }
-      table.data td, table.data th { padding: 10px 8px; }
+      table.data td, table.data th { padding: 10px var(--space-2); }
     }
   `,
 })

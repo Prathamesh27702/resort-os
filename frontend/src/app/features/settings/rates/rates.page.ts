@@ -301,17 +301,17 @@ const DAYS = [
     </div>
   `,
   styles: `
-    .box { padding: 20px 24px; margin-bottom: 16px; }
-    .empty { padding: 24px; margin-bottom: 16px; } .empty p { color: var(--ro-mute); margin-top: 0; }
-    h2 { font-size: 1rem; color: var(--ro-tide); margin-bottom: 12px; }
-    .head-actions { display: flex; gap: 8px; align-items: center; }
-    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .box { padding: var(--space-5) var(--space-6); margin-bottom: var(--space-4); }
+    .empty { padding: var(--space-6); margin-bottom: var(--space-4); } .empty p { color: var(--ro-mute); margin-top: 0; }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin-bottom: var(--space-3); }
+    .head-actions { display: flex; gap: var(--space-2); align-items: center; }
+    .toolbar { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .toolbar .spacer { flex: 1; }
     .plan-pick { min-width: 280px; }
-    .start { height: 36px; border: 1px solid #c5cfcc; border-radius: 6px; padding: 0 8px; font: inherit; }
-    .grid-wrap { overflow-x: auto; margin: 8px 0; }
+    .start { height: 36px; border: 1px solid #c5cfcc; border-radius: 6px; padding: 0 var(--space-2); font: inherit; }
+    .grid-wrap { overflow-x: auto; margin: var(--space-2) 0; }
     table.rate-grid { border-collapse: collapse; min-width: 100%; font-variant-numeric: tabular-nums; }
-    table.rate-grid th, table.rate-grid td { border: 1px solid var(--ro-line-soft); padding: 8px 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
+    table.rate-grid th, table.rate-grid td { border: 1px solid var(--ro-line-soft); padding: var(--space-2) 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
     table.rate-grid thead th { color: var(--ro-mute); font-weight: 500; font-size: .8rem; }
     table.rate-grid .type-col { text-align: left; position: sticky; left: 0; background: var(--ro-paper); z-index: 1; }
     table.rate-grid .weekend { background: #fbf4e6; }
@@ -320,14 +320,14 @@ const DAYS = [
     table.rate-grid td.clickable { cursor: pointer; }
     table.rate-grid td.clickable:hover { outline: 2px solid var(--ro-tide); outline-offset: -2px; }
     .min { display: block; font-size: .7rem; color: var(--ro-warn); }
-    .days { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
+    .days { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-4); }
     .form-grid.four { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-    .actions { display: flex; gap: 8px; margin-top: 8px; }
-    .quote { margin-top: 16px; }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+    .quote { margin-top: var(--space-4); }
     .quote tr.total td { font-weight: 600; border-top: 2px solid var(--ro-line); }
     .error { color: var(--ro-error); }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
-    mat-slide-toggle { display: block; margin: 8px 0; }
+    mat-slide-toggle { display: block; margin: var(--space-2) 0; }
   `,
 })
 export class RatesPage {
