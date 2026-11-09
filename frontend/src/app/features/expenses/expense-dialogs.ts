@@ -138,7 +138,7 @@ export interface ExpenseSaved { expense: Expense; failed: string[]; }
     figure img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
     figure button { position: absolute; top: -6px; right: -6px; background: var(--ro-paper); transform: scale(.8); }
     .pdf { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; border: 1px solid var(--ro-line); border-radius: 8px;
-           color: #8a1c1c; overflow: hidden; } .pdf small { color: var(--ro-ink-soft); font-size: .7rem; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+           color: var(--ro-error-strong); overflow: hidden; } .pdf small { color: var(--ro-ink-soft); font-size: .7rem; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .add { position: relative; width: 84px; height: 84px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
            align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; text-align: center; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
@@ -394,7 +394,7 @@ export interface BudgetRowData { propertyId: string; budget: Budget; costCentreI
   selector: 'app-budget-row-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>{{ row.costCentreName }} · {{ data.budget.label }}</h2>
+    <h2 mat-dialog-title>{{ row.costCentreName }}, {{ data.budget.label }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="budget-row-form">
       <mat-button-toggle-group [value]="mode()" (change)="mode.set($event.value)" aria-label="How to plan">
         <mat-button-toggle value="year">Same every month</mat-button-toggle>

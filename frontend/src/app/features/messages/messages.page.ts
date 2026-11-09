@@ -147,7 +147,7 @@ const PAGE = 25;
                     @else { Not run yet. }</p>
                   @if (j.lastError) { <p class="bad small" role="status">{{ j.lastError }}</p> }
                   @if (result()?.job === j.job) { <p class="result small" role="status" data-testid="run-result">{{ result()!.message }}
-                    @for (n of result()!.notes; track $index) { <br /><span class="mute">· {{ n }}</span> }</p> }
+                    @for (n of result()!.notes; track $index) { <br /><span class="mute">{{ n }}</span> }</p> }
                   <div class="jact">
                     @if (setup()?.canSend) { <button mat-stroked-button (click)="run(j)" [disabled]="running() === j.job">{{ running() === j.job ? 'Running…' : 'Run now' }}</button> }
                     @if (setup()?.canManage) { <button mat-button (click)="editJob(j)">Change</button> }
@@ -159,8 +159,8 @@ const PAGE = 25;
             <div class="runs" data-testid="runs">
               @for (r of js.recent; track r.id) {
                 <p><span class="mute num">{{ time(r.createdAt) }}</span> <b>{{ r.jobName }}</b>
-                  @if (r.reservationReference) { · <a [routerLink]="['/reservations', r.reservationId]" class="num">{{ r.reservationReference }}</a> }
-                  · {{ r.outcome }} <small class="mute">({{ r.triggeredBy === 'MANUAL' ? 'Run now' + (r.runByName ? ' by ' + r.runByName : '') : 'on schedule' }})</small></p>
+                  @if (r.reservationReference) {, <a [routerLink]="['/reservations', r.reservationId]" class="num">{{ r.reservationReference }}</a>},
+                 {{ r.outcome }} <small class="mute">({{ r.triggeredBy === 'MANUAL' ? 'Run now' + (r.runByName ? ' by ' + r.runByName : '') : 'on schedule' }})</small></p>
               } @empty { <p class="mute">Nothing done yet.</p> }
             </div>
           }
@@ -172,13 +172,13 @@ const PAGE = 25;
     .msg { max-width: 1000px; padding-bottom: 60px; }
     .head { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .grow { flex: 1; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
-    .mode { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: var(--space-2) var(--space-3); margin: 10px 0; }
-    .mode.off { background: #fbeceb; color: var(--ro-off); }
+    .mode { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 10px; padding: var(--space-2) var(--space-3); margin: 10px 0; }
+    .mode.off { background: var(--ro-error-bg); color: var(--ro-off); }
     .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-3) 0; }
     .chips { display: flex; gap: var(--space-1); flex-wrap: wrap; flex-basis: 100%; }
     .fchip { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-1) var(--space-3); font: inherit; font-size: .85rem; cursor: pointer; color: var(--ro-ink); }
     .fchip b { margin-left: 6px; color: var(--ro-mute); font-weight: 500; }
-    .fchip.on { background: var(--ro-tide); border-color: var(--ro-tide); color: var(--ro-paper); } .fchip.on b { color: #cfe0dd; }
+    .fchip.on { background: var(--ro-tide); border-color: var(--ro-tide); color: var(--ro-paper); } .fchip.on b { color: var(--ro-on-tide); }
     .sel { width: 150px; } .q { flex: 1; min-width: 200px; }
     .rows { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid var(--ro-sunk); background: none;
@@ -205,7 +205,7 @@ const PAGE = 25;
     .runs { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 6px 14px; }
     .runs p { margin: 6px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
     @media (max-width: 720px) {
       .tgrid, .jobs { grid-template-columns: minmax(0, 1fr); }
       .row { flex-wrap: wrap; } .side { flex-direction: row; align-items: center; width: 100%; box-sizing: border-box; justify-content: space-between; padding-left: 36px; }

@@ -71,7 +71,7 @@ export interface AskData {
       @if (preview(); as p) {
         <section class="preview" data-testid="leave-preview">
           <p class="big"><b>{{ days(p.days) }}</b>
-            @if (p.balanceAfter !== null) { <span> · {{ days(p.available!) }} available, <b>{{ days(p.balanceAfter) }}</b> left after</span> }
+            @if (p.balanceAfter !== null) { <span>, {{ days(p.available!) }} available, <b>{{ days(p.balanceAfter) }}</b> left after</span> }
           </p>
           @if (p.skipped.length) { <p class="mute small">Not counted: {{ p.skipped.join('; ') }}</p> }
           @for (w of p.warnings; track w.message) {
@@ -89,8 +89,8 @@ export interface AskData {
   styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 150px; } .halves { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: -4px 0 var(--space-2); }
            .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
-           .preview { background: #f4f8f7; border-radius: 10px; padding: var(--space-2) var(--space-3); margin-top: var(--space-1); } .preview p { margin: var(--space-1) 0; }
-           .big { font-size: 1.05rem; } .w { color: #5b4a00; } .k-ROSTERED { color: var(--ro-tide); }`,
+           .preview { background: var(--ro-wash); border-radius: 10px; padding: var(--space-2) var(--space-3); margin-top: var(--space-1); } .preview p { margin: var(--space-1) 0; }
+           .big { font-size: 1.05rem; } .w { color: var(--ro-warn-strong); } .k-ROSTERED { color: var(--ro-tide); }`,
 })
 export class AskLeaveDialog {
   data = inject<AskData>(MAT_DIALOG_DATA);
@@ -169,7 +169,7 @@ export interface ApproveData { propertyId: string; request: LeaveRequest; }
   template: `
     <h2 mat-dialog-title>Approve {{ r.code }}?</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="approve-form">
-      <p><b>{{ r.employeeName }}</b> · {{ r.leaveTypeName }} · {{ days(r.days) }}</p>
+      <p><b>{{ r.employeeName }}</b>, {{ r.leaveTypeName }}, {{ days(r.days) }}</p>
       @if (r.balance !== null) { <p class="mute">{{ days(r.balance) }} in the balance, {{ days(r.balance - r.days) }} after.</p> }
       @for (w of r.warnings; track w.message) { <p class="w"><mat-icon inline>{{ w.kind === 'ROSTERED' ? 'event_busy' : 'warning' }}</mat-icon> {{ w.message }}</p> }
       <mat-form-field appearance="outline"><mat-label>Note (optional)</mat-label><input matInput formControlName="note" maxlength="300" />
@@ -182,7 +182,7 @@ export interface ApproveData { propertyId: string; request: LeaveRequest; }
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; min-width: min(440px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
-           .w { color: #5b4a00; margin: var(--space-1) 0; } p { margin: var(--space-1) 0; }`,
+           .w { color: var(--ro-warn-strong); margin: var(--space-1) 0; } p { margin: var(--space-1) 0; }`,
 })
 export class ApproveLeaveDialog {
   data = inject<ApproveData>(MAT_DIALOG_DATA);
@@ -383,7 +383,7 @@ export interface LedgerData { propertyId: string; employeeId: string; canAdjust:
           <tbody>
             @for (e of l.entries; track e.id) {
               <tr><td>{{ dayText(e.entryDate) }}</td>
-                <td>{{ entryLabel[e.entryType] }} {{ e.leaveTypeCode }}@if (e.requestCode) { · {{ e.requestCode }} }@if (e.period) { · {{ e.period }} }
+                <td>{{ entryLabel[e.entryType] }} {{ e.leaveTypeCode }}@if (e.requestCode) {, {{ e.requestCode }} }@if (e.period) {, {{ e.period }} }
                   @if (e.reason) { <small class="mute">{{ e.reason }}</small> }@if (e.by) { <small class="mute">by {{ e.by }}</small> }</td>
                 <td class="n" [class.neg]="e.days < 0">{{ e.days > 0 ? '+' : '' }}{{ e.days }}</td><td class="n">{{ e.balanceAfter }}</td></tr>
             } @empty { <tr><td colspan="4" class="mute">Nothing yet: no leave earned, taken or brought in.</td></tr> }

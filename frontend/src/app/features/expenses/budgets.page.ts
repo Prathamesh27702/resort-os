@@ -93,7 +93,7 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
                 <div class="more" role="cell">
                   <p>{{ monthShort(r.through, true) }}: {{ inr(d.monthActual) }} spent of {{ inr(d.monthBudget) }} planned.
                     @if (d.waitingCount) { {{ inr(d.waiting) }} waits for approval. }</p>
-                  <p class="split" data-testid="split">This year: expenses {{ inr(d.expenses) }} · supplier bills {{ inr(d.supplierBills) }}@if (r.payIncluded) { · pay {{ inr(d.pay ?? 0) }} }</p>
+                  <p class="split" data-testid="split">This year: expenses {{ inr(d.expenses) }}, supplier bills {{ inr(d.supplierBills) }}@if (r.payIncluded) {, pay {{ inr(d.pay ?? 0) }} }</p>
                   @if (d.categories.length) {
                     <ul class="cats">@for (c of d.categories; track c.categoryId) { <li><span>{{ c.name }}</span><b>{{ inr(c.actual) }}</b></li> }</ul>
                   } @else { <p class="mute">Nothing approved yet this year.</p> }
@@ -134,29 +134,29 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
     .bud { max-width: 1000px; padding-bottom: 60px; }
     .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .grow { flex: 1; } .sel { width: 190px; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); } h2 { font-size: 1.1rem; margin: var(--space-5) 0 var(--space-1); }
-    .none { background: #fff4d6; border-radius: 12px; padding: 10px 14px; margin: 10px 0; display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+    .none { background: var(--ro-warn-bg); border-radius: 12px; padding: 10px 14px; margin: 10px 0; display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
     .none p { margin: 0; flex: 1; }
     .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin: var(--space-3) 0 6px; }
     .tile { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); display: flex; flex-direction: column; }
-    .tile small { color: var(--ro-mute); } .tile b { font-size: 1.25rem; color: var(--ro-tide); } .tile.bad b { color: #8a1c1c; }
-    .wait { color: #6b4e00; margin: var(--space-1) 0; }
+    .tile small { color: var(--ro-mute); } .tile b { font-size: 1.25rem; color: var(--ro-tide); } .tile.bad b { color: var(--ro-error-strong); }
+    .wait { color: var(--ro-warn-strong); margin: var(--space-1) 0; }
     .table { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-top: 10px; }
     .tr { display: grid; grid-template-columns: 2fr 1fr 1.2fr 1.2fr 1.3fr 80px; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); }
     .tr:first-child { border-top: 0; } .th { color: var(--ro-mute); font-size: .85rem; }
     .name { display: flex; flex-direction: column; align-items: flex-start; }
     .link { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--ro-tide); cursor: pointer; text-align: left; }
-    .stand { font-size: .78rem; display: inline-flex; align-items: center; gap: 2px; color: #1b6e3a; }
-    .stand.over { color: #8a1c1c; } .stand.heading_over { color: var(--ro-warn); } .stand.no_budget { color: var(--ro-mute); }
+    .stand { font-size: .78rem; display: inline-flex; align-items: center; gap: 2px; color: var(--ro-ok-mid); }
+    .stand.over { color: var(--ro-error-strong); } .stand.heading_over { color: var(--ro-warn); } .stand.no_budget { color: var(--ro-mute); }
     .num { display: flex; flex-direction: column; font-variant-numeric: tabular-nums; } .num small { color: var(--ro-mute); font-size: .78rem; }
-    .num.bad { color: #8a1c1c; }
+    .num.bad { color: var(--ro-error-strong); }
     .meter { width: 100%; max-width: 110px; height: 5px; background: var(--ro-sunk); border-radius: 3px; margin-top: 3px; overflow: hidden; }
-    .meter span { display: block; height: 100%; background: #0090a0; border-radius: 3px; } .meter span.over { background: var(--ro-error); }
+    .meter span { display: block; height: 100%; background: var(--ro-sea-bright); border-radius: 3px; } .meter span.over { background: var(--ro-error); }
     .act { text-align: right; }
     .more { grid-column: 1 / -1; background: var(--ro-wash); border-radius: 10px; padding: var(--space-2) var(--space-3); } .more p { margin: 0 0 6px; } .split { color: var(--ro-ink-soft); font-size: .88rem; }
     .cats { list-style: none; margin: 0; padding: 0; columns: 2; } .cats li { display: flex; justify-content: space-between; gap: var(--space-2); padding: 2px 0; break-inside: avoid; }
     .legend { display: flex; gap: 6px; align-items: center; color: var(--ro-ink-soft); font-size: .85rem; }
     .key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-left: var(--space-2); }
-    .key.plan, .b.plan { background: #b7791f; } .key.spent, .b.spent { background: #0090a0; }
+    .key.plan, .b.plan { background: var(--ro-warn-mid); } .key.spent, .b.spent { background: var(--ro-sea-bright); }
     .chart { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--space-1); height: 160px; margin-top: var(--space-2); padding-bottom: var(--space-1);
              border-bottom: 1px solid var(--ro-line); }
     .col { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); min-width: 0; } .col.after { opacity: .55; }

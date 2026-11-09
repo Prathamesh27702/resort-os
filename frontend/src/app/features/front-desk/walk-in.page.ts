@@ -100,7 +100,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         <h2><span class="n">2</span> Guest</h2>
         @if (chosen()) {
           @if (guest(); as g) {
-            <p class="picked"><mat-icon>person</mat-icon><b>{{ g.fullName }}</b>@if (g.phone) { · <span class="num mute">{{ phone(g.phone) }}</span> }
+            <p class="picked"><mat-icon>person</mat-icon><b>{{ g.fullName }}</b>@if (g.phone) {, <span class="num mute">{{ phone(g.phone) }}</span> }
               <button mat-button (click)="clearGuest()">Change</button></p>
           } @else if (newGuestReady()) {
             <p class="picked"><mat-icon>person_add</mat-icon><b>New: {{ newGuestName() }}</b>
@@ -116,7 +116,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                 </mat-form-field>
                 @for (g of found(); track g.id) {
                   <button mat-stroked-button class="found" (click)="useGuest(g)">
-                    <b>{{ g.fullName }}</b>@if (g.phone) { · <span class="mute num">{{ phone(g.phone) }}</span> }
+                    <b>{{ g.fullName }}</b>@if (g.phone) {, <span class="mute num">{{ phone(g.phone) }}</span> }
                   </button>
                 } @empty { @if (guestQ().trim().length >= 2) { <p class="mute">No guest matches “{{ guestQ() }}”. Add them as new.</p> } }
               </div>
@@ -155,8 +155,8 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         @if (ready()) {
           <dl class="summary">
             <dt>Guest</dt><dd><b>{{ guest()?.fullName ?? newGuestName() }}</b>@if (!guest()) { <span class="mute"> (new profile)</span> }</dd>
-            <dt>Stay</dt><dd>{{ day(today) }} – {{ day(availability()!.to) }} · {{ availability()!.nights }} night{{ availability()!.nights === 1 ? '' : 's' }} · {{ guestsLine() }}</dd>
-            <dt>Room</dt><dd>{{ chosen()!.name }} · {{ roomLine() }}</dd>
+            <dt>Stay</dt><dd>{{ day(today) }} – {{ day(availability()!.to) }}, {{ availability()!.nights }} night{{ availability()!.nights === 1 ? '' : 's' }}, {{ guestsLine() }}</dd>
+            <dt>Room</dt><dd>{{ chosen()!.name }}, {{ roomLine() }}</dd>
             <dt>Price</dt><dd><b class="num">{{ rupees(chosen()!.price!) }}</b> before tax, {{ chosen()!.ratePlanName }}</dd>
           </dl>
           <form [formGroup]="extra" class="form-grid">
@@ -182,7 +182,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
             <div class="dups" role="alert">
               <p>This may be someone who has stayed before:</p>
               @for (d of duplicates(); track d.id) {
-                <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b> · {{ phone(d.phone) || d.email }} · {{ d.reasons.join(', ') }}</button>
+                <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b>, {{ phone(d.phone) || d.email }}, {{ d.reasons.join(', ') }}</button>
               }
               <button mat-button type="button" (click)="submit(true)">No, add a new profile and check in</button>
             </div>
@@ -209,7 +209,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
     .mute { color: var(--ro-mute); }
     .types { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-3); }
     .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: var(--space-3); align-items: center; padding: var(--space-3); border: 1px solid var(--ro-line); border-radius: 10px; }
-    .type.on { border-color: var(--ro-tide); background: #eef5f3; }
+    .type.on { border-color: var(--ro-tide); background: var(--ro-tint); }
     .type.full { background: var(--ro-hover); }
     .type .what small, .type .price small { display: block; }
     .type .price { text-align: right; }
@@ -371,7 +371,7 @@ export class WalkInPage {
     this.frontDesk.walkIn(this.pid, body, this.key).subscribe({
       next: r => {
         const room = r.units.filter(u => u.current).map(u => u.bedCode ? `${u.unitName} bed ${u.bedCode}` : u.unitName).join(', ');
-        this.snack.open(`Checked in: ${r.reference} · ${room}`, 'OK', { duration: 5000 });
+        this.snack.open(`Checked in: ${r.reference}, ${room}`, 'OK', { duration: 5000 });
         this.router.navigateByUrl(`/reservations/${r.id}`);
       },
       error: e => {

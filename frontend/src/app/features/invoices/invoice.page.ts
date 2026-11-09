@@ -29,10 +29,10 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
         <div class="page-head">
           <div>
             <a routerLink="/invoices" class="back">Invoices</a>
-            <h1><span class="num">{{ i.number }}</span> · {{ i.customer.name }}
+            <h1><span class="num">{{ i.number }}</span>, {{ i.customer.name }}
               <span [class]="'chip ' + statusClass(i.status)" data-testid="invoice-status">{{ statusLabel(i.status) }}</span></h1>
-            <p>{{ i.title }} · {{ shortDate(i.invoiceDate) }} · <a [routerLink]="['/reservations', i.reservationId]" class="num">{{ i.reference }}</a> ·
-              <a [routerLink]="['/folios', i.folioId]" class="num">{{ i.folioNumber }}</a>@if (i.issuedByName) { · issued by {{ i.issuedByName }} }</p>
+            <p>{{ i.title }}, {{ shortDate(i.invoiceDate) }}, <a [routerLink]="['/reservations', i.reservationId]" class="num">{{ i.reference }}</a>,
+              <a [routerLink]="['/folios', i.folioId]" class="num">{{ i.folioNumber }}</a>@if (i.issuedByName) {, issued by {{ i.issuedByName }} }</p>
           </div>
           <div class="head-actions">
             <button mat-flat-button (click)="pdf('invoices', i.id, i.number)" [disabled]="busy()"><mat-icon>download</mat-icon>PDF</button>
@@ -62,7 +62,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
             @if (i.customer.address) { <span>{{ i.customer.address }}</span> }
             <span class="num" data-testid="customer-gstin">{{ i.customer.gstin ? 'GSTIN ' + i.customer.gstin : 'Unregistered (B2C)' }}</span>
             @if (i.customer.stateName) { <span>{{ i.customer.stateName }}</span> }</div>
-          <div><small>Place of supply</small><b>{{ i.placeOfSupplyName }}</b><span>{{ i.isB2B ? 'B2B' : 'B2C' }} · reverse charge: no</span>
+          <div><small>Place of supply</small><b>{{ i.placeOfSupplyName }}</b><span>{{ i.isB2B ? 'B2B' : 'B2C' }}, reverse charge: no</span>
             <span>Financial year {{ i.financialYear }}</span></div>
         </div>
 
@@ -73,8 +73,8 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
               @for (l of i.items; track l.id) {
                 <tr [attr.data-line]="l.description">
                   <td class="num">{{ l.lineNo }}</td>
-                  <td>{{ l.description }}<br /><small class="mute">{{ shortDate(l.serviceDate) }}@if (l.debitNoteNumber) { · on debit note {{ l.debitNoteNumber }} }
-                    @if (l.discount) { · {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited before }</small>
+                  <td>{{ l.description }}<br /><small class="mute">{{ shortDate(l.serviceDate) }}@if (l.debitNoteNumber) {, on debit note {{ l.debitNoteNumber }} }
+                    @if (l.discount) {, {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited before }</small>
                     @if (l.credited) { <br /><small class="why">{{ money(l.credited) }} credited</small> }</td>
                   <td class="hide-sm num">{{ l.hsnSac }}</td>
                   <td class="right num">{{ money(l.taxableValue) }}</td>
@@ -113,7 +113,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
                 @for (n of notes(); track n.id) {
                   <tr [attr.data-note]="n.number">
                     <td><b class="num">{{ n.number }}</b> {{ noteLabel(n) }}<br /><small class="why">{{ n.reason }}</small>
-                      <br /><small class="mute">{{ when(n.issuedAt) }}@if (n.issuedByName) { · {{ n.issuedByName }} }</small></td>
+                      <br /><small class="mute">{{ when(n.issuedAt) }}@if (n.issuedByName) {, {{ n.issuedByName }} }</small></td>
                     <td class="hide-sm">@for (l of n.lines; track l.lineNo) { <div>{{ l.description }} <small class="mute num">{{ money(l.total) }}</small></div> }</td>
                     <td class="right num"><b [class.bad]="n.kind === 'CREDIT_NOTE'">{{ n.kind === 'CREDIT_NOTE' ? '− ' : '' }}{{ money(n.total) }}</b>
                       <br /><small class="mute">GST {{ money(n.taxTotal) }}</small></td>
@@ -134,9 +134,9 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
             <tbody>
               @for (r of i.receipts; track r.id) {
                 <tr [class.reversed]="r.voided" [attr.data-receipt]="r.number">
-                  <td><b class="num">{{ r.number }}</b> · {{ shortDate(r.receiptDate) }}@if (r.voided) { <span class="chip back">Payment voided</span> }</td>
-                  <td class="hide-sm"><a [routerLink]="['/payments', r.paymentId]" class="num">{{ r.paymentNumber }}</a> · {{ methodLabel(r.method) }}
-                    @if (r.paymentReference) { <small class="mute"> · {{ r.paymentReference }}</small> }</td>
+                  <td><b class="num">{{ r.number }}</b>, {{ shortDate(r.receiptDate) }}@if (r.voided) { <span class="chip back">Payment voided</span> }</td>
+                  <td class="hide-sm"><a [routerLink]="['/payments', r.paymentId]" class="num">{{ r.paymentNumber }}</a>, {{ methodLabel(r.method) }}
+                    @if (r.paymentReference) { <small class="mute">, {{ r.paymentReference }}</small> }</td>
                   <td class="right num"><b>{{ money(r.amount) }}</b></td>
                   <td class="right doc-actions"><button mat-button (click)="pdf('receipts', r.id, r.number)" [attr.aria-label]="'PDF of ' + r.number"><mat-icon>download</mat-icon>PDF</button>
                     <button mat-icon-button (click)="print('receipts', r.id)" [attr.aria-label]="'Print ' + r.number"><mat-icon>print</mat-icon></button></td>
@@ -158,7 +158,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     h2 { margin: var(--space-5) 0 var(--space-2); }
     .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .doc-actions { white-space: nowrap; }
-    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); }
+    .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
     .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
                padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .parties > div { display: flex; flex-direction: column; gap: 2px; }
@@ -187,10 +187,10 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .chip { margin-left: 6px; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    tr.reversed b { text-decoration: line-through; color: #7a8a8c; }
+    tr.reversed b { text-decoration: line-through; color: var(--ro-mute); }
     @media (max-width: 760px) {
       .parties { grid-template-columns: 1fr; }
       .foot { flex-direction: column-reverse; }
@@ -229,7 +229,7 @@ export class InvoicePage {
 
   noteLabel(n: InvoiceNote) {
     if (n.kind === 'DEBIT_NOTE') return 'Debit note';
-    return n.noteType === 'CANCEL' ? 'Credit note · cancels the invoice' : 'Credit note';
+    return n.noteType === 'CANCEL' ? 'Credit note, cancels the invoice' : 'Credit note';
   }
 
   when(iso: string) {

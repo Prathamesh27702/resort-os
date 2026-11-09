@@ -48,7 +48,7 @@ import { roomForm } from './rooms.forms';
             <mat-label>Room type</mat-label>
             <mat-select formControlName="accommodationTypeId">
               @for (t of selectableTypes(); track t.id) {
-                <mat-option [value]="t.id">{{ t.name }} · {{ t.inventoryMode === 'BED' ? 'sold per bed' : 'sold per room' }}</mat-option>
+                <mat-option [value]="t.id">{{ t.name }}, {{ t.inventoryMode === 'BED' ? 'sold per bed' : 'sold per room' }}</mat-option>
               }
             </mat-select>
             <mat-error>Choose a room type.</mat-error>
@@ -143,7 +143,7 @@ import { roomForm } from './rooms.forms';
     .sub, .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
     .actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
     .toggle { margin: var(--space-3) 0; }
-    .note { color: #7a4a00; background: #fdf0d8; padding: var(--space-2) var(--space-3); border-radius: 6px; }
+    .note { color: var(--ro-warn-strong); background: var(--ro-warn-bg); padding: var(--space-2) var(--space-3); border-radius: 6px; }
     .err { color: var(--ro-error); }
     .cell { width: 100%; padding: 6px var(--space-2); border: 1px solid var(--ro-line); border-radius: 6px; font: inherit; background: var(--ro-paper); }
     .add-beds { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin-top: var(--space-4); }

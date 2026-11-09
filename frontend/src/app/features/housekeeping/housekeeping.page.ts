@@ -25,7 +25,7 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
       <div class="head">
         <div>
           <h1>Housekeeping</h1>
-          <p class="mute">{{ longDate() }}@if (board()?.inspectionRequired) { · cleaned rooms wait for inspection }</p>
+          <p class="mute">{{ longDate() }}@if (board()?.inspectionRequired) {, cleaned rooms wait for inspection }</p>
         </div>
         <div class="tools">
           @if (canAssign()) {
@@ -63,15 +63,15 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
               </div>
               <div class="meta">
                 {{ r.typeName }}
-                @if (r.rush) { · <b class="hot">Guest arrives today</b> }
-                @else if (r.arrivalToday) { · Arrival today }
-                @if (r.departureToday) { · {{ r.occupied ? 'Leaves today' : 'Guest left today' }} }
-                @else if (r.occupied) { · Guest in room }
+                @if (r.rush) {, <b class="hot">Guest arrives today</b> }
+                @else if (r.arrivalToday) {, Arrival today }
+                @if (r.departureToday) {, {{ r.occupied ? 'Leaves today' : 'Guest left today' }} }
+                @else if (r.occupied) {, Guest in room }
               </div>
               @if (r.task; as t) {
                 <div class="task">
-                  {{ typeLabel(t.taskType) }} · {{ t.assignedToName ?? 'Not assigned' }}
-                  @if (t.checklist.length) { · {{ doneCount(t) }}/{{ t.checklist.length }} }
+                  {{ typeLabel(t.taskType) }}, {{ t.assignedToName ?? 'Not assigned' }}
+                  @if (t.checklist.length) {, {{ doneCount(t) }}/{{ t.checklist.length }} }
                   @if (t.failedInspections && t.status === 'OPEN' && t.inspectionNote) { <br /><span class="back">Sent back: {{ t.inspectionNote }}</span> }
                   @if (t.status === 'IN_PROGRESS' && t.startedAt) { <br /><span class="mute">Started {{ time(t.startedAt) }} by {{ t.startedByName }}</span> }
                   @if (t.status === 'CLEANED' && t.finishedAt) { <br /><span class="mute">Cleaned {{ time(t.finishedAt) }} by {{ t.finishedByName }}</span> }
@@ -79,7 +79,7 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
               }
               @if (r.repair; as rep) {
                 <div class="repair"><mat-icon>build</mat-icon>{{ rep.number }} {{ rep.title }}
-                  @if (rep.outOfOrder && rep.expectedReadyOn) { · until {{ day(rep.expectedReadyOn) }} }</div>
+                  @if (rep.outOfOrder && rep.expectedReadyOn) {, until {{ day(rep.expectedReadyOn) }} }</div>
               }
             </button>
             @if (action(r); as a) {
@@ -116,9 +116,9 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
     .card { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-left: 6px solid var(--ro-outline);
             border-radius: 12px; overflow: hidden; }
-    .card.rush { box-shadow: 0 0 0 2px #e0a526 inset; }
-    .card.dirty { border-left-color: var(--ro-error); } .card.cleaning { border-left-color: #d29a2c; }
-    .card.clean, .card.inspection { border-left-color: #1f6f8b; } .card.ready { border-left-color: #2e6b3c; }
+    .card.rush { box-shadow: 0 0 0 2px var(--ro-warn-gold) inset; }
+    .card.dirty { border-left-color: var(--ro-error); } .card.cleaning { border-left-color: var(--ro-warn-bright); }
+    .card.clean, .card.inspection { border-left-color: var(--ro-info-bright); } .card.ready { border-left-color: var(--ro-ok-mid); }
     .card.out-of-order { border-left-color: var(--ro-mute); background: var(--ro-wash); }
     .body { all: unset; display: block; padding: var(--space-3) 14px 10px; cursor: pointer; }
     .body:focus-visible { outline: 2px solid var(--ro-kokum); outline-offset: -2px; }
@@ -126,14 +126,14 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
     .code { font-size: 1.5rem; letter-spacing: -0.01em; white-space: nowrap; }
     .code .bed { margin-left: 6px; font-size: 1rem; font-weight: 400; color: var(--ro-mute); }
     .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); white-space: nowrap; }
-    .state.dirty { background: #fbe4e2; color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .state.clean, .state.inspection { background: #e0eff5; color: #134e63; } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .state.out-of-order { background: #e3e7e6; color: var(--ro-ink-soft); }
+    .state.dirty { background: var(--ro-off-bg); color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .state.clean, .state.inspection { background: var(--ro-info-bg); color: var(--ro-info); } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .state.out-of-order { background: var(--ro-line-mid); color: var(--ro-ink-soft); }
     .meta { color: var(--ro-mute); font-size: .9rem; margin-top: 2px; }
     .hot { color: var(--ro-warn); }
     .task { margin-top: 6px; font-size: .9rem; }
     .back { color: var(--ro-error); }
-    .repair { display: flex; align-items: center; gap: var(--space-1); margin-top: 6px; font-size: .85rem; color: #5b3a00; }
+    .repair { display: flex; align-items: center; gap: var(--space-1); margin-top: 6px; font-size: .85rem; color: var(--ro-warn-strong); }
     .repair mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .go { margin: 0 var(--space-3) var(--space-3); min-height: 52px; font-size: 1.05rem; border-radius: 10px; }
     .empty { color: var(--ro-mute); grid-column: 1 / -1; }

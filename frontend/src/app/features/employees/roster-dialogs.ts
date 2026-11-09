@@ -47,7 +47,7 @@ export interface ShiftData {
         <mat-select formControlName="employeeId" aria-label="Who">
           @for (d of data.week.departments; track d.id) {
             <mat-optgroup [label]="d.name">
-              @for (e of people(d.id); track e.id) { <mat-option [value]="e.id">{{ e.name }} · {{ hours(e.paidMinutes) }} this week</mat-option> }
+              @for (e of people(d.id); track e.id) { <mat-option [value]="e.id">{{ e.name }}, {{ hours(e.paidMinutes) }} this week</mat-option> }
             </mat-optgroup>
           }
         </mat-select>
@@ -59,7 +59,7 @@ export interface ShiftData {
       <mat-form-field appearance="outline"><mat-label>Shift</mat-label>
         <mat-select formControlName="templateId" aria-label="Shift">
           @for (t of templates(); track t.id) {
-            <mat-option [value]="t.id">{{ t.departmentName }} · {{ t.name }} {{ hm(t.startTime) }}–{{ hm(t.endTime) }}@if (t.crossesMidnight) { (next day) }</mat-option>
+            <mat-option [value]="t.id">{{ t.departmentName }}, {{ t.name }} {{ hm(t.startTime) }}–{{ hm(t.endTime) }}@if (t.crossesMidnight) { (next day) }</mat-option>
           }
           <mat-option [value]="other">Other times</mat-option>
         </mat-select>
@@ -107,7 +107,7 @@ export interface ShiftData {
   `,
   styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
            .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); margin: 0 0 var(--space-2); }
-           .clash { border: 1px solid #e3a6a1; background: var(--ro-error-bg); border-radius: 10px; padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); display: flex; flex-direction: column; }
+           .clash { border: 1px solid var(--ro-error-line); background: var(--ro-error-bg); border-radius: 10px; padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); display: flex; flex-direction: column; }
            .clash p { margin: 0 0 var(--space-1); color: var(--ro-error-strong); } .rm { margin-right: auto; }`,
 })
 export class ShiftDialog {
@@ -192,7 +192,7 @@ export class ShiftDialog {
   remove() {
     const s = this.s!;
     const data: ReasonData<boolean> = {
-      title: `Take ${s.employeeName} off ${dayText(s.workDate)}`, intro: `${hm(s.startTime)}–${hm(s.endTime)}${s.templateName ? ' · ' + s.templateName : ''}. The change is kept in the audit trail.`,
+      title: `Take ${s.employeeName} off ${dayText(s.workDate)}`, intro: `${hm(s.startTime)}–${hm(s.endTime)}${s.templateName ? ', ' + s.templateName : ''}. The change is kept in the audit trail.`,
       button: 'Remove', placeholder: 'Swapped with Ravi', run: r => this.api.cancelShift(this.data.propertyId, s.id, r, s.version).pipe(map(() => true)),
     };
     this.dialog.open(ReasonDialog<boolean>, { data, maxWidth: '100vw' }).afterClosed().subscribe(ok => {
@@ -213,8 +213,8 @@ export class ShiftDialog {
       <ul>
         @for (t of list(); track t.id) {
           <li [class.off]="!t.isActive" [attr.data-template]="t.code">
-            <div><b>{{ t.departmentName }} · {{ t.name }}</b> {{ hm(t.startTime) }}–{{ hm(t.endTime) }}@if (t.crossesMidnight) { (next day) }
-              <small class="mute">· {{ t.code }} · {{ hours(t.paidMinutes) }} paid · needs {{ t.minStaff || 'nobody fixed' }}@if (!t.isActive) { · switched off }</small></div>
+            <div><b>{{ t.departmentName }}, {{ t.name }}</b> {{ hm(t.startTime) }}–{{ hm(t.endTime) }}@if (t.crossesMidnight) { (next day) }
+              <small class="mute">{{ t.code }}, {{ hours(t.paidMinutes) }} paid, needs {{ t.minStaff || 'nobody fixed' }}@if (!t.isActive) {, switched off }</small></div>
             <button mat-button type="button" (click)="edit(t)">Edit</button>
           </li>
         } @empty { <li class="mute">No shifts yet. Add Morning 07:00–15:00 for Front office, for example.</li> }
@@ -255,7 +255,7 @@ export class ShiftDialog {
     <div mat-dialog-actions align="end"><button mat-button [mat-dialog-close]="changed()" type="button">Done</button></div>
   `,
   styles: `.body { min-width: min(620px, 84vw); display: flex; flex-direction: column; gap: var(--space-3); } ul { list-style: none; margin: 0; padding: 0; }
-           li { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); padding: 6px 0; border-bottom: 1px solid #e3e8e6; } li.off { opacity: .6; }
+           li { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); padding: 6px 0; border-bottom: 1px solid var(--ro-line-mid); } li.off { opacity: .6; }
            .box { display: flex; flex-direction: column; gap: var(--space-1); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); }
            .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 130px; } .acts { display: flex; justify-content: flex-end; gap: var(--space-2); }
            .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,

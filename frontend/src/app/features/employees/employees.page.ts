@@ -56,8 +56,8 @@ import { EMPLOYMENT_LABEL, EmployeesApi, dayName } from './employees.api';
           <li [attr.data-employee]="e.code">
             <a [routerLink]="['/employees', e.id]" class="nm">
               <b>{{ e.fullName }}</b> <small class="mute">{{ e.code }}</small>
-              <small>{{ e.departmentName }}@if (e.designationName) { · {{ e.designationName }} } · {{ type[e.employmentType] }}</small>
-              <small class="mute">@if (e.phone) { {{ e.phone }} · }@if (e.weeklyOff) { off on {{ dayName(e.weeklyOff) }} · }joined {{ dayText(e.joinedOn) }}</small>
+              <small>{{ e.departmentName }}@if (e.designationName) {, {{ e.designationName }}}, {{ type[e.employmentType] }}</small>
+              <small class="mute">@if (e.phone) { {{ e.phone }}, }@if (e.weeklyOff) { off on {{ dayName(e.weeklyOff) }}, }joined {{ dayText(e.joinedOn) }}</small>
               @if (e.status === 'LEFT') { <small class="left">Left on {{ dayText(e.leftOn!) }}: {{ e.leavingReason }}</small> }
               @if (e.userEmail) { <small class="mute"><mat-icon inline>badge</mat-icon> {{ e.userEmail }}</small> }
             </a>
@@ -75,7 +75,7 @@ import { EMPLOYMENT_LABEL, EmployeesApi, dayName } from './employees.api';
     ul { list-style: none; margin: 0; padding: 0; }
     .cards li { display: flex; gap: 10px; align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: var(--space-2); }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; color: inherit; text-decoration: none; }
-    .go { color: #8a9a9c; }
+    .go { color: var(--ro-mute); }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .dept { flex: 1 1 100%; } }
   `,
 })

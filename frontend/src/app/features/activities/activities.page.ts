@@ -49,7 +49,7 @@ function addDays(iso: string, n: number): string {
       @if (view() === 'day') {
         <div class="bar">
           <button mat-icon-button (click)="go(-1)" aria-label="Previous day"><mat-icon>chevron_left</mat-icon></button>
-          <b class="date" data-testid="day">{{ date() ? dayText(date()!) : '' }}@if (date() === day()?.today) { <small> · today</small> }</b>
+          <b class="date" data-testid="day">{{ date() ? dayText(date()!) : '' }}@if (date() === day()?.today) { <small>, today</small> }</b>
           <button mat-icon-button (click)="go(1)" aria-label="Next day"><mat-icon>chevron_right</mat-icon></button>
           @if (date() !== day()?.today) { <button mat-button (click)="date.set(day()?.today ?? null)">Today</button> }
           <span class="grow"></span>
@@ -62,7 +62,7 @@ function addDays(iso: string, n: number): string {
               <button class="row" type="button" (click)="toggle(s)" [attr.aria-expanded]="openId() === s.id">
                 <span class="time">{{ s.startTime }}<small>{{ s.endTime }}</small></span>
                 <span class="what"><b>{{ s.activityName }}</b>
-                  <small class="mute">{{ s.price ? rupees(s.price) + ' a person' : 'Free' }}@if (s.meetingPoint) { · {{ s.meetingPoint }} }@if (s.note) { · {{ s.note }} }</small>
+                  <small class="mute">{{ s.price ? rupees(s.price) + ' a person' : 'Free' }}@if (s.meetingPoint) {, {{ s.meetingPoint }} }@if (s.note) {, {{ s.note }} }</small>
                   @if (s.status === 'CANCELLED') { <small class="cx">Cancelled: {{ s.cancelReason }}</small> }
                 </span>
                 <span class="seats" [class.full]="s.status === 'SCHEDULED' && s.seatsLeft === 0">
@@ -82,8 +82,8 @@ function addDays(iso: string, n: number): string {
                     @for (b of detail()?.bookings ?? []; track b.id) {
                       <li [attr.data-booking]="b.code" [class.off]="b.status === 'CANCELLED'">
                         <div class="main">
-                          <span><b>{{ b.guestName }}</b> · {{ seats(b.seats) }}@if (b.room) { · {{ b.room }} }</span>
-                          <small class="mute">{{ b.code }} · {{ money(b) }}@if (b.movedFromCode) { · moved from {{ b.movedFromCode }} }@if (b.note) { · {{ b.note }} }</small>
+                          <span><b>{{ b.guestName }}</b>, {{ seats(b.seats) }}@if (b.room) {, {{ b.room }} }</span>
+                          <small class="mute">{{ b.code }}, {{ money(b) }}@if (b.movedFromCode) {, moved from {{ b.movedFromCode }} }@if (b.note) {, {{ b.note }} }</small>
                           @if (b.status === 'CANCELLED') { <small class="cx">{{ b.cancelKind === 'WEATHER' ? 'Weather' : 'Cancelled' }}: {{ b.cancelReason }}</small> }
                           @if (b.equipment.length) { <small class="kit">{{ kit(b.equipment) }}</small> }
                         </div>
@@ -105,8 +105,8 @@ function addDays(iso: string, n: number): string {
           @for (a of activities(); track a.id) {
             <li [class.off]="!a.isActive">
               <div class="main"><b>{{ a.name }}</b> <small class="mute">{{ a.code }}</small>
-                <small>{{ a.durationMinutes }} min · {{ seats(a.capacity) }} · {{ a.price ? rupees(a.price) + ' a person' : 'free' }}@if (a.equipmentTypeName) { · a {{ a.equipmentTypeName.toLowerCase() }} each }</small>
-                <small class="mute">{{ a.meetingPoint }}{{ a.weatherDependent ? '' : ' · runs in any weather' }}{{ a.isActive ? '' : ' · not offered' }}</small></div>
+                <small>{{ a.durationMinutes }} min, {{ seats(a.capacity) }}, {{ a.price ? rupees(a.price) + ' a person' : 'free' }}@if (a.equipmentTypeName) {, a {{ a.equipmentTypeName.toLowerCase() }} each }</small>
+                <small class="mute">{{ a.meetingPoint }}{{ a.weatherDependent ? '' : ', runs in any weather' }}{{ a.isActive ? '' : ', not offered' }}</small></div>
               <button mat-button (click)="editActivity(a)">Change</button>
             </li>
           } @empty { <li class="mute">No activities yet.</li> }
@@ -118,22 +118,22 @@ function addDays(iso: string, n: number): string {
   styles: `
     .acts { max-width: 900px; padding-bottom: 60px; }
     .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; }
-    .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: #8a1c1c; }
+    .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: var(--ro-error-strong); }
     .sessions, .list, .bookings { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
     .sessions > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
     .sessions > li.empty { padding: 14px; }
     .sessions > li.off { opacity: .7; }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
-    .row:hover { background: #f4f8f7; }
+    .row:hover { background: var(--ro-wash); }
     .time { display: flex; flex-direction: column; font-weight: 600; font-size: 1.05rem; min-width: 52px; } .time small { font-weight: 400; color: var(--ro-mute); font-size: .8rem; }
     .what { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     .seats { display: flex; flex-direction: column; align-items: flex-end; min-width: 72px; } .seats small { color: var(--ro-mute); }
-    .seats.full b, .seats.full small { color: #8a1c1c; }
+    .seats.full b, .seats.full small { color: var(--ro-error-strong); }
     .meter { width: 72px; height: 5px; background: var(--ro-sunk); border-radius: 3px; margin-top: 3px; overflow: hidden; }
-    .meter span { display: block; height: 100%; background: #0e7c86; }
+    .meter span { display: block; height: 100%; background: var(--ro-sea); }
     .detail { border-top: 1px solid var(--ro-sunk); padding: var(--space-2) 14px var(--space-3); }
     .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: 6px; }
-    .bookings li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-2) 0; border-top: 1px solid #f1f4f3; }
+    .bookings li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-2) 0; border-top: 1px solid var(--ro-tint); }
     .bookings li:first-child { border-top: 0; } .bookings li.off { opacity: .65; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; } .kit { color: var(--ro-tide); }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -203,7 +203,7 @@ export class ActivitiesPage {
   money(b: ActivityBooking) { return settlementText(b); }
   kit(list: EquipmentAssignment[]) {
     return list.map(x => `${x.tag} ${x.status === 'RESERVED' ? 'kept aside' : x.status === 'ISSUED' ? 'out' : x.returnCondition === 'GOOD' ? 'back'
-      : x.returnCondition === 'DAMAGED' ? 'back damaged' : 'lost'}`).join(' · ');
+      : x.returnCondition === 'DAMAGED' ? 'back damaged' : 'lost'}`).join(', ');
   }
 
   book(s: ActivitySession) {

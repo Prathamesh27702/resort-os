@@ -22,7 +22,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
       <div class="head">
         <div>
           <h1>Kitchen</h1>
-          <p class="mute">Refreshes every {{ refreshSeconds }} seconds@if (updated()) { · last {{ updated() }} }</p>
+          <p class="mute">Refreshes every {{ refreshSeconds }} seconds@if (updated()) {, last {{ updated() }} }</p>
         </div>
         <div class="tools">
           @if (canOrders()) { <a mat-button routerLink="/restaurant">Floor</a> }
@@ -54,7 +54,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
                   }
                 </ul>
                 @if (k.note) { <p class="note">{{ k.note }}</p> }
-                <footer class="mute">{{ k.orderNumber }} · sent {{ time(k.sentAt) }}@if (k.sentByName) { by {{ k.sentByName }} }</footer>
+                <footer class="mute">{{ k.orderNumber }}, sent {{ time(k.sentAt) }}@if (k.sentByName) { by {{ k.sentByName }} }</footer>
                 @if (canUpdate() && k.status !== 'READY') {
                   <button mat-flat-button class="go" (click)="step(k, k.status === 'NEW' ? 'start' : 'ready')" [disabled]="busy() === k.id">
                     {{ k.status === 'NEW' ? 'Start' : 'Ready' }}</button>
@@ -77,26 +77,26 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
     .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
     .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
     .col { background: var(--ro-sunk); border-radius: 12px; padding: var(--space-2); min-height: 160px; }
-    .col.READY { background: #e0eff5; }
+    .col.READY { background: var(--ro-info-bg); }
     h2 { font-size: 1rem; margin: var(--space-1) var(--space-1) var(--space-2); display: flex; justify-content: space-between; }
-    .ticket { background: var(--ro-paper); border-radius: 10px; border-top: 6px solid #d29a2c; padding: 10px var(--space-3); margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .PREPARING .ticket { border-top-color: #1f6f8b; } .READY .ticket { border-top-color: #2e6b3c; }
+    .ticket { background: var(--ro-paper); border-radius: 10px; border-top: 6px solid var(--ro-warn-bright); padding: 10px var(--space-3); margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .PREPARING .ticket { border-top-color: var(--ro-info-bright); } .READY .ticket { border-top-color: var(--ro-ok-mid); }
     .ticket.late { border-top-color: var(--ro-error); box-shadow: 0 0 0 2px var(--ro-error) inset; }
     .ticket.late .age { color: var(--ro-error); font-weight: 700; }
     header { display: flex; align-items: baseline; gap: var(--space-2); }
     .num { font-size: 1.2rem; } .where { font-weight: 600; } .age { margin-left: auto; font-variant-numeric: tabular-nums; }
     ul { list-style: none; margin: 0; padding: 0; font-size: 1.05rem; }
-    li { padding: var(--space-1) 0; border-bottom: 1px dashed #e3e7e6; }
+    li { padding: var(--space-1) 0; border-bottom: 1px dashed var(--ro-line-mid); }
     li small { display: block; font-size: .85rem; color: var(--ro-ink-soft); }
-    li.voided { text-decoration: line-through; color: #7a8a8d; }
+    li.voided { text-decoration: line-through; color: var(--ro-mute); }
     .void { color: var(--ro-error); text-decoration: none; display: inline-block; }
-    .note { color: #5b3a00; margin: 0; }
+    .note { color: var(--ro-warn-strong); margin: 0; }
     footer { font-size: .8rem; }
     .go { min-height: 52px; font-size: 1.1rem; border-radius: 10px; }
     .food { display: inline-block; width: 11px; height: 11px; border: 2px solid; border-radius: 2px; margin-right: var(--space-1); vertical-align: middle; }
-    .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
+    .food.VEG { border-color: var(--ro-ok-mid); background: radial-gradient(var(--ro-ok-mid) 40%, transparent 45%); }
     .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
-    .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
+    .food.EGG { border-color: var(--ro-warn-mid); background: radial-gradient(var(--ro-warn-mid) 40%, transparent 45%); }
     .empty { margin: var(--space-1); }
     @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .col { min-height: 0; } h1 { font-size: 1.35rem; } }
   `,

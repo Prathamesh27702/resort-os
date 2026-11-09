@@ -45,7 +45,7 @@ const POLL_MS = 60_000;
     ::ng-deep .bell-menu .bhead { display: flex; justify-content: space-between; align-items: center; padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4); }
     ::ng-deep .bell-menu .bitem { height: auto !important; min-height: 56px; padding: var(--space-2) var(--space-4); line-height: 1.3; white-space: normal; }
     ::ng-deep .bell-menu .bitem .mat-mdc-menu-item-text { display: flex; flex-direction: column; gap: 2px; }
-    ::ng-deep .bell-menu .bitem.unread { background: #eef6f5; }
+    ::ng-deep .bell-menu .bitem.unread { background: var(--ro-tint); }
     ::ng-deep .bell-menu .bitem.unread b::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ro-kokum); margin-right: 6px; }
     ::ng-deep .bell-menu .bt { display: flex; justify-content: space-between; gap: var(--space-2); }
     ::ng-deep .bell-menu .bt small { color: var(--ro-mute); white-space: nowrap; }

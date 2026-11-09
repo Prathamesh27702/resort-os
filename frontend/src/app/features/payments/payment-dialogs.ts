@@ -41,9 +41,9 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
   selector: 'app-take-payment-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>Take a payment · <span class="num">{{ data.folio.number }}</span></h2>
+    <h2 mat-dialog-title>Take a payment, <span class="num">{{ data.folio.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
-      <p class="owed">{{ data.folio.guestName }} · {{ data.folio.reference }} ·
+      <p class="owed">{{ data.folio.guestName }}, {{ data.folio.reference }},
         @if (data.folio.balance > 0) { owes <b class="num">{{ money(data.folio.balance) }}</b> } @else { owes nothing on this bill }</p>
       <mat-button-toggle-group formControlName="method" aria-label="How was it paid" class="methods">
         @for (m of methods; track m) { <mat-button-toggle [value]="m">{{ methodLabel(m) }}</mat-button-toggle> }
@@ -149,7 +149,7 @@ export interface RefundData { propertyId: string; payment: Payment; }
   template: `
     <h2 mat-dialog-title>Refund from <span class="num">{{ data.payment.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="refund-form">
-      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }} from {{ data.payment.guestName }} ·
+      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }} from {{ data.payment.guestName }},
         up to <b class="num">{{ money(data.payment.refundable) }}</b> can be refunded. Nothing is deleted; the reason is kept with the refund
         and in the audit trail.</p>
       <div class="row">
@@ -174,7 +174,7 @@ export interface RefundData { propertyId: string; payment: Payment; }
           <mat-select formControlName="folioId">
             <mat-option value="">On account first, then the bills it paid</mat-option>
             @for (a of data.payment.allocations; track a.folioId) {
-              <mat-option [value]="a.folioId">{{ a.folioNumber }} · {{ a.folioName }} ({{ money(a.amount - a.refunded) }})</mat-option>
+              <mat-option [value]="a.folioId">{{ a.folioNumber }}, {{ a.folioName }} ({{ money(a.amount - a.refunded) }})</mat-option>
             }
           </mat-select>
           <mat-error>{{ err('folioId') }}</mat-error>
@@ -259,7 +259,7 @@ export class RefundDialog {
   template: `
     <h2 mat-dialog-title>Void <span class="num">{{ data.payment.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="void-form">
-      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }} · for a payment entered by mistake. It stays on record,
+      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }}, for a payment entered by mistake. It stays on record,
         marked voided, and comes off the bill.@if (data.payment.method === 'CASH') { The cash comes back out of the drawer's count. }</p>
       <mat-form-field appearance="outline" class="full">
         <mat-label>Reason</mat-label>
@@ -316,7 +316,7 @@ export class VoidPaymentDialog {
         <mat-label>Bill</mat-label>
         <mat-select formControlName="folioId">
           @for (f of data.payment.folios; track f.id) {
-            <mat-option [value]="f.id" [disabled]="f.balance <= 0">{{ f.number }} · {{ f.name }} · owes {{ money(f.balance) }}</mat-option>
+            <mat-option [value]="f.id" [disabled]="f.balance <= 0">{{ f.number }}, {{ f.name }}, owes {{ money(f.balance) }}</mat-option>
           }
         </mat-select>
         <mat-error>Choose the bill.</mat-error>
@@ -524,7 +524,7 @@ export class CloseDrawerDialog {
   template: `
     <h2 mat-dialog-title>Approve the variance</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="approve-form">
-      <p class="hint">{{ s.drawerName }} · closed by {{ s.closedByName ?? 'someone' }} · should have held {{ money(s.expected) }}, counted
+      <p class="hint">{{ s.drawerName }}, closed by {{ s.closedByName ?? 'someone' }}, should have held {{ money(s.expected) }}, counted
         {{ money(s.counted ?? 0) }}: <b [class]="(s.variance ?? 0) < 0 ? 'bad' : 'over'">{{ money(abs(s.variance ?? 0)) }} {{ (s.variance ?? 0) < 0 ? 'short' : 'over' }}</b>.
         <br />Their reason: “{{ s.closeNote }}”</p>
       <mat-form-field appearance="outline" class="full">

@@ -44,7 +44,7 @@ export interface DishData { item: MenuItem; }
       @if (item.variants.length) {
         <h3>Portion</h3>
         <mat-radio-group [ngModel]="variantId()" (ngModelChange)="variantId.set($event)" aria-label="Portion" class="opts">
-          @for (v of item.variants; track v.id) { <mat-radio-button [value]="v.id">{{ v.name }} · {{ rupees(v.price) }}</mat-radio-button> }
+          @for (v of item.variants; track v.id) { <mat-radio-button [value]="v.id">{{ v.name }}, {{ rupees(v.price) }}</mat-radio-button> }
         </mat-radio-group>
       }
       @for (g of item.modifierGroups; track g.id) {
@@ -52,7 +52,7 @@ export interface DishData { item: MenuItem; }
         <div class="opts" role="group" [attr.aria-label]="g.name">
           @for (m of g.modifiers; track m.id) {
             <mat-checkbox [checked]="picked().includes(m.id)" (change)="toggle(g.id, m.id, $event.checked)">
-              {{ m.name }}@if (m.priceDelta) { · +{{ rupees(m.priceDelta) }} }
+              {{ m.name }}@if (m.priceDelta) {, +{{ rupees(m.priceDelta) }} }
             </mat-checkbox>
           }
         </div>
@@ -70,7 +70,7 @@ export interface DishData { item: MenuItem; }
     </div>
     <div mat-dialog-actions align="end">
       <button mat-button mat-dialog-close type="button">Cancel</button>
-      <button mat-flat-button type="button" (click)="add()">Add · {{ rupees(price() * qty()) }}</button>
+      <button mat-flat-button type="button" (click)="add()">Add for {{ rupees(price() * qty()) }}</button>
     </div>
   `,
   styles: `
@@ -83,9 +83,9 @@ export interface DishData { item: MenuItem; }
     .mute { color: var(--ro-mute); }
     .err { color: var(--ro-error); }
     .food { display: inline-block; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: var(--space-2); vertical-align: middle; }
-    .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
+    .food.VEG { border-color: var(--ro-ok-mid); background: radial-gradient(var(--ro-ok-mid) 40%, transparent 45%); }
     .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
-    .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
+    .food.EGG { border-color: var(--ro-warn-mid); background: radial-gradient(var(--ro-warn-mid) 40%, transparent 45%); }
   `,
 })
 export class DishDialog {
@@ -247,7 +247,7 @@ export interface PayData<T> { total: number; run: (method: PaymentMethod, refere
   selector: 'app-pay-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>Paid · {{ rupeesExact(data.total) }}</h2>
+    <h2 mat-dialog-title>Paid {{ rupeesExact(data.total) }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
       <mat-button-toggle-group formControlName="method" aria-label="How it was paid" class="methods">
         @for (m of methods; track m) { <mat-button-toggle [value]="m">{{ label(m) }}</mat-button-toggle> }
@@ -313,7 +313,7 @@ export interface RoomData<T> {
         <mat-radio-group [(ngModel)]="picked" aria-label="Room" class="opts">
           @for (r of data.rooms; track r.reservationId) {
             <mat-radio-button [value]="r.reservationId" [attr.data-room]="r.unitCode">
-              <b>{{ r.unitName }}</b> · {{ r.guestName }} <span class="mute">({{ r.reference }})</span>
+              <b>{{ r.unitName }}</b>, {{ r.guestName }} <span class="mute">({{ r.reference }})</span>
             </mat-radio-button>
           }
         </mat-radio-group>

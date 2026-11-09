@@ -49,7 +49,7 @@ import { FolioShow, FoliosApi } from './folios.api';
                 <td><b class="num">{{ f.number }}</b> @if (!f.isPrimary) { <span class="chip">{{ f.name }}</span> }
                   <br /><small class="mute">{{ f.lines }} line{{ f.lines === 1 ? '' : 's' }}</small></td>
                 <td><b>{{ f.guestName }}</b> <span [class]="'chip ' + statusClass(f.reservationStatus)">{{ statusLabel(f.reservationStatus) }}</span>
-                  <br /><small class="mute num">{{ f.reference }} · {{ f.rooms }}</small></td>
+                  <br /><small class="mute num">{{ f.reference }}, {{ f.rooms }}</small></td>
                 <td class="hide-sm num">{{ shortDate(f.checkIn) }} – {{ shortDate(f.checkOut) }}</td>
                 <td class="right num"><b [class.owed]="f.balance > 0">{{ rupees(f.balance) }}</b></td>
               </tr>

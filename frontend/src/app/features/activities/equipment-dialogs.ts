@@ -32,7 +32,7 @@ export interface IssueData {
     <h2 mat-dialog-title>Issue equipment</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="issue-form">
       @if (data.booking; as b) {
-        <p>For <b>{{ b.guestName }}</b> · {{ b.activityName }} {{ b.startTime }} · {{ b.code }}</p>
+        <p>For <b>{{ b.guestName }}</b>, {{ b.activityName }} {{ b.startTime }}, {{ b.code }}</p>
       } @else {
         <mat-form-field appearance="outline"><mat-label>Who it is for</mat-label>
           <input matInput formControlName="issuedTo" maxlength="100" placeholder="e.g. Asha Rao, Room 104" />
@@ -97,7 +97,7 @@ export interface ReturnData { propertyId: string; assignment: EquipmentAssignmen
   template: `
     <h2 mat-dialog-title>Return {{ x.tag }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="return-form">
-      <p>{{ x.typeName }} from <b>{{ x.issuedTo }}</b>@if (x.bookingCode) { · {{ x.bookingCode }} }</p>
+      <p>{{ x.typeName }} from <b>{{ x.issuedTo }}</b>@if (x.bookingCode) {, {{ x.bookingCode }} }</p>
       <mat-button-toggle-group formControlName="condition" aria-label="How it came back">
         <mat-button-toggle value="GOOD">Good</mat-button-toggle>
         <mat-button-toggle value="DAMAGED">Damaged</mat-button-toggle>
@@ -153,7 +153,7 @@ export interface StatusData { propertyId: string; item: EquipmentItem; }
   selector: 'app-equipment-status-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>{{ item.tag }} · {{ label[item.status] }}</h2>
+    <h2 mat-dialog-title>{{ item.tag }}, {{ label[item.status] }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="status-form">
       @if (item.statusNote) { <p class="mute">{{ item.statusNote }}</p> }
       <mat-form-field appearance="outline"><mat-label>Set to</mat-label>

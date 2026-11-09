@@ -27,7 +27,7 @@ import { CHANNEL, CHANNEL_ICON, MessagesApi, statusClass } from './messages.api'
       @for (m of items(); track m.id) {
         <button type="button" class="line" (click)="open(m)" [attr.data-status]="m.status" [attr.data-template]="m.templateCode">
           <mat-icon class="ch" [attr.aria-label]="channel[m.channel]">{{ icon[m.channel] }}</mat-icon>
-          <span class="txt"><span class="top"><b>{{ m.templateName }}</b> <small class="mute">{{ channel[m.channel] }} · {{ time(m.createdAt) }}</small></span>
+          <span class="txt"><span class="top"><b>{{ m.templateName }}</b> <small class="mute">{{ channel[m.channel] }}, {{ time(m.createdAt) }}</small></span>
             @if (m.reason) { <small [class.bad]="m.status === 'FAILED'" class="why">{{ m.reason }}</small> }</span>
           <span [class]="'chip ' + cls(m.status)">{{ m.statusWords }}</span>
         </button>
@@ -51,7 +51,7 @@ import { CHANNEL, CHANNEL_ICON, MessagesApi, statusClass } from './messages.api'
     .mute { color: var(--ro-mute); } .why { color: var(--ro-mute); } .bad, .err { color: var(--ro-error); }
     .all { display: inline-block; margin-top: var(--space-2); font-size: .9rem; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })
 export class BookingMessagesPanel implements OnInit {

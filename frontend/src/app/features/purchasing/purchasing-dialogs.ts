@@ -233,7 +233,7 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Supplier</mat-label>
           <mat-select formControlName="supplierId">@for (s of suppliers; track s.id) { <mat-option [value]="s.id">{{ s.name }}@if (!s.gstin) { (no GST) }</mat-option> }</mat-select>
-          @if (supplier(); as s) { <mat-hint>{{ s.stateName }} · {{ intra() ? 'CGST + SGST' : 'IGST' }}@if (!s.gstin) { · unregistered: GST 0 % } </mat-hint> }
+          @if (supplier(); as s) { <mat-hint>{{ s.stateName }}, {{ intra() ? 'CGST + SGST' : 'IGST' }}@if (!s.gstin) {, unregistered: GST 0 % } </mat-hint> }
           <mat-error>{{ server(form.get('supplierId')) || 'Choose the supplier.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Deliver to</mat-label>
           <mat-select formControlName="locationId">@for (l of stores; track l.id) { <mat-option [value]="l.id">{{ l.name }}</mat-option> }</mat-select>
@@ -262,7 +262,7 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
         }
       </div>
       <button mat-button type="button" (click)="add()"><mat-icon>add</mat-icon>Another item</button>
-      <p class="tot" data-testid="order-total">Before GST {{ rupeesExact(totals().taxable) }} · GST {{ rupeesExact(totals().tax) }} · <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
+      <p class="tot" data-testid="order-total">Before GST {{ rupeesExact(totals().taxable) }}, GST {{ rupeesExact(totals().tax) }}, <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Expected on (optional)</mat-label><input matInput type="date" formControlName="expectedDate" />
           <mat-error>{{ server(form.get('expectedDate')) }}</mat-error></mat-form-field>
@@ -459,7 +459,7 @@ export class ReceiveDialog {
       <div formArrayName="lines">
         @for (g of lines.controls; track $index; let n = $index) {
           <div class="line" [formGroupName]="n" [attr.data-line]="open[n].itemName">
-            <div class="nm"><b>{{ open[n].itemName }}</b><small class="mute">To bill {{ qty(open[n].toBill, open[n].unit) }} · ordered at {{ rupeesExact(open[n].unitPrice) }}</small></div>
+            <div class="nm"><b>{{ open[n].itemName }}</b><small class="mute">To bill {{ qty(open[n].toBill, open[n].unit) }}, ordered at {{ rupeesExact(open[n].unitPrice) }}</small></div>
             <mat-form-field appearance="outline" class="q"><mat-label>Billed ({{ open[n].unit }})</mat-label>
               <input matInput type="number" inputmode="decimal" formControlName="quantity" [attr.aria-label]="open[n].itemName + ' billed'" />
               <mat-error>{{ server(g.get('quantity')) || 'More than 0.' }}</mat-error></mat-form-field>
@@ -473,7 +473,7 @@ export class ReceiveDialog {
           </div>
         }
       </div>
-      <p class="tot" data-testid="bill-total">Before GST {{ rupeesExact(totals().taxable) }} · {{ data.order.intraState ? 'CGST + SGST' : 'IGST' }} {{ rupeesExact(totals().tax) }} ·
+      <p class="tot" data-testid="bill-total">Before GST {{ rupeesExact(totals().taxable) }}, {{ data.order.intraState ? 'CGST + SGST' : 'IGST' }} {{ rupeesExact(totals().tax) }},
         <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
     </form>
@@ -588,7 +588,7 @@ export class BillDepartmentDialog {
   template: `
     <h2 mat-dialog-title>Pay {{ data.invoice.supplierName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
-      <p class="mute">{{ data.invoice.number }} · their bill {{ data.invoice.supplierNumber }} · {{ rupees(data.invoice.balance) }} left of {{ rupees(data.invoice.total) }}</p>
+      <p class="mute">{{ data.invoice.number }}, their bill {{ data.invoice.supplierNumber }}, {{ rupees(data.invoice.balance) }} left of {{ rupees(data.invoice.total) }}</p>
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Amount (₹)</mat-label><input matInput type="number" inputmode="decimal" formControlName="amount" />
           <mat-error>{{ server(form.get('amount')) || 'More than ₹0.' }}</mat-error></mat-form-field>

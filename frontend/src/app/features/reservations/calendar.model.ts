@@ -59,7 +59,7 @@ export function buildRows(rooms: CalendarRoom[]): CalRow[] {
     const base = { unitId: r.id, typeId: r.accommodationTypeId, typeName: r.accommodationTypeName, mode: r.inventoryMode, maxOccupancy: r.maxOccupancy };
     if (r.inventoryMode === 'BED') {
       for (const b of r.beds)
-        rows.push({ ...base, key: rowKey(r.id, b.id), bedId: b.id, label: `${r.name} · ${b.code}`, isActive: r.isActive && b.isActive,
+        rows.push({ ...base, key: rowKey(r.id, b.id), bedId: b.id, label: `${r.name} ${b.code}`, isActive: r.isActive && b.isActive,
                     first: lastType !== r.accommodationTypeId && b === r.beds[0] });
     } else {
       rows.push({ ...base, key: rowKey(r.id, null), bedId: null, label: r.name, isActive: r.isActive, first: lastType !== r.accommodationTypeId });
@@ -165,7 +165,7 @@ export function byDay(cal: Calendar, rows: CalRow[], days: string[]): { day: str
       }
       for (const k of blocks.get(row.key) ?? [])
         if (k.startDate <= day && day < k.endDate && (k.bedId !== null || row.bedId === null || row === firstBedRow(rows, row.unitId)))
-          lines.push({ row: k.bedId === null && row.bedId !== null ? { ...row, label: row.label.split(' · ')[0] } : row, block: k, kind: 'blocked' });
+          lines.push({ row: k.bedId === null && row.bedId !== null ? { ...row, label: row.label.replace(/ \S+$/, '') } : row, block: k, kind: 'blocked' });
     }
     const order = { leaves: 0, arrives: 1, stays: 2, blocked: 3 };
     lines.sort((a, b) => order[a.kind] - order[b.kind]);

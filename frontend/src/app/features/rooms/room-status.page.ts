@@ -31,8 +31,8 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
 
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
       <div class="legend">
-        <span><i class="dot AVAILABLE"></i>Available</span><span><i class="dot BLOCKED"></i>Blocked</span>
-        <span><i class="dot PARTLY_BLOCKED"></i>Some beds blocked</span><span><i class="dot INACTIVE"></i>Not in use</span>
+        <span><i class="key AVAILABLE" aria-hidden="true"></i>Available</span><span><i class="key BLOCKED" aria-hidden="true"></i>Blocked</span>
+        <span><i class="key PARTLY_BLOCKED" aria-hidden="true"></i>Some beds blocked</span><span><i class="key INACTIVE" aria-hidden="true"></i>Not in use</span>
       </div>
       <div class="grid">
         @for (r of board()?.rooms ?? []; track r.unitId) {
@@ -74,10 +74,10 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--space-3); }
     .tile { display: flex; flex-direction: column; gap: var(--space-1); min-height: 104px; padding: var(--space-3) 14px; border-radius: 10px;
             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; color: var(--ro-ink); text-decoration: none; }
-    .tile:hover { box-shadow: 0 1px 6px rgba(14,59,67,.12); }
-    .tile.AVAILABLE { border-left-color: #2e6b3c; }
-    .tile.BLOCKED { border-left-color: #b45309; background: #fffaf0; }
-    .tile.PARTLY_BLOCKED { border-left-color: #d29a2c; }
+    .tile:hover { box-shadow: 0 1px 6px var(--ro-shadow); }
+    .tile.AVAILABLE { border-left-color: var(--ro-ok-mid); }
+    .tile.BLOCKED { border-left-color: var(--ro-rust); background: var(--ro-warn-wash); }
+    .tile.PARTLY_BLOCKED { border-left-color: var(--ro-warn-bright); }
     .tile.INACTIVE { border-left-color: var(--ro-outline); color: var(--ro-mute); background: var(--ro-wash); }
     .top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
     .code { font-size: 1.35rem; letter-spacing: -0.01em; }
@@ -85,14 +85,16 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
     .state { font-weight: 500; }
     .until { font-size: .8rem; color: var(--ro-mute); }
     .hk { display: inline-block; font-size: .75rem; font-weight: 600; padding: 1px var(--space-2); border-radius: 999px; margin-top: var(--space-1); background: var(--ro-sunk); }
-    .hk.DIRTY { background: #fbe4e2; color: var(--ro-error-strong); } .hk.CLEANING { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .hk.CLEAN, .hk.INSPECTION { background: #e0eff5; color: #134e63; } .hk.READY { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .hk.OUT_OF_ORDER { background: #e3e7e6; color: var(--ro-ink-soft); }
-    .repairs { font-size: .8rem; color: #5b3a00; margin-top: 2px; }
-    .why { font-size: .8rem; color: #7a4a00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hk.DIRTY { background: var(--ro-off-bg); color: var(--ro-error-strong); } .hk.CLEANING { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .hk.CLEAN, .hk.INSPECTION { background: var(--ro-info-bg); color: var(--ro-info); } .hk.READY { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .hk.OUT_OF_ORDER { background: var(--ro-line-mid); color: var(--ro-ink-soft); }
+    .repairs { font-size: .8rem; color: var(--ro-warn-strong); margin-top: 2px; }
+    .why { font-size: .8rem; color: var(--ro-warn-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .beds { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: auto; }
-    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #2e6b3c; }
-    .dot.BLOCKED { background: #b45309; } .dot.PARTLY_BLOCKED { background: #d29a2c; } .dot.INACTIVE { background: var(--ro-outline); }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ro-ok-mid); }
+    .dot.BLOCKED { background: var(--ro-rust); } .dot.PARTLY_BLOCKED { background: var(--ro-warn-bright); } .dot.INACTIVE { background: var(--ro-faint); }
+    .key { display: inline-block; width: 4px; height: 14px; border-radius: 2px; background: var(--ro-ok-mid); }
+    .key.BLOCKED { background: var(--ro-rust); } .key.PARTLY_BLOCKED { background: var(--ro-warn-bright); } .key.INACTIVE { background: var(--ro-faint); }
     .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
     @media (max-width: 640px) { .tile { min-height: 0; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .code { font-size: 1.15rem; } }
   `,

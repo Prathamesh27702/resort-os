@@ -30,7 +30,7 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
         <div class="head">
           <h2>Online payment links</h2>
           <span class="sums">Owes <b class="num" data-testid="owed">{{ money(d.owed) }}</b> of {{ money(d.due) }}
-            @if (d.open > 0) { · links ask for <b class="num">{{ money(d.open) }}</b> }</span>
+            @if (d.open > 0) {, links ask for <b class="num">{{ money(d.open) }}</b> }</span>
           <button mat-icon-button (click)="load()" aria-label="Refresh payment links" title="Refresh"><mat-icon>refresh</mat-icon></button>
           @if (canCreate()) {
             <button mat-flat-button (click)="send(d)" [disabled]="!d.canCreate" [title]="d.cantCreateReason ?? ''" data-testid="send-link">
@@ -47,9 +47,9 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
               <span><b class="num">{{ money(l.amount) }}</b> <span [class]="'chip ' + statusClass(l.status)">{{ statusLabel(l.status) }}</span>
                 @if (l.status === 'CREATED' && l.callbackAt) { <span class="chip wait">Guest says paid; waiting for Razorpay</span> }
                 <br /><small class="mute">Sent {{ time(l.createdAt) }}@if (l.createdByName) { by {{ l.createdByName }} }
-                  @if (l.note) { · {{ l.note }} }</small>
+                  @if (l.note) {, {{ l.note }} }</small>
                 @if (l.status === 'PAID' && l.paymentId) {
-                  <br /><small>Paid {{ time(l.paidAt!) }} ·
+                  <br /><small>Paid {{ time(l.paidAt!) }},
                     <a [routerLink]="['/payments', l.paymentId]" class="num">{{ l.paymentNumber }}</a></small>
                 }
                 @if (l.status === 'CANCELLED') {
@@ -74,7 +74,7 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
                 <small class="mute">Razorpay order <span class="num">{{ l.gatewayOrderId }}</span></small>
                 @for (e of events(); track e.id) {
                   <p><b>{{ e.eventType }}</b> <span [class]="'chip ' + (e.status === 'PROCESSED' ? 'ok' : e.status === 'FAILED' ? 'bad' : 'off')">{{ eventLabel(e.status) }}</span>
-                    <small class="mute"> {{ time(e.receivedAt) }}@if (e.attempts > 1) { · {{ e.attempts }} deliveries }</small>
+                    <small class="mute"> {{ time(e.receivedAt) }}@if (e.attempts > 1) {, {{ e.attempts }} deliveries }</small>
                     @if (e.outcome) { <br /><small>{{ e.outcome }}</small> }</p>
                 } @empty { <p class="mute">Nothing from Razorpay yet.</p> }
               </div>
@@ -96,14 +96,14 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
     .link { border-top: 1px solid var(--ro-line-soft); padding: 10px 0; }
     .main { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
     .actions { display: flex; gap: var(--space-1); flex-wrap: wrap; }
-    .events { background: #f6f8f7; border-radius: 8px; padding: var(--space-2) var(--space-3); margin-top: var(--space-2); }
+    .events { background: var(--ro-wash); border-radius: 8px; padding: var(--space-2) var(--space-3); margin-top: var(--space-2); }
     .events p { margin: 6px 0; }
     .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-2) 0; }
     .mute { color: var(--ro-mute); }
     .bad, .danger, .err { color: var(--ro-error); }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
     .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })
@@ -199,7 +199,7 @@ export interface SendLinkData { propertyId: string; links: BookingPaymentLinks; 
   selector: 'app-send-payment-link-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>Send a payment link · <span class="num">{{ data.links.reference }}</span></h2>
+    <h2 mat-dialog-title>Send a payment link, <span class="num">{{ data.links.reference }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="link-form">
       <p class="hint">The guest opens the link and pays with UPI or a card through Razorpay. The payment goes on the bill by itself
         when Razorpay confirms it, and a pending booking is confirmed. Owes <b class="num">{{ money(data.links.owed) }}</b>

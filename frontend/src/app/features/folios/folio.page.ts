@@ -35,10 +35,10 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
         <div class="page-head">
           <div>
             <a routerLink="/folios" class="back">Folios</a>
-            <h1><span class="num">{{ f.number }}</span> · {{ f.isPrimary ? f.guestName : f.name }}
+            <h1><span class="num">{{ f.number }}</span>, {{ f.isPrimary ? f.guestName : f.name }}
               <span [class]="'chip ' + statusClass(f.reservationStatus)">{{ statusLabel(f.reservationStatus) }}</span></h1>
-            <p><a [routerLink]="['/reservations', f.reservationId]" class="num">{{ f.reference }}</a> · {{ f.guestName }} · {{ f.rooms }} ·
-              {{ dayLabel(f.checkIn) }} – {{ dayLabel(f.checkOut) }}@if (!f.isPrimary) { · {{ f.name }} }</p>
+            <p><a [routerLink]="['/reservations', f.reservationId]" class="num">{{ f.reference }}</a>, {{ f.guestName }}, {{ f.rooms }},
+              {{ dayLabel(f.checkIn) }} – {{ dayLabel(f.checkOut) }}@if (!f.isPrimary) {, {{ f.name }} }</p>
           </div>
           <div class="head-actions">
             @if (preview(); as pv) {
@@ -59,7 +59,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
         @if (f.folios.length > 1) {
           <nav class="folios" aria-label="Folios of this stay">
             @for (o of f.folios; track o.id) {
-              <a [routerLink]="['/folios', o.id]" [class.on]="o.id === f.id"><b class="num">{{ o.number }}</b> {{ o.name }} · <span class="num">{{ money(o.balance) }}</span></a>
+              <a [routerLink]="['/folios', o.id]" [class.on]="o.id === f.id"><b class="num">{{ o.number }}</b> {{ o.name }}, <span class="num">{{ money(o.balance) }}</span></a>
             }
           </nav>
         }
@@ -92,7 +92,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
                   <td class="num">{{ shortDate(i.serviceDate) }}</td>
                   <td>
                     <span class="desc">{{ i.description }}</span>
-                    @if (qty(i)) { <small class="mute num"> · {{ qty(i) }}</small> }
+                    @if (qty(i)) { <small class="mute num">, {{ qty(i) }}</small> }
                     @if (i.invoiceNumber) { <small class="chip inv num" [attr.title]="'Billed on ' + i.invoiceNumber">{{ i.invoiceNumber }}</small> }
                     <br /><small class="mute">{{ i.postedByName ?? 'System' }} at {{ time(i.postedAt) }}</small>
                     @if (note(i); as n) { <br /><small [class]="i.itemType !== 'CHARGE' || i.reversedByItemId ? 'why' : 'mute'">{{ n }}</small> }
@@ -124,7 +124,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
               @for (p of f.paymentLines; track (p.refundId ?? p.paymentId)) {
                 <tr [class.reversed]="p.voided" [class.reversal]="p.kind === 'REFUND'" [attr.data-payment-line]="p.paymentNumber + (p.kind === 'REFUND' ? '-refund' : '')">
                   <td><a [routerLink]="['/payments', p.paymentId]" class="num"><b>{{ p.paymentNumber }}</b></a>
-                    {{ p.kind === 'REFUND' ? 'Refund' : 'Payment' }} · {{ methodLabel(p.method) }}@if (p.voided) { · voided }
+                    {{ p.kind === 'REFUND' ? 'Refund' : 'Payment' }}, {{ methodLabel(p.method) }}@if (p.voided) {, voided }
                     @if (p.detail) { <br /><small [class]="p.kind === 'REFUND' ? 'why' : 'mute'">{{ p.detail }}</small> }</td>
                   <td class="hide-sm">{{ time(p.at) }}@if (p.byName) { <br /><small class="mute">{{ p.byName }}</small> }</td>
                   <td class="right num"><b>{{ lineMoney(p) }}</b></td>
@@ -147,8 +147,8 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
     .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .folios { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
     .folios a { padding: 6px var(--space-3); border: 1px solid var(--ro-line); border-radius: 16px; color: var(--ro-ink); text-decoration: none; background: var(--ro-paper); }
-    .folios a.on { border-color: var(--ro-tide); background: #e6f0f1; }
-    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); }
+    .folios a.on { border-color: var(--ro-tide); background: var(--ro-line-soft); }
+    .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
     .sums { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(220px, 1fr) 2fr; gap: var(--space-4); align-items: start; background: var(--ro-paper);
             border: 1px solid var(--ro-line); border-radius: 10px; padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .balance { display: flex; flex-direction: column; gap: 2px; }
@@ -159,8 +159,8 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
     dt { color: var(--ro-mute); }
     dd { margin: 0; text-align: right; }
     .cats { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip.cat { background: #eef3f2; color: #24423f; }
-    .chip.inv { background: #e6eef8; color: #1f3f6b; margin-left: 6px; font-size: .72rem; }
+    .chip.cat { background: var(--ro-sunk); color: var(--ro-tide-deep); }
+    .chip.inv { background: var(--ro-info-bg); color: var(--ro-info-mid); margin-left: 6px; font-size: .72rem; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .mute { color: var(--ro-mute); }
@@ -168,7 +168,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
     .right { text-align: right; }
     .err { color: var(--ro-error); }
     .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
-    tr.reversed .desc, tr.reversed td.num b { text-decoration: line-through; color: #7a8a8c; }
+    tr.reversed .desc, tr.reversed td.num b { text-decoration: line-through; color: var(--ro-mute); }
     tr.reversal td.num b { color: var(--ro-error); }
     tfoot td { border-top: 2px solid var(--ro-line); padding-top: 10px; }
     @media (max-width: 760px) {
@@ -211,7 +211,7 @@ export class FolioPage {
   qty = (i: FolioItem) => quantityText(i, rupeesExact);
   tax = taxText;
   /** "CGST 2.5% ₹36.25 · SGST 2.5% ₹36.25" on hover. */
-  taxTitle = (i: FolioItem) => i.taxes.map(t => `${t.code} ${pct(t.rate)} ${rupeesExact(t.amount)}`).join(' · ');
+  taxTitle = (i: FolioItem) => i.taxes.map(t => `${t.code} ${pct(t.rate)} ${rupeesExact(t.amount)}`).join(', ');
   private pid = () => this.props.current()!.id;
 
   constructor() {

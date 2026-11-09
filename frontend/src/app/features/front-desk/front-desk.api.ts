@@ -60,7 +60,7 @@ export function roomsText(rooms: { unitId: string; unitName: string; bedCode: st
     if (r.bedCode) g.beds++;
     byUnit.set(r.unitId, g);
   }
-  return [...byUnit.values()].map(g => g.beds ? `${g.name} · ${g.beds} bed${g.beds === 1 ? '' : 's'}` : g.name).join(', ');
+  return [...byUnit.values()].map(g => g.beds ? `${g.name}, ${g.beds} bed${g.beds === 1 ? '' : 's'}` : g.name).join(', ');
 }
 
 /** What a front desk row offers next: check in an arrival, check out a departure, or nothing (done or not today). */

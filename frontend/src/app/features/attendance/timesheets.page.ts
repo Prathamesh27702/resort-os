@@ -31,7 +31,7 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
       <section class="sheet" data-testid="timesheet">
         <div class="top">
           <div>
-            <h2>{{ t.sheet.employeeName }} <small class="mute">{{ t.sheet.employeeCode }} · {{ t.sheet.departmentName }}</small></h2>
+            <h2>{{ t.sheet.employeeName }} <small class="mute">{{ t.sheet.employeeCode }}, {{ t.sheet.departmentName }}</small></h2>
             <p class="mute">Week of {{ dayText(t.sheet.weekStart) }} – {{ dayText(t.sheet.weekEnd) }}</p>
           </div>
           <span class="status" [class]="'s-' + t.sheet.status" data-testid="sheet-status">{{ statusLabel[t.sheet.status] }}</span>
@@ -39,7 +39,7 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
         @if (t.sheet.rejectionReason) { <p class="rejected" role="status"><mat-icon inline>undo</mat-icon> Sent back by {{ t.sheet.decidedBy }}: {{ t.sheet.rejectionReason }}</p> }
         @if (t.note) { <p class="note"><mat-icon inline>chat</mat-icon> {{ t.submittedBy ?? t.sheet.employeeName }}: {{ t.note }}</p> }
         @if (t.sheet.status === 'APPROVED' || t.sheet.status === 'LOCKED') {
-          <p class="mute small">Approved by {{ t.sheet.decidedBy }} on {{ when(t.sheet.decidedAt) }}@if (t.sheet.lockedAt) { · locked for payroll on {{ when(t.sheet.lockedAt) }} }</p>
+          <p class="mute small">Approved by {{ t.sheet.decidedBy }} on {{ when(t.sheet.decidedAt) }}@if (t.sheet.lockedAt) {, locked for payroll on {{ when(t.sheet.lockedAt) }} }</p>
         }
 
         <div class="totals" data-testid="totals">
@@ -57,14 +57,14 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
                 <small class="mute">@if (l.shiftName) { {{ l.shiftName }} {{ hm(l.shiftStart!) }}–{{ hm(l.shiftEnd!) }} } @else { No shift }</small></div>
               <div class="t">
                 @if (l.clockIn) { <span class="io">{{ hm(l.clockIn) }} – {{ l.clockOut ? hm(l.clockOut) : '…' }}@if (l.clockOutNextDay) { <small>(next day)</small> }</span> }
-                <span class="ls">{{ lineLabel[l.status] }}@if (l.status === 'WORKED') { · <b data-testid="worked">{{ hours(l.workedMinutes) }}</b> }</span>
+                <span class="ls">{{ lineLabel[l.status] }}@if (l.status === 'WORKED') {, <b data-testid="worked">{{ hours(l.workedMinutes) }}</b> }</span>
                 <small class="mute">
                   @if (l.breakMinutes) { break {{ l.breakMinutes }} min }
-                  @if (l.lateMinutes) { · <span class="late">{{ mins(l.lateMinutes) }} late</span> }
-                  @if (l.earlyMinutes) { · <span class="late">left {{ mins(l.earlyMinutes) }} early</span> }
-                  @if (l.overtimeMinutes) { · {{ mins(l.overtimeMinutes) }} overtime }
-                  @if (l.corrected) { · <span class="fix">corrected</span> }
-                  @if (l.overridden) { · manager entry }
+                  @if (l.lateMinutes) {, <span class="late">{{ mins(l.lateMinutes) }} late</span> }
+                  @if (l.earlyMinutes) {, <span class="late">left {{ mins(l.earlyMinutes) }} early</span> }
+                  @if (l.overtimeMinutes) {, {{ mins(l.overtimeMinutes) }} overtime }
+                  @if (l.corrected) {, <span class="fix">corrected</span> }
+                  @if (l.overridden) {, manager entry }
                 </small>
               </div>
               @if (can('correct')) { <button mat-icon-button (click)="correct.emit(l)" [attr.aria-label]="'Correct ' + shortDay(l.workDate)"><mat-icon>edit</mat-icon></button> }
@@ -83,7 +83,7 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
             @for (c of t.corrections; track c.id) {
               <li><b>{{ shortDay(c.workDate) }}</b>: {{ c.oldClockIn ? hm(c.oldClockIn) : 'no clock-in' }} to {{ c.oldClockOut ? hm(c.oldClockOut) : 'no clock-out' }}
                 ({{ c.oldWorkedMinutes === null ? 'no line' : hours(c.oldWorkedMinutes) }}) → {{ c.newClockIn ? hm(c.newClockIn) : 'no clock-in' }} to {{ c.newClockOut ? hm(c.newClockOut) : 'no clock-out' }}
-                ({{ hours(c.newWorkedMinutes) }}) · {{ c.reason }} <small class="mute">— {{ c.by }}, {{ when(c.createdAt) }}</small></li>
+                ({{ hours(c.newWorkedMinutes) }}), {{ c.reason }} <small class="mute">— {{ c.by }}, {{ when(c.createdAt) }}</small></li>
             }
           </ul>
         }
@@ -103,14 +103,14 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
     .top { display: flex; justify-content: space-between; gap: var(--space-2); align-items: flex-start; } .top h2 { margin: 0; font-size: 1.15rem; } .top p { margin: 2px 0 0; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
     .status { border-radius: 14px; padding: 3px 10px; font-size: .85rem; white-space: nowrap; background: var(--ro-sunk); }
-    .s-SUBMITTED { background: #e6f0ff; color: #0b3d91; } .s-APPROVED { background: #e3f3ea; color: #1e6b3a; } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
-    .s-LOCKED { background: #1d3b40; color: var(--ro-paper); }
-    .rejected { color: var(--ro-error-strong); } .note { background: #f6f8f7; border-radius: 10px; padding: 6px 10px; }
-    .totals { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 10px 0; } .totals div { flex: 1 1 90px; background: #f6f8f7; border-radius: 10px; padding: 6px 10px; display: flex; flex-direction: column; }
+    .s-SUBMITTED { background: var(--ro-info-bg); color: var(--ro-info-strong); } .s-APPROVED { background: var(--ro-ok-bg); color: var(--ro-ok-mid); } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
+    .s-LOCKED { background: var(--ro-tide-deep); color: var(--ro-paper); }
+    .rejected { color: var(--ro-error-strong); } .note { background: var(--ro-wash); border-radius: 10px; padding: 6px 10px; }
+    .totals { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 10px 0; } .totals div { flex: 1 1 90px; background: var(--ro-wash); border-radius: 10px; padding: 6px 10px; display: flex; flex-direction: column; }
     .totals b { font-size: 1.05rem; } .totals span { color: var(--ro-mute); font-size: .8rem; }
     .lines { list-style: none; padding: 0; margin: 0; } .lines > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) 10px; padding: var(--space-2) 0; border-top: 1px solid var(--ro-sunk); }
     .d { width: 150px; display: flex; flex-direction: column; } .t { flex: 1; display: flex; flex-direction: column; min-width: 180px; } .io { font-weight: 500; }
-    .l-ABSENT .ls, .l-MISSING_OUT .ls { color: var(--ro-error); } .late { color: var(--ro-warn); } .fix { color: #0b3d91; }
+    .l-ABSENT .ls, .l-MISSING_OUT .ls { color: var(--ro-error); } .late { color: var(--ro-warn); } .fix { color: var(--ro-info-strong); }
     details { flex-basis: 100%; padding-left: 150px; font-size: .88rem; } details ol { margin: var(--space-1) 0; padding-left: 18px; }
     h3 { font-size: .95rem; margin: var(--space-3) 0 var(--space-1); } .corr { margin: 0; padding-left: 18px; font-size: .9rem; } .corr li { margin: 3px 0; }
     .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); } .grow { flex: 1; }
@@ -225,7 +225,7 @@ abstract class TimesheetActions {
             <li [attr.data-row]="s.employeeCode">
               <a [routerLink]="['/timesheets', s.id]">
                 <div class="nm"><b>{{ s.employeeName }}</b><small class="mute">{{ s.departmentName }}</small></div>
-                <div class="hrs"><b>{{ hours(s.workedMinutes) }}</b><small class="mute">{{ s.daysWorked }} {{ s.daysWorked === 1 ? 'day' : 'days' }}@if (s.overtimeMinutes) { · {{ mins(s.overtimeMinutes) }} OT }@if (s.lateMinutes) { · {{ mins(s.lateMinutes) }} late }</small></div>
+                <div class="hrs"><b>{{ hours(s.workedMinutes) }}</b><small class="mute">{{ s.daysWorked }} {{ s.daysWorked === 1 ? 'day' : 'days' }}@if (s.overtimeMinutes) {, {{ mins(s.overtimeMinutes) }} OT }@if (s.lateMinutes) {, {{ mins(s.lateMinutes) }} late }</small></div>
                 <div class="st"><span class="chip" [class]="'s-' + s.status">{{ statusLabel[s.status] }}</span>
                   @if (s.openDays) { <small class="warn">{{ s.openDays }} {{ s.openDays === 1 ? 'day' : 'days' }} without a clock-out</small> }
                   @if (s.corrections) { <small class="mute">{{ s.corrections }} corrected</small> }</div>
@@ -244,12 +244,12 @@ abstract class TimesheetActions {
     .submit { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; margin-top: var(--space-3); }
     .counts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); }
     .chip { border-radius: 14px; padding: 2px 10px; font-size: .85rem; background: var(--ro-sunk); white-space: nowrap; }
-    .s-SUBMITTED { background: #e6f0ff; color: #0b3d91; } .s-APPROVED { background: #e3f3ea; color: #1e6b3a; } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
-    .s-LOCKED { background: #1d3b40; color: var(--ro-paper); }
-    .skipped { border: 1px solid #ecd29a; background: #fdf6e6; border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: #6b4a00; } .skipped ul { margin: var(--space-1) 0; }
+    .s-SUBMITTED { background: var(--ro-info-bg); color: var(--ro-info-strong); } .s-APPROVED { background: var(--ro-ok-bg); color: var(--ro-ok-mid); } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
+    .s-LOCKED { background: var(--ro-tide-deep); color: var(--ro-paper); }
+    .skipped { border: 1px solid var(--ro-warn-line); background: var(--ro-warn-wash); border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: var(--ro-warn-strong); } .skipped ul { margin: var(--space-1) 0; }
     .team { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; }
     .team li { border-top: 1px solid var(--ro-sunk); } .team li:first-child { border-top: 0; }
-    .team a { display: flex; gap: 10px; align-items: center; padding: 10px 14px; color: inherit; text-decoration: none; flex-wrap: wrap; } .team a:hover { background: #f6f8f7; }
+    .team a { display: flex; gap: 10px; align-items: center; padding: 10px 14px; color: inherit; text-decoration: none; flex-wrap: wrap; } .team a:hover { background: var(--ro-wash); }
     .nm, .hrs, .st { display: flex; flex-direction: column; } .nm { flex: 1 1 180px; } .hrs { flex: 1 1 160px; } .st { flex: 0 1 200px; align-items: flex-start; }
   `,
 })

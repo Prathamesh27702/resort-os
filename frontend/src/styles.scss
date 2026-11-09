@@ -1,3 +1,9 @@
+/* Hallmark · checked: 2026-11-09 · genre: modern-minimal (inferred) · shape: app screen · scope: app
+ * floor: see sweep · fixed: 19, 30a, 40, 48, 50, 63 · structural: 3 printed (dashboard lead, sidebar grouping, reservation action row)
+ * waive 3: room, restaurant-table and housekeeping cards keep their coloured side edge; it is the state of the room or table, keyed by the legend on the room board
+ * waive 3: guest banners keep their side edge; it marks the banner's severity (warning, inactive), not decoration
+ * waive 24b: 14px, 10px and 6px steps predate the --space-* scale and run through every table and list; re-spacing is a restyle, not a polish
+ * built: the project · redesign: polish · v2.0.0 */
 @use '@angular/material' as mat;
 
 html {
@@ -32,6 +38,45 @@ html {
   --ro-off: #7a1f1f;
   --ro-off-bg: #f3e3e3;
 
+  // Colours that used to be typed straight into components (Hallmark polish, 2026-11-09).
+  // Neutrals
+  --ro-faint: #7d8d8f;        // marks, dots and field edges only (3:1); text uses --ro-mute
+  --ro-line-strong: #c5cfcc;
+  --ro-line-mid: #e3e8e6;
+  --ro-tint: #eef5f4;
+  // Tide and sea
+  --ro-tide-deep: #1d3b40;
+  --ro-tide-mid: #1d5c67;
+  --ro-sea: #0e7c86;
+  --ro-sea-bright: #0090a0;
+  --ro-sea-line: #80cbc4;
+  --ro-on-tide: #cfe0dd;      // text on the tide sidebar
+  --ro-on-tide-mute: #8fb0ab;
+  // Green, amber, red, kokum, blue
+  --ro-ok-mid: #1e6b3a;
+  --ro-ok-soft: #7cb89a;
+  --ro-ok-line: #b9dcc8;
+  --ro-warn-strong: #6b4600;
+  --ro-warn-mid: #b7791f;
+  --ro-warn-bright: #d29a2c;
+  --ro-warn-gold: #e0b34a;
+  --ro-warn-line: #ecd29a;
+  --ro-warn-wash: #fdf6e6;
+  --ro-rust: #b45309;
+  --ro-error-line: #f2b8b2;
+  --ro-kokum-wash: #f6e3ec;
+  --ro-info: #134e63;
+  --ro-info-strong: #0b3d91;
+  --ro-info-mid: #1d4a7a;
+  --ro-info-bright: #1f6f8b;
+  --ro-info-line: #a7c3ef;
+  --ro-info-bg: #e3effa;
+  // Shadows
+  --ro-shadow: rgba(14, 59, 67, 0.12);
+  --ro-shadow-lift: rgba(0, 0, 0, 0.18);
+
+  --ro-font: 'IBM Plex Sans', system-ui, sans-serif;
+
   // Spacing scale (Hallmark polish): use these for padding, margin and gap.
   --space-1: 4px;
   --space-2: 8px;
@@ -53,7 +98,7 @@ html {
   --mat-sys-surface-container-high: var(--ro-sunk);
   --mat-sys-on-surface: var(--ro-ink);
   --mat-sys-on-surface-variant: var(--ro-mute);
-  --mat-sys-outline: var(--ro-outline);
+  --mat-sys-outline: var(--ro-faint);          // field edges need 3:1 against the paper
   --mat-sys-outline-variant: var(--ro-line);
   --mat-sys-error: var(--ro-error);
   --mat-sys-corner-medium: 10px;
@@ -65,13 +110,13 @@ body {
   margin: 0;
   background: var(--ro-wash);
   color: var(--ro-ink);
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-family: var(--ro-font);
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
 h1 { font-size: 1.6rem; line-height: 1.25; }
 h2 { font-size: 1.15rem; }
 
@@ -90,6 +135,9 @@ h2 { font-size: 1.15rem; }
 :where(button:not([class*='mat-']):not([class*='mdc-'])):where(:not(:disabled)) { cursor: pointer; }
 :where(button:not([class*='mat-']):not([class*='mdc-'])):where(:active:not(:disabled)) { filter: brightness(0.94); }
 :where(button:not([class*='mat-']):not([class*='mdc-'])):where(:disabled) { opacity: 0.55; cursor: not-allowed; }
+
+// Material buttons are a fixed 40px tall, so a label must stay on one line (the button row wraps instead).
+.mat-mdc-button-base { white-space: nowrap; }
 
 // Page scaffold shared by feature pages
 .page { padding: var(--space-6); max-width: 1100px; }

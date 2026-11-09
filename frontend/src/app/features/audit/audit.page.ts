@@ -46,7 +46,7 @@ const ENTITIES: Partial<Record<string, string>> = {
               <tr>
                 <td class="num nowrap">{{ when(a.occurredAt) }}</td>
                 <td>{{ a.userName ?? 'System' }}</td>
-                <td>{{ actions[a.action] ?? a.action }} · {{ entities[a.entityType] ?? a.entityType }}
+                <td>{{ actions[a.action] ?? a.action }}, {{ entities[a.entityType] ?? a.entityType }}
                   @if (a.reason) { <div class="reason">“{{ a.reason }}”</div> }
                   @if (a.ipAddress) { <div class="meta">{{ a.ipAddress }}</div> }
                 </td>
@@ -78,7 +78,7 @@ const ENTITIES: Partial<Record<string, string>> = {
   styles: `
     .nowrap { white-space: nowrap; }
     .reason { color: var(--ro-ink); font-size: 0.85rem; margin-top: 2px; }
-    .meta { color: #8a9a9c; font-size: 0.78rem; }
+    .meta { color: var(--ro-mute); font-size: 0.78rem; }
     .changes { margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--ro-mute); }
     .changes b { color: var(--ro-ink); font-weight: 500; margin-right: var(--space-1); }
     .pager { display: flex; align-items: center; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-3); color: var(--ro-mute); }

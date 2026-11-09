@@ -26,7 +26,7 @@ export interface BlockDialogData { propertyId: string; today: string; rooms: Roo
       <mat-form-field appearance="outline">
         <mat-label>Room</mat-label>
         <mat-select formControlName="unitId">
-          @for (r of activeRooms(); track r.id) { <mat-option [value]="r.id">{{ r.name }} · {{ r.accommodationTypeName }}</mat-option> }
+          @for (r of activeRooms(); track r.id) { <mat-option [value]="r.id">{{ r.name }}, {{ r.accommodationTypeName }}</mat-option> }
         </mat-select>
       </mat-form-field>
       @if (room()?.inventoryMode === 'BED') {

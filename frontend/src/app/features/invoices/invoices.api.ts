@@ -120,7 +120,7 @@ export const documentLabel = (t: DocumentType) =>
   ({ INVOICE: 'Tax invoice', BILL_OF_SUPPLY: 'Bill of supply', CREDIT_NOTE: 'Credit note', DEBIT_NOTE: 'Debit note', RECEIPT: 'Receipt' } as Record<DocumentType, string>)[t] ?? t;
 
 /** "CGST 2.5% · SGST 2.5%" for a line. */
-export const lineTaxText = (l: Pick<DocumentLine, 'taxes'>) => l.taxes.map(t => `${t.code} ${Number(t.rate)}%`).join(' · ');
+export const lineTaxText = (l: Pick<DocumentLine, 'taxes'>) => l.taxes.map(t => `${t.code} ${Number(t.rate)}%`).join(', ');
 
 /** GSTIN format (15 characters: state code, PAN, entity, Z, check). The server also checks the check digit. */
 export const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;

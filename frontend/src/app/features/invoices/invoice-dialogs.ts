@@ -37,8 +37,8 @@ export interface IssueInvoiceData { propertyId: string; preview: InvoicePreview;
           <tbody>
             @for (l of p.lines; track l.folioItemId) {
               <tr>
-                <td>{{ l.description }}<small class="mute">{{ shortDate(l.serviceDate) }}@if (l.hsnSac) { · SAC {{ l.hsnSac }} }
-                  @if (l.discount) { · {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited }</small></td>
+                <td>{{ l.description }}<small class="mute">{{ shortDate(l.serviceDate) }}@if (l.hsnSac) {, SAC {{ l.hsnSac }} }
+                  @if (l.discount) {, {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited }</small></td>
                 <td class="right num">{{ money(l.taxableValue) }}</td>
                 <td class="right num">{{ money(l.taxAmount) }}<small class="mute">{{ taxText(l) || 'No GST' }}</small></td>
                 <td class="right num">{{ money(l.total) }}</td>
@@ -99,18 +99,18 @@ export interface IssueInvoiceData { propertyId: string; preview: InvoicePreview;
     h3 { margin: var(--space-3) 0 var(--space-1); font-size: 1rem; font-weight: 500; }
     .preview { border: 1px solid var(--ro-line); border-radius: 10px; overflow-x: auto; }
     .lines { width: 100%; border-collapse: collapse; }
-    .lines th { text-align: left; color: var(--ro-mute); font-weight: 500; font-size: .8rem; padding: var(--space-2) var(--space-3); background: #f6f8f7;
+    .lines th { text-align: left; color: var(--ro-mute); font-weight: 500; font-size: .8rem; padding: var(--space-2) var(--space-3); background: var(--ro-wash);
                 border-bottom: 1px solid var(--ro-line); white-space: nowrap; }
     .lines td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--ro-line-soft); vertical-align: top; }
     .lines td small { display: block; margin-top: 2px; font-size: .78rem; }
     .lines td.num { white-space: nowrap; }
-    .lines tfoot td { border-bottom: 0; font-weight: 600; background: #f6f8f7; }
+    .lines tfoot td { border-bottom: 0; font-weight: 600; background: var(--ro-wash); }
     .right { text-align: right !important; }
     .full { width: 100%; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-4); }
     .upper { text-transform: uppercase; }
     .mute { color: var(--ro-mute); }
-    .info { margin: var(--space-1) 0 0; padding: 10px var(--space-3); border-radius: 8px; background: #eef4f3; color: var(--ro-ink-soft); font-size: .88rem; line-height: 1.4; }
+    .info { margin: var(--space-1) 0 0; padding: 10px var(--space-3); border-radius: 8px; background: var(--ro-tint); color: var(--ro-ink-soft); font-size: .88rem; line-height: 1.4; }
     .err { color: var(--ro-error); }
     @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
   `,
@@ -219,8 +219,8 @@ export interface CreditNoteData { propertyId: string; invoice: Invoice; canCance
         <div class="lines" role="group" aria-label="Lines to credit" formArrayName="lines">
           @for (l of creditable; track l.id; let k = $index) {
             <div class="line" [formGroupName]="k" [attr.data-credit-line]="l.description">
-              <mat-checkbox formControlName="on">{{ l.description }}@if (l.debitNoteNumber) { <small class="mute"> · {{ l.debitNoteNumber }}</small> }
-                <br /><small class="mute">{{ money(l.creditable) }} of {{ money(l.taxableValue) }} left · {{ taxText(l) || 'no GST' }}</small></mat-checkbox>
+              <mat-checkbox formControlName="on">{{ l.description }}@if (l.debitNoteNumber) { <small class="mute">, {{ l.debitNoteNumber }}</small> }
+                <br /><small class="mute">{{ money(l.creditable) }} of {{ money(l.taxableValue) }} left, {{ taxText(l) || 'no GST' }}</small></mat-checkbox>
               @if (lineOn(k)) {
                 <mat-form-field appearance="outline" class="amt" subscriptSizing="dynamic">
                   <mat-label>Amount (₹)</mat-label>

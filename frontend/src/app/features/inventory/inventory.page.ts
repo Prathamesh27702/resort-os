@@ -32,7 +32,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
       <div class="head">
         <h1>Inventory</h1>
         @if (inventory(); as inv) {
-          <p class="mute">Stock worth {{ rupees(inv.value) }}@if (inv.lowCount) { · <b class="low">{{ inv.lowCount }} to reorder</b> }</p>
+          <p class="mute">Stock worth {{ rupees(inv.value) }}@if (inv.lowCount) {, <b class="low">{{ inv.lowCount }} to reorder</b> }</p>
         }
       </div>
       <mat-button-toggle-group [value]="view()" (change)="go($event.value)" aria-label="Inventory view" class="views">
@@ -63,7 +63,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
                 @for (i of g.items; track i.id) {
                   <li [class.off]="!i.isActive" [attr.data-item]="i.code">
                     <button class="nm" (click)="ledgerOf(i)" [attr.aria-label]="'Ledger of ' + i.name">
-                      <b>{{ i.name }}</b> <small class="mute">{{ i.code }} · {{ rupees(i.unitCost) }}/{{ i.unit }}</small>
+                      <b>{{ i.name }}</b> <small class="mute">{{ i.code }}, {{ rupees(i.unitCost) }}/{{ i.unit }}</small>
                       <small class="at">@for (l of i.levels; track l.locationId) { <span [class.neg]="l.onHand < 0">{{ l.locationCode }} {{ qty(l.onHand, i.unit) }}</span> }</small>
                     </button>
                     <span class="oh">
@@ -80,7 +80,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
                 }
               </ul>
             </section>
-          } @empty { @if (inventory()) { <p class="mute">No stock items yet.@if (canManage()) { Add the stores and groups (⚙), then the items. }</p> } }
+          } @empty { @if (inventory()) { <p class="mute">No stock items yet.@if (canManage()) { Add the stores and groups (<mat-icon inline aria-hidden="true">settings</mat-icon> above), then the items. }</p> } }
         }
 
         @case ('recipes') {
@@ -88,7 +88,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
           @for (d of recipes()?.dishes ?? []; track d.menuItemId + (d.variantId ?? '')) {
             <article class="dish" [attr.data-dish]="d.name">
               <button class="nm" (click)="editRecipe(d)" [disabled]="!canManageRecipes()">
-                <b>{{ d.name }}</b> <small class="mute">{{ d.category }} · {{ rupees(d.price) }}</small>
+                <b>{{ d.name }}</b> <small class="mute">{{ d.category }}, {{ rupees(d.price) }}</small>
                 @if (d.recipe) {
                   <small class="ings">{{ ingredients(d) }}@if (!d.ownRecipe && d.variantId) { <i> (the dish's recipe)</i> }</small>
                 } @else { <small class="mute">No recipe: uses nothing from stock</small> }
@@ -162,9 +162,9 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
             @for (m of movements(); track m.id) {
               <li [attr.data-type]="m.type">
                 <span class="when">{{ when(m.at) }}</span>
-                <span class="what"><b>{{ moveLabel[m.type] }}</b> {{ m.itemName }} <small class="mute">{{ m.locationCode }}@if (m.source) { · {{ m.source }} }@if (m.byName) { · {{ m.byName }} }</small>
+                <span class="what"><b>{{ moveLabel[m.type] }}</b> {{ m.itemName }} <small class="mute">{{ m.locationCode }}@if (m.source) {, {{ m.source }} }@if (m.byName) {, {{ m.byName }} }</small>
                   @if (m.note) { <small>{{ m.note }}</small> }</span>
-                <span class="q" [class.neg]="m.quantity < 0">{{ m.quantity > 0 ? '+' : '' }}{{ qty(m.quantity, m.unit) }}<small>{{ rupees(m.value) }} · left {{ qty(m.onHandAfter, m.unit) }}</small></span>
+                <span class="q" [class.neg]="m.quantity < 0">{{ m.quantity > 0 ? '+' : '' }}{{ qty(m.quantity, m.unit) }}<small>{{ rupees(m.value) }}, left {{ qty(m.onHandAfter, m.unit) }}</small></span>
               </li>
             } @empty { <li class="mute">No movements.</li> }
           </ul>
@@ -194,7 +194,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
     .dish { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: var(--space-2); }
     .ings { color: var(--ro-ink-soft); }
     .nums { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; min-width: 110px; }
-    .band.good { color: #2e7d32; } .band.mid { color: var(--ro-warn); } .band.low { color: var(--ro-error); }
+    .band.good { color: var(--ro-ok-mid); } .band.mid { color: var(--ro-warn); } .band.low { color: var(--ro-error); }
     .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); }
     .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); display: flex; flex-direction: column; }
     .tiles b { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
@@ -310,7 +310,7 @@ export class InventoryPage {
 
   ledgerOf(i: InventoryItem) { this.router.navigate([], { queryParams: { view: 'ledger', item: i.id } }); }
 
-  ingredients(d: CostedDish) { return d.recipe!.ingredients.map(i => `${qty(i.quantity, i.unit)} ${i.itemName}`).join(' · '); }
+  ingredients(d: CostedDish) { return d.recipe!.ingredients.map(i => `${qty(i.quantity, i.unit)} ${i.itemName}`).join(', '); }
 
   when(at: string) {
     return new Date(at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });

@@ -53,7 +53,7 @@ test.beforeAll(async ({ browser }: { browser: Browser }) => {
 test('S16-01 Suppliers: GSTIN and state for each, the fishermen unregistered; a mistyped GSTIN is refused under its field', async () => {
   await m.goto('/inventory/suppliers');
   await expect(m.getByRole('heading', { name: 'Suppliers' })).toBeVisible();
-  await expect(m.locator('li[data-supplier="FRESH-VEG"]')).toContainText('GSTIN 30AAACF1234A1ZS · Goa');
+  await expect(m.locator('li[data-supplier="FRESH-VEG"]')).toContainText('GSTIN 30AAACF1234A1ZS, Goa');
   await expect(m.locator('li[data-supplier="FRESH-VEG"]')).toContainText('pays after 7 days');
   await expect(m.locator('li[data-supplier="SPICES"]')).toContainText('Maharashtra');
   await expect(m.locator('li[data-supplier="FISH"]')).toContainText('Unregistered: no GST');
@@ -82,10 +82,10 @@ test('S16-02 The clerk raises an order from the kitchen\'s request PR00001; over
   const d = p.getByRole('dialog');
   await expect(d.getByRole('heading', { name: 'Order for PR00001' })).toBeVisible();
   await pick(p, 'Supplier', 'Mapusa Fresh Vegetables');
-  await expect(d.getByText('Goa (30) · CGST + SGST')).toBeVisible();
+  await expect(d.getByText('Goa (30), CGST + SGST')).toBeVisible();
   // A wedding at the weekend: 160 kg of mixed vegetables instead of 10.
   await d.getByRole('spinbutton', { name: 'Quantity 2' }).fill('160');
-  await expect(d.getByTestId('order-total')).toHaveText('Before GST ₹11,000.00 · GST ₹0.00 · Total ₹11,000.00');
+  await expect(d.getByTestId('order-total')).toHaveText('Before GST ₹11,000.00, GST ₹0.00, Total ₹11,000.00');
   await d.getByRole('button', { name: 'Save draft' }).click();
 
   await expect(p).toHaveURL(/\/inventory\/purchases\/[0-9a-f-]{36}$/);

@@ -51,8 +51,8 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
               @for (s of w.shortages; track s.date + s.templateId) {
                 <li [class.today]="s.date === w.today">
                   @if (canManage()) { <button mat-button (click)="fill(s)" [attr.aria-label]="'Fill ' + s.departmentName + ' ' + s.templateName + ' on ' + shortDay(s.date)">
-                    <b>{{ shortDay(s.date) }}</b> {{ s.departmentName }} · {{ s.templateName }} {{ hm(s.startTime) }}–{{ hm(s.endTime) }}: {{ s.rostered }} of {{ s.needed }}</button> }
-                  @else { <b>{{ shortDay(s.date) }}</b> {{ s.departmentName }} · {{ s.templateName }} {{ hm(s.startTime) }}–{{ hm(s.endTime) }}: {{ s.rostered }} of {{ s.needed }} }
+                    <b>{{ shortDay(s.date) }}</b> {{ s.departmentName }}, {{ s.templateName }} {{ hm(s.startTime) }}–{{ hm(s.endTime) }}: {{ s.rostered }} of {{ s.needed }}</button> }
+                  @else { <b>{{ shortDay(s.date) }}</b> {{ s.departmentName }}, {{ s.templateName }} {{ hm(s.startTime) }}–{{ hm(s.endTime) }}: {{ s.rostered }} of {{ s.needed }} }
                 </li>
               }
             </ul>
@@ -81,7 +81,7 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
                     <tr class="dept"><th [attr.colspan]="8">{{ dept.name }}</th></tr>
                     @for (e of people(dept.id); track e.id) {
                       <tr [attr.data-row]="e.code">
-                        <th class="who"><span>{{ e.name }}</span><small class="mute">{{ e.designationName ?? e.code }} · {{ hours(e.paidMinutes) }}</small></th>
+                        <th class="who"><span>{{ e.name }}</span><small class="mute">{{ e.designationName ?? e.code }}, {{ hours(e.paidMinutes) }}</small></th>
                         @for (d of days(); track d) {
                           <td [class.off]="e.weeklyOff === isoDay(d)" [class.out]="!works(e, d)" [class.today]="d === w.today">
                             @for (s of cell(e.id, d); track s.id) {
@@ -138,27 +138,27 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .roster { max-width: 1240px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; } .range { font-weight: 500; }
     .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); } .grow { flex: 1; }
-    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .ok { color: #1e6b3a; }
-    .short { border: 1px solid #e3a6a1; background: var(--ro-error-bg); border-radius: 12px; padding: 6px var(--space-3) var(--space-2); margin-bottom: var(--space-2); }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .ok { color: var(--ro-ok-mid); }
+    .short { border: 1px solid var(--ro-error-line); background: var(--ro-error-bg); border-radius: 12px; padding: 6px var(--space-3) var(--space-2); margin-bottom: var(--space-2); }
     .short h2 { font-size: 1rem; color: var(--ro-error-strong); margin: var(--space-1) 0; } .short ul, .warn ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-3); }
     .short li button { color: var(--ro-error-strong); padding: 0 6px; height: auto; min-height: 32px; text-align: left; white-space: normal; } .short li.today b { text-decoration: underline; }
-    .warn { border: 1px solid #ecd29a; background: #fdf6e6; border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: #6b4a00; } .warn li { padding: 2px 0; }
+    .warn { border: 1px solid var(--ro-warn-line); background: var(--ro-warn-wash); border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: var(--ro-warn-strong); } .warn li { padding: 2px 0; }
     .gridwrap { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; }
     table.week-grid { border-collapse: collapse; width: 100%; min-width: 900px; font-size: .88rem; }
-    .week-grid th, .week-grid td { border-bottom: 1px solid #eef1f0; padding: var(--space-1) 6px; vertical-align: top; text-align: left; }
-    .week-grid thead th { position: sticky; top: 0; background: #f6f8f7; font-weight: 600; white-space: nowrap; } .week-grid thead th.today { background: #e6f0ff; }
-    .week-grid td.today { background: #f5f9ff; } .week-grid td.off { background: repeating-linear-gradient(45deg, #fafafa, #fafafa 6px, #f1f3f2 6px, #f1f3f2 12px); }
-    .week-grid td.out { background: #f3f3f3; }
-    .leave { display: inline-block; border-radius: 8px; padding: 1px 6px; font-size: .8rem; background: #e8f0fb; color: #1d4a7a; margin: 1px 0; }
+    .week-grid th, .week-grid td { border-bottom: 1px solid var(--ro-line-soft); padding: var(--space-1) 6px; vertical-align: top; text-align: left; }
+    .week-grid thead th { position: sticky; top: 0; background: var(--ro-wash); font-weight: 600; white-space: nowrap; } .week-grid thead th.today { background: var(--ro-info-bg); }
+    .week-grid td.today { background: var(--ro-hover); } .week-grid td.off { background: repeating-linear-gradient(45deg, var(--ro-hover), var(--ro-hover) 6px, var(--ro-sunk) 6px, var(--ro-sunk) 12px); }
+    .week-grid td.out { background: var(--ro-tint); }
+    .leave { display: inline-block; border-radius: 8px; padding: 1px 6px; font-size: .8rem; background: var(--ro-info-bg); color: var(--ro-info-mid); margin: 1px 0; }
     .week-grid .who { width: 170px; } .week-grid th.who { display: table-cell; } .week-grid th.who span { display: block; } .week-grid th.who small { display: block; font-weight: normal; }
-    .week-grid tr.dept th { background: #eef3f1; font-size: .8rem; color: var(--ro-ink-soft); }
+    .week-grid tr.dept th { background: var(--ro-sunk); font-size: .8rem; color: var(--ro-ink-soft); }
     .badge { display: inline-block; background: var(--ro-error); color: var(--ro-paper); border-radius: 9px; font-size: .72rem; padding: 0 6px; margin-left: var(--space-1); }
-    .chip { display: block; width: 100%; text-align: left; border: 1px solid #b9d3c6; background: #eaf5ef; border-radius: 8px; padding: 2px 6px; margin: 2px 0; cursor: pointer; font: inherit; color: inherit; }
-    .chip:disabled { cursor: default; } .chip.overlap { border-color: #e0a100; background: #fff4d6; } .chip.other { border-style: dashed; }
-    .add { border: 1px dashed #b5c2c0; background: none; border-radius: 8px; width: 100%; color: var(--ro-mute); cursor: pointer; font-size: 1rem; line-height: 1.3; }
+    .chip { display: block; width: 100%; text-align: left; border: 1px solid var(--ro-line-strong); background: var(--ro-tint); border-radius: 8px; padding: 2px 6px; margin: 2px 0; cursor: pointer; font: inherit; color: inherit; }
+    .chip:disabled { cursor: default; } .chip.overlap { border-color: var(--ro-warn-bright); background: var(--ro-warn-bg); } .chip.other { border-style: dashed; }
+    .add { border: 1px dashed var(--ro-outline); background: none; border-radius: 8px; width: 100%; color: var(--ro-mute); cursor: pointer; font-size: 1rem; line-height: 1.3; }
     .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-1); margin: var(--space-1) 0 var(--space-2); }
     .days button { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 10px; padding: var(--space-1) 0; font: inherit; position: relative; }
-    .days button.on { background: #1d5c4e; color: var(--ro-paper); border-color: #1d5c4e; } .dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--ro-error); }
+    .days button.on { background: var(--ro-ok); color: var(--ro-paper); border-color: var(--ro-ok); } .dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--ro-error); }
     h3 { font-size: .85rem; color: var(--ro-ink-soft); margin: var(--space-3) 0 var(--space-1); }
     .list { list-style: none; margin: 0; padding: 0; } .list li { display: flex; gap: var(--space-2); align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 6px 10px; margin-top: 6px; }
     .list .nm { flex: 1; display: flex; flex-direction: column; min-width: 0; } .list .sh { flex: 1.2; display: flex; flex-direction: column; gap: 2px; }

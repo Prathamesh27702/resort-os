@@ -16,7 +16,7 @@ import { RoomsApi } from '../../rooms/rooms.api';
       <div class="page-head">
         <div>
           <h1>Room types</h1>
-          <p>What you sell at {{ propertyName() }}. Rates and photos are added in later sprints.</p>
+          <p>What you sell at {{ propertyName() }}.</p>
         </div>
         @if (canManage()) { <a mat-flat-button routerLink="/settings/room-types/new">Add room type</a> }
       </div>
@@ -51,7 +51,7 @@ import { RoomsApi } from '../../rooms/rooms.api';
   styles: `
     .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .code { font-size: .8rem; }
     .empty { padding: var(--space-6); } .empty p { color: var(--ro-mute); margin-top: 0; }
-    .chip.ok { background: #e3f1e6; color: #1f5130; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
   `,
 })
 export class RoomTypesPage {

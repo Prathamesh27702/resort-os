@@ -84,13 +84,13 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         <!-- 2. Availability -->
         <mat-step [completed]="!!chosen()" label="Room">
           @if (availability(); as a) {
-            <p class="lead">{{ stayText(a.from, a.to) }} · {{ guests() }}</p>
+            <p class="lead">{{ stayText(a.from, a.to) }}, {{ guests() }}</p>
             <div class="types">
               @for (t of a.types; track t.accommodationTypeId) {
                 <div class="type" [class.full]="!t.fits">
                   <div class="what">
                     <b>{{ t.name }}</b>
-                    <small class="mute">{{ t.inventoryMode === 'BED' ? 'Per bed' : 'Up to ' + t.maxOccupancy + ' guests' }} ·
+                    <small class="mute">{{ t.inventoryMode === 'BED' ? 'Per bed' : 'Up to ' + t.maxOccupancy + ' guests' }},
                       <span [class.none]="t.free === 0">{{ t.free }} of {{ t.total }} {{ t.inventoryMode === 'BED' ? 'beds' : 'rooms' }} free</span></small>
                     @if (t.fitProblem) { <small class="warn">{{ t.fitProblem }}</small> }
                   </div>
@@ -104,7 +104,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                       <mat-select [ngModel]="roomPick()[t.accommodationTypeId] ?? null" (ngModelChange)="pickRoom(t.accommodationTypeId, $event)"
                                   [attr.aria-label]="'Room for ' + t.name">
                         <mat-option [value]="null">First free room</mat-option>
-                        @for (r of t.freeRooms; track r.id) { <mat-option [value]="r.id">{{ r.name }}@if (r.floor) { · {{ r.floor }} }</mat-option> }
+                        @for (r of t.freeRooms; track r.id) { <mat-option [value]="r.id">{{ r.name }}@if (r.floor) {, {{ r.floor }} }</mat-option> }
                       </mat-select>
                     </mat-form-field>
                   }
@@ -130,7 +130,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
               </mat-form-field>
               @for (g of found(); track g.id) {
                 <button mat-stroked-button class="found" (click)="useGuest(g)">
-                  <b>{{ g.fullName }}</b>@if (g.phone) { · <span class="mute num">{{ phone(g.phone) }}</span> }
+                  <b>{{ g.fullName }}</b>@if (g.phone) {, <span class="mute num">{{ phone(g.phone) }}</span> }
                 </button>
               } @empty { @if (guestQ().trim().length >= 2) { <p class="mute">No guest matches “{{ guestQ() }}”. Add them below.</p> } }
             </section>
@@ -161,7 +161,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                   <div class="full dups" role="alert">
                     <p>This may be someone who has stayed before:</p>
                     @for (d of duplicates(); track d.id) {
-                      <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b> · {{ phone(d.phone) || d.email }} · {{ d.reasons.join(', ') }}</button>
+                      <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b>, {{ phone(d.phone) || d.email }}, {{ d.reasons.join(', ') }}</button>
                     }
                     <button mat-button type="button" (click)="addGuest(true)">No, add a new profile</button>
                   </div>
@@ -218,9 +218,9 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                   <thead><tr><th>Night</th><th class="right">Price</th></tr></thead>
                   <tbody>
                     @for (n of q.breakdown; track n.date) {
-                      <tr><td>{{ day(n.date) }}@if (n.units > 1) { <small class="mute"> · {{ n.units }} beds × {{ rupees(n.unitPrice) }}</small> }
-                        @if (n.extraAdults) { <small class="mute"> · {{ n.extraAdults }} extra adult</small> }
-                        @if (n.extraChildren) { <small class="mute"> · {{ n.extraChildren }} extra child</small> }</td>
+                      <tr><td>{{ day(n.date) }}@if (n.units > 1) { <small class="mute">, {{ n.units }} beds × {{ rupees(n.unitPrice) }}</small> }
+                        @if (n.extraAdults) { <small class="mute">, {{ n.extraAdults }} extra adult</small> }
+                        @if (n.extraChildren) { <small class="mute">, {{ n.extraChildren }} extra child</small> }</td>
                         <td class="right num">{{ rupees(n.total) }}</td></tr>
                     }
                     <tr class="sum"><td>Total before tax</td><td class="right num">{{ rupees(q.total) }}</td></tr>
@@ -239,11 +239,11 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         <mat-step label="Confirm">
           @if (chosen() && guest() && quote(); as q) {
             <dl class="summary">
-              <dt>Guest</dt><dd><b>{{ guest()!.fullName }}</b>@if (guest()!.phone) { · <span class="mute num">{{ phone(guest()!.phone) }}</span> }</dd>
-              <dt>Stay</dt><dd>{{ stayText(availability()!.from, availability()!.to) }} · {{ guests() }}</dd>
-              <dt>Room</dt><dd>{{ chosen()!.name }} · {{ chosenRoomName() }}</dd>
-              <dt>Rate</dt><dd>{{ planName() }} · <b class="num">{{ rupees(q.total) }}</b> before tax</dd>
-              <dt>Booked via</dt><dd>{{ sourceName() }} · {{ statusText() }}</dd>
+              <dt>Guest</dt><dd><b>{{ guest()!.fullName }}</b>@if (guest()!.phone) {, <span class="mute num">{{ phone(guest()!.phone) }}</span> }</dd>
+              <dt>Stay</dt><dd>{{ stayText(availability()!.from, availability()!.to) }}, {{ guests() }}</dd>
+              <dt>Room</dt><dd>{{ chosen()!.name }}, {{ chosenRoomName() }}</dd>
+              <dt>Rate</dt><dd>{{ planName() }}, <b class="num">{{ rupees(q.total) }}</b> before tax</dd>
+              <dt>Booked via</dt><dd>{{ sourceName() }}, {{ statusText() }}</dd>
               @if (details.controls.specialRequests.value) { <dt>Requests</dt><dd>{{ details.controls.specialRequests.value }}</dd> }
             </dl>
             <div class="actions">
@@ -381,7 +381,7 @@ export class ReservationNewPage {
   stepError = (i: number) => this.errors()[i] ?? '';
   stayText(from: string, to: string) {
     const n = Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
-    return `${dayLabel(from)} – ${dayLabel(to)} · ${n} night${n === 1 ? '' : 's'}`;
+    return `${dayLabel(from)} – ${dayLabel(to)}, ${n} night${n === 1 ? '' : 's'}`;
   }
   planName = () => this.plans().find(p => p.id === this.details.controls.ratePlanId.value)?.name ?? '';
   sourceName = () => this.sources().find(s => s.id === this.details.controls.sourceId.value)?.name ?? '';

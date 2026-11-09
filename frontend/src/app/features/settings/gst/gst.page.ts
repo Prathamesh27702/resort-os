@@ -38,7 +38,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
       <!-- registration -->
       <section class="panel" aria-labelledby="reg-h">
         <div class="sec-head">
-          <h2 id="reg-h">Registration · {{ propertyName() }}</h2>
+          <h2 id="reg-h">Registration, {{ propertyName() }}</h2>
           @if (canRegister()) { <button mat-stroked-button (click)="addRegistration()"><mat-icon>add</mat-icon>Add registration</button> }
         </div>
         @if (registrations().length) {
@@ -149,7 +149,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
         @if (result(); as r) {
           <div class="result" data-testid="tax-result" aria-live="polite">
             @if (r.rule) {
-              <p>{{ r.category?.name }} on <b>{{ day(r.date) }}</b>: rule {{ phrase(r.rule.effectiveFrom, r.rule.effectiveTo) }} ·
+              <p>{{ r.category?.name }} on <b>{{ day(r.date) }}</b>: rule {{ phrase(r.rule.effectiveFrom, r.rule.effectiveTo) }},
                  <b>{{ r.slab ? pct(r.slab.rate) : '' }}</b>@if (r.rule.ruleType === 'SLAB') { (value per unit per night {{ money(r.unitValue) }}) }</p>
             }
             @if (r.taxed) {
@@ -162,7 +162,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
                   <tr class="sum"><td><b>Total</b></td><td class="right num"><b>{{ money(r.total) }}</b></td></tr>
                 </tbody>
               </table>
-              <p class="mute small">{{ r.intraState ? 'Same state: CGST + SGST' : 'Another state: IGST' }} · supplier {{ r.supplierState }} ({{ r.gstin }}) ·
+              <p class="mute small">{{ r.intraState ? 'Same state: CGST + SGST' : 'Another state: IGST' }}, supplier {{ r.supplierState }} ({{ r.gstin }}),
                  place of supply {{ r.placeOfSupply }}</p>
             } @else {
               <p class="note" role="note">{{ r.noTaxReason }}</p>
@@ -179,14 +179,14 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
     h2 { margin: 0 0 var(--space-2); font-size: 1.1rem; }
     h3 { margin: 0; font-size: 1rem; }
     .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-    .cat { border-top: 1px solid #e4e9e8; padding: var(--space-3) 0 var(--space-1); }
+    .cat { border-top: 1px solid var(--ro-line-mid); padding: var(--space-3) 0 var(--space-1); }
     .cat header { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; align-items: baseline; margin-bottom: 6px; }
-    tr.past td { color: #7a8a8c; }
+    tr.past td { color: var(--ro-mute); }
     .chip { margin-left: 6px; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .ok-text { color: var(--ro-ok); }
-    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); }
+    .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
     .mute { color: var(--ro-mute); }
     .small { font-size: .85rem; }
     .right { text-align: right; }

@@ -59,7 +59,7 @@ const VIEW_STATUS: Record<View, string | undefined> = {
               <tr class="clickable" (click)="open(r.id)" tabindex="0" (keydown.enter)="open(r.id)">
                 <td>
                   <b>{{ r.guestName }}</b> <span [class]="'chip ' + statusClass(r.status)">{{ statusLabel(r.status) }}</span>
-                  <br /><small class="mute num">{{ r.reference }} · {{ guestsText(r.adults, r.children) }}</small>
+                  <br /><small class="mute num">{{ r.reference }}, {{ guestsText(r.adults, r.children) }}</small>
                 </td>
                 <td class="num">{{ shortDate(r.checkIn) }} – {{ shortDate(r.checkOut) }}<br /><small class="mute">{{ r.nights }} night{{ r.nights === 1 ? '' : 's' }}</small></td>
                 <td class="hide-sm">{{ r.rooms }}</td>

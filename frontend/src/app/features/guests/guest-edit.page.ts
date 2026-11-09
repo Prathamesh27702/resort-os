@@ -82,7 +82,7 @@ import { fromGuest, guestForm, toGuestRequest } from './guests.forms';
               @for (d of duplicates(); track d.id) {
                 <li>
                   <a [routerLink]="'/guests/' + d.id">{{ d.fullName }}</a>
-                  <span class="mute"> · {{ phone(d.phone) }} {{ d.email }}</span>
+                  <span class="mute">, {{ phone(d.phone) }} {{ d.email }}</span>
                   <span class="why">{{ d.reasons.join(', ') }}</span>
                 </li>
               }

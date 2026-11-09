@@ -30,7 +30,7 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
           <div class="tile"><small>Out of order</small><b>{{ d.todayStats.outOfOrder }}</b></div>
         </div>
         <h3>The next 14 nights on the books</h3>
-        <app-bars [bars]="aheadBars()" [max]="100" label="Occupancy on the books" [height]="90" color="#b7791f" />
+        <app-bars [bars]="aheadBars()" [max]="100" label="Occupancy on the books" [height]="90" color="var(--ro-warn-mid)" />
         <app-fresh [freshness]="d.freshness" [busy]="refreshing()" (refresh)="refresh()" />
       </section>
 
@@ -41,7 +41,7 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
           <div class="tiles four">
             @for (t of tiles(); track t.key) {
               <div class="tile" [attr.data-kpi]="t.key"><small>{{ t.label }}</small><b>{{ t.value }}</b>
-                <small class="vs"><span [class]="tone(t.upMonth)">{{ t.vsMonth ?? '—' }}</span> on last month ·
+                <small class="vs"><span [class]="tone(t.upMonth)">{{ t.vsMonth ?? '—' }}</span> on last month,
                   <span [class]="tone(t.upYear)">{{ t.vsYear ?? '—' }}</span> on a year ago</small></div>
             }
           </div>
@@ -53,7 +53,7 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
             @if (d.channels; as cs) {
               <div><h3>Booking sources this month</h3>
                 <ul class="list">@for (c of cs.slice(0, 6); track c.sourceId) {
-                  <li><span>{{ c.name }}</span><span class="mute">{{ c.unitsSold }} nights · {{ pc(c.sharePercent) }}</span><b>{{ rs(c.net) }}</b></li>
+                  <li><span>{{ c.name }}</span><span class="mute">{{ c.unitsSold }} nights, {{ pc(c.sharePercent) }}</span><b>{{ rs(c.net) }}</b></li>
                 } @empty { <li class="mute">No nights sold yet.</li> }</ul></div>
             }
             <div>
@@ -83,16 +83,16 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
     .h { display: flex; align-items: center; gap: var(--space-2); } .h h2 { margin: 0; } .grow { flex: 1; }
     h3 { font-size: .95rem; margin: 14px 0 6px; color: var(--ro-ink-soft); }
     .tiles { display: grid; gap: var(--space-2); margin-top: var(--space-2); } .five { grid-template-columns: repeat(5, 1fr); } .four { grid-template-columns: repeat(4, 1fr); }
-    .tile { background: #f7faf9; border: 1px solid #e3e9e7; border-radius: 12px; padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; min-width: 0; }
+    .tile { background: var(--ro-hover); border: 1px solid var(--ro-line-mid); border-radius: 12px; padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; min-width: 0; }
     .tile small { color: var(--ro-mute); font-size: .8rem; } .tile b { font-size: 1.3rem; color: var(--ro-tide); font-variant-numeric: tabular-nums; }
-    .vs { font-size: .74rem !important; } .up { color: #1b6e3a; } .down { color: #8a1c1c; }
+    .vs { font-size: .74rem !important; } .up { color: var(--ro-ok-mid); } .down { color: var(--ro-error-strong); }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-6); }
     .list { list-style: none; margin: 0; padding: 0; } .list li { display: grid; grid-template-columns: 1fr auto 90px; gap: var(--space-2); padding: 3px 0; border-bottom: 1px solid var(--ro-sunk); }
     .list b { text-align: right; font-variant-numeric: tabular-nums; }
     .mute { color: var(--ro-mute); } .small { font-size: .82rem; } .err { color: var(--ro-error); }
     .gst { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; margin: 0; }
     .meter { display: inline-block; vertical-align: middle; width: 120px; height: 6px; background: var(--ro-sunk); border-radius: 3px; overflow: hidden; margin: 0 6px; }
-    .meter span { display: block; height: 100%; background: #0090a0; } .meter span.over { background: var(--ro-error); }
+    .meter span { display: block; height: 100%; background: var(--ro-sea-bright); } .meter span.over { background: var(--ro-error); }
     @media (max-width: 720px) { .five, .four { grid-template-columns: 1fr 1fr; } .two { grid-template-columns: 1fr; } }
   `,
 })

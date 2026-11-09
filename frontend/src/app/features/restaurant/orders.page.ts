@@ -32,16 +32,16 @@ import { RestaurantApi } from './restaurant.api';
       </div>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
       @if (list(); as l) {
-        <p class="totals">Settled <b>{{ rupees(l.settledTotal) }}</b> · still open <b>{{ rupees(l.openTotal) }}</b></p>
+        <p class="totals">Settled <b>{{ rupees(l.settledTotal) }}</b>, still open <b>{{ rupees(l.openTotal) }}</b></p>
         <ul>
           @for (o of l.items; track o.id) {
             <li>
               <a [routerLink]="['/restaurant/orders', o.id]" [attr.data-order]="o.number">
                 <b>{{ o.number }}</b>
-                <span>{{ o.where }}@if (o.guestName) { · {{ o.guestName }} }</span>
+                <span>{{ o.where }}@if (o.guestName) {, {{ o.guestName }} }</span>
                 <span class="amt">{{ rupees(o.total) }}</span>
                 <small [class]="'st ' + o.status">{{ state(o.status, o.settlement) }}</small>
-                <small class="mute">{{ o.lines }} line{{ o.lines === 1 ? '' : 's' }} · {{ time(o.createdAt) }}@if (o.openedByName) { · {{ o.openedByName }} }</small>
+                <small class="mute">{{ o.lines }} line{{ o.lines === 1 ? '' : 's' }}, {{ time(o.createdAt) }}@if (o.openedByName) {, {{ o.openedByName }} }</small>
               </a>
             </li>
           } @empty { <li class="mute">No orders on this day.</li> }

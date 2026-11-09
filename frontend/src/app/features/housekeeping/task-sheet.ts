@@ -27,10 +27,10 @@ export interface TaskSheetData { propertyId: string; room: HousekeepingRoom; can
   template: `
     <h2 mat-dialog-title>{{ room.place }} <span [class]="'state ' + cls(room.status)">{{ hk(room.status) }}</span></h2>
     <div mat-dialog-content>
-      <p class="mute">{{ room.typeName }}@if (room.occupied) { · guest in room }@if (room.arrivalToday) { · guest arrives today }</p>
+      <p class="mute">{{ room.typeName }}@if (room.occupied) {, guest in room }@if (room.arrivalToday) {, guest arrives today }</p>
 
       @if (task(); as t) {
-        <p><b>{{ typeLabel(t.taskType) }}</b> · {{ statusLabel(t.status) }}@if (t.reservationReference) { · after {{ t.reservationReference }} }</p>
+        <p><b>{{ typeLabel(t.taskType) }}</b>, {{ statusLabel(t.status) }}@if (t.reservationReference) {, after {{ t.reservationReference }} }</p>
         @if (t.note) { <p class="note">{{ t.note }}</p> }
         @if (t.inspectionNote && t.failedInspections && t.status !== 'DONE') { <p class="back">Sent back: {{ t.inspectionNote }}</p> }
         <ul class="trail">
@@ -102,18 +102,18 @@ export interface TaskSheetData { propertyId: string; room: HousekeepingRoom; can
   styles: `
     h2 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
-    .state.dirty { background: #fbe4e2; color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .state.clean, .state.inspection { background: #e0eff5; color: #134e63; } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .state.dirty { background: var(--ro-off-bg); color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .state.clean, .state.inspection { background: var(--ro-info-bg); color: var(--ro-info); } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
     h3 { font-size: 1rem; font-weight: 500; margin: var(--space-3) 0 var(--space-1); }
     .checklist { display: flex; flex-direction: column; }
     .checklist mat-checkbox { min-height: 44px; }
     .req { font-size: .72rem; color: var(--ro-kokum); margin-left: 6px; font-weight: 500; }
-    .note { background: #eef4f3; padding: var(--space-2) 10px; border-radius: 8px; }
+    .note { background: var(--ro-tint); padding: var(--space-2) 10px; border-radius: 8px; }
     .back { color: var(--ro-error); }
     .trail { margin: var(--space-1) 0; padding-left: 18px; color: var(--ro-mute); font-size: .9rem; }
     .full { width: 100%; margin-top: var(--space-2); }
-    .repair { display: flex; align-items: center; gap: 6px; color: #5b3a00; }
+    .repair { display: flex; align-items: center; gap: 6px; color: var(--ro-warn-strong); }
     .err { color: var(--ro-error); }
     .actions { flex-wrap: wrap; gap: 6px; }
     .actions button { min-height: 44px; }

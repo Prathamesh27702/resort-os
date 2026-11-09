@@ -68,9 +68,9 @@ type Period = 'month' | 'last' | 'year' | 'any';
         </div>
 
         @if (list(); as l) {
-          <p class="sum" data-testid="totals">{{ l.items.length }} {{ l.items.length === 1 ? 'expense' : 'expenses' }} · {{ inr(l.total) }} paid
-            @if (l.costTotal !== l.total) { · {{ inr(l.costTotal) }} cost after GST credit }
-            @if (l.waiting && show() !== 'waiting') { · <b>{{ l.waiting }} waiting for approval ({{ inr(l.waitingAmount) }})</b> }</p>
+          <p class="sum" data-testid="totals">{{ l.items.length }} {{ l.items.length === 1 ? 'expense' : 'expenses' }}, {{ inr(l.total) }} paid
+            @if (l.costTotal !== l.total) {, {{ inr(l.costTotal) }} cost after GST credit }
+            @if (l.waiting && show() !== 'waiting') {, <b>{{ l.waiting }} waiting for approval ({{ inr(l.waitingAmount) }})</b> }</p>
         }
         <ul class="items" data-testid="expenses">
           @for (e of list()?.items ?? []; track e.id) {
@@ -78,7 +78,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
               <button class="row" type="button" (click)="toggle(e)" [attr.aria-expanded]="openId() === e.id">
                 <span class="day">{{ short(e.expenseDate) }}</span>
                 <span class="what"><b>{{ e.description }}</b>
-                  <small class="mute">{{ e.payee }} · {{ e.costCentreName }} · {{ e.categoryName }}</small></span>
+                  <small class="mute">{{ e.payee }}, {{ e.costCentreName }}, {{ e.categoryName }}</small></span>
                 <span class="amt"><b>{{ inr(e.amount) }}</b>
                   <small class="chip" [class]="e.status.toLowerCase()">{{ statusText[e.status] }}</small>
                   @if (e.needsReceipt) { <small class="need"><mat-icon inline>receipt_long</mat-icon> needs receipt</small> }</span>
@@ -89,9 +89,9 @@ type Period = 'month' | 'last' | 'year' | 'any';
                     <dt>Number</dt><dd>{{ e.code }}</dd>
                     <dt>Paid</dt><dd>{{ inr(e.amount) }} by {{ method[e.paymentMethod] }}@if (e.paymentReference) { ({{ e.paymentReference }}) }</dd>
                     @if (e.vendorGstin) {
-                      <dt>GST bill</dt><dd>{{ e.billNumber }} · GSTIN {{ e.vendorGstin }}</dd>
-                      <dt>GST</dt><dd>@if (e.igst) { IGST {{ inr(e.igst) }} } @else { CGST {{ inr(e.cgst) }} + SGST {{ inr(e.sgst) }} } on {{ inr(e.taxableValue) }}
-                        · {{ e.itcEligible ? 'claimable as input credit' : 'not claimable' }}</dd>
+                      <dt>GST bill</dt><dd>{{ e.billNumber }}, GSTIN {{ e.vendorGstin }}</dd>
+                      <dt>GST</dt><dd>@if (e.igst) { IGST {{ inr(e.igst) }} } @else { CGST {{ inr(e.cgst) }} + SGST {{ inr(e.sgst) }} } on {{ inr(e.taxableValue) }},
+                       {{ e.itcEligible ? 'claimable as input credit' : 'not claimable' }}</dd>
                     }
                     <dt>Counts in the budget</dt><dd>{{ inr(e.costAmount) }}{{ e.status === 'APPROVED' ? '' : ' once approved' }}</dd>
                     <dt>Recorded</dt><dd>by {{ e.recordedBy ?? 'someone' }}</dd>
@@ -133,7 +133,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
         <div class="bar"><span class="grow"></span><button mat-flat-button (click)="editItem('centre', null)"><mat-icon>add</mat-icon>New department</button></div>
         <ul class="list" data-testid="centres">
           @for (c of setup()?.costCentres ?? []; track c.id) {
-            <li [class.off]="!c.isActive"><div class="main"><b>{{ c.name }}</b> <small class="mute">{{ c.code }}{{ c.isActive ? '' : ' · not in use' }}</small></div>
+            <li [class.off]="!c.isActive"><div class="main"><b>{{ c.name }}</b> <small class="mute">{{ c.code }}{{ c.isActive ? '' : ', not in use' }}</small></div>
               <button mat-button (click)="editItem('centre', c)">Change</button></li>
           }
         </ul>
@@ -141,7 +141,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
         <ul class="list" data-testid="categories">
           @for (c of setup()?.categories ?? []; track c.id) {
             <li [class.off]="!c.isActive"><div class="main"><b>{{ c.name }}</b>
-              <small class="mute">{{ c.code }}{{ c.gstClaimable ? '' : ' · GST not claimable' }}{{ c.isActive ? '' : ' · not in use' }}</small></div>
+              <small class="mute">{{ c.code }}{{ c.gstClaimable ? '' : ', GST not claimable' }}{{ c.isActive ? '' : ', not in use' }}</small></div>
               <button mat-button (click)="editItem('category', c)">Change</button></li>
           }
         </ul>
@@ -159,13 +159,13 @@ type Period = 'month' | 'last' | 'year' | 'any';
     .items > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
     .items > li.off { opacity: .7; } .items > li.empty { padding: 14px; }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer;
-           font: inherit; color: inherit; } .row:hover { background: #f4f8f7; }
+           font: inherit; color: inherit; } .row:hover { background: var(--ro-wash); }
     .day { min-width: 76px; font-weight: 600; color: var(--ro-tide); font-size: .9rem; }
     .what { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     .what b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .amt { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .chip { border-radius: 10px; padding: 1px var(--space-2); font-size: .75rem; background: #fff4d6; color: #6b4e00; }
-    .chip.approved { background: #e2f3e8; color: #1b6e3a; } .chip.rejected, .chip.cancelled { background: var(--ro-off-bg); color: #8a1c1c; }
+    .chip { border-radius: 10px; padding: 1px var(--space-2); font-size: .75rem; background: var(--ro-warn-bg); color: var(--ro-warn-strong); }
+    .chip.approved { background: var(--ro-ok-bg); color: var(--ro-ok-mid); } .chip.rejected, .chip.cancelled { background: var(--ro-off-bg); color: var(--ro-error-strong); }
     .need { color: var(--ro-warn); font-size: .75rem; }
     .detail { border-top: 1px solid var(--ro-sunk); padding: var(--space-2) 14px var(--space-3); }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px var(--space-3); margin: var(--space-1) 0 var(--space-2); } dt { color: var(--ro-mute); } dd { margin: 0; }
@@ -176,7 +176,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
     .add { position: relative; width: 84px; height: 84px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
            align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; text-align: center; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    .why { background: #fff4d6; color: #6b4e00; border-radius: 8px; padding: 6px 10px; margin: 6px 0; }
+    .why { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 6px 10px; margin: 6px 0; }
     .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: 6px; } .actions button { min-height: 44px; }
     .list { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
     .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }

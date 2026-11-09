@@ -112,7 +112,7 @@ test('S24-03 the day-before reminder, run twice, sends once', async () => {
   await shot(rec, '03-reminder-run');
   await job.getByRole('button', { name: 'Run now' }).click();
   await expect(job.getByTestId('run-result')).toContainText(/already done earlier, so nothing was sent twice/);
-  await expect(rec.getByTestId('runs')).toContainText(`Day-before reminder · ${booking.ref}`);
+  await expect(rec.getByTestId('runs')).toContainText(`Day-before reminder, ${booking.ref}`);
 
   // The reminder reaches this guest once, on each channel.
   await rec.getByRole('radio', { name: 'Messages', exact: true }).click();

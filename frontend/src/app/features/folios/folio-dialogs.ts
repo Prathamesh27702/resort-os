@@ -66,7 +66,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
         <mat-form-field appearance="outline" class="full">
           <mat-label>Package</mat-label>
           <mat-select formControlName="packageId">
-            @for (p of packages(); track p.id) { <mat-option [value]="p.id">{{ p.name }} · {{ money(p.price) }}</mat-option> }
+            @for (p of packages(); track p.id) { <mat-option [value]="p.id">{{ p.name }}, {{ money(p.price) }}</mat-option> }
           </mat-select>
           @if (!packages().length) { <mat-hint>No packages are switched on. Managers add them in Settings → Packages.</mat-hint> }
           <mat-error>{{ err('packageId') || 'Choose a package.' }}</mat-error>
@@ -79,7 +79,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
         @if (chosenPackage(); as p) {
           <ul class="split" aria-label="Lines this package adds">
             @for (c of p.components; track c.id) {
-              @if (c.amount > 0) { <li><span>{{ label(c.category) }} · {{ c.description }}</span><b class="num">{{ money(c.amount * qty()) }}</b></li> }
+              @if (c.amount > 0) { <li><span>{{ label(c.category) }}, {{ c.description }}</span><b class="num">{{ money(c.amount * qty()) }}</b></li> }
             }
           </ul>
         }
@@ -102,7 +102,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
     .mode { margin-bottom: var(--space-4); align-self: flex-start; }
     .full { width: 100%; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-    .split { list-style: none; margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); background: #f2f7f8; border-radius: 8px; }
+    .split { list-style: none; margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); background: var(--ro-wash); border-radius: 8px; }
     .split li { display: flex; justify-content: space-between; gap: var(--space-3); padding: 2px 0; }
     .amount { margin: 0 0 var(--space-2); color: var(--ro-tide); }
     .err { color: var(--ro-error); }
@@ -186,7 +186,7 @@ export interface ReverseData { propertyId: string; folio: Folio; item: FolioItem
   template: `
     <h2 mat-dialog-title>Reverse a charge</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="reverse-form">
-      <p class="line"><b>{{ data.item.description }}</b> · {{ shortDate(data.item.serviceDate) }} · <b class="num">{{ money(data.item.total) }}</b></p>
+      <p class="line"><b>{{ data.item.description }}</b>, {{ shortDate(data.item.serviceDate) }}, <b class="num">{{ money(data.item.total) }}</b></p>
       <p class="hint">A reversal line of {{ money(-data.item.total) }} is added; nothing is deleted. The reason is kept on the bill and in the
         audit trail.</p>
       <mat-form-field appearance="outline" class="full">
@@ -253,14 +253,14 @@ export interface SplitResult { from: Folio; to: Folio; }
       <div class="lines" role="group" aria-label="Lines to move">
         @for (i of lines; track i.id) {
           <mat-checkbox [checked]="picked().has(i.id)" (change)="toggle(i.id)">
-            {{ shortDate(i.serviceDate) }} · {{ i.description }} · <b class="num">{{ money(i.total) }}</b>
+            {{ shortDate(i.serviceDate) }}, {{ i.description }}, <b class="num">{{ money(i.total) }}</b>
           </mat-checkbox>
         }
       </div>
       @if (itemsError()) { <p class="err" role="alert">{{ itemsError() }}</p> }
 
       <mat-radio-group formControlName="target" class="targets" aria-label="Move to">
-        @for (f of others; track f.id) { <mat-radio-button [value]="f.id">{{ f.number }} · {{ f.name }}</mat-radio-button> }
+        @for (f of others; track f.id) { <mat-radio-button [value]="f.id">{{ f.number }}, {{ f.name }}</mat-radio-button> }
         <mat-radio-button value="new">A new folio</mat-radio-button>
       </mat-radio-group>
       @if (form.controls.target.value === 'new') {

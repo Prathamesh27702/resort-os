@@ -37,7 +37,7 @@ export class BarsComponent {
   /** The top of the scale; default the largest value. 100 for a percentage. */
   max = input<number | null>(null);
   height = input(150);
-  color = input('#0090a0');
+  color = input('var(--ro-sea-bright)');
   label = input('');
   /** Label every nth bar (1: all). */
   every = input(1);

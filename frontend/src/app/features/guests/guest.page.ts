@@ -37,7 +37,7 @@ const CONSENT_LABEL: Record<string, string> = {
               @if (g.status === 'MERGED') { <span class="chip off">Merged</span> }
               @if (g.status === 'ANONYMISED') { <span class="chip off">Anonymised</span> }
             </h1>
-            <p>Guest since {{ day(g.createdAt) }}@if (g.companyName) { · {{ g.companyName }} }</p>
+            <p>Guest since {{ day(g.createdAt) }}@if (g.companyName) {, {{ g.companyName }} }</p>
           </div>
           @if (g.status === 'ACTIVE') {
             <div class="head-actions">
@@ -101,7 +101,7 @@ const CONSENT_LABEL: Record<string, string> = {
                   <td>
                     @if (consent(purpose); as c) {
                       <span class="chip" [class.off]="!c.granted">{{ c.granted ? 'Yes' : 'No' }}</span>
-                      <small class="mute when">{{ day(c.recordedAt) }}@if (c.recordedByName) { · {{ c.recordedByName }} }</small>
+                      <small class="mute when">{{ day(c.recordedAt) }}@if (c.recordedByName) {, {{ c.recordedByName }} }</small>
                     } @else if (purpose.startsWith('SERVICE_')) { <span class="mute">Not asked, so they are sent</span>
                     } @else { <span class="mute">Not asked</span> }
                   </td>
@@ -125,8 +125,8 @@ const CONSENT_LABEL: Record<string, string> = {
           @for (s of stays(); track s.reservationId) {
             <p>
               @if (ctx.current().id === s.propertyId) { <a [routerLink]="'/reservations/' + s.reservationId" class="num">{{ s.reference }}</a> }
-              @else { <span class="num">{{ s.reference }}</span> }
-              · {{ s.propertyName }} · {{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }} · {{ statusLabel(s.status) }}
+              @else { <span class="num">{{ s.reference }}</span>},
+             {{ s.propertyName }}, {{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }}, {{ statusLabel(s.status) }}
             </p>
           } @empty {
             <p class="mute">No stays yet.</p>
@@ -145,7 +145,7 @@ const CONSENT_LABEL: Record<string, string> = {
               <tbody>
                 @for (d of documents(); track d.id) {
                   <tr>
-                    <td>{{ label(d.documentType) }}@if (d.issuingCountry) { <small class="mute"> · {{ d.issuingCountry }}</small> }
+                    <td>{{ label(d.documentType) }}@if (d.issuingCountry) { <small class="mute">, {{ d.issuingCountry }}</small> }
                       @if (d.status === 'PURGED') { <span class="chip off">Purged</span> }</td>
                     <td class="num">
                       @if (revealed()[d.id]; as r) { <b>{{ r.number ?? d.maskedNumber }}</b>@if (r.details?.['visaNumber']) { <br /><small>Visa {{ r.details!['visaNumber'] }}</small> } }

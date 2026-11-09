@@ -12,6 +12,14 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - Hand-styled buttons get a pressed and a disabled look.
 - Front desk tiles, room board, housekeeping cards and the reservation header show their details as separate labels
   instead of joining them with `·`; room and bed codes no longer wrap.
+- Every screen: no more `·` between details (commas instead), and no colour typed into a component. About 130 hex
+  values were folded into 29 new `--ro-*` colour tokens, two shadow tokens and a font token; near-identical greens,
+  ambers and greys became one each. Calendar bed rows read `Dormitory B01`.
+- Field edges are darker (`--mat-sys-outline` now `--ro-faint`, 3.4:1; it was 2.1:1). Struck-through reversed lines,
+  audit times and the sidebar text reach 4.5:1.
+- Headings wrap long names instead of overflowing; Material button labels stay on one line.
+- Removed sentences about future sprints (sidebar, Today, room types); the gear emoji on Inventory is now the settings
+  icon; the rates pager says Previous week and Next week; the room board legend shows edge marks, not dots.
 
  — 2026-11-07 — Notification engine, WhatsApp, email, background jobs (accepted)
 

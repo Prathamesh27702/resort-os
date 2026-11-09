@@ -102,7 +102,7 @@ export class RegistrationDialog {
   private gstin = toSignal(this.form.controls.gstin.valueChanges, { initialValue: '' });
   stateHint = computed(() => {
     const s = STATES.find(x => x.code === this.gstin().trim().slice(0, 2));
-    return s ? ` · ${s.name}` : '';
+    return s ? `. State: ${s.name}` : '';
   });
 
   err(field: string) { return this.serverErrors()[field] ?? ''; }
@@ -246,7 +246,7 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
       <mat-form-field appearance="outline" class="full">
         <mat-label>Tax category</mat-label>
         <mat-select formControlName="taxCategoryId">
-          @for (c of data.categories; track c.id) { <mat-option [value]="c.id">{{ c.name }} · SAC {{ c.hsnSac }}</mat-option> }
+          @for (c of data.categories; track c.id) { <mat-option [value]="c.id">{{ c.name }}, SAC {{ c.hsnSac }}</mat-option> }
         </mat-select>
         <mat-error>{{ err('taxCategoryId') || 'Choose the tax category the rule is for.' }}</mat-error>
       </mat-form-field>

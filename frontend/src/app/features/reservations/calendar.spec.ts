@@ -56,7 +56,7 @@ describe('calendar rows and moves', () => {
 
   it('one row per room, one per dorm bed, with the first of each type marked', () => {
     const rows = buildRows(rooms);
-    expect(rows.map(r => r.label)).toEqual(['Room 101', 'Room 102', 'Room 103', 'Room 104', 'Dormitory · B01', 'Dormitory · B02']);
+    expect(rows.map(r => r.label)).toEqual(['Room 101', 'Room 102', 'Room 103', 'Room 104', 'Dormitory B01', 'Dormitory B02']);
     expect(rows.filter(r => r.first).map(r => r.typeName)).toEqual(['Deluxe room', 'Standard room', 'Dormitory bed']);
   });
 
@@ -85,7 +85,7 @@ describe('calendar rows and moves', () => {
       "Room 104 isn't free for the nights of 15 Oct – 16 Oct 2026: it is blocked (AC repair). Choose another room.");
     expect(moveProblem({ ...b, adults: 3 }, r('Room 103'), c)).toBe(
       'Room 103 (Standard room) sleeps at most 2; this room has 3 guests. Choose a bigger room.');
-    expect(moveProblem(b, r('Dormitory · B01'), c)).toContain('is a dormitory, sold by the bed');
+    expect(moveProblem(b, r('Dormitory B01'), c)).toContain('is a dormitory, sold by the bed');
     expect(moveProblem({ ...b, status: 'CHECKED_IN' }, r('Room 102'), c)).toContain('is checked in');
     // departing on the day the other arrives is not a clash
     expect(moveProblem(booking('R00009', 'u-102', '2026-10-13', '2026-10-16'), r('Room 103'), c)).toBeNull();

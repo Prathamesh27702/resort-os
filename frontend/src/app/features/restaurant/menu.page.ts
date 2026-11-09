@@ -74,7 +74,7 @@ const server = (c: AbstractControl | null) => (c?.errors?.['server'] as string |
           @for (t of tables(); track t.id) {
             <li [class.off]="!t.isActive">
               <button class="nm" (click)="editTable(t)" [disabled]="!canUpdate()">
-                <b>{{ t.code }}</b> · {{ t.seats }} seats@if (t.area) { · {{ t.area }} }@if (!t.isActive) { · off }
+                <b>{{ t.code }}</b>, {{ t.seats }} seats@if (t.area) {, {{ t.area }} }@if (!t.isActive) {, off }
               </button>
             </li>
           } @empty { <li class="mute">No tables yet.</li> }
@@ -100,9 +100,9 @@ const server = (c: AbstractControl | null) => (c?.errors?.['server'] as string |
     .pr { font-variant-numeric: tabular-nums; }
     .tables li { padding: var(--space-1) 0; }
     .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; }
-    .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
+    .food.VEG { border-color: var(--ro-ok-mid); background: radial-gradient(var(--ro-ok-mid) 40%, transparent 45%); }
     .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
-    .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
+    .food.EGG { border-color: var(--ro-warn-mid); background: radial-gradient(var(--ro-warn-mid) 40%, transparent 45%); }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } li { flex-wrap: wrap; } }
   `,
 })
@@ -130,8 +130,8 @@ export class MenuPage {
     this.api.tables(this.pid()).subscribe({ next: t => this.tables.set(t) });
   }
 
-  portions(i: MenuItem) { return i.variants.map(v => `${v.name} ${rupees(v.price)}`).join(' · '); }
-  groups(i: MenuItem) { return i.modifierGroups.map(g => `${g.name}: ${g.modifiers.map(m => m.name).join(', ')}`).join(' · '); }
+  portions(i: MenuItem) { return i.variants.map(v => `${v.name} ${rupees(v.price)}`).join(', '); }
+  groups(i: MenuItem) { return i.modifierGroups.map(g => `${g.name}: ${g.modifiers.map(m => m.name).join(', ')}`).join(', '); }
 
   available(i: MenuItem, on: boolean) {
     this.busy.set(i.id);

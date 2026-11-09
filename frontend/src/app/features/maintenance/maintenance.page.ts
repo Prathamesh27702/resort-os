@@ -44,11 +44,11 @@ type ListFilter = 'OPEN' | 'mine' | 'RESOLVED' | 'ALL';
             </div>
             <div class="title">{{ t.title }}</div>
             <div class="meta">
-              {{ t.place }} · {{ cat(t.category) }}
-              @if (t.outOfOrder) { · <b class="ooo">Out of order@if (t.expectedReadyOn) { until {{ day(t.expectedReadyOn) }} }</b> }
-              @if (t.photos) { · <mat-icon inline>photo_camera</mat-icon>{{ t.photos }} }
+              {{ t.place }}, {{ cat(t.category) }}
+              @if (t.outOfOrder) {, <b class="ooo">Out of order@if (t.expectedReadyOn) { until {{ day(t.expectedReadyOn) }} }</b> }
+              @if (t.photos) {, <mat-icon inline>photo_camera</mat-icon>{{ t.photos }} }
             </div>
-            <div class="meta">{{ t.assignedToName ? 'With ' + t.assignedToName : 'Not assigned' }} · reported {{ when(t.createdAt) }}@if (t.reportedByName) { by {{ t.reportedByName }} }</div>
+            <div class="meta">{{ t.assignedToName ? 'With ' + t.assignedToName : 'Not assigned' }}, reported {{ when(t.createdAt) }}@if (t.reportedByName) { by {{ t.reportedByName }} }</div>
           </a>
         } @empty {
           @if (loaded()) { <p class="empty">@if (filter() === 'OPEN') { Nothing broken right now. } @else { No tickets here. }</p> }
@@ -68,15 +68,15 @@ type ListFilter = 'OPEN' | 'mine' | 'RESOLVED' | 'ALL';
     .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
     .list { display: flex; flex-direction: column; gap: var(--space-2); }
     .row { display: block; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) 14px; color: inherit; text-decoration: none; }
-    .row:hover { border-color: #8fa5a1; }
+    .row:hover { border-color: var(--ro-on-tide-mute); }
     .top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
     .title { font-size: 1.05rem; margin: var(--space-1) 0 2px; }
     .meta { color: var(--ro-mute); font-size: .88rem; }
     .pri, .st { font-size: .75rem; font-weight: 600; padding: 2px var(--space-2); border-radius: 999px; background: var(--ro-sunk); }
-    .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: #fbe4e2; color: var(--ro-error-strong); }
+    .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: var(--ro-off-bg); color: var(--ro-error-strong); }
     .st.resolved, .st.closed { background: var(--ro-ok-bg); color: var(--ro-ok); } .st.on-hold { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .st.in-progress, .st.assigned { background: #e0eff5; color: #134e63; }
-    .ooo { color: #5b3a00; }
+    .st.in-progress, .st.assigned { background: var(--ro-info-bg); color: var(--ro-info); }
+    .ooo { color: var(--ro-warn-strong); }
     .empty { color: var(--ro-mute); }
     .err { color: var(--ro-error); }
   `,

@@ -104,7 +104,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
                   <td>
                     <a [routerLink]="['/reservations', s.reservationId]"><b>{{ s.guestName }}</b></a>
                     @if (s.isVip) { <span class="chip vip">VIP</span> }
-                    <br /><small class="mute num">{{ s.reference }}@if (s.guestPhone) { · {{ phone(s.guestPhone) }} } · {{ guestsText(s.adults, s.children) }}</small>
+                    <br /><small class="mute num">{{ s.reference }}@if (s.guestPhone) {, {{ phone(s.guestPhone) }}}, {{ guestsText(s.adults, s.children) }}</small>
                     @if (s.specialRequests) { <br /><small class="req">{{ s.specialRequests }}</small> }
                   </td>
                   <td class="num">{{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }}<br />
@@ -166,7 +166,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
     .tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); border-radius: 10px; background: var(--ro-paper); border: 1px solid var(--ro-line);
             color: var(--ro-ink); text-decoration: none; }
-    .tile:hover { box-shadow: 0 1px 6px rgba(14,59,67,.12); }
+    .tile:hover { box-shadow: 0 1px 6px var(--ro-shadow); }
     .tile b { font-size: 1.5rem; letter-spacing: -0.01em; color: var(--ro-tide); }
     .tile span { color: var(--ro-mute); font-size: .85rem; }
     .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; font-size: .8rem; }
@@ -189,7 +189,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .chip.vip { background: #f6e3ec; color: var(--ro-kokum); }
+    .chip.vip { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
     .chip.hk { font-size: .72rem; }
     .chip.hk.READY { background: var(--ro-ok-bg); color: var(--ro-ok); }
     .chip.hk.DIRTY { background: var(--ro-warn-bg); color: var(--ro-warn); }
@@ -197,10 +197,10 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
     .room { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-height: 120px; padding: var(--space-3) 14px; border-radius: 10px;
             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; }
-    .room.VACANT { border-left-color: #2e6b3c; }
-    .room.OCCUPIED { border-left-color: var(--ro-tide); background: #f2f7f8; }
-    .room.ARRIVING { border-left-color: #d29a2c; }
-    .room.BLOCKED { border-left-color: #b45309; background: #fffaf0; }
+    .room.VACANT { border-left-color: var(--ro-ok-mid); }
+    .room.OCCUPIED { border-left-color: var(--ro-tide); background: var(--ro-wash); }
+    .room.ARRIVING { border-left-color: var(--ro-warn-bright); }
+    .room.BLOCKED { border-left-color: var(--ro-rust); background: var(--ro-warn-wash); }
     .room.INACTIVE { border-left-color: var(--ro-outline); color: var(--ro-mute); background: var(--ro-wash); }
     .room .top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); width: 100%; }
     .room .code { font-size: 1.25rem; white-space: nowrap; }

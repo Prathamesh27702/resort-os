@@ -34,7 +34,7 @@ import { RatesApi, rupees } from '../rates/rates.api';
               @for (p of packages(); track p.id) {
                 <tr class="clickable" tabindex="0" (click)="open(p.id)" (keydown.enter)="open(p.id)">
                   <td><b>{{ p.name }}</b> <span class="mute code">{{ p.code }}</span></td>
-                  <td class="hide-sm">{{ p.nights }} night{{ p.nights === 1 ? '' : 's' }} · {{ p.accommodationTypeName }} · {{ p.adults }} adult{{ p.adults === 1 ? '' : 's' }}{{ p.children ? ', ' + p.children + ' child' + (p.children === 1 ? '' : 'ren') : '' }}</td>
+                  <td class="hide-sm">{{ p.nights }} night{{ p.nights === 1 ? '' : 's' }}, {{ p.accommodationTypeName }}, {{ p.adults }} adult{{ p.adults === 1 ? '' : 's' }}{{ p.children ? ', ' + p.children + ' child' + (p.children === 1 ? '' : 'ren') : '' }}</td>
                   <td class="num">{{ rupees(p.price) }}</td>
                   <td>
                     @for (c of categories(p); track c.category) {
@@ -59,7 +59,7 @@ import { RatesApi, rupees } from '../rates/rates.api';
     .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .code { font-size: .8rem; }
     .head-actions { display: flex; gap: var(--space-2); align-items: center; }
     .empty { padding: var(--space-6); } .empty p { color: var(--ro-mute); margin-top: 0; }
-    .chip.ok { background: #e3f1e6; color: #1f5130; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
   `,
 })
 export class PackagesPage {

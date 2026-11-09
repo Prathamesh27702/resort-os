@@ -26,8 +26,8 @@ import { PaymentsApi } from './payments.api';
           @if (d.current; as s) {
             <div>
               <b>{{ d.name }} drawer open</b> <span class="chip ok">Open</span>
-              <br /><small class="mute">since {{ time(s.openedAt) }}@if (s.openedByName) { · {{ s.openedByName }} } · float {{ money(s.openingFloat) }}
-                · {{ s.payments }} cash payment{{ s.payments === 1 ? '' : 's' }}</small>
+              <br /><small class="mute">since {{ time(s.openedAt) }}@if (s.openedByName) {, {{ s.openedByName }}}, float {{ money(s.openingFloat) }},
+               {{ s.payments }} cash payment{{ s.payments === 1 ? '' : 's' }}</small>
             </div>
             <div class="expected"><span>Should hold</span><b class="num" data-testid="drawer-expected">{{ money(s.expected) }}</b></div>
             @if (canOperate()) { <button mat-stroked-button (click)="close(s)">Close drawer</button> }
@@ -40,8 +40,8 @@ import { PaymentsApi } from './payments.api';
         </div>
         @for (p of d.pendingApproval; track p.id) {
           <div class="pending" [attr.data-session]="p.id">
-            <span><b class="bad num">{{ money(abs(p.variance ?? 0)) }} {{ (p.variance ?? 0) < 0 ? 'short' : 'over' }}</b> · shift closed {{ time(p.closedAt!) }}
-              @if (p.closedByName) { by {{ p.closedByName }} } · “{{ p.closeNote }}”</span>
+            <span><b class="bad num">{{ money(abs(p.variance ?? 0)) }} {{ (p.variance ?? 0) < 0 ? 'short' : 'over' }}</b>, shift closed {{ time(p.closedAt!) }}
+              @if (p.closedByName) { by {{ p.closedByName }}}, “{{ p.closeNote }}”</span>
             @if (canApprove()) { <button mat-button (click)="approve(p)">Approve</button> } @else { <small class="mute">Waiting for a manager</small> }
           </div>
         }

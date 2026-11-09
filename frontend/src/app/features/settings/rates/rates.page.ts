@@ -114,12 +114,12 @@ const DAYS = [
             </mat-form-field>
             @if (canManage() && selectedPlan()) { <button mat-button type="button" (click)="editPlan()">Edit plan</button> }
             <span class="spacer"></span>
-            <button mat-stroked-button type="button" (click)="move(-7)" aria-label="Previous week">‹ Week</button>
+            <button mat-stroked-button type="button" (click)="move(-7)">Previous week</button>
             <input class="start" type="date" [value]="start()" (change)="setStart($any($event.target).value)" aria-label="First night shown" />
-            <button mat-stroked-button type="button" (click)="move(7)" aria-label="Next week">Week ›</button>
+            <button mat-stroked-button type="button" (click)="move(7)">Next week</button>
           </div>
           @if (selectedPlan(); as sp) {
-            <p class="mute small">{{ mealLabel[sp.mealPlan] }}{{ sp.description ? ' · ' + sp.description : '' }}</p>
+            <p class="mute small">{{ mealLabel[sp.mealPlan] }}{{ sp.description ? ', ' + sp.description : '' }}</p>
           }
 
           <div class="grid-wrap">
@@ -238,7 +238,7 @@ const DAYS = [
               <mat-label>Room or room type</mat-label>
               <mat-select formControlName="target">
                 <mat-optgroup label="Rooms">
-                  @for (r of rooms(); track r.id) { <mat-option [value]="'room:' + r.code">{{ r.name }} · {{ r.accommodationTypeName }}</mat-option> }
+                  @for (r of rooms(); track r.id) { <mat-option [value]="'room:' + r.code">{{ r.name }}, {{ r.accommodationTypeName }}</mat-option> }
                 </mat-optgroup>
                 <mat-optgroup label="Room types">
                   @for (t of types(); track t.id) { <mat-option [value]="'type:' + t.id">{{ t.name }}</mat-option> }
@@ -276,9 +276,9 @@ const DAYS = [
 
           @if (quote(); as q) {
             <div class="quote" aria-label="Quote result">
-              <p><b>{{ q.roomCode ? 'Room ' + q.roomCode + ' · ' : '' }}{{ q.accommodationTypeName }}</b>, {{ q.nights }} night{{ q.nights === 1 ? '' : 's' }},
-                {{ q.adults }} adult{{ q.adults === 1 ? '' : 's' }}{{ q.children ? ', ' + q.children + ' child' + (q.children === 1 ? '' : 'ren') : '' }}
-                · {{ q.ratePlanName }} ({{ q.mealPlan }}){{ q.inventoryMode === 'BED' ? ' · ' + q.units + ' bed' + (q.units === 1 ? '' : 's') : '' }}</p>
+              <p><b>{{ q.roomCode ? 'Room ' + q.roomCode + ', ' : '' }}{{ q.accommodationTypeName }}</b>, {{ q.nights }} night{{ q.nights === 1 ? '' : 's' }},
+                {{ q.adults }} adult{{ q.adults === 1 ? '' : 's' }}{{ q.children ? ', ' + q.children + ' child' + (q.children === 1 ? '' : 'ren') : '' }},
+               {{ q.ratePlanName }} ({{ q.mealPlan }}){{ q.inventoryMode === 'BED' ? ', ' + q.units + ' bed' + (q.units === 1 ? '' : 's') : '' }}</p>
               <table class="data">
                 <thead><tr><th>Night</th><th class="num">{{ q.inventoryMode === 'BED' ? 'Beds' : 'Room' }}</th><th class="num">Extra adults</th><th class="num">Extra children</th><th class="num">Total</th></tr></thead>
                 <tbody>
@@ -308,15 +308,15 @@ const DAYS = [
     .toolbar { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .toolbar .spacer { flex: 1; }
     .plan-pick { min-width: 280px; }
-    .start { height: 36px; border: 1px solid #c5cfcc; border-radius: 6px; padding: 0 var(--space-2); font: inherit; }
+    .start { height: 36px; border: 1px solid var(--ro-line-strong); border-radius: 6px; padding: 0 var(--space-2); font: inherit; }
     .grid-wrap { overflow-x: auto; margin: var(--space-2) 0; }
     table.rate-grid { border-collapse: collapse; min-width: 100%; font-variant-numeric: tabular-nums; }
     table.rate-grid th, table.rate-grid td { border: 1px solid var(--ro-line-soft); padding: var(--space-2) 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
     table.rate-grid thead th { color: var(--ro-mute); font-weight: 500; font-size: .8rem; }
     table.rate-grid .type-col { text-align: left; position: sticky; left: 0; background: var(--ro-paper); z-index: 1; }
-    table.rate-grid .weekend { background: #fbf4e6; }
+    table.rate-grid .weekend { background: var(--ro-warn-wash); }
     table.rate-grid .today { color: var(--ro-kokum); font-weight: 600; }
-    table.rate-grid td.missing { background: #fbeaea; }
+    table.rate-grid td.missing { background: var(--ro-error-bg); }
     table.rate-grid td.clickable { cursor: pointer; }
     table.rate-grid td.clickable:hover { outline: 2px solid var(--ro-tide); outline-offset: -2px; }
     .min { display: block; font-size: .7rem; color: var(--ro-warn); }

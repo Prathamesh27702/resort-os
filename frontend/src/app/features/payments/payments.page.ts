@@ -57,9 +57,9 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
       @if (result(); as r) {
         <div class="totals" aria-label="Totals">
           <div class="net"><span>Taken, less refunds</span><b class="num" data-testid="net">{{ money(r.net) }}</b>
-            <small class="mute">{{ money(r.received) }} in · {{ money(r.refundedTotal) }} refunded</small></div>
+            <small class="mute">{{ money(r.received) }} in, {{ money(r.refundedTotal) }} refunded</small></div>
           @for (m of r.byMethod; track m.method) {
-            <div class="by" [attr.data-method]="m.method"><span>{{ methodLabel(m.method) }} · {{ m.count }}</span><b class="num">{{ money(m.net) }}</b>
+            <div class="by" [attr.data-method]="m.method"><span>{{ methodLabel(m.method) }}, {{ m.count }}</span><b class="num">{{ money(m.net) }}</b>
               @if (m.refunded) { <small class="mute">{{ money(m.refunded) }} refunded</small> }</div>
           }
         </div>
@@ -72,9 +72,9 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
             @for (p of result()?.items ?? []; track p.id) {
               <tr class="clickable" (click)="open(p.id)" tabindex="0" (keydown.enter)="open(p.id)" [attr.data-payment]="p.number">
                 <td><b class="num">{{ p.number }}</b> <span [class]="'chip ' + statusClass(p.status)">{{ statusLabel(p.status) }}</span>
-                  <br /><small class="mute">{{ methodLabel(p.method) }}@if (p.paymentReference) { · {{ p.paymentReference }} }</small></td>
-                <td><b>{{ p.guestName }}</b><br /><small class="mute num">{{ p.reference }}@if (p.folios) { · {{ p.folios }} }
-                  @if (p.onAccount > 0) { · {{ money(p.onAccount) }} on account }</small></td>
+                  <br /><small class="mute">{{ methodLabel(p.method) }}@if (p.paymentReference) {, {{ p.paymentReference }} }</small></td>
+                <td><b>{{ p.guestName }}</b><br /><small class="mute num">{{ p.reference }}@if (p.folios) {, {{ p.folios }} }
+                  @if (p.onAccount > 0) {, {{ money(p.onAccount) }} on account }</small></td>
                 <td class="hide-sm">{{ time(p.receivedAt) }}<br /><small class="mute">{{ p.receivedByName ?? '' }}</small></td>
                 <td class="right num"><b [class.void]="p.status === 'CANCELLED'">{{ money(p.amount) }}</b>
                   @if (p.refunded) { <br /><small class="bad">− {{ money(p.refunded) }} refunded</small> }</td>
@@ -114,10 +114,10 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
     .mute { color: var(--ro-mute); }
     .bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .void { text-decoration: line-through; color: #7a8a8c; }
+    .void { text-decoration: line-through; color: var(--ro-mute); }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .err { color: var(--ro-error); }

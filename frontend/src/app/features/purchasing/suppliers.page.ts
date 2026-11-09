@@ -26,7 +26,7 @@ import { PurchasingApi } from './purchasing.api';
     <div class="page sup">
       <div class="head">
         <h1>Suppliers</h1>
-        @if (owed() > 0) { <p class="mute">Owed {{ rupees(owed()) }}@if (overdue() > 0) { · <b class="late">{{ rupees(overdue()) }} overdue</b> }</p> }
+        @if (owed() > 0) { <p class="mute">Owed {{ rupees(owed()) }}@if (overdue() > 0) {, <b class="late">{{ rupees(overdue()) }} overdue</b> }</p> }
       </div>
       <div class="tools">
         <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic"><mat-label>Find a supplier</mat-label>
@@ -40,8 +40,8 @@ import { PurchasingApi } from './purchasing.api';
           <li [class.off]="!s.isActive" [attr.data-supplier]="s.code">
             <div class="nm">
               <b>{{ s.name }}</b> <small class="mute">{{ s.code }}</small>
-              <small>@if (s.gstin) { GSTIN {{ s.gstin }} · {{ s.stateName }} } @else { <span class="unreg">Unregistered: no GST</span> · {{ s.stateName }} }</small>
-              <small class="mute">@if (s.contactName) { {{ s.contactName }} · }@if (s.phone) { <a [href]="'tel:' + s.phone">{{ s.phone }}</a> · }pays {{ s.paymentTermsDays ? 'after ' + s.paymentTermsDays + ' days' : 'on delivery' }}</small>
+              <small>@if (s.gstin) { GSTIN {{ s.gstin }}, {{ s.stateName }} } @else { <span class="unreg">Unregistered: no GST</span>, {{ s.stateName }} }</small>
+              <small class="mute">@if (s.contactName) { {{ s.contactName }}, }@if (s.phone) { <a [href]="'tel:' + s.phone">{{ s.phone }}</a>, }pays {{ s.paymentTermsDays ? 'after ' + s.paymentTermsDays + ' days' : 'on delivery' }}</small>
               @if (s.note) { <small class="note">{{ s.note }}</small> }
               @if (!s.isActive) { <small class="mute">Not buying from them now</small> }
             </div>

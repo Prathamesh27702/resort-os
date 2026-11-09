@@ -340,7 +340,7 @@ export class CountDialog {
         }
       </div>
       <button mat-stroked-button type="button" (click)="add()"><mat-icon>add</mat-icon>Ingredient</button>
-      <p class="sum" aria-live="polite">Cost {{ rupees(total()) }} · food cost {{ pct(foodCost()) }} · margin {{ rupees(data.dish.price - total()) }}</p>
+      <p class="sum" aria-live="polite">Cost {{ rupees(total()) }}, food cost {{ pct(foodCost()) }}, margin {{ rupees(data.dish.price - total()) }}</p>
       <mat-form-field appearance="outline"><mat-label>Note (optional)</mat-label><input matInput formControlName="note" maxlength="500" placeholder="e.g. Marinate overnight" />
         <mat-error>{{ server(form.get('note')) }}</mat-error></mat-form-field>
       @if (server(form.get('ingredients'))) { <p class="err">{{ server(form.get('ingredients')) }}</p> }
@@ -448,7 +448,7 @@ export class RecipeDialog {
       <h3>Stores</h3>
       <ul>
         @for (l of locations(); track l.id) {
-          <li><button class="nm" type="button" (click)="editStore(l)"><b>{{ l.name }}</b> <small>{{ l.code }}@if (l.isKitchen) { · kitchen }@if (!l.isActive) { · off }</small></button></li>
+          <li><button class="nm" type="button" (click)="editStore(l)"><b>{{ l.name }}</b> <small>{{ l.code }}@if (l.isKitchen) {, kitchen }@if (!l.isActive) {, off }</small></button></li>
         }
       </ul>
       <form [formGroup]="store" (ngSubmit)="saveStore()" class="f">
@@ -464,7 +464,7 @@ export class RecipeDialog {
       <h3>Groups</h3>
       <ul>
         @for (c of categories(); track c.id) {
-          <li><button class="nm" type="button" (click)="editGroup(c)"><b>{{ c.name }}</b>@if (!c.isActive) { <small> · off</small> }</button></li>
+          <li><button class="nm" type="button" (click)="editGroup(c)"><b>{{ c.name }}</b>@if (!c.isActive) { <small>, off</small> }</button></li>
         }
       </ul>
       <form [formGroup]="group" (ngSubmit)="saveGroup()" class="f">

@@ -26,7 +26,7 @@ export const LINE_LABEL: Record<TimesheetLineStatus, string> = {
 /** "Main gate · 24 m from the centre", "Recorded by Rohan: No signal at the beach": where an event was recorded, in words. */
 export function where(e: AttendanceEvent): string {
   if (e.source === 'MANAGER') return `Recorded by ${e.recordedBy ?? 'a manager'}: ${e.reason}`;
-  if (e.locationStatus === 'INSIDE') return `${e.geofenceName}${e.distanceM !== null ? ` · ${e.distanceM} m from the centre` : ''}`;
+  if (e.locationStatus === 'INSIDE') return `${e.geofenceName}${e.distanceM !== null ? `, ${e.distanceM} m from the centre` : ''}`;
   return 'Location not checked';
 }
 

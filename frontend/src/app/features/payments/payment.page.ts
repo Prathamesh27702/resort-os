@@ -27,9 +27,9 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
         <div class="page-head">
           <div>
             <a routerLink="/payments" class="back">Payments</a>
-            <h1><span class="num">{{ p.number }}</span> · {{ money(p.amount) }} {{ methodLabel(p.method) }}
+            <h1><span class="num">{{ p.number }}</span>, {{ money(p.amount) }} {{ methodLabel(p.method) }}
               <span [class]="'chip ' + statusClass(p.status)" data-testid="status">{{ statusLabel(p.status) }}</span></h1>
-            <p>{{ p.guestName }} · <a [routerLink]="['/reservations', p.reservationId]" class="num">{{ p.reference }}</a> ·
+            <p>{{ p.guestName }}, <a [routerLink]="['/reservations', p.reservationId]" class="num">{{ p.reference }}</a>,
               taken {{ time(p.receivedAt) }}@if (p.receivedByName) { by {{ p.receivedByName }} }</p>
           </div>
           <div class="head-actions">
@@ -69,7 +69,7 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
             <thead><tr><th>Folio</th><th class="hide-sm">When</th><th class="right">Amount</th><th class="right">Refunded</th></tr></thead>
             <tbody>
               @for (a of p.allocations; track a.id) {
-                <tr><td><a [routerLink]="['/folios', a.folioId]" class="num"><b>{{ a.folioNumber }}</b></a> · {{ a.folioName }}</td>
+                <tr><td><a [routerLink]="['/folios', a.folioId]" class="num"><b>{{ a.folioNumber }}</b></a>, {{ a.folioName }}</td>
                   <td class="hide-sm">{{ time(a.allocatedAt) }}</td>
                   <td class="right num">{{ money(a.amount) }}</td><td class="right num">{{ a.refunded ? money(a.refunded) : '' }}</td></tr>
               } @empty {
@@ -89,8 +89,8 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
                   <tr [attr.data-refund]="r.id"><td><b>{{ r.reason }}</b>
                     @if (r.status === 'PENDING') { <span class="chip wait">Waiting for Razorpay</span> }
                     @if (r.status === 'FAILED') { <span class="chip off">Razorpay couldn't send it; money back on the payment</span> }
-                    <br /><small class="mute">{{ methodLabel(r.method) }} · {{ time(r.refundedAt) }}
-                    @if (r.refundedByName) { · {{ r.refundedByName }} }@if (r.reference) { · {{ r.reference }} }</small></td>
+                    <br /><small class="mute">{{ methodLabel(r.method) }}, {{ time(r.refundedAt) }}
+                    @if (r.refundedByName) {, {{ r.refundedByName }} }@if (r.reference) {, {{ r.reference }} }</small></td>
                     <td class="hide-sm">{{ r.folioNumber ?? 'On account' }}</td>
                     <td class="right num bad">− {{ money(r.amount) }}</td></tr>
                 }
@@ -118,8 +118,8 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
     .facts dt { color: var(--ro-mute); }
     .facts dd { margin: 0; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .mute { color: var(--ro-mute); }
     .bad, .sums b.bad { color: var(--ro-error); }

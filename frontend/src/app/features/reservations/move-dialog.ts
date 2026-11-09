@@ -34,10 +34,10 @@ export interface MoveDialogData { propertyId: string; cal: Calendar; booking: Ca
     <div mat-dialog-content>
       <dl class="summary">
         <dt>Status</dt><dd><span [class]="'chip ' + statusClass(b.status)">{{ statusLabel(b.status) }}</span></dd>
-        <dt>Stay</dt><dd>{{ shortDate(b.startDate) }} – {{ shortDate(b.endDate) }} · {{ guestsText(b.adults, b.children) }}</dd>
+        <dt>Stay</dt><dd>{{ shortDate(b.startDate) }} – {{ shortDate(b.endDate) }}, {{ guestsText(b.adults, b.children) }}</dd>
         <dt>Room</dt><dd>{{ current()?.label }}</dd>
         <dt>Source</dt><dd>{{ b.sourceName }}</dd>
-        <dt>Payment</dt><dd>{{ paymentText(b.paymentStatus) }} · booking total {{ rupees(b.totalAmount) }}</dd>
+        <dt>Payment</dt><dd>{{ paymentText(b.paymentStatus) }}, booking total {{ rupees(b.totalAmount) }}</dd>
       </dl>
 
       @if (data.canMove && movable) {
@@ -48,7 +48,7 @@ export interface MoveDialogData { propertyId: string; cal: Calendar; booking: Ca
             <mat-label>Move to</mat-label>
             <mat-select formControlName="target">
               @for (r of options(); track r.key) {
-                <mat-option [value]="r.key">{{ r.label }} · {{ r.typeName }}@if (problems().get(r.key)) { <small class="mute"> · not free</small> }</mat-option>
+                <mat-option [value]="r.key">{{ r.label }}, {{ r.typeName }}@if (problems().get(r.key)) { <small class="mute">, not free</small> }</mat-option>
               }
             </mat-select>
             @if (targetError()) { <mat-error>{{ targetError() }}</mat-error> }

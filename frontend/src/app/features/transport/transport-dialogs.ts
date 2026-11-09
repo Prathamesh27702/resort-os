@@ -30,13 +30,13 @@ export interface BookTripData { propertyId: string; trip: Trip; }
   template: `
     <h2 mat-dialog-title>Book {{ t.routeName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="trip-book-form">
-      <p class="mute">{{ short(t.date) }} · {{ t.departTime }} {{ t.origin }} → {{ t.destination }} {{ t.arriveTime }} · {{ seats(t.seatsLeft) }} left ·
+      <p class="mute">{{ short(t.date) }}, {{ t.departTime }} {{ t.origin }} → {{ t.destination }} {{ t.arriveTime }}, {{ seats(t.seatsLeft) }} left,
         {{ t.price ? rupees(t.price) + ' a seat' : 'free' }}</p>
       <mat-form-field appearance="outline"><mat-label>Guest staying</mat-label>
         <mat-select formControlName="reservationId" [aria-label]="'Guest staying'">
           <mat-option [value]="null">Not staying with us (type the name)</mat-option>
           @for (x of stays(); track x.reservationId) {
-            <mat-option [value]="x.reservationId">{{ x.rooms }} · {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
+            <mat-option [value]="x.reservationId">{{ x.rooms }}, {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
           }
         </mat-select>
         <mat-error>{{ server(form.get('reservationId')) }}</mat-error></mat-form-field>
@@ -130,7 +130,7 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Vehicle</mat-label>
           <mat-select formControlName="vehicleId" [aria-label]="'Vehicle'">
-            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }} · {{ seats(v.seats) }}</mat-option> }
+            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }}, {{ seats(v.seats) }}</mat-option> }
           </mat-select>
           <mat-error>{{ server(form.get('vehicleId')) || 'Choose the vehicle.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Driver</mat-label>
@@ -202,13 +202,13 @@ export interface TripEditData { propertyId: string; trip: Trip; vehicles: Vehicl
   selector: 'app-trip-edit-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>{{ t.routeName }} · {{ short(t.date) }} {{ t.departTime }}</h2>
+    <h2 mat-dialog-title>{{ t.routeName }}, {{ short(t.date) }} {{ t.departTime }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="trip-edit-form">
       <p class="mute">{{ seats(t.seatsBooked) }} booked. A new price is for new bookings only.</p>
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Vehicle</mat-label>
           <mat-select formControlName="vehicleId" [aria-label]="'Vehicle'">
-            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }} · {{ seats(v.seats) }}</mat-option> }
+            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }}, {{ seats(v.seats) }}</mat-option> }
           </mat-select>
           <mat-error>{{ server(form.get('vehicleId')) || 'Choose the vehicle.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Driver</mat-label>

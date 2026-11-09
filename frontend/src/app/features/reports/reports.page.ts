@@ -271,7 +271,7 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
     .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .grow { flex: 1; } .sel { width: 180px; }
     .tabs { display: flex; gap: var(--space-1); overflow-x: auto; border-bottom: 1px solid var(--ro-line); margin: var(--space-1) 0 10px; }
     .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: var(--space-2) var(--space-3); font: inherit; color: var(--ro-ink-soft); cursor: pointer; white-space: nowrap; }
-    .tab.on { border-color: #0090a0; color: var(--ro-tide); font-weight: 600; }
+    .tab.on { border-color: var(--ro-sea-bright); color: var(--ro-tide); font-weight: 600; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
     h2.title { margin: var(--space-2) 0; } h3 { font-size: 1rem; margin: 18px 0 var(--space-1); }
     .scroll { overflow-x: auto; margin-top: 10px; }
@@ -281,9 +281,9 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
     table.rt thead th { color: var(--ro-mute); font-weight: 500; font-size: .85rem; }
     table.wide { width: 100%; }
     tr.total th, tr.total td { font-weight: 700; border-top: 2px solid var(--ro-line); }
-    tr.profit th, tr.profit td { font-weight: 700; color: var(--ro-tide); background: #eef6f4; }
+    tr.profit th, tr.profit td { font-weight: 700; color: var(--ro-tide); background: var(--ro-tint); }
     tr.cost th:first-child, tr.revenue th:first-child { padding-left: 22px; }
-    td.up { color: #1b6e3a; } td.down { color: #8a1c1c; }
+    td.up { color: var(--ro-ok-mid); } td.down { color: var(--ro-error-strong); }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-6); }
     @media (max-width: 720px) { .two { grid-template-columns: 1fr; } .cmp { font-size: .85rem; } .sel { width: 46%; } }
     @media print {

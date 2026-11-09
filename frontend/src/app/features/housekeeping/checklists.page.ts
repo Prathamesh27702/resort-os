@@ -87,7 +87,7 @@ import { HousekeepingApi, TASK_TYPES, taskTypeLabel } from './housekeeping.api';
         @for (t of templates(); track t.id) {
           <article class="tpl" [class.off]="!t.isActive">
             <div class="top">
-              <div><b>{{ t.name }}</b><div class="mute">{{ typeLabel(t.taskType) }} · {{ t.accommodationTypeName ?? 'Every room type' }}@if (!t.isActive) { · not in use }</div></div>
+              <div><b>{{ t.name }}</b><div class="mute">{{ typeLabel(t.taskType) }}, {{ t.accommodationTypeName ?? 'Every room type' }}@if (!t.isActive) {, not in use }</div></div>
               <button mat-button (click)="edit(t)">Edit</button>
             </div>
             <ol>@for (i of t.items; track i.id) { <li>{{ i.label }}@if (i.isRequired) { <span class="req">required</span> }</li> }</ol>

@@ -31,13 +31,13 @@ export interface BookData { propertyId: string; session: ActivitySession; }
   template: `
     <h2 mat-dialog-title>Book {{ s.activityName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="book-form">
-      <p class="mute">{{ short(s.date) }} · {{ s.startTime }}–{{ s.endTime }} · {{ seats(s.seatsLeft) }} left ·
-        {{ s.price ? rupees(s.price) + ' a person' : 'free' }}@if (s.meetingPoint) { · meet at {{ s.meetingPoint }} }</p>
+      <p class="mute">{{ short(s.date) }}, {{ s.startTime }}–{{ s.endTime }}, {{ seats(s.seatsLeft) }} left,
+        {{ s.price ? rupees(s.price) + ' a person' : 'free' }}@if (s.meetingPoint) {, meet at {{ s.meetingPoint }} }</p>
       <mat-form-field appearance="outline"><mat-label>Guest staying</mat-label>
         <mat-select formControlName="reservationId" [aria-label]="'Guest staying'">
           <mat-option [value]="null">Not staying with us (type the name)</mat-option>
           @for (x of stays(); track x.reservationId) {
-            <mat-option [value]="x.reservationId">{{ x.rooms }} · {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
+            <mat-option [value]="x.reservationId">{{ x.rooms }}, {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
           }
         </mat-select>
         <mat-error>{{ server(form.get('reservationId')) }}</mat-error></mat-form-field>
@@ -123,7 +123,7 @@ export interface WeatherData { propertyId: string; detail: ActivitySessionDetail
   template: `
     <h2 mat-dialog-title>Cancel for the weather?</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="weather-form">
-      <p><b>{{ s.activityName }}</b> · {{ short(s.date) }} {{ s.startTime }} · {{ seats(s.seatsBooked) }} booked</p>
+      <p><b>{{ s.activityName }}</b>, {{ short(s.date) }} {{ s.startTime }}, {{ seats(s.seatsBooked) }} booked</p>
       <mat-form-field appearance="outline"><mat-label>What is the weather doing</mat-label>
         <input matInput formControlName="reason" maxlength="300" placeholder="e.g. Rough sea, red flag" cdkFocusInitial />
         <mat-error>{{ server(form.get('reason')) || 'Say what the weather is doing (at least 3 characters).' }}</mat-error></mat-form-field>
@@ -132,7 +132,7 @@ export interface WeatherData { propertyId: string; detail: ActivitySessionDetail
         <div formArrayName="moves" class="moves">
           @for (b of booked; track b.id; let i = $index) {
             <div class="mv" [attr.data-booking]="b.code">
-              <span><b>{{ b.guestName }}</b> · {{ seats(b.seats) }} · {{ b.code }}</span>
+              <span><b>{{ b.guestName }}</b>, {{ seats(b.seats) }}, {{ b.code }}</span>
               <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>{{ b.code }}</mat-label>
                 <mat-select [formControlName]="i" [aria-label]="'What happens to ' + b.code">
                   <mat-option [value]="''">{{ b.settlement === 'ROOM_CHARGE' ? 'Refund ' + rupees(b.amount) + ' on the bill' : 'Cancel (nothing was charged)' }}</mat-option>
@@ -267,7 +267,7 @@ export interface SessionEditData { propertyId: string; session: ActivitySession;
   selector: 'app-session-edit-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>{{ s.activityName }} · {{ short(s.date) }} {{ s.startTime }}</h2>
+    <h2 mat-dialog-title>{{ s.activityName }}, {{ short(s.date) }} {{ s.startTime }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="session-form">
       <p class="mute">{{ seats(s.seatsBooked) }} booked. A new price is for new bookings only.</p>
       <div class="row">

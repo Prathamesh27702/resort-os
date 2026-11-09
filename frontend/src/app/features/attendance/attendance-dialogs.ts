@@ -111,7 +111,7 @@ export class RecordDialog {
       <p class="mute">Staff can clock in and out only inside one of these (their phone's accuracy counts, up to 50 m).</p>
       <ul class="list">
         @for (g of list(); track g.id) {
-          <li [class.off]="!g.isActive"><b>{{ g.name }}</b> <span class="mute">{{ g.radiusM }} m around {{ g.latitude }}, {{ g.longitude }}{{ g.isActive ? '' : ' · switched off' }}</span>
+          <li [class.off]="!g.isActive"><b>{{ g.name }}</b> <span class="mute">{{ g.radiusM }} m around {{ g.latitude }}, {{ g.longitude }}{{ g.isActive ? '' : ', switched off' }}</span>
             <button mat-button (click)="edit(g)">Change</button></li>
         } @empty { <li class="mute">No areas yet.</li> }
       </ul>
@@ -207,7 +207,7 @@ export interface CorrectData { propertyId: string; timesheet: Timesheet; line: T
   selector: 'app-correct-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>Correct a day · {{ data.timesheet.sheet.employeeName }}</h2>
+    <h2 mat-dialog-title>Correct a day, {{ data.timesheet.sheet.employeeName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="correct-form">
       @if (data.line; as l) {
         <p class="mute">Now: {{ l.clockIn ? hm(l.clockIn) : '—' }} to {{ l.clockOut ? hm(l.clockOut) : '—' }}, break {{ l.breakMinutes }} min, worked {{ hours(l.workedMinutes) }}.

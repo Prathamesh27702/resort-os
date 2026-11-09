@@ -62,7 +62,7 @@ const MAX_PHOTOS = 6;
             <mat-label>Room</mat-label>
             <mat-select formControlName="unitId">
               <mat-option value="">Not a room</mat-option>
-              @for (r of rooms(); track r.id) { <mat-option [value]="r.id">{{ r.code }} · {{ r.accommodationTypeName }}</mat-option> }
+              @for (r of rooms(); track r.id) { <mat-option [value]="r.id">{{ r.code }}, {{ r.accommodationTypeName }}</mat-option> }
             </mat-select>
             <mat-error>{{ err('unitId') }}</mat-error>
           </mat-form-field>
@@ -82,7 +82,7 @@ const MAX_PHOTOS = 6;
             <mat-label>Equipment (optional)</mat-label>
             <mat-select formControlName="assetId">
               <mat-option value="">None</mat-option>
-              @for (a of assetChoices(); track a.id) { <mat-option [value]="a.id">{{ a.code }} · {{ a.name }}</mat-option> }
+              @for (a of assetChoices(); track a.id) { <mat-option [value]="a.id">{{ a.code }}, {{ a.name }}</mat-option> }
             </mat-select>
             <mat-error>{{ err('assetId') }}</mat-error>
           </mat-form-field>

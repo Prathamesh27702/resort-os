@@ -26,7 +26,7 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
       <a mat-button routerLink="/maintenance" class="back"><mat-icon>arrow_back</mat-icon>Maintenance</a>
       @if (t(); as t) {
         <div class="head">
-          <h1>{{ t.number }} · {{ t.title }}</h1>
+          <h1>{{ t.number }}, {{ t.title }}</h1>
           <div class="tags">
             <span [class]="'st ' + stCls(t.status)">{{ st(t.status) }}</span>
             <span [class]="'pri ' + t.priority.toLowerCase()">{{ pri(t.priority) }}</span>
@@ -34,10 +34,10 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
           </div>
         </div>
         <dl>
-          <dt>Where</dt><dd>{{ t.place }}@if (t.assetName && t.unitId) { · {{ t.assetName }} }@if (t.location && t.unitId) { · {{ t.location }} }</dd>
+          <dt>Where</dt><dd>{{ t.place }}@if (t.assetName && t.unitId) {, {{ t.assetName }} }@if (t.location && t.unitId) {, {{ t.location }} }</dd>
           @if (t.outOfOrder) {
             <dt>Room</dt>
-            <dd><b class="ooo">{{ t.blockActive ? 'Out of order' : 'Was out of order' }}</b>@if (t.expectedReadyOn) { · expected back {{ day(t.expectedReadyOn) }} }</dd>
+            <dd><b class="ooo">{{ t.blockActive ? 'Out of order' : 'Was out of order' }}</b>@if (t.expectedReadyOn) {, expected back {{ day(t.expectedReadyOn) }} }</dd>
           }
           <dt>Reported</dt><dd>{{ when(t.createdAt) }}@if (t.reportedByName) { by {{ t.reportedByName }} }</dd>
           <dt>With</dt><dd>{{ t.assignedToName ?? 'Nobody yet' }}</dd>
@@ -114,7 +114,7 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
         <ol class="timeline">
           @for (c of t.comments; track c.id) {
             <li [class.status]="c.kind === 'STATUS'">
-              <span class="who">{{ c.createdByName ?? 'System' }} · {{ when(c.createdAt) }}</span>
+              <span class="who">{{ c.createdByName ?? 'System' }}, {{ when(c.createdAt) }}</span>
               @if (c.kind === 'STATUS' && c.toStatus) { <b>{{ st(c.toStatus) }}</b> }
               <span>{{ c.body }}</span>
             </li>
@@ -141,19 +141,19 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
     h2 { font-size: 1rem; font-weight: 600; margin: 18px 0 var(--space-2); }
     .tags { display: flex; gap: 6px; flex-wrap: wrap; }
     .st, .pri, .tag { font-size: .78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
-    .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: #fbe4e2; color: var(--ro-error-strong); }
+    .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: var(--ro-off-bg); color: var(--ro-error-strong); }
     .st.resolved, .st.closed { background: var(--ro-ok-bg); color: var(--ro-ok); } .st.on-hold { background: var(--ro-warn-bg); color: var(--ro-warn); }
-    .st.in-progress, .st.assigned { background: #e0eff5; color: #134e63; }
+    .st.in-progress, .st.assigned { background: var(--ro-info-bg); color: var(--ro-info); }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) 14px; margin: 14px 0; }
     dt { color: var(--ro-mute); } dd { margin: 0; }
-    .ooo { color: #5b3a00; }
+    .ooo { color: var(--ro-warn-strong); }
     .desc { background: var(--ro-wash); border-radius: 8px; padding: 10px var(--space-3); white-space: pre-wrap; }
     .photos { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .photos img, .ph { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; display: block; background: var(--ro-sunk); }
     .add { width: 96px; height: 96px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
            align-items: center; justify-content: center; font-size: .8rem; cursor: pointer; position: relative; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    section { border-top: 1px solid #e3e7e6; margin-top: var(--space-2); }
+    section { border-top: 1px solid var(--ro-line-mid); margin-top: var(--space-2); }
     .row { display: flex; gap: var(--space-2); align-items: flex-start; }
     .row button { min-height: 48px; margin-top: var(--space-1); }
     .wrap { flex-wrap: wrap; }
@@ -162,7 +162,7 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
     .hint { color: var(--ro-mute); font-size: .85rem; }
     .timeline { list-style: none; padding: 0; margin: 0; }
     .timeline li { display: flex; flex-direction: column; padding: var(--space-2) 0 var(--space-2) var(--space-3); border-left: 2px solid var(--ro-line); }
-    .timeline li.status { border-left-color: #1f6f8b; }
+    .timeline li.status { border-left-color: var(--ro-info-bright); }
     .who { color: var(--ro-mute); font-size: .8rem; }
     .err { color: var(--ro-error); }
   `,

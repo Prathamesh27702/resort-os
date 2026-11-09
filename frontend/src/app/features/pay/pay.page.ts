@@ -44,7 +44,7 @@ function loadCheckout(): Promise<RazorpayCtor> {
         <section class="card" [attr.data-status]="p.status">
           <p class="prop">{{ p.propertyName }}</p>
           <h1>{{ money(p.amount) }}</h1>
-          <p class="mute">Booking <b class="num">{{ p.bookingReference }}</b> · {{ p.guestName }}<br />
+          <p class="mute">Booking <b class="num">{{ p.bookingReference }}</b>, {{ p.guestName }}<br />
             {{ day(p.checkIn) }} – {{ day(p.checkOut) }}</p>
 
           @switch (p.status) {
@@ -91,7 +91,7 @@ function loadCheckout(): Promise<RazorpayCtor> {
     </main>
   `,
   styles: `
-    :host { display: block; min-height: 100vh; background: #eef3f2; }
+    :host { display: block; min-height: 100vh; background: var(--ro-sunk); }
     .wrap { max-width: 460px; margin: 0 auto; padding: var(--space-8) var(--space-4); }
     .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: var(--space-6); }
     .prop { color: var(--ro-tide); font-weight: 600; margin: 0; }
@@ -102,11 +102,11 @@ function loadCheckout(): Promise<RazorpayCtor> {
     .actions { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-4) 0 var(--space-2); }
     .actions button { height: 48px; font-size: 1rem; }
     .methods { margin-top: var(--space-1); }
-    .test { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: var(--space-2) var(--space-3); font-size: .9rem; }
+    .test { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: var(--space-2) var(--space-3); font-size: .9rem; }
     .state { display: flex; gap: var(--space-2); align-items: flex-start; border-radius: 8px; padding: 10px var(--space-3); margin: var(--space-4) 0 var(--space-2); }
     .state.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .state.wait { background: var(--ro-warn-bg); color: #6b4600; }
-    .state.off { background: #eceff0; color: #3c4a4c; }
+    .state.wait { background: var(--ro-warn-bg); color: var(--ro-warn-strong); }
+    .state.off { background: var(--ro-line-soft); color: var(--ro-ink-soft); }
     .state.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })

@@ -49,8 +49,8 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
             <header>
               <div>
                 <h2>{{ g.type.name }} @if (!g.type.isActive) { <span class="chip off">Inactive type</span> }</h2>
-                <p class="mute">{{ g.type.inventoryMode === 'BED' ? 'Sold per bed' : 'Sold per room' }} ·
-                  {{ g.type.inventoryMode === 'BED' ? g.type.sellableItems + ' beds' : g.type.sellableItems + ' room' + (g.type.sellableItems === 1 ? '' : 's') }} ·
+                <p class="mute">{{ g.type.inventoryMode === 'BED' ? 'Sold per bed' : 'Sold per room' }},
+                  {{ g.type.inventoryMode === 'BED' ? g.type.sellableItems + ' beds' : g.type.sellableItems + ' room' + (g.type.sellableItems === 1 ? '' : 's') }},
                   {{ g.type.inventoryMode === 'BED' ? '1 guest per bed' : 'up to ' + g.type.maxOccupancy + ' guests per room' }}</p>
               </div>
               <a mat-button [routerLink]="['/settings/room-types', g.type.id]">{{ canManage() ? 'Edit type' : 'View type' }}</a>
@@ -95,9 +95,9 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
               <tbody>
                 @for (b of blocks(); track b.id) {
                   <tr>
-                    <td><b>{{ b.unitCode }}</b>@if (b.bedCode) { <span class="mute"> · bed {{ b.bedCode }}</span> }</td>
+                    <td><b>{{ b.unitCode }}</b>@if (b.bedCode) { <span class="mute">, bed {{ b.bedCode }}</span> }</td>
                     <td class="num">{{ shortDate(b.startDate) }} – {{ shortDate(lastNight(b)) }} <span class="mute">({{ b.nights }})</span></td>
-                    <td class="hide-sm">{{ label(b.blockType) }} · {{ b.reason }}</td>
+                    <td class="hide-sm">{{ label(b.blockType) }}, {{ b.reason }}</td>
                     <td class="hide-sm mute">{{ b.createdByName ?? '—' }}</td>
                     <td class="row-actions">@if (canBlock()) { <button mat-button (click)="release(b)">Release</button> }</td>
                   </tr>
@@ -125,8 +125,8 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
     .name { margin-left: var(--space-2); }
     .pad { padding: 0 var(--space-4) var(--space-4); margin: 0; }
     .err { color: var(--ro-error); }
-    .chip.ok { background: #e3f1e6; color: #1f5130; }
-    .chip.warn { background: #fdf0d8; color: #7a4a00; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.warn { background: var(--ro-warn-bg); color: var(--ro-warn-strong); }
     .row-actions { text-align: right; white-space: nowrap; width: 1%; }
   `,
 })

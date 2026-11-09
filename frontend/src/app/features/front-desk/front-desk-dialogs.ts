@@ -50,7 +50,7 @@ export type CheckInProblemResult = Reservation | 'assign';
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .problem { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px var(--space-3); margin: 0 0 var(--space-3); }
+    .problem { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); margin: 0 0 var(--space-3); }
     .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
     .mute { color: var(--ro-mute); }
@@ -119,7 +119,7 @@ export interface AssignRoomData { propertyId: string; stay: DeskStay; today: str
         <mat-select formControlName="target">
           @for (o of options(); track key(o)) {
             <mat-option [value]="key(o)" [disabled]="!o.free || !o.fits">
-              {{ place(o) }} · {{ o.typeName }} · {{ hk(o.housekeeping) }}
+              {{ place(o) }}, {{ o.typeName }}, {{ hk(o.housekeeping) }}
               @if (o.problem) { <small class="mute"> — {{ o.problem }}</small> }
             </mat-option>
           }

@@ -58,9 +58,9 @@ type Period = 'today' | 'week' | 'month' | 'all';
             @for (i of result()?.items ?? []; track i.id) {
               <tr class="clickable" (click)="open(i.id)" tabindex="0" (keydown.enter)="open(i.id)" [attr.data-invoice]="i.number">
                 <td><b class="num">{{ i.number }}</b><span [class]="'chip status ' + statusClass(i.status)">{{ statusLabel(i.status) }}</span>
-                  <br /><small class="mute">{{ shortDate(i.invoiceDate) }}@if (i.documentType !== 'INVOICE') { · {{ docLabel(i.documentType) }} }
-                  @if (i.creditNotes) { · {{ i.creditNotes }} credit note{{ i.creditNotes === 1 ? '' : 's' }} }
-                  @if (i.debitNotes) { · {{ i.debitNotes }} debit note{{ i.debitNotes === 1 ? '' : 's' }} }</small></td>
+                  <br /><small class="mute">{{ shortDate(i.invoiceDate) }}@if (i.documentType !== 'INVOICE') {, {{ docLabel(i.documentType) }} }
+                  @if (i.creditNotes) {, {{ i.creditNotes }} credit note{{ i.creditNotes === 1 ? '' : 's' }} }
+                  @if (i.debitNotes) {, {{ i.debitNotes }} debit note{{ i.debitNotes === 1 ? '' : 's' }} }</small></td>
                 <td><b>{{ i.customerName }}</b><br /><small class="mute num">{{ i.customerGstin ?? 'B2C' }}</small></td>
                 <td class="hide-sm num">{{ i.reference }}<br /><small class="mute">{{ i.folioNumber }}</small></td>
                 <td class="right num hide-sm">{{ money(i.taxTotal) }}</td>
@@ -97,11 +97,11 @@ type Period = 'today' | 'week' | 'month' | 'all';
     .mute { color: var(--ro-mute); }
     .bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .void { text-decoration: line-through; color: #7a8a8c; }
+    .void { text-decoration: line-through; color: var(--ro-mute); }
     .chip.status { margin-left: var(--space-2); }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
-    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
-    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
     .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .err { color: var(--ro-error); }

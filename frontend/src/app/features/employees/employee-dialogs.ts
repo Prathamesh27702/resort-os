@@ -38,7 +38,7 @@ export function report(form: FormGroup, e: unknown, error: (m: string) => void) 
   selector: 'app-employee-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>{{ e ? e.fullName + ' · ' + e.code : 'New employee' }}</h2>
+    <h2 mat-dialog-title>{{ e ? e.fullName + ', ' + e.code : 'New employee' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="employee-form">
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>First name</mat-label><input matInput formControlName="firstName" maxlength="60" cdkFocusInitial />
@@ -95,7 +95,7 @@ export function report(form: FormGroup, e: unknown, error: (m: string) => void) 
           <mat-select formControlName="userId" aria-label="Staff account">
             <mat-option [value]="null">No account</mat-option>
             @for (a of accounts(); track a.id) {
-              <mat-option [value]="a.id" [disabled]="!!a.linkedEmployeeId && a.linkedEmployeeId !== e?.id">{{ a.fullName }} · {{ a.email }}@if (a.linkedTo && a.linkedEmployeeId !== e?.id) { (linked to {{ a.linkedTo }}) }</mat-option>
+              <mat-option [value]="a.id" [disabled]="!!a.linkedEmployeeId && a.linkedEmployeeId !== e?.id">{{ a.fullName }}, {{ a.email }}@if (a.linkedTo && a.linkedEmployeeId !== e?.id) { (linked to {{ a.linkedTo }}) }</mat-option>
             }
           </mat-select>
           <mat-hint>Linked: they see their own shifts</mat-hint>
@@ -193,9 +193,9 @@ export class EmployeeDialog {
       <ul class="depts">
         @for (d of list(); track d.id) {
           <li [class.off]="!d.isActive" [attr.data-dept]="d.code">
-            <div><b>{{ d.name }}</b> <small class="mute">{{ d.code }} · {{ d.employeeCount }} working</small>
-              @if (!d.isActive) { <small class="mute"> · switched off</small> }
-              <small class="mute budget"> · pay counts for {{ d.costCentreName ?? 'no budget department' }}</small></div>
+            <div><b>{{ d.name }}</b> <small class="mute">{{ d.code }}, {{ d.employeeCount }} working</small>
+              @if (!d.isActive) { <small class="mute">, switched off</small> }
+              <small class="mute budget">, pay counts for {{ d.costCentreName ?? 'no budget department' }}</small></div>
             <small class="mute">@for (t of d.designations; track t.id) { <span class="chip" [class.off]="!t.isActive">{{ t.name }}</span> } @empty { No job titles yet. }</small>
             <button mat-button type="button" (click)="editDept(d)">Edit</button>
           </li>
@@ -245,9 +245,9 @@ export class EmployeeDialog {
     <div mat-dialog-actions align="end"><button mat-button mat-dialog-close type="button">Done</button></div>
   `,
   styles: `.body { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: var(--space-3); }
-           ul { list-style: none; margin: 0; padding: 0; } .depts li { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid #e3e8e6; }
+           ul { list-style: none; margin: 0; padding: 0; } .depts li { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-line-mid); }
            .depts li > small { grid-column: 1; } .depts li > button { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
-           .off { opacity: .6; } .chip { display: inline-block; background: #eef3f1; border-radius: 10px; padding: 0 var(--space-2); margin: 2px var(--space-1) 0 0; }
+           .off { opacity: .6; } .chip { display: inline-block; background: var(--ro-sunk); border-radius: 10px; padding: 0 var(--space-2); margin: 2px var(--space-1) 0 0; }
            .box { display: flex; flex-direction: column; gap: var(--space-1); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); }
            .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 200px; } .acts { display: flex; justify-content: flex-end; gap: var(--space-2); }
            .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,

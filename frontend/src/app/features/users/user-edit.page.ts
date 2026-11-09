@@ -23,7 +23,7 @@ import { ROLE_ORDER, roleName } from './roles';
         <div>
           <a routerLink="/users" class="back">Staff accounts</a>
           <h1>{{ isNew() ? 'Add staff' : (user()?.fullName ?? '') }}</h1>
-          @if (user(); as u) { <p>{{ u.email }}@if (!u.isActive) { · deactivated }</p> }
+          @if (user(); as u) { <p>{{ u.email }}@if (!u.isActive) {, deactivated }</p> }
         </div>
       </div>
 
