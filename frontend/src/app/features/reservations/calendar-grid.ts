@@ -81,7 +81,7 @@ export function paymentText(s: CalendarBooking['paymentStatus']): string {
     .cell.weekend, .day.weekend { background: #fafbfb; }
     .cell.today { background: #f0f8f6; }
     .group { padding: 6px 10px; font-size: 12px; font-weight: 600; color: #3d5054; background: #f3f6f5; border-top: 1px solid #dfe6e4;
-             text-transform: uppercase; letter-spacing: .03em; position: sticky; left: 0; }
+             position: sticky; left: 0; }
     .inactive .label { color: #8a979a; }
     .inactive .cell { background: repeating-linear-gradient(135deg, #fafafa 0 6px, #f2f2f2 6px 12px); }
     .bar, .block { grid-row: 1; margin: 5px 2px; border-radius: 6px; font-size: 12px; padding: 0 8px; min-width: 0; overflow: hidden;

@@ -86,6 +86,8 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
     nav a mat-icon { font-size: 20px; width: 20px; height: 20px; }
     nav a:hover { background: #164c56; color: #fff; }
     nav a.active { background: #f5f7f6; color: #0e3b43; font-weight: 500; }
+    /* The global kokum ring is too dark on the tide rail (1.4:1); use a light ring here. */
+    nav a:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
     .later { margin: 24px 12px 0; font-size: 0.78rem; color: #7fa29d; line-height: 1.4; }
     .bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; padding: 8px 20px; background: #fff; border-bottom: 1px solid #d9e0de; min-height: 56px; }
     .prop { font-weight: 600; font-size: 1rem; }

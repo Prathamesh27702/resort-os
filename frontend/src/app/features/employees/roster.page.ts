@@ -151,7 +151,7 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .week-grid td.out { background: #f3f3f3; }
     .leave { display: inline-block; border-radius: 8px; padding: 1px 6px; font-size: .8rem; background: #e8f0fb; color: #1d4a7a; margin: 1px 0; }
     .week-grid .who { width: 170px; } .week-grid th.who { display: table-cell; } .week-grid th.who span { display: block; } .week-grid th.who small { display: block; font-weight: normal; }
-    .week-grid tr.dept th { background: #eef3f1; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; color: #34484b; }
+    .week-grid tr.dept th { background: #eef3f1; font-size: .8rem; color: #34484b; }
     .badge { display: inline-block; background: #b3261e; color: #fff; border-radius: 9px; font-size: .72rem; padding: 0 6px; margin-left: 4px; }
     .chip { display: block; width: 100%; text-align: left; border: 1px solid #b9d3c6; background: #eaf5ef; border-radius: 8px; padding: 2px 6px; margin: 2px 0; cursor: pointer; font: inherit; color: inherit; }
     .chip:disabled { cursor: default; } .chip.overlap { border-color: #e0a100; background: #fff4d6; } .chip.other { border-style: dashed; }
@@ -159,7 +159,7 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 4px 0 8px; }
     .days button { border: 1px solid #d9e0de; background: #fff; border-radius: 10px; padding: 4px 0; font: inherit; position: relative; }
     .days button.on { background: #1d5c4e; color: #fff; border-color: #1d5c4e; } .dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: #b3261e; }
-    h3 { font-size: .85rem; text-transform: uppercase; color: #34484b; margin: 12px 0 4px; }
+    h3 { font-size: .85rem; color: #34484b; margin: 12px 0 4px; }
     .list { list-style: none; margin: 0; padding: 0; } .list li { display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 6px 10px; margin-top: 6px; }
     .list .nm { flex: 1; display: flex; flex-direction: column; min-width: 0; } .list .sh { flex: 1.2; display: flex; flex-direction: column; gap: 2px; }
     @media (max-width: 760px) { h1 { font-size: 1.35rem; } }

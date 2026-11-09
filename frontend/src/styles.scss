@@ -27,7 +27,7 @@ html {
   --mat-sys-corner-small: 6px;
 }
 
-html, body { height: 100%; }
+html, body { height: 100%; overflow-x: clip; }
 body {
   margin: 0;
   background: #f5f7f6;
@@ -45,6 +45,12 @@ h2 { font-size: 1.15rem; }
 .num { font-variant-numeric: tabular-nums; }
 
 :focus-visible { outline: 2px solid #8a2449; outline-offset: 2px; }
+
+// Links: the app's own colour instead of the browser's blue. Material buttons and menu items that are
+// links keep their own styles (they set their own colour and have no underline).
+// :where() keeps these at zero specificity, so any component style for a link still wins.
+:where(a:not([class*='mat-']):not([class*='mdc-'])) { color: #0e3b43; text-decoration: underline; text-decoration-color: #a9b6b3; text-underline-offset: 2px; }
+:where(a:not([class*='mat-']):not([class*='mdc-']):hover) { color: #8a2449; text-decoration-color: currentColor; }
 
 // Page scaffold shared by feature pages
 .page { padding: 24px; max-width: 1100px; }

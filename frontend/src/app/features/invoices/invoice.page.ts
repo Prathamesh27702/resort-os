@@ -162,7 +162,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: #fff; border: 1px solid #d9e0de; border-radius: 10px;
                padding: 14px 16px; margin-bottom: 16px; }
     .parties > div { display: flex; flex-direction: column; gap: 2px; }
-    .parties small { color: #5b6b6e; text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
+    .parties small { color: #5b6b6e; font-size: .8rem; }
     .sums { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 0; }
     .sums > div { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 10px 14px; min-width: 140px; }
     .sums span { color: #5b6b6e; font-size: .8rem; }
@@ -170,7 +170,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 14px 16px 16px;
             border-top: 1px solid #d9e0de; }
     .words { font-style: italic; color: #33474a; max-width: 460px; }
-    .words span { display: block; font-style: normal; color: #5b6b6e; text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; margin-bottom: 2px; }
+    .words span { display: block; font-style: normal; color: #5b6b6e; font-size: .8rem; margin-bottom: 2px; }
     .words p { margin: 8px 0 0; font-style: normal; }
     .totals { margin: 0; min-width: 280px; }
     .totals > div { display: flex; justify-content: space-between; gap: 24px; padding: 3px 0; }
