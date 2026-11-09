@@ -47,10 +47,10 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
         <div class="tiles">
           <a class="tile" routerLink="/front-desk/arrivals"><b class="num">{{ d.arrivalsCheckedIn }} / {{ d.arrivalsExpected }}</b><span>Arrivals checked in</span></a>
           <a class="tile" routerLink="/front-desk/departures"><b class="num">{{ d.departuresCheckedOut }} / {{ d.departuresExpected }}</b>
-            <span>Departures checked out@if (d.overdue) { · <em>{{ d.overdue }} overdue</em> }</span></a>
-          <a class="tile" routerLink="/front-desk/in-house"><b class="num">{{ d.inHouseStays }}</b><span>In house · {{ d.inHouseGuests }} guest{{ d.inHouseGuests === 1 ? '' : 's' }}</span></a>
+            <span>Departures checked out</span>@if (d.overdue) { <em>{{ d.overdue }} overdue</em> }</a>
+          <a class="tile" routerLink="/front-desk/in-house"><b class="num">{{ d.inHouseStays }}</b><span>In house</span><small>{{ d.inHouseGuests }} guest{{ d.inHouseGuests === 1 ? '' : 's' }}</small></a>
           <a class="tile" routerLink="/front-desk/rooms"><b class="num">{{ d.roomsReady }}</b>
-            <span>Ready to sell · {{ d.roomsNotReady }} not ready · {{ d.roomsOccupied }} occupied</span></a>
+            <span>Ready to sell</span><small>{{ d.roomsNotReady }} not ready, {{ d.roomsOccupied }} occupied</small></a>
         </div>
       }
 
@@ -78,11 +78,11 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
         <div class="board">
           @for (r of dash()?.rooms ?? []; track r.unitId + (r.bedId ?? '')) {
             <div class="room" [class]="'room ' + r.occupancy + ' hk-' + r.housekeeping" [attr.data-room]="place(r)">
-              <div class="top"><b class="code">{{ r.bedCode ? r.unitCode + ' · ' + r.bedCode : r.unitCode }}</b><span class="type">{{ r.typeName }}</span></div>
+              <div class="top"><b class="code">{{ r.unitCode }}@if (r.bedCode) { <span class="bed">{{ r.bedCode }}</span> }</b><span class="type">{{ r.typeName }}</span></div>
               <div class="state">{{ occupancy(r.occupancy) }}</div>
               <span [class]="'chip hk ' + r.housekeeping">{{ hk(r.housekeeping) }}</span>
               @if (r.reference) {
-                <a class="who" [routerLink]="['/reservations', r.reservationId]">{{ r.guestName }} · {{ r.reference }}</a>
+                <a class="who" [routerLink]="['/reservations', r.reservationId]">{{ r.guestName }} <small class="ref num">{{ r.reference }}</small></a>
                 @if (r.until) { <small class="mute">until {{ shortDate(r.until) }}</small> }
               }
               @if (canHousekeeping() && r.occupancy !== 'INACTIVE') {
@@ -169,7 +169,8 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .tile:hover { box-shadow: 0 1px 6px rgba(14,59,67,.12); }
     .tile b { font-size: 1.5rem; letter-spacing: -0.01em; color: var(--ro-tide); }
     .tile span { color: var(--ro-mute); font-size: .85rem; }
-    .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; }
+    .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; font-size: .8rem; }
+    .tile small { color: var(--ro-mute); font-size: .8rem; }
     .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--ro-line); margin-bottom: 12px; overflow-x: auto; }
     .tabs a { padding: 10px 14px; color: var(--ro-mute); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap; }
     .tabs a.on { color: var(--ro-tide); border-bottom-color: var(--ro-tide); font-weight: 500; }
@@ -202,7 +203,9 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .room.BLOCKED { border-left-color: #b45309; background: #fffaf0; }
     .room.INACTIVE { border-left-color: var(--ro-outline); color: var(--ro-mute); background: var(--ro-wash); }
     .room .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: 100%; }
-    .room .code { font-size: 1.25rem; }
+    .room .code { font-size: 1.25rem; white-space: nowrap; }
+    .room .code .bed, .room .who .ref { margin-left: 6px; font-weight: 400; color: var(--ro-mute); }
+    .room .code .bed { font-size: .9rem; }
     .room .type { font-size: .75rem; color: var(--ro-mute); text-align: right; }
     .room .state { font-weight: 500; }
     .room .who { font-size: .85rem; color: var(--ro-tide); }

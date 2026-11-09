@@ -58,7 +58,7 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
           <article class="card" [class]="'card ' + cls(r.status)" [class.rush]="r.rush" [attr.data-room]="r.place">
             <button class="body" (click)="open(r)" [attr.aria-label]="r.place + ': details'">
               <div class="top">
-                <b class="code">{{ r.bedCode ? r.unitCode + ' · ' + r.bedCode : r.unitCode }}</b>
+                <b class="code">{{ r.unitCode }}@if (r.bedCode) { <span class="bed">{{ r.bedCode }}</span> }</b>
                 <span [class]="'state ' + cls(r.status)">{{ hk(r.status) }}</span>
               </div>
               <div class="meta">
@@ -123,7 +123,8 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
     .body { all: unset; display: block; padding: 12px 14px 10px; cursor: pointer; }
     .body:focus-visible { outline: 2px solid var(--ro-kokum); outline-offset: -2px; }
     .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .code { font-size: 1.5rem; letter-spacing: -0.01em; }
+    .code { font-size: 1.5rem; letter-spacing: -0.01em; white-space: nowrap; }
+    .code .bed { margin-left: 6px; font-size: 1rem; font-weight: 400; color: var(--ro-mute); }
     .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); white-space: nowrap; }
     .state.dirty { background: #fbe4e2; color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .state.clean, .state.inspection { background: #e0eff5; color: #134e63; } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }

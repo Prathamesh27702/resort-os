@@ -39,14 +39,14 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
         <div class="page-head">
           <div>
             <a routerLink="/reservations" class="back">Reservations</a>
-            <h1><span class="num">{{ r.reference }}</span> · {{ primary()?.fullName }}
+            <h1><span class="num ref">{{ r.reference }}</span> <span class="name">{{ primary()?.fullName }}</span>
               <span [class]="'chip ' + statusClass(r.status)">{{ statusLabel(r.status) }}</span></h1>
-            <p>{{ dayLabel(r.checkIn) }} – {{ dayLabel(r.checkOut) }} · {{ r.nights }} night{{ r.nights === 1 ? '' : 's' }} ·
+            <p>{{ dayLabel(r.checkIn) }} – {{ dayLabel(r.checkOut) }}, {{ r.nights }} night{{ r.nights === 1 ? '' : 's' }},
                {{ guestsText(r.adults, r.children) }}</p>
           </div>
           <div class="head-actions">
             @if (folio(); as fo) {
-              <a mat-stroked-button [routerLink]="['/folios', fo.id]" data-testid="bill"><mat-icon>receipt_long</mat-icon>Bill · {{ rupeesExact(fo.balance) }}</a>
+              <a mat-stroked-button [routerLink]="['/folios', fo.id]" data-testid="bill"><mat-icon>receipt_long</mat-icon>Bill <span class="num">{{ rupeesExact(fo.balance) }}</span></a>
             }
             @for (inv of invoices(); track inv.id) {
               <a mat-stroked-button [routerLink]="['/invoices', inv.id]" data-testid="invoice"><mat-icon>request_quote</mat-icon>Invoice {{ inv.number }}</a>
@@ -181,6 +181,8 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
   `,
   styles: `
     .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    h1 .ref { color: var(--ro-mute); font-weight: 500; margin-right: 8px; }
+    h1 .name { overflow-wrap: anywhere; }
     h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: 8px; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
     .card { padding: 16px 20px; }
