@@ -146,20 +146,20 @@ import { componentGroup, moneyError, packageForm, splitError } from '../rates/ra
     </div>
   `,
   styles: `
-    .loading { color: #5b6b6e; }
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .loading { color: var(--ro-mute); }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
     .box { padding: 24px; max-width: 900px; }
-    h2 { margin: 8px 0 12px; font-size: 1rem; color: #0e3b43; }
-    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid #edf1f0; }
-    .hint { color: #5b6b6e; font-size: .9rem; margin: 0 0 12px; }
+    h2 { margin: 8px 0 12px; font-size: 1rem; color: var(--ro-tide); }
+    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--ro-line-soft); }
+    .hint { color: var(--ro-mute); font-size: .9rem; margin: 0 0 12px; }
     .part { display: grid; grid-template-columns: 160px 1fr 110px 110px 40px; gap: 8px; align-items: start; }
     .amount { padding-top: 16px; text-align: right; }
     .split-foot { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 4px 0 8px; }
     .actions { display: flex; gap: 8px; margin-top: 16px; }
-    .error { color: #b3261e; }
+    .error { color: var(--ro-error); }
     mat-slide-toggle { margin: 8px 0; }
     @media (max-width: 640px) {
-      .part { grid-template-columns: 1fr 1fr; padding-bottom: 8px; border-bottom: 1px solid #edf1f0; margin-bottom: 8px; }
+      .part { grid-template-columns: 1fr 1fr; padding-bottom: 8px; border-bottom: 1px solid var(--ro-line-soft); margin-bottom: 8px; }
       .part .desc { grid-column: 1 / -1; order: -1; }
       .amount { padding-top: 0; text-align: left; }
     }

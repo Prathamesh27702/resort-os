@@ -130,19 +130,19 @@ export interface ExpenseSaved { expense: Expense; failed: string[]; }
   styles: `
     form { display: flex; flex-direction: column; gap: 2px; width: min(560px, 86vw); }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .gst { background: #f5f7f6; border-radius: 10px; padding: 10px 10px 0; margin: 4px 0 10px; }
+    .gst { background: var(--ro-wash); border-radius: 10px; padding: 10px 10px 0; margin: 4px 0 10px; }
     .caps input, input.caps { text-transform: uppercase; }
     h3 { font-size: 1rem; font-weight: 600; margin: 6px 0; }
     .receipts { display: flex; flex-wrap: wrap; gap: 8px; }
     figure { position: relative; margin: 0; width: 84px; height: 84px; }
     figure img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    figure button { position: absolute; top: -6px; right: -6px; background: #fff; transform: scale(.8); }
-    .pdf { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; border: 1px solid #d9e0de; border-radius: 8px;
-           color: #8a1c1c; overflow: hidden; } .pdf small { color: #33474a; font-size: .7rem; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .add { position: relative; width: 84px; height: 84px; border: 2px dashed #a9b6b3; border-radius: 8px; display: flex; flex-direction: column;
-           align-items: center; justify-content: center; color: #33474a; font-size: .8rem; cursor: pointer; text-align: center; }
+    figure button { position: absolute; top: -6px; right: -6px; background: var(--ro-paper); transform: scale(.8); }
+    .pdf { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; border: 1px solid var(--ro-line); border-radius: 8px;
+           color: #8a1c1c; overflow: hidden; } .pdf small { color: var(--ro-ink-soft); font-size: .7rem; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .add { position: relative; width: 84px; height: 84px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; text-align: center; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 4px 0; } .err { color: #b3261e; }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: 4px 0; } .err { color: var(--ro-error); }
     mat-checkbox { margin: 0 0 6px; }
     @media (max-width: 520px) { .two { grid-template-columns: 1fr; gap: 0; } }
   `,
@@ -295,7 +295,7 @@ export interface SetupItemData { propertyId: string; kind: 'category' | 'centre'
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 6px; width: min(460px, 84vw); } .two { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
-           input.caps { text-transform: uppercase; } .hint { color: #5b6b6e; font-size: .85rem; margin: 0 0 6px; } .err { color: #b3261e; }`,
+           input.caps { text-transform: uppercase; } .hint { color: var(--ro-mute); font-size: .85rem; margin: 0 0 6px; } .err { color: var(--ro-error); }`,
 })
 export class ExpenseSetupDialog {
   data = inject<SetupItemData>(MAT_DIALOG_DATA);
@@ -359,7 +359,7 @@ export interface NewBudgetData { propertyId: string; year: number; budgets: Budg
       <button mat-flat-button type="submit" form="new-budget-form" [disabled]="busy()">Make the budget</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; width: min(420px, 84vw); } .hint { color: #5b6b6e; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 4px; width: min(420px, 84vw); } .hint { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class NewBudgetDialog {
   data = inject<NewBudgetData>(MAT_DIALOG_DATA);
@@ -422,7 +422,7 @@ export interface BudgetRowData { propertyId: string; budget: Budget; costCentreI
       <button mat-flat-button type="submit" form="budget-row-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 10px; width: min(560px, 86vw); } .err { color: #b3261e; } .total { font-weight: 600; margin: 0; }
+  styles: `form { display: flex; flex-direction: column; gap: 10px; width: min(560px, 86vw); } .err { color: var(--ro-error); } .total { font-weight: 600; margin: 0; }
            .months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 8px; }
            @media (max-width: 520px) { .months { grid-template-columns: repeat(2, 1fr); } }`,
 })

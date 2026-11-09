@@ -125,20 +125,20 @@ import { ROLE_ORDER, roleName } from './roles';
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
     .box { padding: 20px 24px; max-width: 820px; margin-bottom: 16px; }
-    h2 { font-size: 1rem; color: #0e3b43; margin-bottom: 12px; }
-    .sub { color: #5b6b6e; margin: 0 0 12px; font-size: 0.9rem; }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin-bottom: 12px; }
+    .sub { color: var(--ro-mute); margin: 0 0 12px; font-size: 0.9rem; }
     .grant { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: center; margin-top: 8px; }
-    .desc { color: #5b6b6e; font-size: 0.85rem; margin: 4px 0 8px; }
+    .desc { color: var(--ro-mute); font-size: 0.85rem; margin: 4px 0 8px; }
     .actions { display: flex; gap: 8px; margin-top: 12px; }
-    .row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #edf1f0; flex-wrap: wrap; }
+    .row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--ro-line-soft); flex-wrap: wrap; }
     .row:first-of-type { border-top: 0; }
     .row .sub { margin: 2px 0 0; }
     .grow { flex: 1; }
-    .warn { color: #b3261e; }
+    .warn { color: var(--ro-error); }
     .reason-field { width: 100%; margin-bottom: 8px; }
-    .error { color: #b3261e; max-width: 820px; }
+    .error { color: var(--ro-error); max-width: 820px; }
     @media (max-width: 640px) { .grant { grid-template-columns: 1fr auto; } .grant mat-form-field:nth-child(2) { grid-column: 1; } }
   `,
 })

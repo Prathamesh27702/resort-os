@@ -92,13 +92,13 @@ const VIEW_STATUS: Record<View, string | undefined> = {
     .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .filters { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
     .q { flex: 1; min-width: 240px; max-width: 460px; }
-    .mute { color: #5b6b6e; }
+    .mute { color: var(--ro-mute); }
     .right { text-align: right; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    .err { color: #b3261e; }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid #edf1f0; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .err { color: var(--ro-error); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ro-line-soft); }
   `,
 })
 export class ReservationsPage {

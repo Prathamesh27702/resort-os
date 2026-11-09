@@ -50,19 +50,19 @@ import { PaymentsApi } from './payments.api';
     } @else if (error()) { <p class="err" role="alert">{{ error() }}</p> }
   `,
   styles: `
-    .drawer { background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+    .drawer { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
     .main { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .main > mat-icon { color: #0e3b43; }
+    .main > mat-icon { color: var(--ro-tide); }
     .main > div:first-of-type { flex: 1; min-width: 200px; }
     .expected { display: flex; flex-direction: column; align-items: flex-end; }
-    .expected span { color: #5b6b6e; font-size: .8rem; }
-    .expected b { font-size: 1.3rem; color: #0e3b43; }
+    .expected span { color: var(--ro-mute); font-size: .8rem; }
+    .expected b { font-size: 1.3rem; color: var(--ro-tide); }
     .pending { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; padding: 8px 12px;
-               background: #fbefd8; border-radius: 8px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .mute { color: #5b6b6e; }
-    .bad { color: #b3261e; }
-    .err { color: #b3261e; margin: 8px 0 0; }
+               background: var(--ro-warn-bg); border-radius: 8px; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .mute { color: var(--ro-mute); }
+    .bad { color: var(--ro-error); }
+    .err { color: var(--ro-error); margin: 8px 0 0; }
   `,
 })
 export class CashDrawerPanel {

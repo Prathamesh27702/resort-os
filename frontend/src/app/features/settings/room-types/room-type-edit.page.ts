@@ -117,17 +117,17 @@ const CATEGORY_ORDER = ['ROOM', 'BATHROOM', 'VIEW', 'DORMITORY', 'ACCESSIBILITY'
     </div>
   `,
   styles: `
-    .loading { color: #5b6b6e; }
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .loading { color: var(--ro-mute); }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
     .box { padding: 24px; max-width: 820px; }
-    h2 { margin: 8px 0 12px; font-size: 1rem; color: #0e3b43; }
-    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid #edf1f0; }
-    .hint { color: #5b6b6e; font-size: .9rem; margin: 8px 0 0; }
+    h2 { margin: 8px 0 12px; font-size: 1rem; color: var(--ro-tide); }
+    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--ro-line-soft); }
+    .hint { color: var(--ro-mute); font-size: .9rem; margin: 8px 0 0; }
     .amenities { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-    fieldset { border: 1px solid #edf1f0; border-radius: 8px; padding: 8px 12px; margin: 0; display: flex; flex-direction: column; }
-    legend { color: #5b6b6e; font-size: .85rem; padding: 0 4px; }
+    fieldset { border: 1px solid var(--ro-line-soft); border-radius: 8px; padding: 8px 12px; margin: 0; display: flex; flex-direction: column; }
+    legend { color: var(--ro-mute); font-size: .85rem; padding: 0 4px; }
     .actions { display: flex; gap: 8px; margin-top: 16px; }
-    .error { color: #b3261e; }
+    .error { color: var(--ro-error); }
     mat-slide-toggle { margin: 8px 0; }
   `,
 })

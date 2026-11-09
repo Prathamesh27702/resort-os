@@ -104,8 +104,8 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .split { list-style: none; margin: 0 0 12px; padding: 8px 12px; background: #f2f7f8; border-radius: 8px; }
     .split li { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
-    .amount { margin: 0 0 8px; color: #0e3b43; }
-    .err { color: #b3261e; }
+    .amount { margin: 0 0 8px; color: var(--ro-tide); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class PostChargeDialog {
@@ -204,9 +204,9 @@ export interface ReverseData { propertyId: string; folio: Folio; item: FolioItem
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
     .line { margin: 0 0 8px; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class ReverseChargeDialog {
@@ -280,12 +280,12 @@ export interface SplitResult { from: Folio; to: Folio; }
   `,
   styles: `
     form { min-width: min(480px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 8px; }
+    .hint { color: var(--ro-mute); margin: 0 0 8px; }
     .lines { display: flex; flex-direction: column; max-height: 260px; overflow: auto; margin-bottom: 12px; }
     .targets { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
     .full { width: 100%; }
-    .amount { margin: 0 0 8px; color: #0e3b43; }
-    .err { color: #b3261e; }
+    .amount { margin: 0 0 8px; color: var(--ro-tide); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class SplitFolioDialog {

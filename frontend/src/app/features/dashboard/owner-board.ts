@@ -48,7 +48,7 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
           <h3>Revenue each day this month</h3>
           <app-bars [bars]="dayBars()" label="Revenue each day" [height]="110" [every]="5" />
           <h3>The last 12 months</h3>
-          <app-bars [bars]="monthBars()" label="Revenue each month" [height]="120" color="#0e3b43" />
+          <app-bars [bars]="monthBars()" label="Revenue each month" [height]="120" color="var(--ro-tide)" />
           <div class="two">
             @if (d.channels; as cs) {
               <div><h3>Booking sources this month</h3>
@@ -81,18 +81,18 @@ interface Tile { key: string; label: string; value: string; vsMonth: string | nu
   styles: `
     .board { padding: 16px 20px; max-width: 980px; margin-bottom: 12px; }
     .h { display: flex; align-items: center; gap: 8px; } .h h2 { margin: 0; } .grow { flex: 1; }
-    h3 { font-size: .95rem; margin: 14px 0 6px; color: #33474a; }
+    h3 { font-size: .95rem; margin: 14px 0 6px; color: var(--ro-ink-soft); }
     .tiles { display: grid; gap: 8px; margin-top: 8px; } .five { grid-template-columns: repeat(5, 1fr); } .four { grid-template-columns: repeat(4, 1fr); }
     .tile { background: #f7faf9; border: 1px solid #e3e9e7; border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; min-width: 0; }
-    .tile small { color: #5b6b6e; font-size: .8rem; } .tile b { font-size: 1.3rem; color: #0e3b43; font-variant-numeric: tabular-nums; }
+    .tile small { color: var(--ro-mute); font-size: .8rem; } .tile b { font-size: 1.3rem; color: var(--ro-tide); font-variant-numeric: tabular-nums; }
     .vs { font-size: .74rem !important; } .up { color: #1b6e3a; } .down { color: #8a1c1c; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
-    .list { list-style: none; margin: 0; padding: 0; } .list li { display: grid; grid-template-columns: 1fr auto 90px; gap: 8px; padding: 3px 0; border-bottom: 1px solid #eef2f1; }
+    .list { list-style: none; margin: 0; padding: 0; } .list li { display: grid; grid-template-columns: 1fr auto 90px; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--ro-sunk); }
     .list b { text-align: right; font-variant-numeric: tabular-nums; }
-    .mute { color: #5b6b6e; } .small { font-size: .82rem; } .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); } .small { font-size: .82rem; } .err { color: var(--ro-error); }
     .gst { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin: 0; }
-    .meter { display: inline-block; vertical-align: middle; width: 120px; height: 6px; background: #eef2f1; border-radius: 3px; overflow: hidden; margin: 0 6px; }
-    .meter span { display: block; height: 100%; background: #0090a0; } .meter span.over { background: #b3261e; }
+    .meter { display: inline-block; vertical-align: middle; width: 120px; height: 6px; background: var(--ro-sunk); border-radius: 3px; overflow: hidden; margin: 0 6px; }
+    .meter span { display: block; height: 100%; background: #0090a0; } .meter span.over { background: var(--ro-error); }
     @media (max-width: 720px) { .five, .four { grid-template-columns: 1fr 1fr; } .two { grid-template-columns: 1fr; } }
   `,
 })

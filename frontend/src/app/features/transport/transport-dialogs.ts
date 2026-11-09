@@ -68,7 +68,7 @@ export interface BookTripData { propertyId: string; trip: Trip; }
       <button mat-flat-button type="submit" form="trip-book-form" [disabled]="busy()">Book</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
+  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            .total { font-weight: 600; margin: 4px 0; } mat-checkbox { margin: -4px 0 8px; }`,
 })
 export class BookTripDialog {
@@ -160,7 +160,7 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; }`,
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); }`,
 })
 export class TripsDialog {
   data = inject<TripsData>(MAT_DIALOG_DATA);
@@ -234,7 +234,7 @@ export interface TripEditData { propertyId: string; trip: Trip; vehicles: Vehicl
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; } .mute { color: #5b6b6e; }`,
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class TripEditDialog {
   data = inject<TripEditData>(MAT_DIALOG_DATA);
@@ -301,7 +301,7 @@ export interface VehicleData { propertyId: string; vehicle: Vehicle | null; }
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .code { flex: 0 1 130px; } .err { color: #b3261e; } mat-slide-toggle { margin: 4px 0; }`,
+           .row > * { flex: 1 1 150px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: 4px 0; }`,
 })
 export class VehicleDialog {
   data = inject<VehicleData>(MAT_DIALOG_DATA);
@@ -372,7 +372,7 @@ export interface RouteData { propertyId: string; route: TransportRoute | null; }
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 120px; } .code { flex: 0 1 130px; } .err { color: #b3261e; } mat-slide-toggle { margin: 4px 0; }`,
+           .row > * { flex: 1 1 120px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: 4px 0; }`,
 })
 export class RouteDialog {
   data = inject<RouteData>(MAT_DIALOG_DATA);

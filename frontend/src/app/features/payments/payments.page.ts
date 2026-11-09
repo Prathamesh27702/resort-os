@@ -107,21 +107,21 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
     .q { flex: 1; min-width: 220px; max-width: 420px; }
     .m { width: 170px; }
     .totals { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .totals > div { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 10px 14px; min-width: 130px; }
-    .totals span { color: #5b6b6e; font-size: .8rem; }
-    .totals b { font-size: 1.15rem; color: #0e3b43; }
+    .totals > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 10px 14px; min-width: 130px; }
+    .totals span { color: var(--ro-mute); font-size: .8rem; }
+    .totals b { font-size: 1.15rem; color: var(--ro-tide); }
     .totals .net b { font-size: 1.4rem; }
-    .mute { color: #5b6b6e; }
-    .bad { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .bad { color: var(--ro-error); }
     .right { text-align: right; }
     .void { text-decoration: line-through; color: #7a8a8c; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.back { background: #f6e3ec; color: #8a2449; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    .err { color: #b3261e; }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid #edf1f0; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
+    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .err { color: var(--ro-error); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ro-line-soft); }
     @media (max-width: 760px) { .m { width: 100%; } .totals > div { flex: 1; } }
   `,
 })

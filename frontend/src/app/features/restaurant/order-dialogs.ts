@@ -80,11 +80,11 @@ export interface DishData { item: MenuItem; }
     .qty { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
     .qty b { font-size: 1.3rem; min-width: 2ch; text-align: center; }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
     .food { display: inline-block; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: 8px; vertical-align: middle; }
     .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
-    .food.NON_VEG { border-color: #8c1d18; background: radial-gradient(#8c1d18 40%, transparent 45%); }
+    .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
     .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
   `,
 })
@@ -144,7 +144,7 @@ export interface ReasonData<T> { title: string; intro: string; button: string; p
       <button mat-flat-button color="warn" type="submit" form="reason-form" [disabled]="busy()">{{ data.button }}</button>
     </div>
   `,
-  styles: `form { min-width: min(400px, 84vw); } .full { width: 100%; } .err { color: #b3261e; }`,
+  styles: `form { min-width: min(400px, 84vw); } .full { width: 100%; } .err { color: var(--ro-error); }`,
 })
 export class ReasonDialog<T> {
   data = inject<ReasonData<T>>(MAT_DIALOG_DATA);
@@ -205,7 +205,7 @@ export interface DiscountData<T> {
     </div>
   `,
   styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: 8px; } .full { width: 100%; }
-           .err { color: #b3261e; margin: 0; } .mute { color: #5b6b6e; }`,
+           .err { color: var(--ro-error); margin: 0; } .mute { color: var(--ro-mute); }`,
 })
 export class DiscountDialog<T> {
   data = inject<DiscountData<T>>(MAT_DIALOG_DATA);
@@ -270,7 +270,7 @@ export interface PayData<T> { total: number; run: (method: PaymentMethod, refere
     </div>
   `,
   styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: 8px; } .full { width: 100%; }
-           .methods { flex-wrap: wrap; } .err { color: #b3261e; margin: 0; } .mute { color: #5b6b6e; }`,
+           .methods { flex-wrap: wrap; } .err { color: var(--ro-error); margin: 0; } .mute { color: var(--ro-mute); }`,
 })
 export class PayDialog<T> {
   data = inject<PayData<T>>(MAT_DIALOG_DATA);
@@ -327,7 +327,7 @@ export interface RoomData<T> {
       <button mat-flat-button type="button" (click)="save()" [disabled]="busy() || !data.rooms.length">{{ data.button }}</button>
     </div>
   `,
-  styles: `.rooms { min-width: min(420px, 84vw); } .opts { display: flex; flex-direction: column; gap: 4px; } .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+  styles: `.rooms { min-width: min(420px, 84vw); } .opts { display: flex; flex-direction: column; gap: 4px; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class RoomDialog<T> {
   data = inject<RoomData<T>>(MAT_DIALOG_DATA);

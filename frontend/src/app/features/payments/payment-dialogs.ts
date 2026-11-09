@@ -80,10 +80,10 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .owed { margin: 0 0 12px; color: #1b2a2e; }
+    .owed { margin: 0 0 12px; color: var(--ro-ink); }
     .methods, .target { margin-bottom: 14px; align-self: flex-start; flex-wrap: wrap; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     .err.field { margin: -8px 0 12px; font-size: .85rem; }
   `,
 })
@@ -204,10 +204,10 @@ export interface RefundData { propertyId: string; payment: Payment; }
   `,
   styles: `
     form { min-width: min(480px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })
@@ -275,9 +275,9 @@ export class RefundDialog {
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class VoidPaymentDialog {
@@ -335,9 +335,9 @@ export class VoidPaymentDialog {
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class AllocateDialog {
@@ -403,9 +403,9 @@ export interface DrawerData { propertyId: string; session?: CashDrawerSession; }
   `,
   styles: `
     form { min-width: min(420px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class OpenDrawerDialog {
@@ -473,13 +473,13 @@ export class OpenDrawerDialog {
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
     .sum { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; margin: 0 0 16px; }
-    .sum dt { color: #5b6b6e; }
+    .sum dt { color: var(--ro-mute); }
     .sum dd { margin: 0; text-align: right; }
     .variance { margin: -6px 0 12px; font-weight: 500; }
-    .variance.ok { color: #1d5b36; }
-    .variance.bad { color: #b3261e; }
+    .variance.ok { color: var(--ro-ok); }
+    .variance.bad { color: var(--ro-error); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class CloseDrawerDialog {
@@ -541,11 +541,11 @@ export class CloseDrawerDialog {
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #1b2a2e; margin: 0 0 12px; }
-    .bad { color: #b3261e; }
-    .over { color: #8a5a00; }
+    .hint { color: var(--ro-ink); margin: 0 0 12px; }
+    .bad { color: var(--ro-error); }
+    .over { color: var(--ro-warn); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class ApproveVarianceDialog {

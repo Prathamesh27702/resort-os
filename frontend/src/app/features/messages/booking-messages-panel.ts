@@ -41,17 +41,17 @@ import { CHANNEL, CHANNEL_ICON, MessagesApi, statusClass } from './messages.api'
   styles: `
     .card { padding: 16px 20px; margin-bottom: 16px; }
     .head { display: flex; align-items: center; gap: 8px; } .grow { flex: 1; }
-    h2 { font-size: 1rem; color: #0e3b43; margin: 0; }
-    .line { display: flex; gap: 10px; align-items: center; width: 100%; border: 0; border-top: 1px solid #edf1f0; background: none; padding: 8px 0;
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; }
+    .line { display: flex; gap: 10px; align-items: center; width: 100%; border: 0; border-top: 1px solid var(--ro-line-soft); background: none; padding: 8px 0;
             font: inherit; text-align: left; cursor: pointer; color: inherit; }
-    .ch { flex: none; color: #0e3b43; }
+    .ch { flex: none; color: var(--ro-tide); }
     .txt { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
     .line .chip { flex: none; margin: 0; }
     .top { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
-    .mute { color: #5b6b6e; } .why { color: #5b6b6e; } .bad, .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); } .why { color: var(--ro-mute); } .bad, .err { color: var(--ro-error); }
     .all { display: inline-block; margin-top: 8px; font-size: .9rem; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; } .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .chip.off { background: #eceff0; color: #5b6b6e; } .chip.bad { background: #f3e3e3; color: #7a1f1f; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .chip.off { background: #eceff0; color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })
 export class BookingMessagesPanel implements OnInit {

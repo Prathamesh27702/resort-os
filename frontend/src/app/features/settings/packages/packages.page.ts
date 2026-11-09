@@ -56,9 +56,9 @@ import { RatesApi, rupees } from '../rates/rates.api';
     </div>
   `,
   styles: `
-    .err { color: #b3261e; } .mute { color: #5b6b6e; } .code { font-size: .8rem; }
+    .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .code { font-size: .8rem; }
     .head-actions { display: flex; gap: 8px; align-items: center; }
-    .empty { padding: 24px; } .empty p { color: #5b6b6e; margin-top: 0; }
+    .empty { padding: 24px; } .empty p { color: var(--ro-mute); margin-top: 0; }
     .chip.ok { background: #e3f1e6; color: #1f5130; }
   `,
 })

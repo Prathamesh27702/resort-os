@@ -96,20 +96,20 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
   `,
   styles: `
     .setup { padding: 20px 24px; max-width: 720px; }
-    .sub { color: #5b6b6e; margin: 4px 0 16px; }
+    .sub { color: var(--ro-mute); margin: 4px 0 16px; }
     ul { list-style: none; margin: 0; padding: 0; }
-    li { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid #edf1f0; }
-    li mat-icon { color: #a9b6b3; }
+    li { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--ro-line-soft); }
+    li mat-icon { color: var(--ro-outline); }
     li.done mat-icon { color: #2e6b3c; }
-    li.done b { color: #5b6b6e; font-weight: 500; }
+    li.done b { color: var(--ro-mute); font-weight: 500; }
     .txt { flex: 1; display: flex; flex-direction: column; }
-    .txt span { color: #5b6b6e; font-size: 0.9rem; }
+    .txt span { color: var(--ro-mute); font-size: 0.9rem; }
     .install { display: flex; align-items: center; gap: 12px; padding: 12px 16px; max-width: 720px; margin-bottom: 12px; background: #eef6f4; }
-    .install > mat-icon { color: #0e3b43; }
+    .install > mat-icon { color: var(--ro-tide); }
     .myday { padding: 16px 20px; max-width: 720px; margin-bottom: 12px; } .myday h2 { margin: 0; }
     .myday .state { font-size: 1.2rem; font-weight: 600; margin: 8px 0 4px; } .myday p { margin: 4px 0; }
     .myday .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
-    .warn { color: #8a5a00; }
+    .warn { color: var(--ro-warn); }
   `,
 })
 export class DashboardPage {

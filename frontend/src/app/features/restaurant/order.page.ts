@@ -156,48 +156,48 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
     .order { max-width: 760px; padding-bottom: 80px; }
     .back { margin-left: -8px; }
     .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    h1 { margin: 4px 0 0; } .where { font-weight: 400; color: #33474a; }
-    .status { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #fbefd8; color: #8a5a00; }
-    .status.SETTLED { background: #e1f2e8; color: #1d5b36; } .status.VOIDED { background: #e3e7e6; color: #33474a; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; }
-    .banner { padding: 10px 12px; border-radius: 10px; } .banner.ok { background: #e1f2e8; } .banner.off { background: #eef2f1; }
-    section { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 4px 14px 14px; margin-top: 12px; }
+    h1 { margin: 4px 0 0; } .where { font-weight: 400; color: var(--ro-ink-soft); }
+    .status { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .status.SETTLED { background: var(--ro-ok-bg); color: var(--ro-ok); } .status.VOIDED { background: #e3e7e6; color: var(--ro-ink-soft); }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
+    .banner { padding: 10px 12px; border-radius: 10px; } .banner.ok { background: var(--ro-ok-bg); } .banner.off { background: var(--ro-sunk); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 4px 14px 14px; margin-top: 12px; }
     h2 { font-size: 1rem; margin: 12px 0 8px; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
+    .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid var(--ro-sunk); }
     .lines li.voided .nm, .lines li.voided .amt { text-decoration: line-through; color: #7a8a8d; }
     .what small { display: block; }
     .note { color: #5b3a00; }
     .amt { text-align: right; font-variant-numeric: tabular-nums; }
     .ctl { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; }
-    .kstate { font-size: .75rem; font-weight: 600; color: #5b6b6e; }
-    .kstate.NEW, .kstate.unsent { color: #8a5a00; } .kstate.READY { color: #134e63; } .kstate.SERVED { color: #1d5b36; } .kstate.VOIDED { color: #b3261e; }
-    .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
-    .kots .kstate { padding: 2px 10px; border-radius: 999px; background: #eef2f1; }
+    .kstate { font-size: .75rem; font-weight: 600; color: var(--ro-mute); }
+    .kstate.NEW, .kstate.unsent { color: var(--ro-warn); } .kstate.READY { color: #134e63; } .kstate.SERVED { color: var(--ro-ok); } .kstate.VOIDED { color: var(--ro-error); }
+    .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--ro-sunk); }
+    .kots .kstate { padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
     .kots .kstate.READY { background: #e0eff5; }
     .serve { margin-left: auto; min-height: 44px; }
     .big { min-height: 52px; font-size: 1.05rem; border-radius: 10px; margin-top: 12px; width: 100%; }
     dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; }
     dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-    .total { font-weight: 700; font-size: 1.15rem; border-top: 1px solid #d9e0de; padding-top: 6px; }
+    .total { font-weight: 700; font-size: 1.15rem; border-top: 1px solid var(--ro-line); padding-top: 6px; }
     .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
     .acts .big { flex: 1 1 200px; }
-    .danger { color: #b3261e; }
+    .danger { color: var(--ro-error); }
     .full { width: 100%; }
     .cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
-    .cats button { flex: 0 0 auto; border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
-    .cats button.on { background: #0e3b43; color: #fff; border-color: #0e3b43; }
+    .cats button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
+    .cats button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
     .dish { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 4px;
-            border-bottom: 1px solid #eef2f1; cursor: pointer; }
-    .dish:focus-visible { outline: 2px solid #8a2449; }
+            border-bottom: 1px solid var(--ro-sunk); cursor: pointer; }
+    .dish:focus-visible { outline: 2px solid var(--ro-kokum); }
     .dish[disabled] { opacity: .55; cursor: default; }
     .dish .nm { flex: 1; } .dish .nm small { display: block; }
     .dish .pr { font-variant-numeric: tabular-nums; }
-    .dish mat-icon { color: #0e3b43; }
-    .out { margin-left: 6px; font-size: .75rem; color: #b3261e; }
+    .dish mat-icon { color: var(--ro-tide); }
+    .out { margin-left: 6px; font-size: .75rem; color: var(--ro-error); }
     .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
     .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
-    .food.NON_VEG { border-color: #8c1d18; background: radial-gradient(#8c1d18 40%, transparent 45%); }
+    .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
     .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } section { padding: 2px 12px 12px; } }
   `,

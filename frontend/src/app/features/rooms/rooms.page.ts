@@ -120,11 +120,11 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
     .group header p { margin: 2px 0 0; }
     .group.inactive { opacity: .7; }
     .empty { padding: 24px; max-width: 640px; }
-    .empty p { color: #5b6b6e; }
-    .mute { color: #5b6b6e; }
+    .empty p { color: var(--ro-mute); }
+    .mute { color: var(--ro-mute); }
     .name { margin-left: 8px; }
     .pad { padding: 0 16px 16px; margin: 0; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     .chip.ok { background: #e3f1e6; color: #1f5130; }
     .chip.warn { background: #fdf0d8; color: #7a4a00; }
     .row-actions { text-align: right; white-space: nowrap; width: 1%; }

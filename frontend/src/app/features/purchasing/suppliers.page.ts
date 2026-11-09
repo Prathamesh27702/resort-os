@@ -58,13 +58,13 @@ import { PurchasingApi } from './purchasing.api';
   styles: `
     .sup { max-width: 900px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .late { color: #b3261e; } .unreg { color: #8a5a00; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .late { color: var(--ro-error); } .unreg { color: var(--ro-warn); }
     .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; } .search { flex: 1 1 220px; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .cards li { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
     .cards li.off { opacity: .6; }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
-    .note { color: #34484b; }
+    .note { color: var(--ro-ink-soft); }
     .owed { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; min-width: 96px; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .cards li { flex-wrap: wrap; } .owed { align-items: flex-start; text-align: left; } }
   `,

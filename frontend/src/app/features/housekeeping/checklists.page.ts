@@ -102,20 +102,20 @@ import { HousekeepingApi, TASK_TYPES, taskTypeLabel } from './housekeeping.api';
     .cl { max-width: 760px; padding-bottom: 40px; }
     .back { margin-left: -8px; }
     .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; }
-    .edit { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 14px; margin: 12px 0; }
+    .mute { color: var(--ro-mute); }
+    .edit { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 14px; margin: 12px 0; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     h2 { font-size: 1rem; font-weight: 600; margin: 14px 0 6px; }
     .item { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .grow { flex: 1 1 220px; }
     .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
     .list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-    .tpl { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 12px 14px; }
+    .tpl { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 12px 14px; }
     .tpl.off { opacity: .7; }
     .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     ol { margin: 8px 0 0; padding-left: 20px; }
-    .req { font-size: .72rem; color: #8a2449; margin-left: 6px; }
-    .err { color: #b3261e; }
+    .req { font-size: .72rem; color: var(--ro-kokum); margin-left: 6px; }
+    .err { color: var(--ro-error); }
     @media (max-width: 480px) { .two { grid-template-columns: 1fr; gap: 0; } }
   `,
 })

@@ -138,12 +138,12 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .roster { max-width: 1240px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; } .range { font-weight: 500; }
     .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; } .grow { flex: 1; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .ok { color: #1e6b3a; }
-    .short { border: 1px solid #e3a6a1; background: #fdeceb; border-radius: 12px; padding: 6px 12px 8px; margin-bottom: 8px; }
-    .short h2 { font-size: 1rem; color: #8c1d18; margin: 4px 0; } .short ul, .warn ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 12px; }
-    .short li button { color: #8c1d18; padding: 0 6px; height: auto; min-height: 32px; text-align: left; white-space: normal; } .short li.today b { text-decoration: underline; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .ok { color: #1e6b3a; }
+    .short { border: 1px solid #e3a6a1; background: var(--ro-error-bg); border-radius: 12px; padding: 6px 12px 8px; margin-bottom: 8px; }
+    .short h2 { font-size: 1rem; color: var(--ro-error-strong); margin: 4px 0; } .short ul, .warn ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 12px; }
+    .short li button { color: var(--ro-error-strong); padding: 0 6px; height: auto; min-height: 32px; text-align: left; white-space: normal; } .short li.today b { text-decoration: underline; }
     .warn { border: 1px solid #ecd29a; background: #fdf6e6; border-radius: 12px; padding: 6px 12px; margin-bottom: 8px; color: #6b4a00; } .warn li { padding: 2px 0; }
-    .gridwrap { overflow-x: auto; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; }
+    .gridwrap { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; }
     table.week-grid { border-collapse: collapse; width: 100%; min-width: 900px; font-size: .88rem; }
     .week-grid th, .week-grid td { border-bottom: 1px solid #eef1f0; padding: 4px 6px; vertical-align: top; text-align: left; }
     .week-grid thead th { position: sticky; top: 0; background: #f6f8f7; font-weight: 600; white-space: nowrap; } .week-grid thead th.today { background: #e6f0ff; }
@@ -151,16 +151,16 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .week-grid td.out { background: #f3f3f3; }
     .leave { display: inline-block; border-radius: 8px; padding: 1px 6px; font-size: .8rem; background: #e8f0fb; color: #1d4a7a; margin: 1px 0; }
     .week-grid .who { width: 170px; } .week-grid th.who { display: table-cell; } .week-grid th.who span { display: block; } .week-grid th.who small { display: block; font-weight: normal; }
-    .week-grid tr.dept th { background: #eef3f1; font-size: .8rem; color: #34484b; }
-    .badge { display: inline-block; background: #b3261e; color: #fff; border-radius: 9px; font-size: .72rem; padding: 0 6px; margin-left: 4px; }
+    .week-grid tr.dept th { background: #eef3f1; font-size: .8rem; color: var(--ro-ink-soft); }
+    .badge { display: inline-block; background: var(--ro-error); color: var(--ro-paper); border-radius: 9px; font-size: .72rem; padding: 0 6px; margin-left: 4px; }
     .chip { display: block; width: 100%; text-align: left; border: 1px solid #b9d3c6; background: #eaf5ef; border-radius: 8px; padding: 2px 6px; margin: 2px 0; cursor: pointer; font: inherit; color: inherit; }
     .chip:disabled { cursor: default; } .chip.overlap { border-color: #e0a100; background: #fff4d6; } .chip.other { border-style: dashed; }
-    .add { border: 1px dashed #b5c2c0; background: none; border-radius: 8px; width: 100%; color: #5b6b6e; cursor: pointer; font-size: 1rem; line-height: 1.3; }
+    .add { border: 1px dashed #b5c2c0; background: none; border-radius: 8px; width: 100%; color: var(--ro-mute); cursor: pointer; font-size: 1rem; line-height: 1.3; }
     .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 4px 0 8px; }
-    .days button { border: 1px solid #d9e0de; background: #fff; border-radius: 10px; padding: 4px 0; font: inherit; position: relative; }
-    .days button.on { background: #1d5c4e; color: #fff; border-color: #1d5c4e; } .dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: #b3261e; }
-    h3 { font-size: .85rem; color: #34484b; margin: 12px 0 4px; }
-    .list { list-style: none; margin: 0; padding: 0; } .list li { display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 6px 10px; margin-top: 6px; }
+    .days button { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 10px; padding: 4px 0; font: inherit; position: relative; }
+    .days button.on { background: #1d5c4e; color: var(--ro-paper); border-color: #1d5c4e; } .dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--ro-error); }
+    h3 { font-size: .85rem; color: var(--ro-ink-soft); margin: 12px 0 4px; }
+    .list { list-style: none; margin: 0; padding: 0; } .list li { display: flex; gap: 8px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 6px 10px; margin-top: 6px; }
     .list .nm { flex: 1; display: flex; flex-direction: column; min-width: 0; } .list .sh { flex: 1.2; display: flex; flex-direction: column; gap: 2px; }
     @media (max-width: 760px) { h1 { font-size: 1.35rem; } }
   `,

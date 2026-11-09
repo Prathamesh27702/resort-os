@@ -140,17 +140,17 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
     h1 { font-size: 1.4rem; margin: 4px 0 6px; }
     h2 { font-size: 1rem; font-weight: 600; margin: 18px 0 8px; }
     .tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .st, .pri, .tag { font-size: .78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #eef2f1; }
-    .pri.urgent { background: #b3261e; color: #fff; } .pri.high { background: #fbe4e2; color: #8c1d18; }
-    .st.resolved, .st.closed { background: #e1f2e8; color: #1d5b36; } .st.on-hold { background: #fbefd8; color: #8a5a00; }
+    .st, .pri, .tag { font-size: .78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
+    .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: #fbe4e2; color: var(--ro-error-strong); }
+    .st.resolved, .st.closed { background: var(--ro-ok-bg); color: var(--ro-ok); } .st.on-hold { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .st.in-progress, .st.assigned { background: #e0eff5; color: #134e63; }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 14px 0; }
-    dt { color: #5b6b6e; } dd { margin: 0; }
+    dt { color: var(--ro-mute); } dd { margin: 0; }
     .ooo { color: #5b3a00; }
-    .desc { background: #f5f7f6; border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; }
+    .desc { background: var(--ro-wash); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; }
     .photos { display: flex; flex-wrap: wrap; gap: 8px; }
-    .photos img, .ph { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; display: block; background: #eef2f1; }
-    .add { width: 96px; height: 96px; border: 2px dashed #a9b6b3; border-radius: 8px; display: flex; flex-direction: column;
+    .photos img, .ph { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; display: block; background: var(--ro-sunk); }
+    .add { width: 96px; height: 96px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
            align-items: center; justify-content: center; font-size: .8rem; cursor: pointer; position: relative; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
     section { border-top: 1px solid #e3e7e6; margin-top: 8px; }
@@ -159,12 +159,12 @@ import { MaintenanceApi, categoryLabel, priorityLabel, ticketStatusClass, ticket
     .wrap { flex-wrap: wrap; }
     .grow { flex: 1; min-width: 0; }
     .full { width: 100%; }
-    .hint { color: #5b6b6e; font-size: .85rem; }
+    .hint { color: var(--ro-mute); font-size: .85rem; }
     .timeline { list-style: none; padding: 0; margin: 0; }
-    .timeline li { display: flex; flex-direction: column; padding: 8px 0 8px 12px; border-left: 2px solid #d9e0de; }
+    .timeline li { display: flex; flex-direction: column; padding: 8px 0 8px 12px; border-left: 2px solid var(--ro-line); }
     .timeline li.status { border-left-color: #1f6f8b; }
-    .who { color: #5b6b6e; font-size: .8rem; }
-    .err { color: #b3261e; }
+    .who { color: var(--ro-mute); font-size: .8rem; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class TicketPage {

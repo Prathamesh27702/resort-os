@@ -119,7 +119,7 @@ export function report(form: FormGroup, e: unknown, error: (m: string) => void) 
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(560px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 200px; } .err { color: #b3261e; }`,
+           .row > * { flex: 1 1 200px; } .err { color: var(--ro-error); }`,
 })
 export class EmployeeDialog {
   data = inject<{ propertyId: string; employee: Employee | null; departments: Department[] }>(MAT_DIALOG_DATA);
@@ -248,9 +248,9 @@ export class EmployeeDialog {
            ul { list-style: none; margin: 0; padding: 0; } .depts li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid #e3e8e6; }
            .depts li > small { grid-column: 1; } .depts li > button { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
            .off { opacity: .6; } .chip { display: inline-block; background: #eef3f1; border-radius: 10px; padding: 0 8px; margin: 2px 4px 0 0; }
-           .box { display: flex; flex-direction: column; gap: 4px; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 12px; }
+           .box { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 12px; }
            .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 200px; } .acts { display: flex; justify-content: flex-end; gap: 8px; }
-           .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+           .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class DepartmentsDialog {
   data = inject<{ propertyId: string }>(MAT_DIALOG_DATA);
@@ -331,7 +331,7 @@ export class DepartmentsDialog {
       <button mat-flat-button color="warn" type="submit" form="leave-form" [disabled]="busy()">Record leaving</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(420px, 84vw); } .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(420px, 84vw); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class LeaveDialog {
   data = inject<{ propertyId: string; employee: Employee; today: string }>(MAT_DIALOG_DATA);
@@ -394,7 +394,7 @@ export class LeaveDialog {
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+           .row > * { flex: 1 1 180px; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class PayDialog {
   data = inject<{ propertyId: string; employee: Employee; current: EmployeeCompensation['current']; today: string }>(MAT_DIALOG_DATA);
@@ -470,7 +470,7 @@ export class PayDialog {
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .file { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-           .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+           .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class DocumentDialog {
   data = inject<{ propertyId: string; employee: Employee }>(MAT_DIALOG_DATA);

@@ -88,9 +88,9 @@ export interface AskData {
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
            .row > * { flex: 1 1 150px; } .halves { display: flex; gap: 12px; flex-wrap: wrap; margin: -4px 0 8px; }
-           .err { color: #b3261e; } .mute { color: #5b6b6e; } .small { font-size: .85rem; }
+           .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
            .preview { background: #f4f8f7; border-radius: 10px; padding: 8px 12px; margin-top: 4px; } .preview p { margin: 4px 0; }
-           .big { font-size: 1.05rem; } .w { color: #5b4a00; } .k-ROSTERED { color: #0e3b43; }`,
+           .big { font-size: 1.05rem; } .w { color: #5b4a00; } .k-ROSTERED { color: var(--ro-tide); }`,
 })
 export class AskLeaveDialog {
   data = inject<AskData>(MAT_DIALOG_DATA);
@@ -181,7 +181,7 @@ export interface ApproveData { propertyId: string; request: LeaveRequest; }
       <button mat-flat-button type="submit" form="approve-form" [disabled]="busy()">Approve</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(440px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
+  styles: `form { display: flex; flex-direction: column; min-width: min(440px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            .w { color: #5b4a00; margin: 4px 0; } p { margin: 4px 0; }`,
 })
 export class ApproveLeaveDialog {
@@ -250,7 +250,7 @@ export interface TypeData { propertyId: string; type: LeaveType | null; }
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
            .row > * { flex: 1 1 140px; } .code { flex: 0 1 110px; } .toggles { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 12px; }
-           .err { color: #b3261e; } .mute { color: #5b6b6e; } .small { font-size: .85rem; }`,
+           .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }`,
 })
 export class LeaveTypeDialog {
   data = inject<TypeData>(MAT_DIALOG_DATA);
@@ -315,7 +315,7 @@ export interface HolidayData { propertyId: string; holiday: Holiday | null; }
       <button mat-flat-button type="submit" form="holiday-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(380px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; margin-top: 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(380px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class HolidayDialog {
   data = inject<HolidayData>(MAT_DIALOG_DATA);
@@ -395,8 +395,8 @@ export interface LedgerData { propertyId: string; employeeId: string; canAdjust:
   `,
   styles: `.bal { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; } .adjust { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
            .adjust > mat-form-field { flex: 1 1 140px; } .adjust .days { flex: 0 1 120px; } .adjust .why { flex: 2 1 200px; }
-           .ledger { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; } .ledger th, .ledger td { text-align: left; padding: 6px; border-bottom: 1px solid #eef2f1; vertical-align: top; }
-           .ledger small { display: block; } .n { text-align: right; white-space: nowrap; } .neg { color: #8c1d18; } .err { color: #b3261e; } .mute { color: #5b6b6e; }
+           .ledger { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; } .ledger th, .ledger td { text-align: left; padding: 6px; border-bottom: 1px solid var(--ro-sunk); vertical-align: top; }
+           .ledger small { display: block; } .n { text-align: right; white-space: nowrap; } .neg { color: var(--ro-error-strong); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            :host { display: block; min-width: min(640px, 88vw); }`,
 })
 export class LedgerDialog {

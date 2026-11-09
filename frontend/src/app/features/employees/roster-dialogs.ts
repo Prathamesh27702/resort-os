@@ -106,9 +106,9 @@ export interface ShiftData {
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 160px; } .err { color: #b3261e; } .warn { color: #8a5a00; margin: 0 0 8px; }
-           .clash { border: 1px solid #e3a6a1; background: #fdeceb; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; flex-direction: column; }
-           .clash p { margin: 0 0 4px; color: #8c1d18; } .rm { margin-right: auto; }`,
+           .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); margin: 0 0 8px; }
+           .clash { border: 1px solid #e3a6a1; background: var(--ro-error-bg); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; flex-direction: column; }
+           .clash p { margin: 0 0 4px; color: var(--ro-error-strong); } .rm { margin-right: auto; }`,
 })
 export class ShiftDialog {
   data = inject<ShiftData>(MAT_DIALOG_DATA);
@@ -256,9 +256,9 @@ export class ShiftDialog {
   `,
   styles: `.body { min-width: min(620px, 84vw); display: flex; flex-direction: column; gap: 12px; } ul { list-style: none; margin: 0; padding: 0; }
            li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #e3e8e6; } li.off { opacity: .6; }
-           .box { display: flex; flex-direction: column; gap: 4px; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 12px; }
+           .box { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 12px; }
            .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 130px; } .acts { display: flex; justify-content: flex-end; gap: 8px; }
-           .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+           .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class TemplatesDialog {
   data = inject<{ propertyId: string; departments: { id: string; name: string }[] }>(MAT_DIALOG_DATA);
@@ -330,7 +330,7 @@ export class TemplatesDialog {
       } @else { <button mat-flat-button [mat-dialog-close]="result()" type="button">Done</button> }
     </div>
   `,
-  styles: `.body { min-width: min(440px, 84vw); } .mute { color: #5b6b6e; } .err { color: #b3261e; } ul { padding-left: 18px; }`,
+  styles: `.body { min-width: min(440px, 84vw); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } ul { padding-left: 18px; }`,
 })
 export class CopyWeekDialog {
   data = inject<{ propertyId: string; toWeek: string }>(MAT_DIALOG_DATA);

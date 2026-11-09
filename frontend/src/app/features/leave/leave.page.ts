@@ -154,29 +154,29 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
     .leave { max-width: 960px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     mat-button-toggle-group { flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
     .cards { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
-    .card { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; padding: 10px 14px; min-width: 120px; display: flex; flex-direction: column; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 10px 14px; min-width: 120px; display: flex; flex-direction: column; }
     .card b { font-size: 1.3rem; }
     .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0 4px; }
     h2 { margin: 18px 0 6px; font-size: 1.1rem; }
-    .reqs, .hols, .types { list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .reqs li, .types li { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid #eef2f1; flex-wrap: wrap; }
+    .reqs, .hols, .types { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .reqs li, .types li { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .reqs li:first-child, .types li:first-child, .hols li:first-child { border-top: 0; }
     .main { flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .top { display: flex; justify-content: space-between; gap: 8px; }
-    .status { font-size: .85rem; border-radius: 10px; padding: 0 8px; background: #eef2f1; white-space: nowrap; }
+    .status { font-size: .85rem; border-radius: 10px; padding: 0 8px; background: var(--ro-sunk); white-space: nowrap; }
     .s-PENDING .status { background: #fdf6e6; color: #6b4a00; } .s-APPROVED .status { background: #e3f3ea; color: #1e6b3a; }
     .s-REJECTED .status, .s-CANCELLED .status { background: #f3eeee; color: #6b2a2a; }
-    .w { color: #5b4a00; } .k-ROSTERED { color: #0e3b43; }
+    .w { color: #5b4a00; } .k-ROSTERED { color: var(--ro-tide); }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .hols li { padding: 8px 14px; border-top: 1px solid #eef2f1; } .hols.full li { display: flex; align-items: center; gap: 8px; } .hols b { min-width: 110px; display: inline-block; }
+    .hols li { padding: 8px 14px; border-top: 1px solid var(--ro-sunk); } .hols.full li { display: flex; align-items: center; gap: 8px; } .hols b { min-width: 110px; display: inline-block; }
     .off { opacity: .6; }
     .types li > div { flex: 1; display: flex; flex-direction: column; }
-    .scroll { overflow-x: auto; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .bal { width: 100%; border-collapse: collapse; } .bal th, .bal td { padding: 8px 10px; border-bottom: 1px solid #eef2f1; text-align: left; }
+    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .bal { width: 100%; border-collapse: collapse; } .bal th, .bal td { padding: 8px 10px; border-bottom: 1px solid var(--ro-sunk); text-align: left; }
     .bal tbody tr { cursor: pointer; } .bal tbody tr:hover { background: #f4f8f7; } .bal small { display: block; } .n { text-align: right; }
-    .notlinked { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 12px 16px; }
+    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 12px 16px; }
   `,
 })
 export class LeavePage {

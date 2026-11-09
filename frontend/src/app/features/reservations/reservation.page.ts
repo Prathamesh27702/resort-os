@@ -180,26 +180,26 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
     h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: 8px; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
     .card { padding: 16px 20px; }
     .wide { margin-bottom: 16px; }
-    h2 { font-size: 1rem; color: #0e3b43; margin: 0 0 12px; }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0 0 12px; }
     .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; margin: 0; }
-    dt { color: #5b6b6e; }
+    dt { color: var(--ro-mute); }
     dd { margin: 0; }
-    .mute { color: #5b6b6e; }
+    .mute { color: var(--ro-mute); }
     .right { text-align: right; white-space: nowrap; }
     .pre { white-space: pre-wrap; }
-    .err { color: #b3261e; }
-    .danger { color: #b3261e; }
+    .err { color: var(--ro-error); }
+    .danger { color: var(--ro-error); }
     .full { width: 100%; }
-    .note { border-bottom: 1px solid #edf1f0; padding-bottom: 8px; margin: 0 0 8px; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 8px 0 0; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
+    .note { border-bottom: 1px solid var(--ro-line-soft); padding-bottom: 8px; margin: 0 0 8px; }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: 8px 0 0; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
   `,
 })
@@ -397,7 +397,7 @@ export interface ChangeStayData { reservation: Reservation; propertyId: string; 
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; align-items: start; }
     .room { grid-column: 1 / -1; font-weight: 500; margin: 4px 0 8px; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class ChangeStayDialog {

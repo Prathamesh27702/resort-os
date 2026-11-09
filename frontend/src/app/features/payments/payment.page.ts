@@ -108,24 +108,24 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
   styles: `
     .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     h2 { margin: 20px 0 8px; }
-    .note { background: #f3e3e3; color: #7a1f1f; border-radius: 8px; padding: 10px 12px; }
-    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; background: #fff; border: 1px solid #d9e0de; border-radius: 10px;
+    .note { background: var(--ro-off-bg); color: var(--ro-off); border-radius: 8px; padding: 10px 12px; }
+    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
             padding: 12px 16px; margin-bottom: 12px; }
     .sums div { display: flex; flex-direction: column; }
-    .sums span { color: #5b6b6e; font-size: .8rem; }
-    .sums b { font-size: 1.15rem; color: #0e3b43; }
+    .sums span { color: var(--ro-mute); font-size: .8rem; }
+    .sums b { font-size: 1.15rem; color: var(--ro-tide); }
     .facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 0 0 8px; }
-    .facts dt { color: #5b6b6e; }
+    .facts dt { color: var(--ro-mute); }
     .facts dd { margin: 0; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.back { background: #f6e3ec; color: #8a2449; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .mute { color: #5b6b6e; }
-    .bad, .sums b.bad { color: #b3261e; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
+    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .mute { color: var(--ro-mute); }
+    .bad, .sums b.bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .empty { color: #5b6b6e; padding: 16px; }
-    .err { color: #b3261e; }
+    .empty { color: var(--ro-mute); padding: 16px; }
+    .err { color: var(--ro-error); }
     @media (max-width: 760px) { .sums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   `,
 })

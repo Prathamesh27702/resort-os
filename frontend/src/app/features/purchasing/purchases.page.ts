@@ -123,21 +123,21 @@ type OrderFilter = 'open' | 'waiting' | 'all';
   styles: `
     .pur { max-width: 940px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .wait { color: #8a5a00; } .late { color: #b3261e; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .wait { color: var(--ro-warn); } .late { color: var(--ro-error); }
     .views { margin: 4px 0 10px; flex-wrap: wrap; }
     .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
     .tools mat-button-toggle-group { flex-wrap: wrap; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .cards li { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
     .cards li.off { opacity: .7; }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
     a.nm { min-height: 40px; }
     .right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; font-variant-numeric: tabular-nums; }
     .acts { display: flex; flex-direction: column; gap: 4px; }
-    .st { font-size: .8rem; } .st.PENDING_APPROVAL, .st.OPEN, .st.PART_PAID { color: #8a5a00; } .st.APPROVED, .st.PARTLY_RECEIVED { color: #1b5e8a; }
-    .st.RECEIVED, .st.PAID, .st.ORDERED { color: #2e7d32; } .st.CANCELLED, .st.CLOSED { color: #5b6b6e; } .st.UNPAID { color: #b3261e; }
+    .st { font-size: .8rem; } .st.PENDING_APPROVAL, .st.OPEN, .st.PART_PAID { color: var(--ro-warn); } .st.APPROVED, .st.PARTLY_RECEIVED { color: #1b5e8a; }
+    .st.RECEIVED, .st.PAID, .st.ORDERED { color: #2e7d32; } .st.CANCELLED, .st.CLOSED { color: var(--ro-mute); } .st.UNPAID { color: var(--ro-error); }
     .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-    .tiles div { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; }
+    .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; }
     .tiles b { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .cards li { flex-wrap: wrap; } .right { align-items: flex-start; text-align: left; } .acts { flex-direction: row; } }
   `,

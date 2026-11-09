@@ -63,18 +63,18 @@ export function paymentText(s: CalendarBooking['paymentStatus']): string {
   `,
   styles: `
     :host { display: block; }
-    .scroll { overflow-x: auto; border: 1px solid #dfe6e4; border-radius: 10px; background: #fff; }
+    .scroll { overflow-x: auto; border: 1px solid #dfe6e4; border-radius: 10px; background: var(--ro-paper); }
     .grid { --label-w: 150px; min-width: calc(var(--label-w) + var(--days) * var(--day-w)); }
     .row { display: grid; grid-template-columns: var(--label-w) repeat(var(--days), minmax(var(--day-w), 1fr));
-           grid-template-rows: 40px; border-top: 1px solid #edf1f0; position: relative; }
+           grid-template-rows: 40px; border-top: 1px solid var(--ro-line-soft); position: relative; }
     .row.head { border-top: 0; grid-template-rows: 44px; position: sticky; top: 0; z-index: 3; background: #f7faf9; }
-    .label { grid-column: 1; grid-row: 1; position: sticky; left: 0; z-index: 2; background: #fff; padding: 0 10px;
+    .label { grid-column: 1; grid-row: 1; position: sticky; left: 0; z-index: 2; background: var(--ro-paper); padding: 0 10px;
              display: flex; align-items: center; gap: 4px; font-size: 13px; border-right: 1px solid #dfe6e4; white-space: nowrap;
              overflow: hidden; text-overflow: ellipsis; }
     .head .label { background: #f7faf9; font-weight: 600; }
     .day { grid-row: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px;
-           color: #5b6b6e; border-left: 1px solid #edf1f0; line-height: 1.1; }
-    .day b { color: #1b2a2e; font-size: 13px; }
+           color: var(--ro-mute); border-left: 1px solid var(--ro-line-soft); line-height: 1.1; }
+    .day b { color: var(--ro-ink); font-size: 13px; }
     .day.today { background: #e3f1ef; }
     .day.today b { color: #00695c; }
     .cell { grid-row: 1; border-left: 1px solid #f1f4f3; }
@@ -91,7 +91,7 @@ export function paymentText(s: CalendarBooking['paymentStatus']): string {
     .bar .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
     .bar .ref { opacity: .75; font-variant-numeric: tabular-nums; }
     .s-confirmed { background: #d7efe0; color: #14532d; border-color: #9fd4b4; }
-    .s-pending { background: #fbefd8; color: #7a4f00; border-color: #efcd8a; border-style: dashed; }
+    .s-pending { background: var(--ro-warn-bg); color: #7a4f00; border-color: #efcd8a; border-style: dashed; }
     .s-checked_in { background: #dbe8fb; color: #163e7a; border-color: #a7c3ef; }
     .s-checked_out { background: #eceff0; color: #4d5b5e; border-color: #d3d9da; }
     .block { background: repeating-linear-gradient(135deg, #fde3e1 0 6px, #f9d0cc 6px 12px); color: #7f1d1d; border: 1px solid #f2b8b2; }

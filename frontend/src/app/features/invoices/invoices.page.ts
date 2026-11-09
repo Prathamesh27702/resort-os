@@ -94,18 +94,18 @@ type Period = 'today' | 'week' | 'month' | 'all';
     .filters { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 8px; }
     .q { flex: 1; min-width: 220px; max-width: 460px; }
     .s { width: 180px; }
-    .mute { color: #5b6b6e; }
-    .bad { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .bad { color: var(--ro-error); }
     .right { text-align: right; }
     .void { text-decoration: line-through; color: #7a8a8c; }
     .chip.status { margin-left: 8px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.back { background: #f6e3ec; color: #8a2449; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    .err { color: #b3261e; }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid #edf1f0; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.back { background: #f6e3ec; color: var(--ro-kokum); }
+    .chip.off { background: #eceff0; color: var(--ro-mute); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .err { color: var(--ro-error); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ro-line-soft); }
     @media (max-width: 760px) { .s { width: 100%; } }
   `,
 })

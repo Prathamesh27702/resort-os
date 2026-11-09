@@ -75,12 +75,12 @@ import { GuestsApi, countryName, formatPhone } from './guests.api';
   styles: `
     .search { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .q { flex: 1; min-width: 260px; max-width: 520px; }
-    .mute { color: #5b6b6e; }
-    .vip { background: #fbefd8; color: #8a5a00; margin-left: 6px; }
+    .mute { color: var(--ro-mute); }
+    .vip { background: var(--ro-warn-bg); color: var(--ro-warn); margin-left: 6px; }
     .chip.off { margin-left: 6px; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    .err { color: #b3261e; }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid #edf1f0; }
+    .empty { color: var(--ro-mute); padding: 20px 16px; }
+    .err { color: var(--ro-error); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ro-line-soft); }
   `,
 })
 export class GuestsPage {

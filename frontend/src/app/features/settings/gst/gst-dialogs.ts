@@ -79,7 +79,7 @@ export interface RegistrationData { property: Property; }
     .full { width: 100%; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .caps { text-transform: uppercase; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })
@@ -182,7 +182,7 @@ export class RegistrationDialog {
     .full { width: 100%; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .caps { text-transform: uppercase; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })
@@ -323,8 +323,8 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
     .slab { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
     .slab mat-form-field { flex: 1 1 160px; }
     .slab .rate { flex: 0 1 140px; }
-    .above { flex: 1 1 160px; color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .above { flex: 1 1 160px; color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })

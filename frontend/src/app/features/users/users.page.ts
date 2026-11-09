@@ -43,7 +43,7 @@ import { roleName } from './roles';
       </div>
     </div>
   `,
-  styles: `.mute { color: #5b6b6e; }`,
+  styles: `.mute { color: var(--ro-mute); }`,
 })
 export class UsersPage {
   private http = inject(HttpClient);

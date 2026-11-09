@@ -69,7 +69,7 @@ export interface BookData { propertyId: string; session: ActivitySession; }
       <button mat-flat-button type="submit" form="book-form" [disabled]="busy()">Book</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
+  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            .total { font-weight: 600; margin: 4px 0; } mat-checkbox { margin: -4px 0 8px; }`,
 })
 export class BookActivityDialog {
@@ -152,7 +152,7 @@ export interface WeatherData { propertyId: string; detail: ActivitySessionDetail
       <button mat-flat-button color="warn" type="submit" form="weather-form" [disabled]="busy()">Cancel the session</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(520px, 86vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; } p { margin: 4px 0; }
+  styles: `form { display: flex; flex-direction: column; min-width: min(520px, 86vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } p { margin: 4px 0; }
            .moves { display: flex; flex-direction: column; gap: 6px; } .mv { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
            .mv > span { flex: 1 1 180px; } .mv mat-form-field { flex: 1 1 220px; }`,
 })
@@ -226,7 +226,7 @@ export interface SessionsData { propertyId: string; activities: Activity[]; from
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; }`,
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); }`,
 })
 export class SessionsDialog {
   data = inject<SessionsData>(MAT_DIALOG_DATA);
@@ -286,7 +286,7 @@ export interface SessionEditData { propertyId: string; session: ActivitySession;
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; min-width: min(420px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 140px; } .err { color: #b3261e; } .mute { color: #5b6b6e; }`,
+           .row > * { flex: 1 1 140px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class SessionEditDialog {
   data = inject<SessionEditData>(MAT_DIALOG_DATA);
@@ -358,7 +358,7 @@ export interface ActivityEditData { propertyId: string; activity: Activity | nul
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 130px; } .code { flex: 0 1 130px; } .err { color: #b3261e; } mat-slide-toggle { margin: 4px 0; }`,
+           .row > * { flex: 1 1 130px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: 4px 0; }`,
 })
 export class ActivityDialog {
   data = inject<ActivityEditData>(MAT_DIALOG_DATA);

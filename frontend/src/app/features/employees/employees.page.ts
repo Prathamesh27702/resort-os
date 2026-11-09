@@ -70,10 +70,10 @@ import { EMPLOYMENT_LABEL, EmployeesApi, dayName } from './employees.api';
   styles: `
     .emp { max-width: 900px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .left { color: #8a5a00; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .left { color: var(--ro-warn); }
     .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; } .search { flex: 1 1 220px; } .dept { flex: 0 1 200px; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: center; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .cards li { display: flex; gap: 10px; align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; color: inherit; text-decoration: none; }
     .go { color: #8a9a9c; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .dept { flex: 1 1 100%; } }

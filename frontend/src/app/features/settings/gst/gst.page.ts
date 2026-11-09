@@ -174,7 +174,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
   `,
   styles: `
     .wide { max-width: 1100px; }
-    .panel { background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+    .panel { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
     .sec-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
     h2 { margin: 0 0 8px; font-size: 1.1rem; }
     h3 { margin: 0; font-size: 1rem; }
@@ -183,19 +183,19 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
     .cat header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 6px; }
     tr.past td { color: #7a8a8c; }
     .chip { margin-left: 6px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .ok-text { color: #1d5b36; }
-    .note { background: #fbefd8; color: #6b4600; border-radius: 8px; padding: 10px 12px; }
-    .mute { color: #5b6b6e; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .ok-text { color: var(--ro-ok); }
+    .note { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px 12px; }
+    .mute { color: var(--ro-mute); }
     .small { font-size: .85rem; }
     .right { text-align: right; }
-    .err { color: #b3261e; }
-    .empty { color: #5b6b6e; padding: 12px 0; }
+    .err { color: var(--ro-error); }
+    .empty { color: var(--ro-mute); padding: 12px 0; }
     .calc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 12px; }
     .go { display: flex; align-items: flex-start; padding-top: 8px; }
     .result { margin-top: 8px; max-width: 520px; }
-    .result tr.sum td { border-top: 2px solid #d9e0de; }
+    .result tr.sum td { border-top: 2px solid var(--ro-line); }
     @media (max-width: 760px) {
       .calc { grid-template-columns: 1fr; }
       table.data td, table.data th { padding: 10px 8px; }

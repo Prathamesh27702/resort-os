@@ -140,18 +140,18 @@ const MAX_PHOTOS = 6;
     h2 { font-size: 1rem; font-weight: 600; margin: 8px 0; }
     form { display: flex; flex-direction: column; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .ooo { background: #f5f7f6; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+    .ooo { background: var(--ro-wash); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
     .ooo mat-form-field { width: 100%; margin-top: 8px; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 4px 0 0; }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: 4px 0 0; }
     .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
     figure { position: relative; margin: 0; width: 88px; height: 88px; }
     figure img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    figure button { position: absolute; top: -6px; right: -6px; background: #fff; transform: scale(.8); }
-    .add { width: 88px; height: 88px; border: 2px dashed #a9b6b3; border-radius: 8px; display: flex; flex-direction: column;
-           align-items: center; justify-content: center; color: #33474a; font-size: .8rem; cursor: pointer; }
+    figure button { position: absolute; top: -6px; right: -6px; background: var(--ro-paper); transform: scale(.8); }
+    .add { width: 88px; height: 88px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
     .send { min-height: 52px; font-size: 1.05rem; margin-top: 12px; border-radius: 10px; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 480px) { .two { grid-template-columns: 1fr; gap: 0; } }
   `,
 })

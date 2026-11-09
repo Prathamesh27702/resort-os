@@ -77,30 +77,30 @@ interface NavItem { label: string; icon: string; link: string; perm?: string; ex
   `,
   styles: `
     :host { display: block; }
-    .frame { height: 100vh; width: 100%; background: #f5f7f6; --mat-sidenav-container-shape: 0; }
-    .rail { width: 232px; background: #0e3b43; color: #cfe0dd; border: 0; padding: 20px 12px; display: flex; flex-direction: column; }
-    .logo { color: #fff; font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; padding: 0 12px; }
+    .frame { height: 100vh; width: 100%; background: var(--ro-wash); --mat-sidenav-container-shape: 0; }
+    .rail { width: 232px; background: var(--ro-tide); color: #cfe0dd; border: 0; padding: 20px 12px; display: flex; flex-direction: column; }
+    .logo { color: var(--ro-paper); font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; padding: 0 12px; }
     .org { font-size: 0.8rem; color: #8fb0ab; padding: 2px 12px 20px; }
     nav { display: flex; flex-direction: column; gap: 2px; }
     nav a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px; color: #cfe0dd; text-decoration: none; }
     nav a mat-icon { font-size: 20px; width: 20px; height: 20px; }
-    nav a:hover { background: #164c56; color: #fff; }
-    nav a.active { background: #f5f7f6; color: #0e3b43; font-weight: 500; }
+    nav a:hover { background: var(--ro-tide-soft); color: var(--ro-paper); }
+    nav a.active { background: var(--ro-wash); color: var(--ro-tide); font-weight: 500; }
     /* The global kokum ring is too dark on the tide rail (1.4:1); use a light ring here. */
-    nav a:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+    nav a:focus-visible { outline: 2px solid var(--ro-paper); outline-offset: 2px; }
     .later { margin: 24px 12px 0; font-size: 0.78rem; color: #7fa29d; line-height: 1.4; }
-    .bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; padding: 8px 20px; background: #fff; border-bottom: 1px solid #d9e0de; min-height: 56px; }
+    .bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; padding: 8px 20px; background: var(--ro-paper); border-bottom: 1px solid var(--ro-line); min-height: 56px; }
     .prop { font-weight: 600; font-size: 1rem; }
     .prop.static { padding: 0 8px; }
-    .clock { display: flex; align-items: baseline; gap: 8px; padding: 4px 12px; border-left: 3px solid #8a2449; }
-    .clock .day { color: #5b6b6e; }
-    .clock .time { font-size: 1.15rem; font-weight: 600; color: #1b2a2e; }
-    .clock .tz { font-size: 0.75rem; color: #5b6b6e; }
+    .clock { display: flex; align-items: baseline; gap: 8px; padding: 4px 12px; border-left: 3px solid var(--ro-kokum); }
+    .clock .day { color: var(--ro-mute); }
+    .clock .time { font-size: 1.15rem; font-weight: 600; color: var(--ro-ink); }
+    .clock .tz { font-size: 0.75rem; color: var(--ro-mute); }
     .grow { flex: 1; }
     .user { height: auto; padding: 4px 8px; }
-    .initials { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #0e3b43; color: #fff; font-size: 0.8rem; font-weight: 600; margin-right: 8px; }
+    .initials { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ro-tide); color: var(--ro-paper); font-size: 0.8rem; font-weight: 600; margin-right: 8px; }
     .who { display: inline-flex; flex-direction: column; text-align: left; line-height: 1.2; }
-    .who small { color: #5b6b6e; font-size: 0.75rem; }
+    .who small { color: var(--ro-mute); font-size: 0.75rem; }
     @media (max-width: 760px) {
       .bar { padding: 6px 8px; gap: 6px; flex-wrap: wrap; }
       .clock .day, .clock .tz, .who { display: none; }

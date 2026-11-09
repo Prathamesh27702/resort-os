@@ -176,30 +176,30 @@ const CONSENT_LABEL: Record<string, string> = {
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
     h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: 8px; }
-    .vip { background: #fbefd8; color: #8a5a00; }
+    .vip { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .head-actions { display: flex; gap: 8px; }
-    .banner { background: #eef2f1; border-left: 4px solid #5b6b6e; padding: 10px 14px; border-radius: 6px; }
+    .banner { background: var(--ro-sunk); border-left: 4px solid var(--ro-mute); padding: 10px 14px; border-radius: 6px; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .card { padding: 16px 20px; }
     .wide { margin-top: 16px; }
-    h2 { font-size: 1rem; color: #0e3b43; margin: 0 0 12px; }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0 0 12px; }
     dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; margin: 0; }
-    dt { color: #5b6b6e; } dd { margin: 0; }
+    dt { color: var(--ro-mute); } dd { margin: 0; }
     .addr { margin: 0; line-height: 1.5; }
-    .notes { white-space: pre-wrap; background: #f5f7f6; padding: 8px 12px; border-radius: 6px; }
-    .mute { color: #5b6b6e; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 8px 0 0; }
+    .notes { white-space: pre-wrap; background: var(--ro-wash); padding: 8px 12px; border-radius: 6px; }
+    .mute { color: var(--ro-mute); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: 8px 0 0; }
     .plain { width: 100%; border-collapse: collapse; } .plain td { padding: 4px 0; vertical-align: middle; }
     .right { text-align: right; white-space: nowrap; }
     .when { display: block; font-size: .75rem; }
     .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .row h2 { margin: 0; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     @media (max-width: 600px) {
-      .plain tr { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 6px 0; border-bottom: 1px solid #edf1f0; }
+      .plain tr { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--ro-line-soft); }
       .plain td.right { grid-column: 1 / -1; text-align: left; }
       dl { grid-template-columns: 96px 1fr; }
     }

@@ -90,26 +90,26 @@ import { RestaurantApi } from './restaurant.api';
     .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
     .head p { margin: 2px 0 0; }
     .tools { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
     .new { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
     .new button { min-height: 48px; }
-    h2 { font-size: 1rem; margin: 18px 0 8px; color: #33474a; }
+    h2 { font-size: 1rem; margin: 18px 0 8px; color: var(--ro-ink-soft); }
     .tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
     .table { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 104px; padding: 12px; text-align: left;
-             background: #fff; border: 1px solid #d9e0de; border-left: 6px solid #2e6b3c; border-radius: 12px; font: inherit; color: inherit; cursor: pointer; }
+             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left: 6px solid #2e6b3c; border-radius: 12px; font: inherit; color: inherit; cursor: pointer; }
     .table.busy { border-left-color: #d29a2c; background: #fffaf0; }
     .table.ready { border-left-color: #1f6f8b; box-shadow: 0 0 0 2px #1f6f8b inset; }
     .table:disabled { cursor: default; opacity: .7; }
     .code { font-size: 1.5rem; font-weight: 700; }
-    .seats { font-size: .8rem; color: #5b6b6e; }
+    .seats { font-size: .8rem; color: var(--ro-mute); }
     .free { color: #2e6b3c; font-weight: 600; margin-top: auto; }
     .num { font-weight: 600; margin-top: 4px; }
     .chips { display: flex; flex-wrap: wrap; gap: 4px; }
     .chips i { font-style: normal; font-size: .75rem; padding: 1px 8px; border-radius: 999px; }
-    .unsent { background: #fbefd8; color: #8a5a00; } .cooking { background: #eef2f1; color: #33474a; } .ok { background: #e0eff5; color: #134e63; }
+    .unsent { background: var(--ro-warn-bg); color: var(--ro-warn); } .cooking { background: var(--ro-sunk); color: var(--ro-ink-soft); } .ok { background: #e0eff5; color: #134e63; }
     .others { display: flex; flex-direction: column; gap: 8px; }
-    .other { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; background: #fff; border: 1px solid #d9e0de; border-radius: 12px;
+    .other { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px;
              padding: 12px; color: inherit; text-decoration: none; min-height: 48px; }
     .other .right { margin-left: auto; font-weight: 600; }
     .other .chips { flex-basis: 100%; }

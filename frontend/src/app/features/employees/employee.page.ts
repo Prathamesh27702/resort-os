@@ -119,12 +119,12 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
   styles: `
     .one { max-width: 820px; padding-bottom: 60px; } .back { margin-left: -12px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; } h1 { margin: 4px 0; }
-    .mute { color: #5b6b6e; font-weight: normal; } .err { color: #b3261e; } .late { color: #b3261e; } .ok { color: #1e6b3a; }
-    .status { border-radius: 12px; padding: 2px 10px; font-size: .85rem; } .status.ok { background: #e3f3e8; } .status.left { background: #fdf0d9; color: #8a5a00; }
+    .mute { color: var(--ro-mute); font-weight: normal; } .err { color: var(--ro-error); } .late { color: var(--ro-error); } .ok { color: #1e6b3a; }
+    .status { border-radius: 12px; padding: 2px 10px; font-size: .85rem; } .status.ok { background: #e3f3e8; } .status.left { background: #fdf0d9; color: var(--ro-warn); }
     .banner { border-radius: 10px; padding: 8px 12px; background: #eef3f1; } .banner.off { background: #fdf0d9; }
     .acts { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-    .card { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 16px 14px; margin-top: 12px; } h2 { font-size: 1.1rem; margin: 6px 0 8px; }
-    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; } dt { color: #5b6b6e; } dd { margin: 0; overflow-wrap: anywhere; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 16px 14px; margin-top: 12px; } h2 { font-size: 1.1rem; margin: 6px 0 8px; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; } dt { color: var(--ro-mute); } dd { margin: 0; overflow-wrap: anywhere; }
     ul { list-style: none; margin: 0 0 8px; padding: 0; } li { padding: 4px 0; }
     .big { font-size: 1.05rem; } .hist li.replaced { text-decoration: line-through; opacity: .7; }
     .docs li { display: flex; gap: 8px; align-items: center; justify-content: space-between; border-bottom: 1px solid #eef1f0; flex-wrap: wrap; }

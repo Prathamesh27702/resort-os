@@ -8,21 +8,45 @@ html {
     density: 0,
   ));
 
+  // Resort OS colour tokens (Hallmark polish). Use these instead of typing hex values in components.
+  --ro-ink: #1b2a2e;
+  --ro-ink-soft: #33474a;
+  --ro-mute: #5b6b6e;
+  --ro-outline: #a9b6b3;
+  --ro-line: #d9e0de;
+  --ro-line-soft: #edf1f0;
+  --ro-sunk: #eef2f1;
+  --ro-wash: #f5f7f6;
+  --ro-hover: #f8faf9;
+  --ro-paper: #ffffff;
+  --ro-tide: #0e3b43;
+  --ro-tide-soft: #164c56;
+  --ro-kokum: #8a2449;
+  --ro-error: #b3261e;
+  --ro-error-strong: #8c1d18;
+  --ro-error-bg: #fdeceb;
+  --ro-ok: #1d5b36;
+  --ro-ok-bg: #e1f2e8;
+  --ro-warn: #8a5a00;
+  --ro-warn-bg: #fbefd8;
+  --ro-off: #7a1f1f;
+  --ro-off-bg: #f3e3e3;
+
   // Resort OS palette mapped onto Material's system tokens.
-  --mat-sys-primary: #8a2449;          // kokum — primary actions
-  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary: var(--ro-kokum);          // kokum — primary actions
+  --mat-sys-on-primary: var(--ro-paper);
   --mat-sys-primary-container: #f6dfe7;
   --mat-sys-on-primary-container: #4a0f25;
-  --mat-sys-secondary: #0e3b43;        // tide
-  --mat-sys-surface: #f5f7f6;
-  --mat-sys-surface-container: #ffffff;
-  --mat-sys-surface-container-low: #ffffff;
-  --mat-sys-surface-container-high: #eef2f1;
-  --mat-sys-on-surface: #1b2a2e;
-  --mat-sys-on-surface-variant: #5b6b6e;
-  --mat-sys-outline: #a9b6b3;
-  --mat-sys-outline-variant: #d9e0de;
-  --mat-sys-error: #b3261e;
+  --mat-sys-secondary: var(--ro-tide);        // tide
+  --mat-sys-surface: var(--ro-wash);
+  --mat-sys-surface-container: var(--ro-paper);
+  --mat-sys-surface-container-low: var(--ro-paper);
+  --mat-sys-surface-container-high: var(--ro-sunk);
+  --mat-sys-on-surface: var(--ro-ink);
+  --mat-sys-on-surface-variant: var(--ro-mute);
+  --mat-sys-outline: var(--ro-outline);
+  --mat-sys-outline-variant: var(--ro-line);
+  --mat-sys-error: var(--ro-error);
   --mat-sys-corner-medium: 10px;
   --mat-sys-corner-small: 6px;
 }
@@ -30,8 +54,8 @@ html {
 html, body { height: 100%; overflow-x: clip; }
 body {
   margin: 0;
-  background: #f5f7f6;
-  color: #1b2a2e;
+  background: var(--ro-wash);
+  color: var(--ro-ink);
   font-family: 'IBM Plex Sans', system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.5;
@@ -44,29 +68,29 @@ h2 { font-size: 1.15rem; }
 
 .num { font-variant-numeric: tabular-nums; }
 
-:focus-visible { outline: 2px solid #8a2449; outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--ro-kokum); outline-offset: 2px; }
 
 // Links: the app's own colour instead of the browser's blue. Material buttons and menu items that are
 // links keep their own styles (they set their own colour and have no underline).
 // :where() keeps these at zero specificity, so any component style for a link still wins.
-:where(a:not([class*='mat-']):not([class*='mdc-'])) { color: #0e3b43; text-decoration: underline; text-decoration-color: #a9b6b3; text-underline-offset: 2px; }
-:where(a:not([class*='mat-']):not([class*='mdc-']):hover) { color: #8a2449; text-decoration-color: currentColor; }
+:where(a:not([class*='mat-']):not([class*='mdc-'])) { color: var(--ro-tide); text-decoration: underline; text-decoration-color: var(--ro-outline); text-underline-offset: 2px; }
+:where(a:not([class*='mat-']):not([class*='mdc-']):hover) { color: var(--ro-kokum); text-decoration-color: currentColor; }
 
 // Page scaffold shared by feature pages
 .page { padding: 24px; max-width: 1100px; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.page-head p { margin: 4px 0 0; color: #5b6b6e; }
-.panel { background: #fff; border: 1px solid #d9e0de; border-radius: 10px; }
+.page-head p { margin: 4px 0 0; color: var(--ro-mute); }
+.panel { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; }
 
 table.data { width: 100%; border-collapse: collapse; }
-table.data th { text-align: left; font-weight: 500; color: #5b6b6e; font-size: 0.85rem; padding: 10px 14px; border-bottom: 1px solid #d9e0de; }
-table.data td { padding: 12px 14px; border-bottom: 1px solid #edf1f0; vertical-align: top; }
+table.data th { text-align: left; font-weight: 500; color: var(--ro-mute); font-size: 0.85rem; padding: 10px 14px; border-bottom: 1px solid var(--ro-line); }
+table.data td { padding: 12px 14px; border-bottom: 1px solid var(--ro-line-soft); vertical-align: top; }
 table.data tr:last-child td { border-bottom: 0; }
 table.data tr.clickable { cursor: pointer; }
-table.data tr.clickable:hover td { background: #f8faf9; }
+table.data tr.clickable:hover td { background: var(--ro-hover); }
 
-.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.8rem; background: #eef2f1; color: #1b2a2e; margin: 0 4px 4px 0; }
-.chip.off { background: #f3e3e3; color: #7a1f1f; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.8rem; background: var(--ro-sunk); color: var(--ro-ink); margin: 0 4px 4px 0; }
+.chip.off { background: var(--ro-off-bg); color: var(--ro-off); }
 
 /* Outlined fields float their label above the border. Dialogs and steppers clip whatever sits above their content
    box, so give the first row room for the label. */
@@ -89,5 +113,5 @@ html .mat-horizontal-content-container, html .mat-vertical-content { padding-top
 @media print {
   .mat-sidenav, .mat-drawer, header.bar, .no-print { display: none !important; }
   .mat-drawer-content, .mat-sidenav-content { margin-left: 0 !important; }
-  .mat-drawer-container { background: #fff !important; }
+  .mat-drawer-container { background: var(--ro-paper) !important; }
 }

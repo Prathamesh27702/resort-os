@@ -79,16 +79,16 @@ import { LeaveApi, monthName, short } from './leave.api';
     </div>
   `,
   styles: `
-    .payroll { max-width: 1100px; padding-bottom: 60px; } .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; }
+    .payroll { max-width: 1100px; padding-bottom: 60px; } .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
     .intro { max-width: 760px; } .pick { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     h2 { margin: 16px 0 6px; font-size: 1.1rem; }
     .warnings { background: #fffaf0; border: 1px solid #e0b34a; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; } .warnings ul { margin: 6px 0; padding-left: 20px; }
-    .scroll { overflow-x: auto; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    table { width: 100%; border-collapse: collapse; font-size: .92rem; } th, td { padding: 8px 10px; border-bottom: 1px solid #eef2f1; text-align: left; white-space: nowrap; }
+    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; } th, td { padding: 8px 10px; border-bottom: 1px solid var(--ro-sunk); text-align: left; white-space: nowrap; }
     td small { display: block; white-space: normal; } .n { text-align: right; }
     .go { margin: 12px 0; }
-    .files { list-style: none; padding: 0; margin: 0; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .files li { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid #eef2f1; flex-wrap: wrap; }
+    .files { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .files li { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .files li:first-child { border-top: 0; } .files li > div { display: flex; flex-direction: column; min-width: 0; } .sha { font-family: monospace; }
   `,
 })

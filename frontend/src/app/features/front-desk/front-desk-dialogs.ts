@@ -50,11 +50,11 @@ export type CheckInProblemResult = Reservation | 'assign';
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .problem { background: #fbefd8; color: #6b4600; border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .problem { background: var(--ro-warn-bg); color: #6b4600; border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class CheckInProblemDialog {
@@ -151,11 +151,11 @@ export interface AssignRoomData { propertyId: string; stay: DeskStay; today: str
   `,
   styles: `
     form { min-width: min(480px, 84vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .warn { color: #8a5a00; margin: -8px 0 8px; }
-    .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .warn { color: var(--ro-warn); margin: -8px 0 8px; }
+    .err { color: var(--ro-error); }
     mat-checkbox { margin: 0 0 12px; }
   `,
 })
@@ -274,13 +274,13 @@ export interface CheckOutData { propertyId: string; stay: DeskStay; today: strin
   styles: `
     form { min-width: min(420px, 82vw); display: flex; flex-direction: column; }
     .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 8px; }
-    .summary dt { color: #5b6b6e; } .summary dd { margin: 0; }
-    .owed { color: #b3261e; font-weight: 600; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
-    .warn { color: #8a5a00; margin: 0 0 12px; }
+    .summary dt { color: var(--ro-mute); } .summary dd { margin: 0; }
+    .owed { color: var(--ro-error); font-weight: 600; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
+    .warn { color: var(--ro-warn); margin: 0 0 12px; }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class CheckOutDialog {

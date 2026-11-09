@@ -78,15 +78,15 @@ export interface MoveDialogData { propertyId: string; cal: Calendar; booking: Ca
   styles: `
     [mat-dialog-content] { min-width: min(440px, 82vw); }
     .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 12px; }
-    .summary dt { color: #5b6b6e; }
+    .summary dt { color: var(--ro-mute); }
     .summary dd { margin: 0; }
     h3 { margin: 8px 0 2px; font-size: 15px; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 12px; }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; margin: -4px 0 12px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); margin: -4px 0 12px; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
   `,
 })
 export class MoveDialog {

@@ -54,16 +54,16 @@ import { RestaurantApi } from './restaurant.api';
     .back { margin-left: -8px; }
     .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
-    .filters button.on { background: #0e3b43; color: #fff; border-color: #0e3b43; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
+    .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
     .totals { margin: 12px 0 8px; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
     ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-    li a { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; background: #fff; border: 1px solid #d9e0de; border-radius: 12px;
+    li a { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px;
            padding: 12px; color: inherit; text-decoration: none; }
     .amt { font-weight: 600; text-align: right; }
     small { grid-column: 1 / -1; }
-    .st { font-weight: 600; color: #8a5a00; } .st.SETTLED { color: #1d5b36; } .st.VOIDED { color: #5b6b6e; }
+    .st { font-weight: 600; color: var(--ro-warn); } .st.SETTLED { color: var(--ro-ok); } .st.VOIDED { color: var(--ro-mute); }
   `,
 })
 export class OrdersPage {

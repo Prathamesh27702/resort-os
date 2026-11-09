@@ -87,12 +87,12 @@ const server = (c: AbstractControl | null) => (c?.errors?.['server'] as string |
     .back { margin-left: -8px; }
     .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
     .tools { display: flex; gap: 8px; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; }
-    section { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 4px 14px 10px; margin-top: 12px; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 4px 14px 10px; margin-top: 12px; }
     section.off { opacity: .7; }
     h2 { font-size: 1.05rem; display: flex; align-items: center; gap: 4px; margin: 8px 0; }
     ul { list-style: none; margin: 0; padding: 0; }
-    li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
+    li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--ro-sunk); }
     li.off { opacity: .6; }
     .nm { all: unset; flex: 1; cursor: pointer; min-height: 40px; }
     .nm small { display: block; }
@@ -101,7 +101,7 @@ const server = (c: AbstractControl | null) => (c?.errors?.['server'] as string |
     .tables li { padding: 4px 0; }
     .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; }
     .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
-    .food.NON_VEG { border-color: #8c1d18; background: radial-gradient(#8c1d18 40%, transparent 45%); }
+    .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
     .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } li { flex-wrap: wrap; } }
   `,
@@ -187,7 +187,7 @@ function report(form: FormGroup, e: unknown, error: (m: string) => void) {
       <button mat-flat-button type="submit" form="cat-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(360px, 84vw); } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(360px, 84vw); } .err { color: var(--ro-error); }`,
 })
 export class CategoryDialog {
   data = inject<{ propertyId: string; category: MenuCategory | null; next: number }>(MAT_DIALOG_DATA);
@@ -238,7 +238,7 @@ export class CategoryDialog {
       <button mat-flat-button type="submit" form="table-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(360px, 84vw); } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(360px, 84vw); } .err { color: var(--ro-error); }`,
 })
 export class TableDialog {
   data = inject<{ propertyId: string; table: RestaurantTable | null; next: number }>(MAT_DIALOG_DATA);
@@ -361,8 +361,8 @@ interface DishEditData { propertyId: string; item: MenuItem | null; categoryId: 
     .row mat-form-field { flex: 1 1 160px; } .row .num { flex: 0 1 100px; }
     .full { width: 100%; }
     h3 { margin: 12px 0 4px; font-size: 1rem; }
-    fieldset { border: 1px solid #d9e0de; border-radius: 10px; padding: 8px 10px; margin: 0 0 8px; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; margin: 0; }
+    fieldset { border: 1px solid var(--ro-line); border-radius: 10px; padding: 8px 10px; margin: 0 0 8px; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); margin: 0; }
   `,
 })
 export class DishEditDialog {

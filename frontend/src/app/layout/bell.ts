@@ -46,11 +46,11 @@ const POLL_MS = 60_000;
     ::ng-deep .bell-menu .bitem { height: auto !important; min-height: 56px; padding: 8px 16px; line-height: 1.3; white-space: normal; }
     ::ng-deep .bell-menu .bitem .mat-mdc-menu-item-text { display: flex; flex-direction: column; gap: 2px; }
     ::ng-deep .bell-menu .bitem.unread { background: #eef6f5; }
-    ::ng-deep .bell-menu .bitem.unread b::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #8a2449; margin-right: 6px; }
+    ::ng-deep .bell-menu .bitem.unread b::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ro-kokum); margin-right: 6px; }
     ::ng-deep .bell-menu .bt { display: flex; justify-content: space-between; gap: 8px; }
-    ::ng-deep .bell-menu .bt small { color: #5b6b6e; white-space: nowrap; }
-    ::ng-deep .bell-menu .bb { color: #33474a; font-size: .85rem; }
-    ::ng-deep .bell-menu .bnone { color: #5b6b6e; padding: 8px 16px; margin: 0; font-size: .9rem; }
+    ::ng-deep .bell-menu .bt small { color: var(--ro-mute); white-space: nowrap; }
+    ::ng-deep .bell-menu .bb { color: var(--ro-ink-soft); font-size: .85rem; }
+    ::ng-deep .bell-menu .bnone { color: var(--ro-mute); padding: 8px 16px; margin: 0; font-size: .9rem; }
   `,
 })
 export class Bell {

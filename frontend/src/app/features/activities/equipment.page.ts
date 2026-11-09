@@ -87,16 +87,16 @@ type View = 'out' | 'items';
   styles: `
     .eq { max-width: 900px; padding-bottom: 60px; }
     .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .head { justify-content: space-between; } .bar { margin: 8px 0; }
-    .mute { color: #5b6b6e; } .err, .bad { color: #b3261e; }
+    .mute { color: var(--ro-mute); } .err, .bad { color: var(--ro-error); }
     .kinds { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; align-items: stretch; }
-    .kind { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; padding: 8px 12px; min-width: 110px; display: flex; flex-direction: column;
+    .kind { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 8px 12px; min-width: 110px; display: flex; flex-direction: column;
             text-align: left; cursor: pointer; font: inherit; color: inherit; }
-    .kind.sel { border-color: #0e7c86; box-shadow: 0 0 0 1px #0e7c86 inset; } .kind b { font-size: 1.25rem; } .kind b small { font-size: .85rem; color: #5b6b6e; }
-    .list { list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .list li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid #eef2f1; }
+    .kind.sel { border-color: #0e7c86; box-shadow: 0 0 0 1px #0e7c86 inset; } .kind b { font-size: 1.25rem; } .kind b small { font-size: .85rem; color: var(--ro-mute); }
+    .list { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .list li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); }
     .list li:first-child { border-top: 0; } .list li.late { background: #fff6f5; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; } .btns { display: flex; gap: 6px; }
-    .status { font-size: .85rem; border-radius: 10px; padding: 0 8px; background: #eef2f1; white-space: nowrap; }
+    .status { font-size: .85rem; border-radius: 10px; padding: 0 8px; background: var(--ro-sunk); white-space: nowrap; }
     .s-AVAILABLE .status { background: #e3f3ea; color: #1e6b3a; } .s-ISSUED .status, .s-RESERVED .status { background: #e5f0f7; color: #0e3b5a; }
     .s-DAMAGED .status, .s-LOST .status { background: #fbeaea; color: #8a1c1c; } .s-MAINTENANCE .status { background: #fdf6e6; color: #6b4a00; }
     .s-RETIRED { opacity: .6; }

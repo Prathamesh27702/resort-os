@@ -56,7 +56,7 @@ export interface IssueData {
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .row .qty { flex: 0 1 110px; } .err { color: #b3261e; } p { margin: 4px 0 10px; }`,
+           .row > * { flex: 1 1 180px; } .row .qty { flex: 0 1 110px; } .err { color: var(--ro-error); } p { margin: 4px 0 10px; }`,
 })
 export class IssueEquipmentDialog {
   data = inject<IssueData>(MAT_DIALOG_DATA);
@@ -116,7 +116,7 @@ export interface ReturnData { propertyId: string; assignment: EquipmentAssignmen
       <button mat-flat-button type="submit" form="return-form" [disabled]="busy()">Return</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 8px; min-width: min(400px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
+  styles: `form { display: flex; flex-direction: column; gap: 8px; min-width: min(400px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            p { margin: 4px 0; } mat-button-toggle-group { align-self: flex-start; }`,
 })
 export class ReturnEquipmentDialog {
@@ -171,7 +171,7 @@ export interface StatusData { propertyId: string; item: EquipmentItem; }
       <button mat-flat-button type="submit" form="status-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(400px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }`,
+  styles: `form { display: flex; flex-direction: column; min-width: min(400px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class EquipmentStatusDialog {
   data = inject<StatusData>(MAT_DIALOG_DATA);
@@ -234,7 +234,7 @@ export interface TypeData { propertyId: string; type: EquipmentType | null; }
     </div>
   `,
   styles: `form { display: flex; flex-direction: column; gap: 6px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .code { flex: 0 1 120px; } .err { color: #b3261e; }`,
+           .row > * { flex: 1 1 150px; } .code { flex: 0 1 120px; } .err { color: var(--ro-error); }`,
 })
 export class EquipmentTypeDialog {
   data = inject<TypeData>(MAT_DIALOG_DATA);

@@ -137,28 +137,28 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
     .linkish { background: none; border: 0; padding: 0; font: inherit; color: #0e6b77; text-decoration: underline; cursor: pointer; }
     .po { max-width: 980px; padding-bottom: 60px; }
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    h1 { margin: 4px 0; } .sup { font-weight: 400; color: #34484b; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .note { color: #34484b; margin: 0 0 6px; } .warn { color: #8a5a00; } .late { color: #b3261e; }
-    .status { padding: 2px 10px; border-radius: 12px; background: #eef2f1; font-size: .85rem; }
+    h1 { margin: 4px 0; } .sup { font-weight: 400; color: var(--ro-ink-soft); }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .note { color: var(--ro-ink-soft); margin: 0 0 6px; } .warn { color: var(--ro-warn); } .late { color: var(--ro-error); }
+    .status { padding: 2px 10px; border-radius: 12px; background: var(--ro-sunk); font-size: .85rem; }
     .status.PENDING_APPROVAL { background: #fff3d6; } .status.APPROVED, .status.PARTLY_RECEIVED { background: #e3f0fa; } .status.RECEIVED { background: #e3f4e5; }
     .banner { background: #f4f7f6; border-radius: 10px; padding: 8px 12px; margin: 6px 0; } .banner.warn { background: #fff3d6; } .banner.ok { background: #e3f4e5; }
-    .banner.off { background: #eef0f0; color: #5b6b6e; }
+    .banner.off { background: #eef0f0; color: var(--ro-mute); }
     .acts { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-    section { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 4px 14px 10px; margin-top: 12px; }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 4px 14px 10px; margin-top: 12px; }
     h2 { font-size: 1.02rem; margin: 8px 0; }
     .table { display: flex; flex-direction: column; }
-    .tr { display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 6px; padding: 6px 0; border-bottom: 1px solid #eef2f1; font-variant-numeric: tabular-nums; }
-    .tr span:not(.dn) { text-align: right; } .th { font-weight: 600; font-size: .85rem; color: #5b6b6e; } .due { color: #8a5a00; font-weight: 600; }
+    .tr { display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--ro-sunk); font-variant-numeric: tabular-nums; }
+    .tr span:not(.dn) { text-align: right; } .th { font-weight: 600; font-size: .85rem; color: var(--ro-mute); } .due { color: var(--ro-warn); font-weight: 600; }
     .tot { text-align: right; font-variant-numeric: tabular-nums; margin: 6px 0 0; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef2f1; flex-wrap: wrap; }
+    .list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .list small { display: block; } .bl { flex: 1; min-width: 0; }
     .right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .st.UNPAID { color: #b3261e; } .st.PART_PAID { color: #8a5a00; } .st.PAID { color: #2e7d32; }
+    .st.UNPAID { color: var(--ro-error); } .st.PART_PAID { color: var(--ro-warn); } .st.PAID { color: #2e7d32; }
     @media (max-width: 640px) {
       h1 { font-size: 1.3rem; }
       .th { display: none; } .tr { grid-template-columns: 1fr 1fr; } .tr .dn { grid-column: 1 / -1; font-weight: 600; }
-      .tr span[data-l]::before { content: attr(data-l) ': '; color: #5b6b6e; float: left; }
+      .tr span[data-l]::before { content: attr(data-l) ': '; color: var(--ro-mute); float: left; }
       .right { align-items: flex-start; }
     }
   `,

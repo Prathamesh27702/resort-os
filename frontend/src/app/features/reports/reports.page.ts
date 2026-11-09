@@ -269,19 +269,19 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
   styles: `
     .rep { max-width: 1200px; padding-bottom: 60px; }
     .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .grow { flex: 1; } .sel { width: 180px; }
-    .tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #d9e0de; margin: 4px 0 10px; }
-    .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; font: inherit; color: #33474a; cursor: pointer; white-space: nowrap; }
-    .tab.on { border-color: #0090a0; color: #0e3b43; font-weight: 600; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err, .bad { color: #b3261e; }
+    .tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--ro-line); margin: 4px 0 10px; }
+    .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; font: inherit; color: var(--ro-ink-soft); cursor: pointer; white-space: nowrap; }
+    .tab.on { border-color: #0090a0; color: var(--ro-tide); font-weight: 600; }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
     h2.title { margin: 8px 0; } h3 { font-size: 1rem; margin: 18px 0 4px; }
     .scroll { overflow-x: auto; margin-top: 10px; }
-    table.rt { border-collapse: collapse; background: #fff; font-variant-numeric: tabular-nums; }
-    table.rt th, table.rt td { padding: 5px 10px; border-bottom: 1px solid #eef2f1; text-align: right; white-space: nowrap; }
+    table.rt { border-collapse: collapse; background: var(--ro-paper); font-variant-numeric: tabular-nums; }
+    table.rt th, table.rt td { padding: 5px 10px; border-bottom: 1px solid var(--ro-sunk); text-align: right; white-space: nowrap; }
     table.rt th:first-child { text-align: left; font-weight: 500; }
-    table.rt thead th { color: #5b6b6e; font-weight: 500; font-size: .85rem; }
+    table.rt thead th { color: var(--ro-mute); font-weight: 500; font-size: .85rem; }
     table.wide { width: 100%; }
-    tr.total th, tr.total td { font-weight: 700; border-top: 2px solid #d9e0de; }
-    tr.profit th, tr.profit td { font-weight: 700; color: #0e3b43; background: #eef6f4; }
+    tr.total th, tr.total td { font-weight: 700; border-top: 2px solid var(--ro-line); }
+    tr.profit th, tr.profit td { font-weight: 700; color: var(--ro-tide); background: #eef6f4; }
     tr.cost th:first-child, tr.revenue th:first-child { padding-left: 22px; }
     td.up { color: #1b6e3a; } td.down { color: #8a1c1c; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
@@ -562,7 +562,7 @@ function signed(n: number | null, unit: string) { return n === null ? '—' : `$
   `,
   styles: `
     .row { display: flex; align-items: center; gap: 12px; padding: 4px 0; min-width: min(420px, 84vw); }
-    .name { flex: 1; display: flex; flex-direction: column; } .name small, .mute { color: #5b6b6e; } .pct { width: 120px; } .bad { color: #b3261e; }
+    .name { flex: 1; display: flex; flex-direction: column; } .name small, .mute { color: var(--ro-mute); } .pct { width: 120px; } .bad { color: var(--ro-error); }
   `,
 })
 export class CommissionDialog {
