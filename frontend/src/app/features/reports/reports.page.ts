@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -512,6 +513,8 @@ export class ReportsPage {
     this.route.queryParamMap.subscribe(q => {
       const t = q.get('tab') as Tab | null;
       const next = t && TABS.some(x => x.key === t) ? t : 'month';
+      // While a tab click is on its way to the address bar, an older address must not switch back and wipe the dates.
+      if (this.going) { if (next !== this.going) return; this.going = null; }
       if (next !== this.tab()) { this.from.set(null); this.to.set(null); this.err.set({}); }
       this.tab.set(next);
     });
@@ -527,11 +530,15 @@ export class ReportsPage {
   go(t: Tab) {
     // Switch now, not when the router gets round to it: dates picked straight after the click must not be wiped.
     if (t !== this.tab()) { this.from.set(null); this.to.set(null); this.err.set({}); this.tab.set(t); }
+    this.going = t;
     this.router.navigate([], { queryParams: { tab: t === 'month' ? null : t }, replaceUrl: true });
   }
   setFrom(v: string) { this.from.set(v || null); }
   setTo(v: string) { this.to.set(v || null); }
   setBy(v: 'day' | 'month') { this.from.set(null); this.to.set(null); this.by.set(v); }
+
+  private loading?: Subscription;
+  private going: Tab | null = null;
 
   private load(pid: string, tab: Tab, p: { from: string | null; to: string | null; by: 'day' | 'month' }, month: string | null) {
     this.error.set('');
@@ -545,14 +552,16 @@ export class ReportsPage {
       },
     });
     const keep = (r: { from: string; to: string }) => this.shown.set({ from: r.from, to: r.to });
+    // Only the latest request counts: a slow answer for earlier dates must not replace a newer one.
+    this.loading?.unsubscribe();
     switch (tab) {
-      case 'month': this.api.month(pid, month).subscribe(done<MonthReport>(r => this.monthR.set(r))); break;
-      case 'occupancy': this.api.occupancy(pid, p).subscribe(done<OccupancyReport>(r => { this.occ.set(r); keep(r); })); break;
-      case 'revenue': this.api.revenue(pid, p).subscribe(done<RevenueReport>(r => { this.rev.set(r); keep(r); })); break;
-      case 'channels': this.api.channels(pid, p).subscribe(done<ChannelReport>(r => { this.ch.set(r); keep(r); })); break;
-      case 'gst': this.api.gst(pid, p).subscribe(done<GstReport>(r => { this.gst.set(r); keep(r); })); break;
-      case 'costs': this.api.costs(pid, p).subscribe(done<CostReport>(r => { this.cost.set(r); keep(r); })); break;
-      case 'pnl': this.api.pnl(pid, p).subscribe(done<PnlReport>(r => { this.pnl.set(r); keep(r); })); break;
+      case 'month': this.loading = this.api.month(pid, month).subscribe(done<MonthReport>(r => this.monthR.set(r))); break;
+      case 'occupancy': this.loading = this.api.occupancy(pid, p).subscribe(done<OccupancyReport>(r => { this.occ.set(r); keep(r); })); break;
+      case 'revenue': this.loading = this.api.revenue(pid, p).subscribe(done<RevenueReport>(r => { this.rev.set(r); keep(r); })); break;
+      case 'channels': this.loading = this.api.channels(pid, p).subscribe(done<ChannelReport>(r => { this.ch.set(r); keep(r); })); break;
+      case 'gst': this.loading = this.api.gst(pid, p).subscribe(done<GstReport>(r => { this.gst.set(r); keep(r); })); break;
+      case 'costs': this.loading = this.api.costs(pid, p).subscribe(done<CostReport>(r => { this.cost.set(r); keep(r); })); break;
+      case 'pnl': this.loading = this.api.pnl(pid, p).subscribe(done<PnlReport>(r => { this.pnl.set(r); keep(r); })); break;
     }
   }
 
