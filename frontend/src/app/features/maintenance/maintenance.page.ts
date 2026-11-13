@@ -63,11 +63,11 @@ type ListFilter = 'OPEN' | 'mine' | 'RESOLVED' | 'ALL';
     .head p { margin: 2px 0 0; }
     .mute { color: var(--ro-mute); }
     .filters { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit;
-                      min-height: 40px; color: var(--ro-ink); cursor: pointer; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit;
+                      min-height: 40px; color: var(--ro-ink); cursor: pointer; box-shadow: var(--ro-shadow-card); }
     .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
     .list { display: flex; flex-direction: column; gap: var(--space-2); }
-    .row { display: block; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) 14px; color: inherit; text-decoration: none; }
+    .row { display: block; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) 14px; color: inherit; text-decoration: none; box-shadow: var(--ro-shadow-card); }
     .row:hover { border-color: var(--ro-on-tide-mute); }
     .top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
     .title { font-size: 1.05rem; margin: var(--space-1) 0 2px; }

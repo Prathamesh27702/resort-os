@@ -156,7 +156,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
     .grow { flex: 1; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } h2 { margin: 18px 0 0; font-size: 1.1rem; }
     .sel { width: 180px; } .sum { margin: 10px 0 var(--space-1); color: var(--ro-ink-soft); }
     .items, .list { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
-    .items > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
+    .items > li { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); margin-bottom: var(--space-2); overflow: hidden; box-shadow: var(--ro-shadow-card); }
     .items > li.off { opacity: .7; } .items > li.empty { padding: 14px; }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer;
            font: inherit; color: inherit; } .row:hover { background: var(--ro-wash); }
@@ -178,7 +178,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
     .why { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 6px 10px; margin: 6px 0; }
     .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: 6px; } .actions button { min-height: 44px; }
-    .list { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .list { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; } .main { flex: 1; display: flex; flex-direction: column; }
     @media (max-width: 560px) { .sel { width: calc(50% - 4px); } .day { min-width: 54px; font-size: .8rem; } }

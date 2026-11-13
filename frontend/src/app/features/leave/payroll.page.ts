@@ -83,11 +83,11 @@ import { LeaveApi, monthName, short } from './leave.api';
     .intro { max-width: 760px; } .pick { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     h2 { margin: var(--space-4) 0 6px; font-size: 1.1rem; }
     .warnings { background: var(--ro-warn-wash); border: 1px solid var(--ro-warn-gold); border-radius: 12px; padding: 10px 14px; margin-bottom: var(--space-2); } .warnings ul { margin: 6px 0; padding-left: var(--space-5); }
-    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     table { width: 100%; border-collapse: collapse; font-size: .92rem; } th, td { padding: var(--space-2) 10px; border-bottom: 1px solid var(--ro-sunk); text-align: left; white-space: nowrap; }
     td small { display: block; white-space: normal; } .n { text-align: right; }
     .go { margin: var(--space-3) 0; }
-    .files { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .files { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .files li { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .files li:first-child { border-top: 0; } .files li > div { display: flex; flex-direction: column; min-width: 0; } .sha { font-family: monospace; }
   `,

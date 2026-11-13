@@ -128,7 +128,7 @@ type OrderFilter = 'open' | 'waiting' | 'all';
     .tools { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); }
     .tools mat-button-toggle-group { flex-wrap: wrap; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: var(--space-2); }
+    .cards li { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; margin-top: var(--space-2); box-shadow: var(--ro-shadow-card); }
     .cards li.off { opacity: .7; }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
     a.nm { min-height: 40px; }
@@ -137,7 +137,7 @@ type OrderFilter = 'open' | 'waiting' | 'all';
     .st { font-size: .8rem; } .st.PENDING_APPROVAL, .st.OPEN, .st.PART_PAID { color: var(--ro-warn); } .st.APPROVED, .st.PARTLY_RECEIVED { color: var(--ro-info-bright); }
     .st.RECEIVED, .st.PAID, .st.ORDERED { color: var(--ro-ok-mid); } .st.CANCELLED, .st.CLOSED { color: var(--ro-mute); } .st.UNPAID { color: var(--ro-error); }
     .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); }
-    .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); display: flex; flex-direction: column; }
+    .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px var(--space-3); display: flex; flex-direction: column; box-shadow: var(--ro-shadow-card); }
     .tiles b { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .cards li { flex-wrap: wrap; } .right { align-items: flex-start; text-align: left; } .acts { flex-direction: row; } }
   `,

@@ -6,56 +6,161 @@
  * built: the project · redesign: polish · v2.0.0 */
 @use '@angular/material' as mat;
 
+// Lagoon Glass (docs/design.md, chosen 2026-11-09): every colour is a --ro-* token with a light value here and a dark
+// value in ro-dark-tokens. Components only use the tokens, so they switch theme with no extra work.
+@mixin ro-dark-tokens {
+  color-scheme: dark;
+  --ro-bg: #071a1f;
+  --ro-ink: #e3f2f1;
+  --ro-ink-soft: #c3dcdc;
+  --ro-mute: #93b3b6;
+  --ro-faint: #5f7f84;
+  --ro-outline: #4b6a70;
+  --ro-line: rgba(227, 242, 241, 0.10);
+  --ro-line-soft: rgba(227, 242, 241, 0.06);
+  --ro-line-mid: rgba(227, 242, 241, 0.14);
+  --ro-line-strong: rgba(227, 242, 241, 0.22);
+  --ro-sunk: rgba(60, 196, 194, 0.12);
+  --ro-tint: rgba(60, 196, 194, 0.08);
+  --ro-hover: rgba(60, 196, 194, 0.07);
+  --ro-wash: #0b2329;
+  --ro-paper: rgba(14, 38, 45, 0.78);
+  --ro-solid: #0e262c;
+
+  --ro-accent: #3cc4c2;
+  --ro-on-accent: #04282a;
+  --ro-accent-strong: #6fdad8;
+  --ro-accent-soft: rgba(60, 196, 194, 0.16);
+  --ro-accent-grad: linear-gradient(135deg, #2fb3b1, #57d6d3);
+  --ro-accent-glow: 0 6px 18px rgba(60, 196, 194, 0.25);
+  --ro-coral: #ff8e70;
+  --ro-coral-fill: #ff8e70;
+  --ro-lilac: #2a2f66;
+  --ro-on-coral: #3d1408;
+
+  --ro-tide: #bfe9e6;
+  --ro-tide-soft: #9fd9d6;
+  --ro-tide-deep: #d4f0ee;
+  --ro-tide-mid: #8fd3d0;
+  --ro-sea: #3cc4c2;
+  --ro-sea-bright: #57d6d3;
+  --ro-sea-line: #2a7f7d;
+  --ro-on-tide: #0b2a2e;
+  --ro-on-tide-mute: #2a5458;
+  --ro-kokum: #f08bb0;
+  --ro-kokum-wash: rgba(240, 139, 176, 0.14);
+
+  --ro-error: #ff8a80;
+  --ro-error-strong: #ffb4ab;
+  --ro-error-bg: rgba(255, 138, 128, 0.16);
+  --ro-error-line: rgba(255, 138, 128, 0.4);
+  --ro-ok: #6fcf9a;
+  --ro-ok-bg: rgba(111, 207, 154, 0.16);
+  --ro-ok-mid: #7fdba8;
+  --ro-ok-soft: #3f8a62;
+  --ro-ok-line: rgba(111, 207, 154, 0.35);
+  --ro-warn: #f2c25b;
+  --ro-warn-bg: rgba(242, 194, 91, 0.16);
+  --ro-warn-strong: #f7d58a;
+  --ro-warn-mid: #e0a944;
+  --ro-warn-bright: #e8b04a;
+  --ro-warn-gold: #c99a32;
+  --ro-warn-line: rgba(242, 194, 91, 0.35);
+  --ro-warn-wash: rgba(242, 194, 91, 0.08);
+  --ro-rust: #ffa366;
+  --ro-off: #ff9aa7;
+  --ro-off-bg: rgba(255, 107, 125, 0.16);
+  --ro-info: #9fd0e6;
+  --ro-info-strong: #a9c1ff;
+  --ro-info-mid: #9cc0ec;
+  --ro-info-bright: #7ccbe8;
+  --ro-info-line: rgba(110, 150, 255, 0.4);
+  --ro-info-bg: rgba(110, 150, 255, 0.16);
+
+  --ro-glass: rgba(14, 38, 45, 0.62);
+  --ro-glass-strong: rgba(12, 32, 38, 0.86);
+  --ro-glass-edge: rgba(255, 255, 255, 0.08);
+  --ro-glass-sheen: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --ro-blur: blur(18px) saturate(1.2);
+  --ro-shadow: rgba(0, 0, 0, 0.35);
+  --ro-shadow-lift: rgba(0, 0, 0, 0.5);
+  --ro-shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --ro-shadow-card-lift: 0 14px 40px rgba(0, 0, 0, 0.5);
+  --ro-glow-1: #0f5e60;
+  --ro-glow-2: #5a2a22;
+  --ro-glow-3: #252b5e;
+  --ro-scrim: rgba(0, 0, 0, 0.5);
+  --ro-menu: #0f2a30;
+
+  // Charts (dashboard and reports): categorical colours checked against the dark ground.
+  --ro-chart-1: #14a3a0;
+  --ro-chart-2: #e8653f;
+  --ro-chart-3: #7b86ec;
+  --ro-chart-4: #b5850f;
+  --ro-chart-5: #c85aa8;
+  --ro-chart-6: #4a9a2f;
+}
+
 html {
   color-scheme: light;
   @include mat.theme((
     color: (primary: mat.$cyan-palette, tertiary: mat.$rose-palette),
-    typography: (plain-family: 'IBM Plex Sans', brand-family: 'IBM Plex Sans'),
+    typography: (plain-family: ('Onest', 'IBM Plex Sans', system-ui, sans-serif), brand-family: ('Onest', 'IBM Plex Sans', system-ui, sans-serif)),
     density: 0,
   ));
 
-  // Resort OS colour tokens (Hallmark polish). Use these instead of typing hex values in components.
-  --ro-ink: #1b2a2e;
-  --ro-ink-soft: #33474a;
-  --ro-mute: #5b6b6e;
-  --ro-outline: #a9b6b3;
-  --ro-line: #d9e0de;
-  --ro-line-soft: #edf1f0;
-  --ro-sunk: #eef2f1;
-  --ro-wash: #f5f7f6;
-  --ro-hover: #f8faf9;
-  --ro-paper: #ffffff;
-  --ro-tide: #0e3b43;
-  --ro-tide-soft: #164c56;
-  --ro-kokum: #8a2449;
+  --ro-bg: #eaf4f2;
+  --ro-ink: #13303a;
+  --ro-ink-soft: #2c4a53;
+  --ro-mute: #4f6a73;
+  --ro-faint: #728b92;        // marks, dots and field edges only (3:1); text uses --ro-mute
+  --ro-outline: #9db3b8;
+  --ro-line: rgba(19, 48, 58, 0.10);
+  --ro-line-soft: rgba(19, 48, 58, 0.06);
+  --ro-line-mid: rgba(19, 48, 58, 0.14);
+  --ro-line-strong: rgba(19, 48, 58, 0.22);
+  --ro-sunk: rgba(14, 124, 128, 0.09);
+  --ro-tint: rgba(14, 124, 128, 0.06);
+  --ro-hover: rgba(14, 124, 128, 0.05);
+  --ro-wash: #f1f8f6;         // a solid light ground (sticky table heads, code blocks)
+  --ro-paper: rgba(255, 255, 255, 0.80);   // cards and panels: frosted, the glow shows faintly through
+  --ro-solid: #fbfefd;        // where something must not show what is behind it
+
+  --ro-accent: #0e7c80;       // lagoon: primary buttons, current menu item, focus ring, links
+  --ro-on-accent: #ffffff;
+  --ro-accent-strong: #0b6b6f;
+  --ro-accent-soft: rgba(14, 124, 128, 0.12);
+  --ro-accent-grad: linear-gradient(135deg, #0e7c80, #17a3a0);
+  --ro-accent-glow: 0 6px 18px rgba(14, 124, 128, 0.35);
+  --ro-coral: #b23d22;        // coral as text (money highlights)
+  --ro-coral-fill: #ff7a59;   // coral as a fill (sparklines, avatar)
+  --ro-lilac: #c9d2ff;
+  --ro-on-coral: #3d1408;
+
+  // Older names, kept so every screen keeps working (docs/design.md 4.5).
+  --ro-tide: #0b4a50;
+  --ro-tide-soft: #135c63;
+  --ro-tide-deep: #0a3a40;
+  --ro-tide-mid: #156a72;
+  --ro-sea: #0e7c80;
+  --ro-sea-bright: #17a3a0;
+  --ro-sea-line: #80cbc4;
+  --ro-on-tide: #d6ecea;
+  --ro-on-tide-mute: #9cc5c1;
+  --ro-kokum: #8a2449;        // the resort's brand: guest pay page, invoices, VIP chips
+  --ro-kokum-wash: #f6e3ec;
+
   --ro-error: #b3261e;
   --ro-error-strong: #8c1d18;
   --ro-error-bg: #fdeceb;
+  --ro-error-line: #f2b8b2;
   --ro-ok: #1d5b36;
-  --ro-ok-bg: #e1f2e8;
-  --ro-warn: #8a5a00;
-  --ro-warn-bg: #fbefd8;
-  --ro-off: #7a1f1f;
-  --ro-off-bg: #f3e3e3;
-
-  // Colours that used to be typed straight into components (Hallmark polish, 2026-11-09).
-  // Neutrals
-  --ro-faint: #7d8d8f;        // marks, dots and field edges only (3:1); text uses --ro-mute
-  --ro-line-strong: #c5cfcc;
-  --ro-line-mid: #e3e8e6;
-  --ro-tint: #eef5f4;
-  // Tide and sea
-  --ro-tide-deep: #1d3b40;
-  --ro-tide-mid: #1d5c67;
-  --ro-sea: #0e7c86;
-  --ro-sea-bright: #0090a0;
-  --ro-sea-line: #80cbc4;
-  --ro-on-tide: #cfe0dd;      // text on the tide sidebar
-  --ro-on-tide-mute: #8fb0ab;
-  // Green, amber, red, kokum, blue
+  --ro-ok-bg: #e0f2e9;
   --ro-ok-mid: #1e6b3a;
   --ro-ok-soft: #7cb89a;
   --ro-ok-line: #b9dcc8;
+  --ro-warn: #8a5a00;
+  --ro-warn-bg: #fbefd8;
   --ro-warn-strong: #6b4600;
   --ro-warn-mid: #b7791f;
   --ro-warn-bright: #d29a2c;
@@ -63,19 +168,48 @@ html {
   --ro-warn-line: #ecd29a;
   --ro-warn-wash: #fdf6e6;
   --ro-rust: #b45309;
-  --ro-error-line: #f2b8b2;
-  --ro-kokum-wash: #f6e3ec;
+  --ro-off: #7a1f1f;
+  --ro-off-bg: #f3e3e3;
   --ro-info: #134e63;
   --ro-info-strong: #0b3d91;
   --ro-info-mid: #1d4a7a;
   --ro-info-bright: #1f6f8b;
   --ro-info-line: #a7c3ef;
   --ro-info-bg: #e3effa;
-  // Shadows
-  --ro-shadow: rgba(14, 59, 67, 0.12);
-  --ro-shadow-lift: rgba(0, 0, 0, 0.18);
 
-  --ro-font: 'IBM Plex Sans', system-ui, sans-serif;
+  // Glass and glow
+  --ro-glass: rgba(255, 255, 255, 0.62);
+  --ro-glass-strong: rgba(255, 255, 255, 0.82);
+  --ro-glass-edge: rgba(255, 255, 255, 0.75);
+  --ro-glass-sheen: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --ro-blur: blur(18px) saturate(1.4);
+  --ro-shadow: rgba(19, 48, 58, 0.10);
+  --ro-shadow-lift: rgba(19, 48, 58, 0.18);
+  --ro-shadow-card: 0 8px 30px rgba(19, 48, 58, 0.08);
+  --ro-shadow-card-lift: 0 14px 40px rgba(19, 48, 58, 0.14);
+  --ro-glow-1: #8fe0d2;
+  --ro-glow-2: #ffc3a8;
+  --ro-glow-3: #c9d2ff;
+  --ro-scrim: rgba(7, 26, 31, 0.35);
+  --ro-menu: #f7fcfb;
+
+  // Charts: categorical colours in this fixed order, checked for colour blindness and contrast (dataviz validator).
+  --ro-chart-1: #00979b;
+  --ro-chart-2: #e2552f;
+  --ro-chart-3: #5b63d6;
+  --ro-chart-4: #a87a00;
+  --ro-chart-5: #b93d8a;
+  --ro-chart-6: #2f9356;
+
+  // Type (Onest for everything, Unbounded for titles and big numbers; IBM Plex Sans only draws the ₹ sign,
+  // which Onest doesn't have).
+  --ro-font: 'Onest', 'IBM Plex Sans', system-ui, sans-serif;
+  --ro-font-display: 'Unbounded', 'Onest', 'IBM Plex Sans', system-ui, sans-serif;
+
+  // Shape
+  --ro-radius-lg: 22px;
+  --ro-radius: 14px;
+  --ro-radius-sm: 10px;
 
   // Spacing scale (Hallmark polish): use these for padding, margin and gap.
   --space-1: 4px;
@@ -86,29 +220,61 @@ html {
   --space-6: 24px;
   --space-8: 32px;
 
-  // Resort OS palette mapped onto Material's system tokens.
-  --mat-sys-primary: var(--ro-kokum);          // kokum — primary actions
-  --mat-sys-on-primary: var(--ro-paper);
-  --mat-sys-primary-container: #f6dfe7;
-  --mat-sys-on-primary-container: #4a0f25;
-  --mat-sys-secondary: var(--ro-tide);        // tide
-  --mat-sys-surface: var(--ro-wash);
-  --mat-sys-surface-container: var(--ro-paper);
-  --mat-sys-surface-container-low: var(--ro-paper);
-  --mat-sys-surface-container-high: var(--ro-sunk);
+  // Resort OS palette mapped onto Material's system tokens, so Material components follow the theme.
+  --mat-sys-primary: var(--ro-accent);
+  --mat-sys-on-primary: var(--ro-on-accent);
+  --mat-sys-primary-container: var(--ro-accent-soft);
+  --mat-sys-on-primary-container: var(--ro-accent-strong);
+  --mat-sys-secondary: var(--ro-tide);
+  --mat-sys-secondary-container: var(--ro-accent-soft);
+  --mat-sys-on-secondary-container: var(--ro-ink);
+  --mat-sys-tertiary: var(--ro-coral);
+  --mat-sys-background: var(--ro-bg);
+  --mat-sys-on-background: var(--ro-ink);
+  --mat-sys-surface: var(--ro-menu);
+  --mat-sys-surface-bright: var(--ro-menu);
+  --mat-sys-surface-container-lowest: var(--ro-solid);
+  --mat-sys-surface-container-low: var(--ro-menu);
+  --mat-sys-surface-container: var(--ro-menu);
+  --mat-sys-surface-container-high: var(--ro-menu);
+  --mat-sys-surface-container-highest: var(--ro-sunk);
+  --mat-sys-surface-variant: var(--ro-sunk);
   --mat-sys-on-surface: var(--ro-ink);
   --mat-sys-on-surface-variant: var(--ro-mute);
-  --mat-sys-outline: var(--ro-faint);          // field edges need 3:1 against the paper
+  --mat-sys-inverse-surface: var(--ro-ink);
+  --mat-sys-inverse-on-surface: var(--ro-bg);
+  --mat-sys-inverse-primary: var(--ro-accent-strong);
+  --mat-sys-outline: var(--ro-faint);          // field edges need 3:1 against the panel
   --mat-sys-outline-variant: var(--ro-line);
   --mat-sys-error: var(--ro-error);
-  --mat-sys-corner-medium: 10px;
-  --mat-sys-corner-small: 6px;
+  --mat-sys-on-error: var(--ro-solid);
+  --mat-sys-error-container: var(--ro-error-bg);
+  --mat-sys-on-error-container: var(--ro-error-strong);
+  --mat-sys-corner-medium: 14px;
+  --mat-sys-corner-small: 10px;
+  --mat-sys-corner-large: 22px;
+  --mat-sys-corner-extra-large: 26px;
+}
+
+// Dark theme: by the phone's setting unless the person chose Light, or when they chose Dark (core/theme.ts).
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) { @include ro-dark-tokens; }
+}
+html[data-theme='dark'] { @include ro-dark-tokens; }
+
+// Solid panels (cheap phones, "reduce transparency", or Settings): no blur, no see-through glass, still glow.
+html.ro-solid {
+  --ro-paper: var(--ro-solid);
+  --ro-glass: var(--ro-solid);
+  --ro-glass-strong: var(--ro-solid);
+  --ro-blur: none;
 }
 
 html, body { height: 100%; overflow-x: clip; }
+html { transition: background-color 250ms ease, color 250ms ease; }
 body {
   margin: 0;
-  background: var(--ro-wash);
+  background: var(--ro-bg);
   color: var(--ro-ink);
   font-family: var(--ro-font);
   font-size: 15px;
@@ -116,19 +282,46 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+// The slow colour glow behind every screen: one fixed layer, never repeated per page (docs/design.md 12).
+body::before {
+  content: ''; position: fixed; inset: -10vmax; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(38vmax 38vmax at 12% 8%, var(--ro-glow-1), transparent 70%),
+    radial-gradient(36vmax 36vmax at 92% 88%, var(--ro-glow-2), transparent 70%),
+    radial-gradient(30vmax 30vmax at 55% 45%, var(--ro-glow-3), transparent 72%);
+  opacity: 0.55;
+  animation: ro-drift 24s ease-in-out infinite alternate;
+}
+@keyframes ro-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(2vmax, -1.5vmax, 0) scale(1.06); }
+}
+html.ro-solid body::before { animation: none; opacity: 0.35; }
+
+// Theme switch: a circle grows from the theme button (View Transitions), or a plain cross-fade elsewhere.
+::view-transition-old(root) { animation: none; }
+::view-transition-new(root) { animation: ro-reveal 450ms cubic-bezier(.2,.8,.2,1); }
+@keyframes ro-reveal {
+  from { clip-path: circle(0 at var(--ro-vt-x, 50%) var(--ro-vt-y, 0)); }
+  to { clip-path: circle(150vmax at var(--ro-vt-x, 50%) var(--ro-vt-y, 0)); }
+}
+.search-panel .mat-mdc-dialog-surface { padding: 0; overflow: hidden; }
+
 h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; overflow-wrap: break-word; min-width: 0; text-wrap: balance; }
-h1 { font-size: 1.6rem; line-height: 1.25; }
+h1 { font-family: var(--ro-font-display); font-size: 1.6rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; }
 h2 { font-size: 1.15rem; }
+@media (max-width: 640px) { h1 { font-size: 1.35rem; } }
 
 .num { font-variant-numeric: tabular-nums; }
+.display { font-family: var(--ro-font-display); letter-spacing: -0.02em; }
 
-:focus-visible { outline: 2px solid var(--ro-kokum); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--ro-accent); outline-offset: 2px; }
 
 // Links: the app's own colour instead of the browser's blue. Material buttons and menu items that are
 // links keep their own styles (they set their own colour and have no underline).
 // :where() keeps these at zero specificity, so any component style for a link still wins.
-:where(a:not([class*='mat-']):not([class*='mdc-'])) { color: var(--ro-tide); text-decoration: underline; text-decoration-color: var(--ro-outline); text-underline-offset: 2px; }
-:where(a:not([class*='mat-']):not([class*='mdc-']):hover) { color: var(--ro-kokum); text-decoration-color: currentColor; }
+:where(a:not([class*='mat-']):not([class*='mdc-'])) { color: var(--ro-accent-strong); text-decoration: underline; text-decoration-color: var(--ro-outline); text-underline-offset: 2px; }
+:where(a:not([class*='mat-']):not([class*='mdc-']):hover) { color: var(--ro-accent); text-decoration-color: currentColor; }
 
 // Hand-styled buttons (room tiles, chips used as buttons, row buttons): a pressed and a disabled look.
 // Material buttons have their own. :where() keeps this at zero specificity so component styles win.
@@ -139,11 +332,50 @@ h2 { font-size: 1.15rem; }
 // Material buttons are a fixed 40px tall, so a label must stay on one line (the button row wraps instead).
 .mat-mdc-button-base { white-space: nowrap; }
 
+// Buttons: pills; the main action on a screen is a lagoon gradient with a soft glow. Pressed buttons sink a little.
+html {
+  --mat-button-filled-container-shape: 999px;
+  --mat-button-outlined-container-shape: 999px;
+  --mat-button-text-container-shape: 999px;
+  --mat-button-tonal-container-shape: 999px;
+  --mat-button-protected-container-shape: 999px;
+  --mat-button-outlined-outline-color: var(--ro-line-strong);
+  --mat-button-toggle-shape: 999px;
+  --mat-button-toggle-divider-color: var(--ro-line-strong);
+  --mat-button-toggle-selected-state-background-color: var(--ro-accent-soft);
+  --mat-button-toggle-selected-state-text-color: var(--ro-accent-strong);
+  --mat-chip-container-shape-radius: 999px;
+  --mat-dialog-container-shape: var(--ro-radius-lg);
+  --mat-menu-container-shape: var(--ro-radius);
+  --mat-select-container-elevation-shadow: var(--ro-shadow-card-lift);
+  --mat-menu-container-elevation-shadow: var(--ro-shadow-card-lift);
+  --mat-tab-active-indicator-color: var(--ro-accent);
+  --mat-tab-active-label-text-color: var(--ro-accent-strong);
+  --mat-tab-active-focus-label-text-color: var(--ro-accent-strong);
+  --mat-tab-active-hover-label-text-color: var(--ro-accent-strong);
+  --mat-snack-bar-container-shape: var(--ro-radius);
+  --mat-form-field-outlined-container-shape: var(--ro-radius-sm);
+  --mat-form-field-outlined-outline-color: var(--ro-line-strong);
+  --mat-tooltip-container-shape: 8px;
+}
+.mat-mdc-unelevated-button.mat-primary:not(:disabled), .mat-mdc-unelevated-button:not(.mat-warn):not([color]):not(:disabled) {
+  background-image: var(--ro-accent-grad); box-shadow: var(--ro-accent-glow);
+}
+.mat-mdc-button-base:not(:disabled):active { transform: scale(0.96); }
+.mat-mdc-button-base { transition: transform 150ms ease, box-shadow 200ms ease; }
+.mat-mdc-outlined-button:not(:disabled) { background: var(--ro-glass-strong); }
+
+// Dialogs and menus: frosted, over a soft blurred backdrop.
+.cdk-overlay-dark-backdrop { background: var(--ro-scrim); backdrop-filter: blur(3px); }
+.mat-mdc-dialog-surface { border: 1px solid var(--ro-glass-edge); }
+.mat-mdc-menu-panel, .mat-mdc-select-panel, .mat-mdc-autocomplete-panel { border: 1px solid var(--ro-line); }
+.mat-mdc-snack-bar-container .mat-mdc-snackbar-surface { box-shadow: var(--ro-shadow-card-lift); }
+
 // Page scaffold shared by feature pages
 .page { padding: var(--space-6); max-width: 1100px; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); flex-wrap: wrap; }
 .page-head p { margin: var(--space-1) 0 0; color: var(--ro-mute); }
-.panel { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; }
+.panel { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
 
 table.data { width: 100%; border-collapse: collapse; }
 table.data th { text-align: left; font-weight: 500; color: var(--ro-mute); font-size: 0.85rem; padding: 10px 14px; border-bottom: 1px solid var(--ro-line); }

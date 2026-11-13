@@ -99,7 +99,7 @@ import { CorrectData, CorrectDialog } from './attendance-dialogs';
     }
   `,
   styles: `
-    .sheet { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: 14px var(--space-4); }
+    .sheet { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 14px var(--space-4); box-shadow: var(--ro-shadow-card); }
     .top { display: flex; justify-content: space-between; gap: var(--space-2); align-items: flex-start; } .top h2 { margin: 0; font-size: 1.15rem; } .top p { margin: 2px 0 0; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
     .status { border-radius: 14px; padding: 3px 10px; font-size: .85rem; white-space: nowrap; background: var(--ro-sunk); }
@@ -247,7 +247,7 @@ abstract class TimesheetActions {
     .s-SUBMITTED { background: var(--ro-info-bg); color: var(--ro-info-strong); } .s-APPROVED { background: var(--ro-ok-bg); color: var(--ro-ok-mid); } .s-REJECTED { background: var(--ro-error-bg); color: var(--ro-error-strong); }
     .s-LOCKED { background: var(--ro-tide-deep); color: var(--ro-paper); }
     .skipped { border: 1px solid var(--ro-warn-line); background: var(--ro-warn-wash); border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: var(--ro-warn-strong); } .skipped ul { margin: var(--space-1) 0; }
-    .team { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; }
+    .team { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .team li { border-top: 1px solid var(--ro-sunk); } .team li:first-child { border-top: 0; }
     .team a { display: flex; gap: 10px; align-items: center; padding: 10px 14px; color: inherit; text-decoration: none; flex-wrap: wrap; } .team a:hover { background: var(--ro-wash); }
     .nm, .hrs, .st { display: flex; flex-direction: column; } .nm { flex: 1 1 180px; } .hrs { flex: 1 1 160px; } .st { flex: 0 1 200px; align-items: flex-start; }

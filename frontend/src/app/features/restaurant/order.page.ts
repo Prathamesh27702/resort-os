@@ -161,7 +161,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
     .status.SETTLED { background: var(--ro-ok-bg); color: var(--ro-ok); } .status.VOIDED { background: var(--ro-line-mid); color: var(--ro-ink-soft); }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
     .banner { padding: 10px var(--space-3); border-radius: 10px; } .banner.ok { background: var(--ro-ok-bg); } .banner.off { background: var(--ro-sunk); }
-    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-1) 14px 14px; margin-top: var(--space-3); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-1) 14px 14px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); }
     h2 { font-size: 1rem; margin: var(--space-3) 0 var(--space-2); }
     ul { list-style: none; margin: 0; padding: 0; }
     .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); }
@@ -185,7 +185,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
     .danger { color: var(--ro-error); }
     .full { width: 100%; }
     .cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
-    .cats button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit; min-height: 40px; cursor: pointer; }
+    .cats button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit; min-height: 40px; cursor: pointer; box-shadow: var(--ro-shadow-card); }
     .cats button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
     .dish { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: var(--space-2) var(--space-1);
             border-bottom: 1px solid var(--ro-sunk); cursor: pointer; }

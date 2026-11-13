@@ -164,7 +164,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .wide { max-width: 1200px; }
     .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
-    .tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); border-radius: 10px; background: var(--ro-paper); border: 1px solid var(--ro-line);
+    .tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); border-radius: var(--ro-radius); background: var(--ro-paper); border: 1px solid var(--ro-line);
             color: var(--ro-ink); text-decoration: none; }
     .tile:hover { box-shadow: 0 1px 6px var(--ro-shadow); }
     .tile b { font-size: 1.5rem; letter-spacing: -0.01em; color: var(--ro-tide); }
@@ -195,7 +195,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .chip.hk.DIRTY { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .chip.hk.OUT_OF_ORDER { background: var(--ro-off-bg); color: var(--ro-off); }
     .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
-    .room { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-height: 120px; padding: var(--space-3) 14px; border-radius: 10px;
+    .room { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-height: 120px; padding: var(--space-3) 14px; border-radius: var(--ro-radius);
             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; }
     .room.VACANT { border-left-color: var(--ro-ok-mid); }
     .room.OCCUPIED { border-left-color: var(--ro-tide); background: var(--ro-wash); }

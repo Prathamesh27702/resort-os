@@ -176,11 +176,11 @@ const PAGE = 25;
     .mode.off { background: var(--ro-error-bg); color: var(--ro-off); }
     .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-3) 0; }
     .chips { display: flex; gap: var(--space-1); flex-wrap: wrap; flex-basis: 100%; }
-    .fchip { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-1) var(--space-3); font: inherit; font-size: .85rem; cursor: pointer; color: var(--ro-ink); }
+    .fchip { border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-1) var(--space-3); font: inherit; font-size: .85rem; cursor: pointer; color: var(--ro-ink); box-shadow: var(--ro-shadow-card); }
     .fchip b { margin-left: 6px; color: var(--ro-mute); font-weight: 500; }
     .fchip.on { background: var(--ro-tide); border-color: var(--ro-tide); color: var(--ro-paper); } .fchip.on b { color: var(--ro-on-tide); }
     .sel { width: 150px; } .q { flex: 1; min-width: 200px; }
-    .rows { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .rows { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid var(--ro-sunk); background: none;
            font: inherit; text-align: left; cursor: pointer; color: inherit; }
     .row:first-child { border-top: 0; } .row:hover { background: var(--ro-hover); }
@@ -202,7 +202,7 @@ const PAGE = 25;
     .jact { display: flex; gap: 6px; margin-top: 6px; }
     .result { background: var(--ro-ok-bg); border-radius: 8px; padding: 6px 10px; }
     .sub { margin: var(--space-5) 0 6px; }
-    .runs { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 6px 14px; }
+    .runs { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 6px 14px; box-shadow: var(--ro-shadow-card); }
     .runs p { margin: 6px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
     .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }

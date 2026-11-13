@@ -146,11 +146,11 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
     h2 { margin: var(--space-5) 0 var(--space-2); }
     .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .folios { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
-    .folios a { padding: 6px var(--space-3); border: 1px solid var(--ro-line); border-radius: 16px; color: var(--ro-ink); text-decoration: none; background: var(--ro-paper); }
+    .folios a { padding: 6px var(--space-3); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); color: var(--ro-ink); text-decoration: none; background: var(--ro-paper); box-shadow: var(--ro-shadow-card); }
     .folios a.on { border-color: var(--ro-tide); background: var(--ro-line-soft); }
     .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
     .sums { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(220px, 1fr) 2fr; gap: var(--space-4); align-items: start; background: var(--ro-paper);
-            border: 1px solid var(--ro-line); border-radius: 10px; padding: 14px var(--space-4); margin-bottom: var(--space-4); }
+            border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .balance { display: flex; flex-direction: column; gap: 2px; }
     .balance span { color: var(--ro-mute); font-size: .85rem; }
     .balance b { font-size: 1.8rem; color: var(--ro-tide); letter-spacing: -0.01em; }

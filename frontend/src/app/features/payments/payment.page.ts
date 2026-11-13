@@ -109,7 +109,7 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
     .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     h2 { margin: var(--space-5) 0 var(--space-2); }
     .note { background: var(--ro-off-bg); color: var(--ro-off); border-radius: 8px; padding: 10px var(--space-3); }
-    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
+    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius);
             padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3); }
     .sums div { display: flex; flex-direction: column; }
     .sums span { color: var(--ro-mute); font-size: .8rem; }

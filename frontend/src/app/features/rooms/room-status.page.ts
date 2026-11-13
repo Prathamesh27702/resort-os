@@ -72,7 +72,7 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
     .legend { display: flex; gap: var(--space-4); flex-wrap: wrap; color: var(--ro-mute); font-size: .85rem; margin-bottom: var(--space-3); }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--space-3); }
-    .tile { display: flex; flex-direction: column; gap: var(--space-1); min-height: 104px; padding: var(--space-3) 14px; border-radius: 10px;
+    .tile { display: flex; flex-direction: column; gap: var(--space-1); min-height: 104px; padding: var(--space-3) 14px; border-radius: var(--ro-radius);
             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; color: var(--ro-ink); text-decoration: none; }
     .tile:hover { box-shadow: 0 1px 6px var(--ro-shadow); }
     .tile.AVAILABLE { border-left-color: var(--ro-ok-mid); }

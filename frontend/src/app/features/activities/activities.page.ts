@@ -120,7 +120,7 @@ function addDays(iso: string, n: number): string {
     .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; }
     .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: var(--ro-error-strong); }
     .sessions, .list, .bookings { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
-    .sessions > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
+    .sessions > li { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); margin-bottom: var(--space-2); overflow: hidden; box-shadow: var(--ro-shadow-card); }
     .sessions > li.empty { padding: 14px; }
     .sessions > li.off { opacity: .7; }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
@@ -137,7 +137,7 @@ function addDays(iso: string, n: number): string {
     .bookings li:first-child { border-top: 0; } .bookings li.off { opacity: .65; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; } .kit { color: var(--ro-tide); }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .list { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .list { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; }
   `,

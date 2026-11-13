@@ -156,11 +156,11 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
     mat-button-toggle-group { flex-wrap: wrap; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
     .cards { display: flex; gap: 10px; flex-wrap: wrap; margin: var(--space-2) 0; }
-    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: 10px 14px; min-width: 120px; display: flex; flex-direction: column; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; min-width: 120px; display: flex; flex-direction: column; box-shadow: var(--ro-shadow-card); }
     .card b { font-size: 1.3rem; }
     .actions { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-2) 0 var(--space-1); }
     h2 { margin: 18px 0 6px; font-size: 1.1rem; }
-    .reqs, .hols, .types { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .reqs, .hols, .types { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .reqs li, .types li { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .reqs li:first-child, .types li:first-child, .hols li:first-child { border-top: 0; }
     .main { flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -173,10 +173,10 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
     .hols li { padding: var(--space-2) 14px; border-top: 1px solid var(--ro-sunk); } .hols.full li { display: flex; align-items: center; gap: var(--space-2); } .hols b { min-width: 110px; display: inline-block; }
     .off { opacity: .6; }
     .types li > div { flex: 1; display: flex; flex-direction: column; }
-    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .bal { width: 100%; border-collapse: collapse; } .bal th, .bal td { padding: var(--space-2) 10px; border-bottom: 1px solid var(--ro-sunk); text-align: left; }
     .bal tbody tr { cursor: pointer; } .bal tbody tr:hover { background: var(--ro-wash); } .bal small { display: block; } .n { text-align: right; }
-    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) var(--space-4); }
+    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) var(--space-4); box-shadow: var(--ro-shadow-card); }
   `,
 })
 export class LeavePage {

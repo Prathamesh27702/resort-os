@@ -93,7 +93,7 @@ function loadCheckout(): Promise<RazorpayCtor> {
   styles: `
     :host { display: block; min-height: 100vh; background: var(--ro-sunk); }
     .wrap { max-width: 460px; margin: 0 auto; padding: var(--space-8) var(--space-4); }
-    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: var(--space-6); }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-6); box-shadow: var(--ro-shadow-card); }
     .prop { color: var(--ro-tide); font-weight: 600; margin: 0; }
     h1 { font-size: 2.2rem; color: var(--ro-tide); margin: var(--space-2) 0; }
     .mute { color: var(--ro-mute); }

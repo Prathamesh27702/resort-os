@@ -144,7 +144,7 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
     .banner { background: var(--ro-wash); border-radius: 10px; padding: var(--space-2) var(--space-3); margin: 6px 0; } .banner.warn { background: var(--ro-warn-bg); } .banner.ok { background: var(--ro-ok-bg); }
     .banner.off { background: var(--ro-line-soft); color: var(--ro-mute); }
     .acts { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-2) 0; }
-    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-1) 14px 10px; margin-top: var(--space-3); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-1) 14px 10px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); }
     h2 { font-size: 1.02rem; margin: var(--space-2) 0; }
     .table { display: flex; flex-direction: column; }
     .tr { display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--ro-sunk); font-variant-numeric: tabular-nums; }

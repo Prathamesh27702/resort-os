@@ -180,7 +180,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
     .views { margin: var(--space-1) 0 10px; flex-wrap: wrap; }
     .tools { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); }
     .search { flex: 1 1 200px; }
-    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-1) 14px 10px; margin-top: var(--space-3); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-1) 14px 10px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); }
     h2 { font-size: 1.02rem; margin: var(--space-2) 0; }
     ul { list-style: none; margin: 0; padding: 0; }
     .items li { display: flex; align-items: center; gap: 10px; padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); }
@@ -191,12 +191,12 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
     .at span { margin-right: 10px; }
     .oh { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; }
     .acts { display: flex; }
-    .dish { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px 14px; margin-top: var(--space-2); }
+    .dish { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; margin-top: var(--space-2); box-shadow: var(--ro-shadow-card); }
     .ings { color: var(--ro-ink-soft); }
     .nums { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; min-width: 110px; }
     .band.good { color: var(--ro-ok-mid); } .band.mid { color: var(--ro-warn); } .band.low { color: var(--ro-error); }
     .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); }
-    .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); display: flex; flex-direction: column; }
+    .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px var(--space-3); display: flex; flex-direction: column; box-shadow: var(--ro-shadow-card); }
     .tiles b { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
     .best { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-2); }
     .best section { margin-top: var(--space-2); }

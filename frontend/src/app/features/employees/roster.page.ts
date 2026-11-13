@@ -143,7 +143,7 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .short h2 { font-size: 1rem; color: var(--ro-error-strong); margin: var(--space-1) 0; } .short ul, .warn ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-3); }
     .short li button { color: var(--ro-error-strong); padding: 0 6px; height: auto; min-height: 32px; text-align: left; white-space: normal; } .short li.today b { text-decoration: underline; }
     .warn { border: 1px solid var(--ro-warn-line); background: var(--ro-warn-wash); border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: var(--ro-warn-strong); } .warn li { padding: 2px 0; }
-    .gridwrap { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; }
+    .gridwrap { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     table.week-grid { border-collapse: collapse; width: 100%; min-width: 900px; font-size: .88rem; }
     .week-grid th, .week-grid td { border-bottom: 1px solid var(--ro-line-soft); padding: var(--space-1) 6px; vertical-align: top; text-align: left; }
     .week-grid thead th { position: sticky; top: 0; background: var(--ro-wash); font-weight: 600; white-space: nowrap; } .week-grid thead th.today { background: var(--ro-info-bg); }
@@ -157,10 +157,10 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .chip:disabled { cursor: default; } .chip.overlap { border-color: var(--ro-warn-bright); background: var(--ro-warn-bg); } .chip.other { border-style: dashed; }
     .add { border: 1px dashed var(--ro-outline); background: none; border-radius: 8px; width: 100%; color: var(--ro-mute); cursor: pointer; font-size: 1rem; line-height: 1.3; }
     .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-1); margin: var(--space-1) 0 var(--space-2); }
-    .days button { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 10px; padding: var(--space-1) 0; font: inherit; position: relative; }
+    .days button { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: var(--ro-radius); padding: var(--space-1) 0; font: inherit; position: relative; }
     .days button.on { background: var(--ro-ok); color: var(--ro-paper); border-color: var(--ro-ok); } .dot { position: absolute; top: 3px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--ro-error); }
     h3 { font-size: .85rem; color: var(--ro-ink-soft); margin: var(--space-3) 0 var(--space-1); }
-    .list { list-style: none; margin: 0; padding: 0; } .list li { display: flex; gap: var(--space-2); align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 6px 10px; margin-top: 6px; }
+    .list { list-style: none; margin: 0; padding: 0; } .list li { display: flex; gap: var(--space-2); align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 6px 10px; margin-top: 6px; }
     .list .nm { flex: 1; display: flex; flex-direction: column; min-width: 0; } .list .sh { flex: 1.2; display: flex; flex-direction: column; gap: 2px; }
     @media (max-width: 760px) { h1 { font-size: 1.35rem; } }
   `,

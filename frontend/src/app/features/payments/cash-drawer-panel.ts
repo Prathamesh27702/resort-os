@@ -50,7 +50,7 @@ import { PaymentsApi } from './payments.api';
     } @else if (error()) { <p class="err" role="alert">{{ error() }}</p> }
   `,
   styles: `
-    .drawer { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
+    .drawer { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
     .main { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
     .main > mat-icon { color: var(--ro-tide); }
     .main > div:first-of-type { flex: 1; min-width: 200px; }

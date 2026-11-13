@@ -103,14 +103,14 @@ import { HousekeepingApi, TASK_TYPES, taskTypeLabel } from './housekeeping.api';
     .back { margin-left: -8px; }
     .head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
     .mute { color: var(--ro-mute); }
-    .edit { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 14px; margin: var(--space-3) 0; }
+    .edit { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 14px; margin: var(--space-3) 0; box-shadow: var(--ro-shadow-card); }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
     h2 { font-size: 1rem; font-weight: 600; margin: 14px 0 6px; }
     .item { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; }
     .grow { flex: 1 1 220px; }
     .actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
     .list { display: flex; flex-direction: column; gap: 10px; margin-top: var(--space-3); }
-    .tpl { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) 14px; }
+    .tpl { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) 14px; box-shadow: var(--ro-shadow-card); }
     .tpl.off { opacity: .7; }
     .top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
     ol { margin: var(--space-2) 0 0; padding-left: var(--space-5); }

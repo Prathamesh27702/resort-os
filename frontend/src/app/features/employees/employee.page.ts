@@ -123,7 +123,7 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
     .status { border-radius: 12px; padding: 2px 10px; font-size: .85rem; } .status.ok { background: var(--ro-ok-bg); } .status.left { background: var(--ro-warn-bg); color: var(--ro-warn); }
     .banner { border-radius: 10px; padding: var(--space-2) var(--space-3); background: var(--ro-sunk); } .banner.off { background: var(--ro-warn-bg); }
     .acts { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-2) 0; }
-    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-4) 14px; margin-top: var(--space-3); } h2 { font-size: 1.1rem; margin: 6px 0 var(--space-2); }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px var(--space-4) 14px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); } h2 { font-size: 1.1rem; margin: 6px 0 var(--space-2); }
     dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: 0; } dt { color: var(--ro-mute); } dd { margin: 0; overflow-wrap: anywhere; }
     ul { list-style: none; margin: 0 0 var(--space-2); padding: 0; } li { padding: var(--space-1) 0; }
     .big { font-size: 1.05rem; } .hist li.replaced { text-decoration: line-through; opacity: .7; }

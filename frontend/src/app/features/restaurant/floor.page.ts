@@ -97,7 +97,7 @@ import { RestaurantApi } from './restaurant.api';
     h2 { font-size: 1rem; margin: 18px 0 var(--space-2); color: var(--ro-ink-soft); }
     .tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
     .table { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 104px; padding: var(--space-3); text-align: left;
-             background: var(--ro-paper); border: 1px solid var(--ro-line); border-left: 6px solid var(--ro-ok-mid); border-radius: 12px; font: inherit; color: inherit; cursor: pointer; }
+             background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-left: 6px solid var(--ro-ok-mid); border-radius: var(--ro-radius-lg); font: inherit; color: inherit; cursor: pointer; box-shadow: var(--ro-shadow-card); }
     .table.busy { border-left-color: var(--ro-warn-bright); background: var(--ro-warn-wash); }
     .table.ready { border-left-color: var(--ro-info-bright); box-shadow: 0 0 0 2px var(--ro-info-bright) inset; }
     .table:disabled { cursor: default; opacity: .7; }
@@ -109,8 +109,8 @@ import { RestaurantApi } from './restaurant.api';
     .chips i { font-style: normal; font-size: .75rem; padding: 1px var(--space-2); border-radius: 999px; }
     .unsent { background: var(--ro-warn-bg); color: var(--ro-warn); } .cooking { background: var(--ro-sunk); color: var(--ro-ink-soft); } .ok { background: var(--ro-info-bg); color: var(--ro-info); }
     .others { display: flex; flex-direction: column; gap: var(--space-2); }
-    .other { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px;
-             padding: var(--space-3); color: inherit; text-decoration: none; min-height: 48px; }
+    .other { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg);
+             padding: var(--space-3); color: inherit; text-decoration: none; min-height: 48px; box-shadow: var(--ro-shadow-card); }
     .other .right { margin-left: auto; font-weight: 600; }
     .other .chips { flex-basis: 100%; }
     @media (max-width: 640px) { .tables { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 1.35rem; } }

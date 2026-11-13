@@ -107,7 +107,7 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
     .q { flex: 1; min-width: 220px; max-width: 420px; }
     .m { width: 170px; }
     .totals { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
-    .totals > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 10px 14px; min-width: 130px; }
+    .totals > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 10px 14px; min-width: 130px; }
     .totals span { color: var(--ro-mute); font-size: .8rem; }
     .totals b { font-size: 1.15rem; color: var(--ro-tide); }
     .totals .net b { font-size: 1.4rem; }

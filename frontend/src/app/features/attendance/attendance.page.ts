@@ -121,7 +121,7 @@ const ROW_STATE: Record<AttendanceRowState, string> = {
   styles: `
     .attendance { max-width: 880px; padding-bottom: 60px; }
     .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); } .warn { color: var(--ro-warn); }
-    .clock { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: var(--space-4) 18px; margin-bottom: 18px; }
+    .clock { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-4) 18px; margin-bottom: 18px; box-shadow: var(--ro-shadow-card); }
     .clock.on { border-color: var(--ro-ok-soft); background: var(--ro-wash); } .clock.brk { border-color: var(--ro-warn-gold); background: var(--ro-warn-wash); }
     .who { display: flex; flex-direction: column; } .who b { font-size: 1.1rem; }
     .state { font-size: 1.35rem; font-weight: 600; margin: 10px 0 var(--space-1); } .shift { margin: 0 0 var(--space-2); }
@@ -133,8 +133,8 @@ const ROW_STATE: Record<AttendanceRowState, string> = {
     .locating { display: flex; align-items: center; gap: var(--space-2); }
     .events { list-style: none; padding: 0; margin: var(--space-3) 0 0; border-top: 1px solid var(--ro-line-mid); } .events li { padding: 6px 0; border-bottom: 1px solid var(--ro-sunk); }
     .events b { display: inline-block; width: 52px; } .sofar { font-weight: 500; margin: var(--space-2) 0 0; } .week { margin: 10px 0 0; }
-    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-3) var(--space-4); }
-    .board { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: var(--space-3) var(--space-4); }
+    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) var(--space-4); box-shadow: var(--ro-shadow-card); }
+    .board { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) var(--space-4); box-shadow: var(--ro-shadow-card); }
     .bhead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; } .bhead h2 { margin: 0; }
     .tools { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; } .date { margin: var(--space-1) 0; font-weight: 500; }
     .counts { display: flex; gap: 6px; flex-wrap: wrap; margin: var(--space-1) 0 var(--space-2); }

@@ -184,7 +184,7 @@ export interface TemplateData { propertyId: string; template: MessageTemplate; }
     mat-slide-toggle { margin: var(--space-1) 0 10px; }
     h3 { font-size: .95rem; margin: var(--space-2) 0 var(--space-1); }
     .vars { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-    .var { border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: .8rem; cursor: pointer; color: var(--ro-tide); }
+    .var { border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: 2px 10px; font: inherit; font-size: .8rem; cursor: pointer; color: var(--ro-tide); box-shadow: var(--ro-shadow-card); }
     .var.used { background: var(--ro-ok-bg); border-color: var(--ro-ok-line); }
     .psub { font-weight: 600; margin: 0 0 var(--space-1); }
     .text { white-space: pre-wrap; font: inherit; background: var(--ro-tint); border-radius: 10px; padding: 10px var(--space-3); margin: 0; }

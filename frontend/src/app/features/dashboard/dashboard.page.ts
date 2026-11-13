@@ -12,8 +12,15 @@ import { AttendanceApi, STATUS_LABEL } from '../attendance/attendance.api';
 import { hm, hours } from '../employees/employees.api';
 import { LeaveApi } from '../leave/leave.api';
 import { OwnerBoard } from './owner-board';
+import { FrontDeskApi } from '../front-desk/front-desk.api';
+import { MessagesApi } from '../messages/messages.api';
+import { InventoryApi } from '../inventory/inventory.api';
+import { rs } from '../reports/reports.api';
 
 interface Step { done: boolean; title: string; detail: string; link: string; action: string; }
+/** One line in "Needs attention": something to act on now, with the button that goes there. */
+interface Attention { key: string; icon: string; tone: 'warn' | 'bad' | 'info'; title: string; detail: string; link: string; action: string;
+  query?: Record<string, string>; testid?: string; }
 
 @Component({
   selector: 'app-dashboard',
@@ -62,11 +69,18 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
         </section>
       }
 
-      @if (leaveWaiting(); as n) {
-        <section class="panel myday" data-testid="leave-waiting">
-          <h2>Leave waiting for you</h2>
-          <p>{{ n }} {{ n === 1 ? 'request is' : 'requests are' }} waiting for approval.</p>
-          <div class="row"><a mat-flat-button routerLink="/leave" [queryParams]="{ view: 'team' }">Look at {{ n === 1 ? 'it' : 'them' }}</a></div>
+      @if (attention().length) {
+        <section class="panel attention" data-testid="attention" aria-labelledby="attn-h">
+          <h2 id="attn-h"><mat-icon aria-hidden="true">notification_important</mat-icon> Needs attention</h2>
+          <ul>
+            @for (a of attention(); track a.key) {
+              <li [class]="a.tone" [attr.data-testid]="a.testid ?? null">
+                <span class="dot" aria-hidden="true"><mat-icon>{{ a.icon }}</mat-icon></span>
+                <span class="txt"><b>{{ a.title }}</b><span>{{ a.detail }}</span></span>
+                <a mat-stroked-button [routerLink]="a.link" [queryParams]="a.query ?? null">{{ a.action }}</a>
+              </li>
+            }
+          </ul>
         </section>
       }
 
@@ -110,6 +124,19 @@ interface Step { done: boolean; title: string; detail: string; link: string; act
     .myday .state { font-size: 1.2rem; font-weight: 600; margin: var(--space-2) 0 var(--space-1); } .myday p { margin: var(--space-1) 0; }
     .myday .row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-top: 10px; }
     .warn { color: var(--ro-warn); }
+    .page { max-width: 1240px; }
+    .attention { padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4); }
+    .attention h2 { display: flex; align-items: center; gap: var(--space-2); font-family: var(--ro-font-display); font-size: 1.05rem; margin: 0 0 var(--space-2); }
+    .attention h2 mat-icon { color: var(--ro-coral); }
+    .attention ul { list-style: none; margin: 0; padding: 0; }
+    .attention li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--ro-line-soft); }
+    .attention li:first-child { border-top: 0; }
+    .attention .dot { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; flex: none; }
+    .attention .dot mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    .attention li.bad .dot { background: var(--ro-error-bg); color: var(--ro-error); }
+    .attention li.warn .dot { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .attention li.info .dot { background: var(--ro-info-bg); color: var(--ro-info-strong); }
+    @media (max-width: 640px) { .attention li { flex-wrap: wrap; } .attention li a { margin-left: 50px; } }
   `,
 })
 export class DashboardPage {
@@ -125,6 +152,39 @@ export class DashboardPage {
   /** Leave requests waiting for the caller to approve (Sprint 19): the manager is told here. */
   leaveWaiting = signal(0);
   private leave = inject(LeaveApi);
+  private desk = inject(FrontDeskApi);
+  private messages = inject(MessagesApi);
+  private inventory = inject(InventoryApi);
+  private notReady = signal(0);
+  private unpaid = signal<{ n: number; amount: number } | null>(null);
+  private overdue = signal(0);
+  private failed = signal(0);
+  private lowStock = signal(0);
+
+  /** The few things to act on now, in one card (they used to be scattered across the bell and the screens). */
+  attention = computed<Attention[]>(() => {
+    const out: Attention[] = [];
+    const n = this.notReady();
+    if (n) out.push({ key: 'ready', icon: 'cleaning_services', tone: 'bad', title: `${n} ${n === 1 ? 'guest arrives' : 'guests arrive'} today to a room that isn't ready`,
+      detail: 'Clean or inspect the room, or move the booking to a ready room.', link: '/front-desk', action: 'Open front desk' });
+    const o = this.overdue();
+    if (o) out.push({ key: 'overdue', icon: 'schedule', tone: 'warn', title: `${o} ${o === 1 ? 'stay is' : 'stays are'} past check-out time`,
+      detail: 'Check them out, or extend the stay if the guest is staying on.', link: '/front-desk/departures', action: 'See departures' });
+    const u = this.unpaid();
+    if (u) out.push({ key: 'unpaid', icon: 'currency_rupee', tone: 'warn', title: `${rs(u.amount)} to collect from ${u.n} ${u.n === 1 ? 'guest' : 'guests'} leaving today`,
+      detail: 'Settle the bill before check-out: cash, UPI, card or a payment link.', link: '/front-desk/departures', action: 'See departures' });
+    const l = this.leaveWaiting();
+    if (l) out.push({ key: 'leave', icon: 'beach_access', tone: 'info', testid: 'leave-waiting',
+      title: `Leave waiting for you`, detail: `${l} ${l === 1 ? 'request is' : 'requests are'} waiting for approval.`,
+      link: '/leave', query: { view: 'team' }, action: `Look at ${l === 1 ? 'it' : 'them'}` });
+    const f = this.failed();
+    if (f) out.push({ key: 'failed', icon: 'sms_failed', tone: 'bad', title: `${f} guest ${f === 1 ? 'message' : 'messages'} couldn't be sent`,
+      detail: 'Usually a wrong phone number or email. Fix it on the guest and send again.', link: '/messages', query: { status: 'FAILED' }, action: 'See messages' });
+    const s = this.lowStock();
+    if (s) out.push({ key: 'stock', icon: 'inventory_2', tone: 'warn', title: `${s} stock ${s === 1 ? 'item is' : 'items are'} at or below the reorder level`,
+      detail: 'Raise a purchase order before the kitchen runs out.', link: '/inventory', action: 'See stock' });
+    return out;
+  });
   hm = hm; hours = hours; statusLabel = STATUS_LABEL;
   /** The property whose numbers show here (Sprint 23): only for someone who may read the operational reports. */
   reportsFor = computed(() => { const p = this.props.current(); return p && this.auth.can('report.operational.read', p.id) ? p.id : null; });
@@ -139,6 +199,17 @@ export class DashboardPage {
       // The employee's own day (Sprint 18): only when their account is linked to an employee record here.
       this.me.set(null);
       if (p && this.auth.can('attendance.self', p.id)) this.attendance.me(p.id).subscribe({ next: m => this.me.set(m), error: () => this.me.set(null) });
+      this.notReady.set(0); this.unpaid.set(null); this.overdue.set(0); this.failed.set(0); this.lowStock.set(0);
+      if (p && this.auth.can('reservation.read', p.id)) {
+        this.desk.arrivals(p.id).subscribe({ next: l => this.notReady.set(l.items.filter(i => !i.checkedInAt && !!i.checkInProblem).length) });
+        this.desk.departures(p.id).subscribe({ next: l => {
+          const owing = l.items.filter(i => !i.checkedOutAt && i.balance > 0);
+          this.unpaid.set(owing.length ? { n: owing.length, amount: owing.reduce((t, i) => t + i.balance, 0) } : null);
+        } });
+        this.desk.dashboard(p.id).subscribe({ next: d => this.overdue.set(d.overdue) });
+      }
+      if (p && this.auth.can('message.read', p.id)) this.messages.setup(p.id).subscribe({ next: m => this.failed.set(m.counts.FAILED ?? 0) });
+      if (p && this.auth.can('inventory.read', p.id)) this.inventory.get(p.id).subscribe({ next: i => this.lowStock.set(i.lowCount) });
       this.leaveWaiting.set(0);
       if (p && this.auth.can('leave.approve', p.id))
         this.leave.requests(p.id, { status: 'PENDING' }).subscribe({ next: l => this.leaveWaiting.set(l.requests.filter(r => r.actions.includes('approve')).length) });

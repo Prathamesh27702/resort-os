@@ -108,14 +108,14 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
     .tools { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; justify-content: flex-end; }
     .mute { color: var(--ro-mute); }
     .filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: var(--space-1); margin-bottom: var(--space-2); scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-line); background: var(--ro-paper); border-radius: 999px; padding: var(--space-2) 14px; font: inherit;
-                      min-height: 40px; color: var(--ro-ink); cursor: pointer; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit;
+                      min-height: 40px; color: var(--ro-ink); cursor: pointer; box-shadow: var(--ro-shadow-card); }
     .filters button b { margin-left: var(--space-1); }
     .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
     .rush-note { display: flex; align-items: center; gap: 6px; margin: var(--space-1) 0 var(--space-3); color: var(--ro-warn); font-size: .9rem; }
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
-    .card { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-left: 6px solid var(--ro-outline);
-            border-radius: 12px; overflow: hidden; }
+    .card { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-left: 6px solid var(--ro-outline);
+            border-radius: var(--ro-radius-lg); overflow: hidden; box-shadow: var(--ro-shadow-card); }
     .card.rush { box-shadow: 0 0 0 2px var(--ro-warn-gold) inset; }
     .card.dirty { border-left-color: var(--ro-error); } .card.cleaning { border-left-color: var(--ro-warn-bright); }
     .card.clean, .card.inspection { border-left-color: var(--ro-info-bright); } .card.ready { border-left-color: var(--ro-ok-mid); }

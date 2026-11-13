@@ -88,7 +88,7 @@ const server = (c: AbstractControl | null) => (c?.errors?.['server'] as string |
     .head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
     .tools { display: flex; gap: var(--space-2); }
     .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
-    section { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: var(--space-1) 14px 10px; margin-top: var(--space-3); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-1) 14px 10px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); }
     section.off { opacity: .7; }
     h2 { font-size: 1.05rem; display: flex; align-items: center; gap: var(--space-1); margin: var(--space-2) 0; }
     ul { list-style: none; margin: 0; padding: 0; }

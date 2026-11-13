@@ -137,10 +137,10 @@ const ICON: Record<BudgetStanding, string> = { ON_TRACK: 'check_circle', OVER: '
     .none { background: var(--ro-warn-bg); border-radius: 12px; padding: 10px 14px; margin: 10px 0; display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
     .none p { margin: 0; flex: 1; }
     .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin: var(--space-3) 0 6px; }
-    .tile { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 12px; padding: 10px var(--space-3); display: flex; flex-direction: column; }
+    .tile { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px var(--space-3); display: flex; flex-direction: column; box-shadow: var(--ro-shadow-card); }
     .tile small { color: var(--ro-mute); } .tile b { font-size: 1.25rem; color: var(--ro-tide); } .tile.bad b { color: var(--ro-error-strong); }
     .wait { color: var(--ro-warn-strong); margin: var(--space-1) 0; }
-    .table { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-top: 10px; }
+    .table { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); margin-top: 10px; box-shadow: var(--ro-shadow-card); }
     .tr { display: grid; grid-template-columns: 2fr 1fr 1.2fr 1.2fr 1.3fr 80px; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); }
     .tr:first-child { border-top: 0; } .th { color: var(--ro-mute); font-size: .85rem; }
     .name { display: flex; flex-direction: column; align-items: flex-start; }

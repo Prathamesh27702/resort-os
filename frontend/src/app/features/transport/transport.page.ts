@@ -174,7 +174,7 @@ function addDays(iso: string, n: number): string {
     .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: var(--ro-error-strong); }
     .st { color: var(--ro-tide); } .st.ok { color: var(--ro-ok-mid); } h2 { margin: 18px 0 0; font-size: 1.1rem; }
     .trips, .list, .pax, .tick { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
-    .trips > li { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; margin-bottom: var(--space-2); overflow: hidden; }
+    .trips > li { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); margin-bottom: var(--space-2); overflow: hidden; box-shadow: var(--ro-shadow-card); }
     .trips > li.empty { padding: 14px; } .trips > li.off { opacity: .7; }
     .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
     .row:hover { background: var(--ro-wash); }
@@ -190,11 +190,11 @@ function addDays(iso: string, n: number): string {
     .pax li:first-child { border-top: 0; } .pax li.off { opacity: .65; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .list { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .list { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; }
     .mine { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2); } .empty { padding: 14px 0; }
-    .card { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 16px; padding: var(--space-3) 14px; } .card.off { opacity: .7; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) 14px; box-shadow: var(--ro-shadow-card); } .card.off { opacity: .7; }
     .card header { display: flex; gap: var(--space-3); align-items: center; }
     .big { font-size: 1.6rem; font-weight: 700; color: var(--ro-tide); }
     .card .what small { color: var(--ro-mute); }

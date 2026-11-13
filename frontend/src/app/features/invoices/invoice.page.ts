@@ -159,12 +159,12 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
     .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .doc-actions { white-space: nowrap; }
     .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
-    .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px;
+    .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius);
                padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .parties > div { display: flex; flex-direction: column; gap: 2px; }
     .parties small { color: var(--ro-mute); font-size: .8rem; }
     .sums { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-4) 0 0; }
-    .sums > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 10px 14px; min-width: 140px; }
+    .sums > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 10px 14px; min-width: 140px; }
     .sums span { color: var(--ro-mute); font-size: .8rem; }
     .sums b { font-size: 1.2rem; color: var(--ro-tide); }
     .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-6); padding: 14px var(--space-4) var(--space-4);

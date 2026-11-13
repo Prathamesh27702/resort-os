@@ -174,7 +174,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
   `,
   styles: `
     .wide { max-width: 1100px; }
-    .panel { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 10px; padding: 14px var(--space-4); margin-bottom: var(--space-4); }
+    .panel { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .sec-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
     h2 { margin: 0 0 var(--space-2); font-size: 1.1rem; }
     h3 { margin: 0; font-size: 1rem; }

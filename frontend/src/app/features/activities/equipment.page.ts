@@ -89,10 +89,10 @@ type View = 'out' | 'items';
     .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; } .bar { margin: var(--space-2) 0; }
     .mute { color: var(--ro-mute); } .err, .bad { color: var(--ro-error); }
     .kinds { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-2) 0; align-items: stretch; }
-    .kind { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; padding: var(--space-2) var(--space-3); min-width: 110px; display: flex; flex-direction: column;
-            text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .kind { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-2) var(--space-3); min-width: 110px; display: flex; flex-direction: column;
+            text-align: left; cursor: pointer; font: inherit; color: inherit; box-shadow: var(--ro-shadow-card); }
     .kind.sel { border-color: var(--ro-sea); box-shadow: 0 0 0 1px var(--ro-sea) inset; } .kind b { font-size: 1.25rem; } .kind b small { font-size: .85rem; color: var(--ro-mute); }
-    .list { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: 14px; }
+    .list { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .list li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); }
     .list li:first-child { border-top: 0; } .list li.late { background: var(--ro-error-bg); }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; } .btns { display: flex; gap: 6px; }
