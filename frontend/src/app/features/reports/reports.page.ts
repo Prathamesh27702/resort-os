@@ -74,13 +74,15 @@ const DAY_PERIOD: Tab[] = ['occupancy', 'revenue', 'channels'];
         } @else {
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sel">
             <mat-label>{{ dayPeriod() ? 'From' : 'From the month of' }}</mat-label>
-            <input matInput [matDatepicker]="dpFrom" [ngModel]="from() ?? shown().from" (dateChange)="setFrom($event.value)" aria-label="From" data-testid="from" />
+            <input matInput [matDatepicker]="dpFrom" [ngModel]="fieldValue('from')" (focus)="editStart('from')" (blur)="editing.set(null)"
+                   (dateChange)="setFrom($event.value)" aria-label="From" data-testid="from" />
             <mat-datepicker-toggle matIconSuffix [for]="dpFrom" /><mat-datepicker #dpFrom />
             @if (err()['from']; as e) { <mat-hint class="bad">{{ e }}</mat-hint> }
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sel">
             <mat-label>{{ dayPeriod() ? 'To' : 'To the month of' }}</mat-label>
-            <input matInput [matDatepicker]="dpTo" [ngModel]="to() ?? shown().to" (dateChange)="setTo($event.value)" aria-label="To" data-testid="to" />
+            <input matInput [matDatepicker]="dpTo" [ngModel]="fieldValue('to')" (focus)="editStart('to')" (blur)="editing.set(null)"
+                   (dateChange)="setTo($event.value)" aria-label="To" data-testid="to" />
             <mat-datepicker-toggle matIconSuffix [for]="dpTo" /><mat-datepicker #dpTo />
             @if (err()['to']; as e) { <mat-hint class="bad">{{ e }}</mat-hint> }
           </mat-form-field>
@@ -532,6 +534,17 @@ export class ReportsPage {
     if (t !== this.tab()) { this.from.set(null); this.to.set(null); this.err.set({}); this.tab.set(t); }
     this.going = t;
     this.router.navigate([], { queryParams: { tab: t === 'month' ? null : t }, replaceUrl: true });
+  }
+  /**
+   * While a date field has focus it keeps what the person is typing: a report that arrives meanwhile (for the previous
+   * dates) must not write its own period into the field under their fingers.
+   */
+  editing = signal<'from' | 'to' | null>(null);
+  private snap = signal<{ from: string | null; to: string | null }>({ from: null, to: null });
+  editStart(f: 'from' | 'to') { this.snap.set({ from: this.from() ?? this.shown().from, to: this.to() ?? this.shown().to }); this.editing.set(f); }
+  fieldValue(f: 'from' | 'to') {
+    if (this.editing() === f) return this.snap()[f];
+    return f === 'from' ? this.from() ?? this.shown().from : this.to() ?? this.shown().to;
   }
   setFrom(v: string) { this.from.set(v || null); }
   setTo(v: string) { this.to.set(v || null); }
