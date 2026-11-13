@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -28,7 +29,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
  */
 @Component({
   selector: 'app-post-charge-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Post a charge to <span class="num">{{ data.folio.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="charge-form">
@@ -86,7 +87,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
       }
       <mat-form-field appearance="outline">
         <mat-label>Day of the service</mat-label>
-        <input matInput type="date" formControlName="serviceDate" [max]="data.today" />
+        <input matInput [matDatepicker]="dp5" formControlName="serviceDate" [max]="data.today" /><mat-datepicker-toggle matIconSuffix [for]="dp5" /><mat-datepicker #dp5 />
         <mat-error>{{ err('serviceDate') || 'Choose the day.' }}</mat-error>
       </mat-form-field>
       <p class="amount">Adds <b class="num">{{ money(amount()) }}</b> to the bill, before GST</p>

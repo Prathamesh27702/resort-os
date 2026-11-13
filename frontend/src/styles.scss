@@ -191,6 +191,15 @@ html {
   --ro-glow-2: #ffc3a8;
   --ro-glow-3: #c9d2ff;
   --ro-scrim: rgba(7, 26, 31, 0.35);
+  // The brand panel (login, guest pay page): the same deep lagoon in both themes.
+  --ro-brand-grad: linear-gradient(160deg, #0b5559 0%, #0a3a40 55%, #082a31 100%);
+  --ro-brand-on: #eaf7f5;
+  --ro-brand-mute: #b6d8d4;
+  --ro-brand-glass: rgba(255, 255, 255, 0.12);
+  --ro-brand-edge: rgba(255, 255, 255, 0.22);
+  --ro-brand-sun: #ffb38f;
+  --ro-brand-wave1: rgba(60, 196, 194, 0.35);
+  --ro-brand-wave2: rgba(14, 124, 128, 0.75);
   --ro-menu: #f7fcfb;
 
   // Charts: categorical colours in this fixed order, checked for colour blindness and contrast (dataviz validator).

@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -36,7 +37,7 @@ export interface ExpenseSaved { expense: Expense; failed: string[]; }
  */
 @Component({
   selector: 'app-expense-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ e ? 'Change ' + e.code : 'Record an expense' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="expense-form">
@@ -48,7 +49,7 @@ export interface ExpenseSaved { expense: Expense; failed: string[]; }
           <span matTextPrefix>₹&nbsp;</span><input matInput type="number" inputmode="decimal" formControlName="amount" min="0.01" step="0.01" />
           <mat-error>{{ server(form.get('amount')) || 'Enter the amount paid, more than ₹0.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Day spent</mat-label>
-          <input matInput type="date" formControlName="expenseDate" [max]="data.today" />
+          <input matInput [matDatepicker]="dp4" formControlName="expenseDate" [max]="data.today" /><mat-datepicker-toggle matIconSuffix [for]="dp4" /><mat-datepicker #dp4 />
           <mat-error>{{ server(form.get('expenseDate')) || 'Enter the day the money was spent.' }}</mat-error></mat-form-field>
       </div>
       <div class="two">

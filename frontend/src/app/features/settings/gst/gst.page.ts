@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,7 +24,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
  */
 @Component({
   selector: 'app-gst',
-  imports: [ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, MatSnackBarModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, MatSnackBarModule],
   template: `
     <div class="page wide">
       <div class="page-head">
@@ -121,7 +122,7 @@ import { STATES, TaxApi, fullDay, pct, periodPhrase, periodText, registrationTyp
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Day of the service</mat-label>
-            <input matInput type="date" formControlName="date" />
+            <input matInput [matDatepicker]="dp24" formControlName="date" /><mat-datepicker-toggle matIconSuffix [for]="dp24" /><mat-datepicker #dp24 />
             <mat-error>{{ calcErr('date') || 'Choose the day.' }}</mat-error>
           </mat-form-field>
           <mat-form-field appearance="outline">

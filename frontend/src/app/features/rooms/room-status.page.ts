@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +13,7 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
 /** Read-only board of every room on one night: blocks, and for today each room's cleaning state and open repairs (Sprint 13). */
 @Component({
   selector: 'app-room-status',
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [MatDatepickerModule, RouterLink, MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
     <div class="page wide">
       <div class="page-head">
@@ -23,7 +24,7 @@ import { RoomsApi, addDays, shortDate } from './rooms.api';
         </div>
         <div class="nav">
           <button mat-icon-button (click)="shift(-1)" aria-label="Previous night"><mat-icon>chevron_left</mat-icon></button>
-          <input type="date" [value]="date()" (change)="date.set($any($event.target).value || today())" aria-label="Date" />
+          <input [matDatepicker]="dp19" [value]="date()" (dateChange)="date.set($event.value || today())" aria-label="Date" /><mat-datepicker-toggle [for]="dp19" /><mat-datepicker #dp19 />
           <button mat-icon-button (click)="shift(1)" aria-label="Next night"><mat-icon>chevron_right</mat-icon></button>
           @if (date() !== today()) { <button mat-button (click)="date.set(today())">Today</button> }
         </div>

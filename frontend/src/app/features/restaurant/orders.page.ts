@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,7 +15,7 @@ import { RestaurantApi } from './restaurant.api';
 /** One day's restaurant orders (Sprint 14): open, settled (paid or charged to a room) and voided, with the day's totals. */
 @Component({
   selector: 'app-restaurant-orders',
-  imports: [FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [MatDatepickerModule, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
   template: `
     <div class="page list">
       <a mat-button routerLink="/restaurant" class="back"><mat-icon>arrow_back</mat-icon>Floor</a>
@@ -22,7 +23,7 @@ import { RestaurantApi } from './restaurant.api';
       <div class="bar">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Day</mat-label>
-          <input matInput type="date" [ngModel]="date()" (ngModelChange)="date.set($event || null)" />
+          <input matInput [matDatepicker]="dp18" [ngModel]="date()" (ngModelChange)="date.set($event || null)" /><mat-datepicker-toggle matIconSuffix [for]="dp18" /><mat-datepicker #dp18 />
         </mat-form-field>
         <div class="filters" role="tablist" aria-label="Which orders">
           @for (s of statuses; track s.value) {

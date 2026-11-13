@@ -181,7 +181,11 @@ type Period = 'month' | 'last' | 'year' | 'any';
     .list { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; } .main { flex: 1; display: flex; flex-direction: column; }
-    @media (max-width: 560px) { .sel { width: calc(50% - 4px); } .day { min-width: 54px; font-size: .8rem; } }
+    @media (max-width: 560px) {
+      .sel { width: calc(50% - 4px); }
+      .row { flex-wrap: wrap; gap: 2px var(--space-3); } .day { min-width: 100%; font-size: .8rem; color: var(--ro-mute); }
+      .what b { white-space: normal; }
+    }
   `,
 })
 export class ExpensesPage {

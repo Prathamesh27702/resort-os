@@ -171,9 +171,11 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .tile span { color: var(--ro-mute); font-size: .85rem; }
     .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; font-size: .8rem; }
     .tile small { color: var(--ro-mute); font-size: .8rem; }
-    .tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--ro-line); margin-bottom: var(--space-3); overflow-x: auto; }
-    .tabs a { padding: 10px 14px; color: var(--ro-mute); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-    .tabs a.on { color: var(--ro-tide); border-bottom-color: var(--ro-tide); font-weight: 500; }
+    .tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); overflow-x: auto; padding: 4px; border-radius: 999px; width: fit-content; max-width: 100%;
+            box-sizing: border-box; background: var(--ro-glass); border: 1px solid var(--ro-glass-edge); scrollbar-width: none; }
+    .tabs a { padding: 8px 16px; color: var(--ro-ink-soft); text-decoration: none; border-radius: 999px; white-space: nowrap; font-weight: 500; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; }
+    .tabs a:hover { background: var(--ro-hover); }
+    .tabs a.on { background: var(--ro-accent-grad); color: var(--ro-on-accent); box-shadow: var(--ro-accent-glow); font-weight: 600; }
     .day { display: flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-2); }
     .day .when { font-weight: 500; min-width: 150px; text-align: center; }
     .mute { color: var(--ro-mute); }

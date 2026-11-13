@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,7 +30,7 @@ export interface RecordData { propertyId: string; row: AttendanceRow; date: stri
  */
 @Component({
   selector: 'app-record-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Record for {{ data.row.employeeName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="record-form">
@@ -40,7 +41,7 @@ export interface RecordData { propertyId: string; row: AttendanceRow; date: stri
         </mat-select>
         <mat-error>{{ server(form.get('action')) || 'Choose what to record.' }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>Day</mat-label><input matInput type="date" formControlName="date" />
+        <mat-form-field appearance="outline"><mat-label>Day</mat-label><input matInput [matDatepicker]="dp3" formControlName="date" /><mat-datepicker-toggle matIconSuffix [for]="dp3" /><mat-datepicker #dp3 />
           <mat-error>{{ server(form.get('date')) || 'Choose the day.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Time</mat-label><input matInput type="time" formControlName="time" />
           <mat-hint>At the property</mat-hint>

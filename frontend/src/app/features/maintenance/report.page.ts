@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -26,7 +27,7 @@ const MAX_PHOTOS = 6;
  */
 @Component({
   selector: 'app-report-problem',
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule,
+  imports: [MatDatepickerModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule,
     MatSlideToggleModule, MatSnackBarModule],
   template: `
     <div class="page rp">
@@ -100,7 +101,7 @@ const MAX_PHOTOS = 6;
             @if (form.controls.outOfOrder.value) {
               <mat-form-field appearance="outline">
                 <mat-label>Usable again on</mat-label>
-                <input matInput type="date" formControlName="expectedReadyOn" [min]="minDate()" [max]="maxDate()" />
+                <input matInput [matDatepicker]="dp11" formControlName="expectedReadyOn" [min]="minDate()" [max]="maxDate()" /><mat-datepicker-toggle matIconSuffix [for]="dp11" /><mat-datepicker #dp11 />
                 <mat-error>{{ err('expectedReadyOn') || 'Say when the room should be usable again (the room is blocked until then).' }}</mat-error>
               </mat-form-field>
             }

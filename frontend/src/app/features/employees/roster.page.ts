@@ -139,9 +139,13 @@ import { CopyWeekDialog, ShiftData, ShiftDialog, ShiftResult, TemplatesDialog } 
     .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; } .range { font-weight: 500; }
     .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); } .grow { flex: 1; }
     .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .ok { color: var(--ro-ok-mid); }
-    .short { border: 1px solid var(--ro-error-line); background: var(--ro-error-bg); border-radius: 12px; padding: 6px var(--space-3) var(--space-2); margin-bottom: var(--space-2); }
-    .short h2 { font-size: 1rem; color: var(--ro-error-strong); margin: var(--space-1) 0; } .short ul, .warn ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-3); }
-    .short li button { color: var(--ro-error-strong); padding: 0 6px; height: auto; min-height: 32px; text-align: left; white-space: normal; } .short li.today b { text-decoration: underline; }
+    .short { border: 1px solid var(--ro-warn-line); background: var(--ro-paper); border-left: 4px solid var(--ro-warn-mid); border-radius: var(--ro-radius); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3); box-shadow: var(--ro-shadow-card); }
+    .short h2 { font-size: 1rem; color: var(--ro-warn-strong); margin: 0 0 var(--space-2); }
+    .warn ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--space-3); }
+    .short ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-1) var(--space-2); max-height: 220px; overflow: auto; }
+    .short li { background: var(--ro-warn-wash); border-radius: var(--ro-radius-sm); padding: 4px 8px; font-size: .88rem; color: var(--ro-ink); }
+    .short li button { color: var(--ro-ink); padding: 0; height: auto; min-height: 36px; text-align: left; white-space: normal; font-weight: 400; justify-content: flex-start; width: 100%; }
+    .short li b { color: var(--ro-warn-strong); } .short li.today { outline: 2px solid var(--ro-warn-mid); }
     .warn { border: 1px solid var(--ro-warn-line); background: var(--ro-warn-wash); border-radius: 12px; padding: 6px var(--space-3); margin-bottom: var(--space-2); color: var(--ro-warn-strong); } .warn li { padding: 2px 0; }
     .gridwrap { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
     table.week-grid { border-collapse: collapse; width: 100%; min-width: 900px; font-size: .88rem; }

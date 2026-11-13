@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -33,7 +34,7 @@ export interface AskData {
  */
 @Component({
   selector: 'app-ask-leave-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ data.employees ? 'Leave for someone' : 'Ask for leave' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="ask-form">
@@ -50,9 +51,9 @@ export interface AskData {
         </mat-select>
         <mat-error>{{ server(form.get('leaveTypeId')) || 'Choose the kind of leave.' }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput type="date" formControlName="fromDate" />
+        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput [matDatepicker]="dp8" formControlName="fromDate" /><mat-datepicker-toggle matIconSuffix [for]="dp8" /><mat-datepicker #dp8 />
           <mat-error>{{ server(form.get('fromDate')) || 'Choose the first day.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput type="date" formControlName="toDate" />
+        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput [matDatepicker]="dp9" formControlName="toDate" /><mat-datepicker-toggle matIconSuffix [for]="dp9" /><mat-datepicker #dp9 />
           <mat-error>{{ server(form.get('toDate')) || 'Choose the last day.' }}</mat-error></mat-form-field>
       </div>
       @if (type()?.allowHalfDay) {
@@ -298,12 +299,12 @@ export interface HolidayData { propertyId: string; holiday: Holiday | null; }
 
 @Component({
   selector: 'app-holiday-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule],
   template: `
     <h2 mat-dialog-title>{{ h ? h.name : 'Add a holiday' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="holiday-form">
       <p class="mute">Leave over a holiday doesn't count it. Leave already asked for keeps its days.</p>
-      <mat-form-field appearance="outline"><mat-label>Date</mat-label><input matInput type="date" formControlName="date" />
+      <mat-form-field appearance="outline"><mat-label>Date</mat-label><input matInput [matDatepicker]="dp10" formControlName="date" /><mat-datepicker-toggle matIconSuffix [for]="dp10" /><mat-datepicker #dp10 />
         <mat-error>{{ server(form.get('date')) || 'Choose the date.' }}</mat-error></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput formControlName="name" maxlength="60" placeholder="e.g. Diwali" />
         <mat-error>{{ server(form.get('name')) || 'Give the holiday a name.' }}</mat-error></mat-form-field>

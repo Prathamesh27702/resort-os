@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -118,7 +119,7 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
 /** Puts trips on for a range of days at one or more departure times, with the vehicle and the driver. */
 @Component({
   selector: 'app-trips-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Put trips on</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="trips-form">
@@ -141,9 +142,9 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
           <mat-error>{{ server(form.get('driverUserId')) }}</mat-error></mat-form-field>
       </div>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput type="date" formControlName="fromDate" />
+        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput [matDatepicker]="dp26" formControlName="fromDate" /><mat-datepicker-toggle matIconSuffix [for]="dp26" /><mat-datepicker #dp26 />
           <mat-error>{{ server(form.get('fromDate')) || 'Choose the first day.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput type="date" formControlName="toDate" />
+        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput [matDatepicker]="dp27" formControlName="toDate" /><mat-datepicker-toggle matIconSuffix [for]="dp27" /><mat-datepicker #dp27 />
           <mat-error>{{ server(form.get('toDate')) || 'Choose the last day.' }}</mat-error></mat-form-field>
       </div>
       <mat-form-field appearance="outline"><mat-label>Departure times</mat-label>

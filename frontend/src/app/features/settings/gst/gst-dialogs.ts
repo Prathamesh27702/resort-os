@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -27,7 +28,7 @@ export interface RegistrationData { property: Property; }
 /** Adds the GSTIN a property bills under, from the date on its certificate. A registration that runs on is ended the day before. */
 @Component({
   selector: 'app-gst-registration-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>GST registration of {{ data.property.name }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="reg-form">
@@ -58,12 +59,12 @@ export interface RegistrationData { property: Property; }
       <div class="row">
         <mat-form-field appearance="outline">
           <mat-label>Valid from</mat-label>
-          <input matInput type="date" formControlName="effectiveFrom" />
+          <input matInput [matDatepicker]="dp20" formControlName="effectiveFrom" /><mat-datepicker-toggle matIconSuffix [for]="dp20" /><mat-datepicker #dp20 />
           <mat-error>{{ err('effectiveFrom') || 'Enter the date the registration is valid from.' }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Valid until (optional)</mat-label>
-          <input matInput type="date" formControlName="effectiveTo" />
+          <input matInput [matDatepicker]="dp21" formControlName="effectiveTo" /><mat-datepicker-toggle matIconSuffix [for]="dp21" /><mat-datepicker #dp21 />
           <mat-error>{{ err('effectiveTo') }}</mat-error>
         </mat-form-field>
       </div>
@@ -238,7 +239,7 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
  */
 @Component({
   selector: 'app-tax-rule-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
             MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>New GST rule</h2>
@@ -253,13 +254,13 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
       <div class="row">
         <mat-form-field appearance="outline">
           <mat-label>Applies from</mat-label>
-          <input matInput type="date" formControlName="effectiveFrom" [min]="data.today" />
+          <input matInput [matDatepicker]="dp22" formControlName="effectiveFrom" [min]="data.today" /><mat-datepicker-toggle matIconSuffix [for]="dp22" /><mat-datepicker #dp22 />
           <mat-hint>The rule running now ends the day before</mat-hint>
           <mat-error>{{ err('effectiveFrom') || 'Enter the first day the rule applies (today or later).' }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Until (optional)</mat-label>
-          <input matInput type="date" formControlName="effectiveTo" />
+          <input matInput [matDatepicker]="dp23" formControlName="effectiveTo" /><mat-datepicker-toggle matIconSuffix [for]="dp23" /><mat-datepicker #dp23 />
           <mat-error>{{ err('effectiveTo') }}</mat-error>
         </mat-form-field>
       </div>

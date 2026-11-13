@@ -115,7 +115,7 @@ const DAYS = [
             @if (canManage() && selectedPlan()) { <button mat-button type="button" (click)="editPlan()">Edit plan</button> }
             <span class="spacer"></span>
             <button mat-stroked-button type="button" (click)="move(-7)">Previous week</button>
-            <input class="start" type="date" [value]="start()" (change)="setStart($any($event.target).value)" aria-label="First night shown" />
+            <input class="start" [matDatepicker]="dp25" [value]="start()" (dateChange)="setStart($event.value)" aria-label="First night shown" /><mat-datepicker-toggle [for]="dp25" /><mat-datepicker #dp25 />
             <button mat-stroked-button type="button" (click)="move(7)">Next week</button>
           </div>
           @if (selectedPlan(); as sp) {

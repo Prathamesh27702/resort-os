@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,7 +27,7 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
  */
 @Component({
   selector: 'app-inventory',
-  imports: [FormsModule, MatButtonModule, MatButtonToggleModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, MatSnackBarModule],
+  imports: [MatDatepickerModule, FormsModule, MatButtonModule, MatButtonToggleModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, MatSnackBarModule],
   template: `
     <div class="page inv">
       <div class="head">
@@ -104,10 +105,10 @@ type View = 'stock' | 'recipes' | 'cost' | 'ledger';
         @case ('cost') {
           <div class="tools">
             <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>From</mat-label>
-              <input matInput type="date" [ngModel]="from()" (ngModelChange)="from.set($event); loadCost()" />
+              <input matInput [matDatepicker]="dp6" [ngModel]="from()" (ngModelChange)="from.set($event); loadCost()" /><mat-datepicker-toggle matIconSuffix [for]="dp6" /><mat-datepicker #dp6 />
               @if (rangeErr()['from']) { <mat-hint class="err" role="alert">{{ rangeErr()['from'] }}</mat-hint> }</mat-form-field>
             <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>To</mat-label>
-              <input matInput type="date" [ngModel]="to()" (ngModelChange)="to.set($event); loadCost()" />
+              <input matInput [matDatepicker]="dp7" [ngModel]="to()" (ngModelChange)="to.set($event); loadCost()" /><mat-datepicker-toggle matIconSuffix [for]="dp7" /><mat-datepicker #dp7 />
               @if (rangeErr()['to']) { <mat-hint class="err" role="alert">{{ rangeErr()['to'] }}</mat-hint> }</mat-form-field>
           </div>
           @if (report(); as r) {

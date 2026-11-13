@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -138,7 +139,7 @@ export class SupplierDialog {
 /** What a store needs: items and quantities in their units, with what is on hand there now. */
 @Component({
   selector: 'app-request-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Ask for stock</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="request-form">
@@ -146,7 +147,7 @@ export class SupplierDialog {
         <mat-form-field appearance="outline"><mat-label>For store</mat-label>
           <mat-select formControlName="locationId">@for (l of stores; track l.id) { <mat-option [value]="l.id">{{ l.name }}</mat-option> }</mat-select>
           <mat-error>{{ server(form.get('locationId')) || 'Choose the store.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Needed by (optional)</mat-label><input matInput type="date" formControlName="neededBy" />
+        <mat-form-field appearance="outline"><mat-label>Needed by (optional)</mat-label><input matInput [matDatepicker]="dp12" formControlName="neededBy" /><mat-datepicker-toggle matIconSuffix [for]="dp12" /><mat-datepicker #dp12 />
           <mat-error>{{ server(form.get('neededBy')) }}</mat-error></mat-form-field>
       </div>
       <div formArrayName="items">
@@ -226,7 +227,7 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
 /** A draft order: supplier, store, lines with price before GST and GST rate, and the totals as the server will work them out. */
 @Component({
   selector: 'app-order-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ data.order ? 'Edit ' + data.order.number : data.request ? 'Order for ' + data.request.number : 'New purchase order' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="order-form">
@@ -264,7 +265,7 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
       <button mat-button type="button" (click)="add()"><mat-icon>add</mat-icon>Another item</button>
       <p class="tot" data-testid="order-total">Before GST {{ rupeesExact(totals().taxable) }}, GST {{ rupeesExact(totals().tax) }}, <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>Expected on (optional)</mat-label><input matInput type="date" formControlName="expectedDate" />
+        <mat-form-field appearance="outline"><mat-label>Expected on (optional)</mat-label><input matInput [matDatepicker]="dp13" formControlName="expectedDate" /><mat-datepicker-toggle matIconSuffix [for]="dp13" /><mat-datepicker #dp13 />
           <mat-error>{{ server(form.get('expectedDate')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Note to the supplier</mat-label><input matInput formControlName="note" maxlength="500" />
           <mat-error>{{ server(form.get('note')) }}</mat-error></mat-form-field>
@@ -356,7 +357,7 @@ export class OrderDialog {
 /** What came in on a delivery: each line still to come, how much arrived (empty: didn't come), the challan number. */
 @Component({
   selector: 'app-receive-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Goods received on {{ data.order.number }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="receive-form">
@@ -378,7 +379,7 @@ export class OrderDialog {
           <mat-error>{{ server(form.get('locationId')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Delivery challan no.</mat-label><input matInput formControlName="challanNumber" maxlength="40" />
           <mat-error>{{ server(form.get('challanNumber')) }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Received on</mat-label><input matInput type="date" formControlName="receivedOn" />
+        <mat-form-field appearance="outline"><mat-label>Received on</mat-label><input matInput [matDatepicker]="dp14" formControlName="receivedOn" /><mat-datepicker-toggle matIconSuffix [for]="dp14" /><mat-datepicker #dp14 />
           <mat-error>{{ server(form.get('receivedOn')) }}</mat-error></mat-form-field>
       </div>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
@@ -436,16 +437,16 @@ export class ReceiveDialog {
 /** The supplier's bill: their number and date, and per received line what they billed, at what price and GST. */
 @Component({
   selector: 'app-bill-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ data.order.supplierName }}'s bill</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="bill-form">
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Their bill number</mat-label><input matInput formControlName="supplierNumber" maxlength="40" />
           <mat-error>{{ server(form.get('supplierNumber')) || 'Enter the number printed on the bill.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Bill date</mat-label><input matInput type="date" formControlName="invoiceDate" />
+        <mat-form-field appearance="outline"><mat-label>Bill date</mat-label><input matInput [matDatepicker]="dp15" formControlName="invoiceDate" /><mat-datepicker-toggle matIconSuffix [for]="dp15" /><mat-datepicker #dp15 />
           <mat-error>{{ server(form.get('invoiceDate')) || 'Enter the date on the bill.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Due (optional)</mat-label><input matInput type="date" formControlName="dueDate" />
+        <mat-form-field appearance="outline"><mat-label>Due (optional)</mat-label><input matInput [matDatepicker]="dp16" formControlName="dueDate" /><mat-datepicker-toggle matIconSuffix [for]="dp16" /><mat-datepicker #dp16 />
           <mat-hint>Empty: {{ terms }}</mat-hint>
           <mat-error>{{ server(form.get('dueDate')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Counts in the budget for</mat-label>
@@ -584,7 +585,7 @@ export class BillDepartmentDialog {
 /** A payment against a bill: how much (the balance by default), how, and the UTR or cheque number. Sent once (Idempotency-Key). */
 @Component({
   selector: 'app-pay-supplier-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Pay {{ data.invoice.supplierName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
@@ -601,7 +602,7 @@ export class BillDepartmentDialog {
         <input matInput formControlName="reference" maxlength="60" />
         <mat-error>{{ server(form.get('reference')) }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>Paid on</mat-label><input matInput type="date" formControlName="paidOn" />
+        <mat-form-field appearance="outline"><mat-label>Paid on</mat-label><input matInput [matDatepicker]="dp17" formControlName="paidOn" /><mat-datepicker-toggle matIconSuffix [for]="dp17" /><mat-datepicker #dp17 />
           <mat-error>{{ server(form.get('paidOn')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Note</mat-label><input matInput formControlName="note" maxlength="300" />
           <mat-error>{{ server(form.get('note')) }}</mat-error></mat-form-field>
