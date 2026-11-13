@@ -8,8 +8,8 @@ One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Cha
 - **Light and dark themes** with a button in the top bar (Light, Dark, Match my phone) and the same choice in the
   account menu on phones. The choice is kept per device (`ro-theme`); a small script in `index.html` applies it before
   the app starts, so nothing flashes. The phone's status bar colour follows the theme. `core/theme.ts`.
-- **Solid panels** switch in the account menu (and automatically on phones with 4 GB memory or less, or "reduce
-  transparency"): no see-through glass, no blur, easier to read in the sun.
+- **Solid panels** switch in the account menu (and automatically on phones with 4 GB memory or less, with "reduce
+  transparency", or when the browser draws without a graphics chip): no see-through glass, no blur, easier to read in the sun.
 - **Search everything** (Ctrl K, or the search field in the top bar): guests by name or phone, bookings by reference or
   guest, and every screen by name or keyword ("upi", "kot", "tariff"). Only what the person may open. `layout/search.ts`.
 - **Branded guest emails**: every guest email now has the property name in a coloured header (with the subject under

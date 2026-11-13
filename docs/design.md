@@ -120,7 +120,7 @@ All light pairs are 6:1 or better; all dark pairs are 7:1 or better against lago
 
 **Minimum opacity:** text never sits on glass thinner than `--ro-glass`. Tables, forms and long lists sit on `--ro-glass-strong`.
 
-**Low-power fallback:** blur is costly on cheap Android phones and makes text harder to read in sunlight. Add a class `ro-solid` on `<html>` when any of these is true: `prefers-reduced-transparency: reduce`, `navigator.deviceMemory <= 4`, or the user turns on **Settings → Display → Solid panels**. With `ro-solid`, glass tokens become solid (`#f4faf9` light, `#0b2329` dark), `backdrop-filter` is off, and the glow is a still gradient. The app must look finished in this mode too.
+**Low-power fallback:** blur is costly on cheap Android phones and makes text harder to read in sunlight. Add a class `ro-solid` on `<html>` when any of these is true: `prefers-reduced-transparency: reduce`, `navigator.deviceMemory <= 4`, the browser draws in software (WebGL renderer SwiftShader, llvmpipe or no WebGL: blur on the CPU drops frames), or the user turns on **Settings → Display → Solid panels**. With `ro-solid`, glass tokens become solid (`#f4faf9` light, `#0b2329` dark), `backdrop-filter` is off, and the glow is a still gradient. The app must look finished in this mode too.
 
 ### 4.4 Gradients
 
