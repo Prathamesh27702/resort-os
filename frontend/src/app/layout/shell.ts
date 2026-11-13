@@ -79,7 +79,7 @@ const FOLDED_KEY = 'ro-nav-folded';
           }
 
           <span class="grow"></span>
-          <button type="button" class="search" (click)="openSearch()" aria-label="Search guests, bookings and screens (Ctrl K)">
+          <button type="button" class="search" (click)="openSearch()" aria-label="Jump to a guest, stay or screen (Ctrl K)">
             <mat-icon aria-hidden="true">search</mat-icon><span class="ph">Search guests, bookings, screens</span><kbd>Ctrl K</kbd>
           </button>
           @if (!mobile()) {

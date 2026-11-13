@@ -524,7 +524,11 @@ export class ReportsPage {
     });
   }
 
-  go(t: Tab) { this.router.navigate([], { queryParams: { tab: t === 'month' ? null : t }, replaceUrl: true }); }
+  go(t: Tab) {
+    // Switch now, not when the router gets round to it: dates picked straight after the click must not be wiped.
+    if (t !== this.tab()) { this.from.set(null); this.to.set(null); this.err.set({}); this.tab.set(t); }
+    this.router.navigate([], { queryParams: { tab: t === 'month' ? null : t }, replaceUrl: true });
+  }
   setFrom(v: string) { this.from.set(v || null); }
   setTo(v: string) { this.to.set(v || null); }
   setBy(v: 'day' | 'month') { this.from.set(null); this.to.set(null); this.by.set(v); }
