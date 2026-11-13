@@ -32,17 +32,17 @@ export interface MessageData { propertyId: string; timezone: string; message: Me
   template: `
     @let m = msg();
     @let s = m.summary;
-    <h2 mat-dialog-title><mat-icon inline>{{ icon[s.channel] }}</mat-icon> {{ s.templateName }} · {{ channel[s.channel] }}</h2>
+    <h2 mat-dialog-title><mat-icon inline>{{ icon[s.channel] }}</mat-icon> {{ s.templateName }}, {{ channel[s.channel] }}</h2>
     <div mat-dialog-content class="body" data-testid="message-detail">
       <p class="who"><b>{{ s.recipientName }}</b> <span class="mute num">{{ s.to }}</span>
         <span [class]="'chip ' + cls(s.status)" data-testid="detail-status">{{ s.statusWords }}</span></p>
       @if (s.reservationReference) { <p class="mute small">Booking <a [routerLink]="['/reservations', s.reservationId]" mat-dialog-close>{{ s.reservationReference }}</a>
-        @if (m.jobName) { · sent by the {{ m.jobName }} job } @else if (s.source === 'EVENT') { · sent when it happened } </p> }
+        @if (m.jobName) {, sent by the {{ m.jobName }} job } @else if (s.source === 'EVENT') {, sent when it happened } </p> }
       @if (s.reason) { <p class="reason" [class.bad]="s.status === 'FAILED'" role="status" data-testid="detail-reason">{{ s.reason }}</p> }
       @if (m.subject) { <p class="subject"><small class="mute">Subject</small><br />{{ m.subject }}</p> }
       <pre class="text" data-testid="detail-body">{{ m.body }}</pre>
       @if (m.providerTemplate) {
-        <p class="mute small">WhatsApp template <span class="num">{{ m.providerTemplate }}</span> ({{ m.language }})@if (m.pricingCategory) { · {{ m.pricingCategory }} conversation }</p>
+        <p class="mute small">WhatsApp template <span class="num">{{ m.providerTemplate }}</span> ({{ m.language }})@if (m.pricingCategory) {, {{ m.pricingCategory }} conversation }</p>
       }
       <h3>What happened</h3>
       <ol class="steps" data-testid="steps">
@@ -72,20 +72,20 @@ export interface MessageData { propertyId: string; timezone: string; message: Me
   `,
   styles: `
     .body { width: min(560px, 86vw); }
-    .who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 4px; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err, .bad { color: #b3261e; }
-    .reason { background: #f5f7f6; border-radius: 8px; padding: 8px 10px; margin: 8px 0; } .reason.bad { background: #fbeceb; }
-    .subject { margin: 8px 0 4px; }
-    .text { white-space: pre-wrap; font: inherit; background: #e7f6ee; border-radius: 10px; padding: 10px 12px; margin: 6px 0; }
-    h3 { font-size: .95rem; margin: 14px 0 4px; }
+    .who { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: 0 0 var(--space-1); }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
+    .reason { background: var(--ro-wash); border-radius: 8px; padding: var(--space-2) 10px; margin: var(--space-2) 0; } .reason.bad { background: var(--ro-error-bg); }
+    .subject { margin: var(--space-2) 0 var(--space-1); }
+    .text { white-space: pre-wrap; font: inherit; background: var(--ro-tint); border-radius: 10px; padding: 10px var(--space-3); margin: 6px 0; }
+    h3 { font-size: .95rem; margin: 14px 0 var(--space-1); }
     .steps { list-style: none; margin: 0; padding: 0; }
-    .steps li { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: #b7791f; flex: none; }
-    .dot.ok { background: #1d7a45; } .dot.bad { background: #b3261e; } .dot.off { background: #8b9a9c; }
-    .fake { display: flex; flex-direction: column; gap: 6px; border: 1px dashed #b7791f; border-radius: 10px; padding: 8px 10px; margin-top: 12px; }
+    .steps li { display: flex; gap: 10px; align-items: flex-start; padding: var(--space-1) 0; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--ro-warn-mid); flex: none; }
+    .dot.ok { background: var(--ro-ok-mid); } .dot.bad { background: var(--ro-error); } .dot.off { background: var(--ro-faint); }
+    .fake { display: flex; flex-direction: column; gap: 6px; border: 1px dashed var(--ro-warn-mid); border-radius: 10px; padding: var(--space-2) 10px; margin-top: var(--space-3); }
     .fake span { display: flex; gap: 6px; flex-wrap: wrap; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; } .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .chip.off { background: #eceff0; color: #5b6b6e; } .chip.bad { background: #f3e3e3; color: #7a1f1f; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })
 export class MessageDialog {
@@ -133,7 +133,7 @@ export interface TemplateData { propertyId: string; template: MessageTemplate; }
   selector: 'app-template-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSlideToggleModule],
   template: `
-    <h2 mat-dialog-title>{{ t.name }} · {{ channel[t.channel] }}</h2>
+    <h2 mat-dialog-title>{{ t.name }}, {{ channel[t.channel] }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="template-form">
       <p class="mute small">{{ t.when }}</p>
       <mat-slide-toggle formControlName="isActive">Send this message</mat-slide-toggle>
@@ -179,15 +179,15 @@ export interface TemplateData { propertyId: string; template: MessageTemplate; }
   `,
   styles: `
     form { display: flex; flex-direction: column; gap: 2px; width: min(600px, 86vw); }
-    .two { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; } .hint { color: #8a5a00; font-size: .85rem; margin: 4px 0; }
-    mat-slide-toggle { margin: 4px 0 10px; }
-    h3 { font-size: .95rem; margin: 8px 0 4px; }
-    .vars { display: flex; flex-wrap: wrap; gap: 4px; }
-    .var { border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 2px 10px; font: inherit; font-size: .8rem; cursor: pointer; color: #0e3b43; }
-    .var.used { background: #e1f2e8; border-color: #b9dcc8; }
-    .psub { font-weight: 600; margin: 0 0 4px; }
-    .text { white-space: pre-wrap; font: inherit; background: #e7f6ee; border-radius: 10px; padding: 10px 12px; margin: 0; }
+    .two { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-2); margin-top: var(--space-2); }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); } .hint { color: var(--ro-warn); font-size: .85rem; margin: var(--space-1) 0; }
+    mat-slide-toggle { margin: var(--space-1) 0 10px; }
+    h3 { font-size: .95rem; margin: var(--space-2) 0 var(--space-1); }
+    .vars { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+    .var { border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: 2px 10px; font: inherit; font-size: .8rem; cursor: pointer; color: var(--ro-tide); box-shadow: var(--ro-shadow-card); }
+    .var.used { background: var(--ro-ok-bg); border-color: var(--ro-ok-line); }
+    .psub { font-weight: 600; margin: 0 0 var(--space-1); }
+    .text { white-space: pre-wrap; font: inherit; background: var(--ro-tint); border-radius: 10px; padding: 10px var(--space-3); margin: 0; }
     @media (max-width: 560px) { .two { grid-template-columns: 1fr; } }
   `,
 })
@@ -269,8 +269,8 @@ export interface JobData { propertyId: string; job: ScheduledJob; }
     </div>
   `,
   styles: `
-    form { display: flex; flex-direction: column; gap: 8px; width: min(420px, 86vw); }
-    .mute { color: #5b6b6e; margin: 0; } .err { color: #b3261e; }
+    form { display: flex; flex-direction: column; gap: var(--space-2); width: min(420px, 86vw); }
+    .mute { color: var(--ro-mute); margin: 0; } .err { color: var(--ro-error); }
   `,
 })
 export class JobDialog {

@@ -24,12 +24,12 @@ export interface Bar { key: string; label: string; value: number | null; title: 
     </div>
   `,
   styles: `
-    .chart { display: grid; gap: 2px; border-bottom: 1px solid #d9e0de; padding-bottom: 2px; }
+    .chart { display: grid; gap: 2px; border-bottom: 1px solid var(--ro-line); padding-bottom: 2px; }
     .col { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
-    .col.mute { opacity: .45; } .col.mark small { font-weight: 700; color: #0e3b43; }
+    .col.mute { opacity: .45; } .col.mark small { font-weight: 700; color: var(--ro-tide); }
     .bar { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
     .bar span { width: 70%; max-width: 22px; border-radius: 3px 3px 0 0; min-height: 1px; }
-    small { color: #5b6b6e; font-size: .68rem; white-space: nowrap; } small.hide { visibility: hidden; }
+    small { color: var(--ro-mute); font-size: .68rem; white-space: nowrap; } small.hide { visibility: hidden; }
   `,
 })
 export class BarsComponent {
@@ -37,7 +37,7 @@ export class BarsComponent {
   /** The top of the scale; default the largest value. 100 for a percentage. */
   max = input<number | null>(null);
   height = input(150);
-  color = input('#0090a0');
+  color = input('var(--ro-sea-bright)');
   label = input('');
   /** Label every nth bar (1: all). */
   every = input(1);
@@ -57,7 +57,7 @@ export class BarsComponent {
       @if (canRefresh()) { <button mat-button type="button" (click)="refresh.emit()" [disabled]="busy()">{{ busy() ? 'Adding up…' : 'Refresh now' }}</button> }
     </p>
   `,
-  styles: `.fresh { color: #5b6b6e; font-size: .85rem; display: flex; align-items: center; gap: 4px; margin: 2px 0; flex-wrap: wrap; }`,
+  styles: `.fresh { color: var(--ro-mute); font-size: .85rem; display: flex; align-items: center; gap: var(--space-1); margin: 2px 0; flex-wrap: wrap; }`,
 })
 export class FreshComponent {
   freshness = input<ReportFreshness | null | undefined>(null);

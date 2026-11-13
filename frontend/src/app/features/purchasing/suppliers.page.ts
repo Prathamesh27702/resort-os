@@ -26,7 +26,7 @@ import { PurchasingApi } from './purchasing.api';
     <div class="page sup">
       <div class="head">
         <h1>Suppliers</h1>
-        @if (owed() > 0) { <p class="mute">Owed {{ rupees(owed()) }}@if (overdue() > 0) { · <b class="late">{{ rupees(overdue()) }} overdue</b> }</p> }
+        @if (owed() > 0) { <p class="mute">Owed {{ rupees(owed()) }}@if (overdue() > 0) {, <b class="late">{{ rupees(overdue()) }} overdue</b> }</p> }
       </div>
       <div class="tools">
         <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic"><mat-label>Find a supplier</mat-label>
@@ -40,8 +40,8 @@ import { PurchasingApi } from './purchasing.api';
           <li [class.off]="!s.isActive" [attr.data-supplier]="s.code">
             <div class="nm">
               <b>{{ s.name }}</b> <small class="mute">{{ s.code }}</small>
-              <small>@if (s.gstin) { GSTIN {{ s.gstin }} · {{ s.stateName }} } @else { <span class="unreg">Unregistered: no GST</span> · {{ s.stateName }} }</small>
-              <small class="mute">@if (s.contactName) { {{ s.contactName }} · }@if (s.phone) { <a [href]="'tel:' + s.phone">{{ s.phone }}</a> · }pays {{ s.paymentTermsDays ? 'after ' + s.paymentTermsDays + ' days' : 'on delivery' }}</small>
+              <small>@if (s.gstin) { GSTIN {{ s.gstin }}, {{ s.stateName }} } @else { <span class="unreg">Unregistered: no GST</span>, {{ s.stateName }} }</small>
+              <small class="mute">@if (s.contactName) { {{ s.contactName }}, }@if (s.phone) { <a [href]="'tel:' + s.phone">{{ s.phone }}</a>, }pays {{ s.paymentTermsDays ? 'after ' + s.paymentTermsDays + ' days' : 'on delivery' }}</small>
               @if (s.note) { <small class="note">{{ s.note }}</small> }
               @if (!s.isActive) { <small class="mute">Not buying from them now</small> }
             </div>
@@ -57,14 +57,14 @@ import { PurchasingApi } from './purchasing.api';
   `,
   styles: `
     .sup { max-width: 900px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .late { color: #b3261e; } .unreg { color: #8a5a00; }
-    .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; } .search { flex: 1 1 220px; }
+    .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .late { color: var(--ro-error); } .unreg { color: var(--ro-warn); }
+    .tools { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); } .search { flex: 1 1 220px; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .cards li { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; margin-top: var(--space-2); box-shadow: var(--ro-shadow-card); }
     .cards li.off { opacity: .6; }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
-    .note { color: #34484b; }
+    .note { color: var(--ro-ink-soft); }
     .owed { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; min-width: 96px; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .cards li { flex-wrap: wrap; } .owed { align-items: flex-start; text-align: left; } }
   `,

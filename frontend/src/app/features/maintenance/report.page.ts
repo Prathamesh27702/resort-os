@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -26,7 +27,7 @@ const MAX_PHOTOS = 6;
  */
 @Component({
   selector: 'app-report-problem',
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule,
+  imports: [MatDatepickerModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule,
     MatSlideToggleModule, MatSnackBarModule],
   template: `
     <div class="page rp">
@@ -62,7 +63,7 @@ const MAX_PHOTOS = 6;
             <mat-label>Room</mat-label>
             <mat-select formControlName="unitId">
               <mat-option value="">Not a room</mat-option>
-              @for (r of rooms(); track r.id) { <mat-option [value]="r.id">{{ r.code }} · {{ r.accommodationTypeName }}</mat-option> }
+              @for (r of rooms(); track r.id) { <mat-option [value]="r.id">{{ r.code }}, {{ r.accommodationTypeName }}</mat-option> }
             </mat-select>
             <mat-error>{{ err('unitId') }}</mat-error>
           </mat-form-field>
@@ -82,7 +83,7 @@ const MAX_PHOTOS = 6;
             <mat-label>Equipment (optional)</mat-label>
             <mat-select formControlName="assetId">
               <mat-option value="">None</mat-option>
-              @for (a of assetChoices(); track a.id) { <mat-option [value]="a.id">{{ a.code }} · {{ a.name }}</mat-option> }
+              @for (a of assetChoices(); track a.id) { <mat-option [value]="a.id">{{ a.code }}, {{ a.name }}</mat-option> }
             </mat-select>
             <mat-error>{{ err('assetId') }}</mat-error>
           </mat-form-field>
@@ -100,7 +101,7 @@ const MAX_PHOTOS = 6;
             @if (form.controls.outOfOrder.value) {
               <mat-form-field appearance="outline">
                 <mat-label>Usable again on</mat-label>
-                <input matInput type="date" formControlName="expectedReadyOn" [min]="minDate()" [max]="maxDate()" />
+                <input matInput [matDatepicker]="dp11" formControlName="expectedReadyOn" [min]="minDate()" [max]="maxDate()" /><mat-datepicker-toggle matIconSuffix [for]="dp11" /><mat-datepicker #dp11 />
                 <mat-error>{{ err('expectedReadyOn') || 'Say when the room should be usable again (the room is blocked until then).' }}</mat-error>
               </mat-form-field>
             }
@@ -136,22 +137,22 @@ const MAX_PHOTOS = 6;
   styles: `
     .rp { max-width: 640px; padding-bottom: 40px; }
     .back { margin-left: -8px; }
-    h1 { margin: 4px 0 12px; }
-    h2 { font-size: 1rem; font-weight: 600; margin: 8px 0; }
+    h1 { margin: var(--space-1) 0 var(--space-3); }
+    h2 { font-size: 1rem; font-weight: 600; margin: var(--space-2) 0; }
     form { display: flex; flex-direction: column; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .ooo { background: #f5f7f6; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
-    .ooo mat-form-field { width: 100%; margin-top: 8px; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 4px 0 0; }
-    .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .ooo { background: var(--ro-wash); border-radius: 10px; padding: 10px var(--space-3); margin-bottom: var(--space-3); }
+    .ooo mat-form-field { width: 100%; margin-top: var(--space-2); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-1) 0 0; }
+    .photos { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
     figure { position: relative; margin: 0; width: 88px; height: 88px; }
     figure img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    figure button { position: absolute; top: -6px; right: -6px; background: #fff; transform: scale(.8); }
-    .add { width: 88px; height: 88px; border: 2px dashed #a9b6b3; border-radius: 8px; display: flex; flex-direction: column;
-           align-items: center; justify-content: center; color: #33474a; font-size: .8rem; cursor: pointer; }
+    figure button { position: absolute; top: -6px; right: -6px; background: var(--ro-paper); transform: scale(.8); }
+    .add { width: 88px; height: 88px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    .send { min-height: 52px; font-size: 1.05rem; margin-top: 12px; border-radius: 10px; }
-    .err { color: #b3261e; }
+    .send { min-height: 52px; font-size: 1.05rem; margin-top: var(--space-3); border-radius: 10px; }
+    .err { color: var(--ro-error); }
     @media (max-width: 480px) { .two { grid-template-columns: 1fr; gap: 0; } }
   `,
 })

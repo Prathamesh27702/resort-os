@@ -50,10 +50,10 @@ test('S09-01 Settings → GST: the registration and the seeded rules, with their
 
   const rooms = a.locator('article[data-category="ACCOMMODATION"]');
   await expect(rooms).toContainText('SAC/HSN 996311');
-  await expect(rooms.locator('tr[data-rule="2025-09-22"]')).toContainText('Up to ₹7,500: 5% · Above ₹7,500: 18% with ITC');
+  await expect(rooms.locator('tr[data-rule="2025-09-22"]')).toContainText('Up to ₹7,500: 5%, Above ₹7,500: 18% with ITC');
   await expect(rooms.locator('tr[data-rule="2025-09-22"]')).toContainText('Now');
   await expect(rooms.locator('tr[data-rule="2025-09-22"]')).toContainText('Notification 05/2025-Central Tax (Rate)');
-  await expect(rooms.locator('tr[data-rule="2022-07-18"]')).toContainText('Up to ₹7,500: 12% with ITC · Above ₹7,500: 18% with ITC');
+  await expect(rooms.locator('tr[data-rule="2022-07-18"]')).toContainText('Up to ₹7,500: 12% with ITC, Above ₹7,500: 18% with ITC');
   await expect(a.locator('article[data-category="RESTAURANT"] tr[data-rule="2017-11-15"]')).toContainText('5%');
   await expect(a.getByTestId('unverified')).toContainText('2 rules are not verified yet');
   await shot(a, '01-gst');

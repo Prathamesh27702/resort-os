@@ -54,7 +54,7 @@ test('S17-01 Employees: ten people by department, each with a job title and week
   await expect(hrPage.getByRole('heading', { name: 'Employees' })).toBeVisible();
   await expect(hrPage.locator('li[data-employee]')).toHaveCount(10);
   await expect(hrPage.locator('li[data-employee="E00001"]')).toContainText('Asha Naik');
-  await expect(hrPage.locator('li[data-employee="E00001"]')).toContainText('Front office · Receptionist · Full time');
+  await expect(hrPage.locator('li[data-employee="E00001"]')).toContainText('Front office, Receptionist, Full time');
   await expect(hrPage.locator('li[data-employee="E00001"]')).toContainText('off on Tuesday');
   await expect(hrPage.locator('li[data-employee="E00005"]')).toContainText('Seasonal');
   await hrPage.getByLabel('Find someone').fill('kamat');
@@ -113,7 +113,7 @@ test('S17-02 HR adds a receptionist, records her pay and her PAN; opening the nu
 test('S17-03 A manager sees the profile on a phone but never the pay or the documents', async () => {
   await mgrPhone.goto(`/employees/${kavyaId}`);
   await expect(mgrPhone.getByRole('heading', { name: new RegExp(kavya) })).toBeVisible();
-  await expect(mgrPhone.getByText('Front office · Receptionist · Full time')).toBeVisible();
+  await expect(mgrPhone.getByText('Front office, Receptionist, Full time')).toBeVisible();
   await expect(mgrPhone.getByTestId('pay')).toHaveCount(0);
   await expect(mgrPhone.getByTestId('docs')).toHaveCount(0);
   await expect(mgrPhone.locator('body')).not.toContainText('19,500');
@@ -137,8 +137,8 @@ test('S17-04 Next week starts empty with every shift short; copying this week fi
   await expect(d.getByTestId('copied')).toHaveText('56 shifts copied.');
   await d.getByRole('button', { name: 'Done' }).click();
   await expect(mgr.locator('button[data-shift]')).toHaveCount(56);
-  // Asha's day off is Tuesday: Front office · Morning that day has 0 of 1.
-  await expect(mgr.getByTestId('shortages')).toContainText(`${shortDay(addDays(nextMonday, 1))} Front office · Morning 07:00–15:00: 0 of 1`);
+  // Asha's day off is Tuesday: Front office, Morning that day has 0 of 1.
+  await expect(mgr.getByTestId('shortages')).toContainText(`${shortDay(addDays(nextMonday, 1))} Front office, Morning 07:00–15:00: 0 of 1`);
   await shot(mgr, '04-roster-next-week');
 });
 
@@ -161,7 +161,7 @@ test('S17-05 Putting Asha on a second shift that overlaps her morning is refused
 });
 
 test('S17-06 Tapping a gap fills it: Kavya takes Tuesday morning and the shortage is gone', async () => {
-  const gap = `${shortDay(addDays(nextMonday, 1))} Front office · Morning`;
+  const gap = `${shortDay(addDays(nextMonday, 1))} Front office, Morning`;
   await mgr.getByTestId('shortages').getByRole('button', { name: `Fill Front office Morning on ${shortDay(addDays(nextMonday, 1))}` }).click();
   const d = mgr.getByRole('dialog');
   await pick(mgr, 'Who', new RegExp(kavya));

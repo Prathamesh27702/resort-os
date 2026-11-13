@@ -82,7 +82,7 @@ import { fromGuest, guestForm, toGuestRequest } from './guests.forms';
               @for (d of duplicates(); track d.id) {
                 <li>
                   <a [routerLink]="'/guests/' + d.id">{{ d.fullName }}</a>
-                  <span class="mute"> · {{ phone(d.phone) }} {{ d.email }}</span>
+                  <span class="mute">, {{ phone(d.phone) }} {{ d.email }}</span>
                   <span class="why">{{ d.reasons.join(', ') }}</span>
                 </li>
               }
@@ -192,24 +192,24 @@ import { fromGuest, guestForm, toGuestRequest } from './guests.forms';
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    .box { padding: 24px; max-width: 860px; }
-    h2 { margin: 8px 0 12px; font-size: 1rem; color: #0e3b43; }
-    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid #edf1f0; }
-    .mute { color: #5b6b6e; }
-    .dupes { background: #fbefd8; border-left: 4px solid #8a5a00; border-radius: 6px; padding: 12px 16px; margin: 16px 0 4px; }
-    .dupes ul { margin: 8px 0; padding-left: 18px; }
-    .why { margin-left: 8px; font-size: .8rem; background: #fff; border-radius: 999px; padding: 1px 8px; color: #8a5a00; }
-    .prefs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .box { padding: var(--space-6); max-width: 860px; }
+    h2 { margin: var(--space-2) 0 var(--space-3); font-size: 1rem; color: var(--ro-tide); }
+    h2:not(:first-child) { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--ro-line-soft); }
+    .mute { color: var(--ro-mute); }
+    .dupes { background: var(--ro-warn-bg); border-left: 4px solid var(--ro-warn); border-radius: 6px; padding: var(--space-3) var(--space-4); margin: var(--space-4) 0 var(--space-1); }
+    .dupes ul { margin: var(--space-2) 0; padding-left: 18px; }
+    .why { margin-left: var(--space-2); font-size: .8rem; background: var(--ro-paper); border-radius: 999px; padding: 1px var(--space-2); color: var(--ro-warn); }
+    .prefs { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-3); }
     .chip.pref { display: inline-flex; align-items: center; padding-right: 0; }
     .chip.pref button { width: 28px; height: 28px; padding: 2px; }
     .chip.pref mat-icon { font-size: 16px; width: 16px; height: 16px; }
-    .add-pref { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+    .add-pref { display: flex; gap: var(--space-2); align-items: flex-start; flex-wrap: wrap; }
     .add-pref .cat { width: 160px; } .add-pref .val { flex: 1; min-width: 220px; }
-    .add-pref button { margin-top: 8px; }
-    .notes { width: 100%; margin-top: 8px; }
-    .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-    .error { color: #b3261e; }
+    .add-pref button { margin-top: var(--space-2); }
+    .notes { width: 100%; margin-top: var(--space-2); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-4); flex-wrap: wrap; }
+    .error { color: var(--ro-error); }
   `,
 })
 export class GuestEditPage implements OnInit {

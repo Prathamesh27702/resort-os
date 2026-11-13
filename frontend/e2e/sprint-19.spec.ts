@@ -116,7 +116,7 @@ test('S19-01 On her phone she asks for leave over the holiday; the preview count
   await expect(row).toContainText('Waiting for approval');
   await expect(row).toContainText(`${short(monday)} – ${short(lastDay)} (morning)`);
   reqCode = (await row.getAttribute('data-req'))!;
-  await expect(phone.getByTestId('my-balances').locator('[data-type="CL"]')).toContainText('1.5 days waiting · 2.5 days free');
+  await expect(phone.getByTestId('my-balances').locator('[data-type="CL"]')).toContainText('1.5 days waiting, 2.5 days free');
   await shot(phone, '02-my-leave-phone');
 });
 
@@ -168,7 +168,7 @@ test('S19-04 HR looks at the balances and her history, adjusts it with a reason,
   await shot(hr, '06-balances');
   await row.click();
   const d = hr.getByRole('dialog');
-  await expect(d.locator('table.ledger')).toContainText(`Taken CL · ${reqCode}`);
+  await expect(d.locator('table.ledger')).toContainText(`Taken CL, ${reqCode}`);
   await expect(d.locator('table.ledger')).toContainText('Brought in CL');
   // Without a reason it is refused, under the field.
   await d.getByLabel('Leave').press('Enter');

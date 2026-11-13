@@ -147,7 +147,7 @@ const PAGE = 25;
                     @else { Not run yet. }</p>
                   @if (j.lastError) { <p class="bad small" role="status">{{ j.lastError }}</p> }
                   @if (result()?.job === j.job) { <p class="result small" role="status" data-testid="run-result">{{ result()!.message }}
-                    @for (n of result()!.notes; track $index) { <br /><span class="mute">· {{ n }}</span> }</p> }
+                    @for (n of result()!.notes; track $index) { <br /><span class="mute">{{ n }}</span> }</p> }
                   <div class="jact">
                     @if (setup()?.canSend) { <button mat-stroked-button (click)="run(j)" [disabled]="running() === j.job">{{ running() === j.job ? 'Running…' : 'Run now' }}</button> }
                     @if (setup()?.canManage) { <button mat-button (click)="editJob(j)">Change</button> }
@@ -159,8 +159,8 @@ const PAGE = 25;
             <div class="runs" data-testid="runs">
               @for (r of js.recent; track r.id) {
                 <p><span class="mute num">{{ time(r.createdAt) }}</span> <b>{{ r.jobName }}</b>
-                  @if (r.reservationReference) { · <a [routerLink]="['/reservations', r.reservationId]" class="num">{{ r.reservationReference }}</a> }
-                  · {{ r.outcome }} <small class="mute">({{ r.triggeredBy === 'MANUAL' ? 'Run now' + (r.runByName ? ' by ' + r.runByName : '') : 'on schedule' }})</small></p>
+                  @if (r.reservationReference) {, <a [routerLink]="['/reservations', r.reservationId]" class="num">{{ r.reservationReference }}</a>},
+                 {{ r.outcome }} <small class="mute">({{ r.triggeredBy === 'MANUAL' ? 'Run now' + (r.runByName ? ' by ' + r.runByName : '') : 'on schedule' }})</small></p>
               } @empty { <p class="mute">Nothing done yet.</p> }
             </div>
           }
@@ -170,42 +170,42 @@ const PAGE = 25;
   `,
   styles: `
     .msg { max-width: 1000px; padding-bottom: 60px; }
-    .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .grow { flex: 1; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err, .bad { color: #b3261e; }
-    .mode { background: #fff4d6; color: #6b4e00; border-radius: 10px; padding: 8px 12px; margin: 10px 0; }
-    .mode.off { background: #fbeceb; color: #7a1f1f; }
-    .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
-    .chips { display: flex; gap: 4px; flex-wrap: wrap; flex-basis: 100%; }
-    .fchip { border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 4px 12px; font: inherit; font-size: .85rem; cursor: pointer; color: #1b2a2e; }
-    .fchip b { margin-left: 6px; color: #5b6b6e; font-weight: 500; }
-    .fchip.on { background: #0e3b43; border-color: #0e3b43; color: #fff; } .fchip.on b { color: #cfe0dd; }
+    .head { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .grow { flex: 1; }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err, .bad { color: var(--ro-error); }
+    .mode { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 10px; padding: var(--space-2) var(--space-3); margin: 10px 0; }
+    .mode.off { background: var(--ro-error-bg); color: var(--ro-off); }
+    .filters { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-3) 0; }
+    .chips { display: flex; gap: var(--space-1); flex-wrap: wrap; flex-basis: 100%; }
+    .fchip { border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-1) var(--space-3); font: inherit; font-size: .85rem; cursor: pointer; color: var(--ro-ink); box-shadow: var(--ro-shadow-card); }
+    .fchip b { margin-left: 6px; color: var(--ro-mute); font-weight: 500; }
+    .fchip.on { background: var(--ro-tide); border-color: var(--ro-tide); color: var(--ro-paper); } .fchip.on b { color: var(--ro-on-tide); }
     .sel { width: 150px; } .q { flex: 1; min-width: 200px; }
-    .rows { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .row { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid #eef2f1; background: none;
+    .rows { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid var(--ro-sunk); background: none;
            font: inherit; text-align: left; cursor: pointer; color: inherit; }
-    .row:first-child { border-top: 0; } .row:hover { background: #f8faf9; }
-    .ch { color: #0e3b43; flex: none; }
+    .row:first-child { border-top: 0; } .row:hover { background: var(--ro-hover); }
+    .ch { color: var(--ro-tide); flex: none; }
     .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .top { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
-    .ref { font-size: .8rem; background: #eef2f1; border-radius: 6px; padding: 0 6px; }
-    .why { color: #5b6b6e; } .why.bad { color: #b3261e; }
+    .ref { font-size: .8rem; background: var(--ro-sunk); border-radius: 6px; padding: 0 6px; }
+    .why { color: var(--ro-mute); } .why.bad { color: var(--ro-error); }
     .side { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
-    .empty { padding: 16px; margin: 0; }
-    .pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 8px; }
-    .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
-    .tcard, .job { padding: 12px 16px; min-width: 0; } h2 { font-size: 1rem; color: #0e3b43; margin: 0; } .tcard p, .job p { margin: 4px 0; }
-    .tline { display: flex; align-items: center; gap: 8px; border-top: 1px solid #eef2f1; padding: 6px 0; }
+    .empty { padding: var(--space-4); margin: 0; }
+    .pager { display: flex; justify-content: center; align-items: center; gap: var(--space-3); margin-top: var(--space-2); }
+    .tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-2); }
+    .tcard, .job { padding: var(--space-3) var(--space-4); min-width: 0; } h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; } .tcard p, .job p { margin: var(--space-1) 0; }
+    .tline { display: flex; align-items: center; gap: var(--space-2); border-top: 1px solid var(--ro-sunk); padding: 6px 0; }
     .tmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
-    .jhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-2); }
+    .jhead { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
     .jact { display: flex; gap: 6px; margin-top: 6px; }
-    .result { background: #e1f2e8; border-radius: 8px; padding: 6px 10px; }
-    .sub { margin: 20px 0 6px; }
-    .runs { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; padding: 6px 14px; }
+    .result { background: var(--ro-ok-bg); border-radius: 8px; padding: 6px 10px; }
+    .sub { margin: var(--space-5) 0 6px; }
+    .runs { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 6px 14px; box-shadow: var(--ro-shadow-card); }
     .runs p { margin: 6px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; } .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .chip.off { background: #eceff0; color: #5b6b6e; } .chip.bad { background: #f3e3e3; color: #7a1f1f; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); } .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); } .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
     @media (max-width: 720px) {
       .tgrid, .jobs { grid-template-columns: minmax(0, 1fr); }
       .row { flex-wrap: wrap; } .side { flex-direction: row; align-items: center; width: 100%; box-sizing: border-box; justify-content: space-between; padding-left: 36px; }

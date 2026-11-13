@@ -37,7 +37,7 @@ const CONSENT_LABEL: Record<string, string> = {
               @if (g.status === 'MERGED') { <span class="chip off">Merged</span> }
               @if (g.status === 'ANONYMISED') { <span class="chip off">Anonymised</span> }
             </h1>
-            <p>Guest since {{ day(g.createdAt) }}@if (g.companyName) { · {{ g.companyName }} }</p>
+            <p>Guest since {{ day(g.createdAt) }}@if (g.companyName) {, {{ g.companyName }} }</p>
           </div>
           @if (g.status === 'ACTIVE') {
             <div class="head-actions">
@@ -101,7 +101,7 @@ const CONSENT_LABEL: Record<string, string> = {
                   <td>
                     @if (consent(purpose); as c) {
                       <span class="chip" [class.off]="!c.granted">{{ c.granted ? 'Yes' : 'No' }}</span>
-                      <small class="mute when">{{ day(c.recordedAt) }}@if (c.recordedByName) { · {{ c.recordedByName }} }</small>
+                      <small class="mute when">{{ day(c.recordedAt) }}@if (c.recordedByName) {, {{ c.recordedByName }} }</small>
                     } @else if (purpose.startsWith('SERVICE_')) { <span class="mute">Not asked, so they are sent</span>
                     } @else { <span class="mute">Not asked</span> }
                   </td>
@@ -125,8 +125,8 @@ const CONSENT_LABEL: Record<string, string> = {
           @for (s of stays(); track s.reservationId) {
             <p>
               @if (ctx.current().id === s.propertyId) { <a [routerLink]="'/reservations/' + s.reservationId" class="num">{{ s.reference }}</a> }
-              @else { <span class="num">{{ s.reference }}</span> }
-              · {{ s.propertyName }} · {{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }} · {{ statusLabel(s.status) }}
+              @else { <span class="num">{{ s.reference }}</span>},
+             {{ s.propertyName }}, {{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }}, {{ statusLabel(s.status) }}
             </p>
           } @empty {
             <p class="mute">No stays yet.</p>
@@ -145,7 +145,7 @@ const CONSENT_LABEL: Record<string, string> = {
               <tbody>
                 @for (d of documents(); track d.id) {
                   <tr>
-                    <td>{{ label(d.documentType) }}@if (d.issuingCountry) { <small class="mute"> · {{ d.issuingCountry }}</small> }
+                    <td>{{ label(d.documentType) }}@if (d.issuingCountry) { <small class="mute">, {{ d.issuingCountry }}</small> }
                       @if (d.status === 'PURGED') { <span class="chip off">Purged</span> }</td>
                     <td class="num">
                       @if (revealed()[d.id]; as r) { <b>{{ r.number ?? d.maskedNumber }}</b>@if (r.details?.['visaNumber']) { <br /><small>Visa {{ r.details!['visaNumber'] }}</small> } }
@@ -176,30 +176,30 @@ const CONSENT_LABEL: Record<string, string> = {
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: 8px; }
-    .vip { background: #fbefd8; color: #8a5a00; }
-    .head-actions { display: flex; gap: 8px; }
-    .banner { background: #eef2f1; border-left: 4px solid #5b6b6e; padding: 10px 14px; border-radius: 6px; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-    .card { padding: 16px 20px; }
-    .wide { margin-top: 16px; }
-    h2 { font-size: 1rem; color: #0e3b43; margin: 0 0 12px; }
-    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; margin: 0; }
-    dt { color: #5b6b6e; } dd { margin: 0; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: var(--space-2); }
+    .vip { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .head-actions { display: flex; gap: var(--space-2); }
+    .banner { background: var(--ro-sunk); border-left: 4px solid var(--ro-mute); padding: 10px 14px; border-radius: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+    .card { padding: var(--space-4) var(--space-5); }
+    .wide { margin-top: var(--space-4); }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0 0 var(--space-3); }
+    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px var(--space-3); margin: 0; }
+    dt { color: var(--ro-mute); } dd { margin: 0; }
     .addr { margin: 0; line-height: 1.5; }
-    .notes { white-space: pre-wrap; background: #f5f7f6; padding: 8px 12px; border-radius: 6px; }
-    .mute { color: #5b6b6e; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 8px 0 0; }
-    .plain { width: 100%; border-collapse: collapse; } .plain td { padding: 4px 0; vertical-align: middle; }
+    .notes { white-space: pre-wrap; background: var(--ro-wash); padding: var(--space-2) var(--space-3); border-radius: 6px; }
+    .mute { color: var(--ro-mute); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-2) 0 0; }
+    .plain { width: 100%; border-collapse: collapse; } .plain td { padding: var(--space-1) 0; vertical-align: middle; }
     .right { text-align: right; white-space: nowrap; }
     .when { display: block; font-size: .75rem; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
     .row h2 { margin: 0; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     @media (max-width: 600px) {
-      .plain tr { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 6px 0; border-bottom: 1px solid #edf1f0; }
+      .plain tr { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--ro-line-soft); }
       .plain td.right { grid-column: 1 / -1; text-align: left; }
       dl { grid-template-columns: 96px 1fr; }
     }

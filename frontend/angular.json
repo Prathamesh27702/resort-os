@@ -37,9 +37,14 @@
               }
             ],
             "styles": [
-              "@fontsource/ibm-plex-sans/400.css",
-              "@fontsource/ibm-plex-sans/500.css",
-              "@fontsource/ibm-plex-sans/600.css",
+              "@fontsource/onest/400.css",
+              "@fontsource/onest/500.css",
+              "@fontsource/onest/600.css",
+              "@fontsource/onest/700.css",
+              "@fontsource/unbounded/500.css",
+              "@fontsource/unbounded/600.css",
+              "@fontsource/ibm-plex-sans/latin-ext-400.css",
+              "@fontsource/ibm-plex-sans/latin-ext-600.css",
               "material-symbols/outlined.css",
               "src/tailwind.css",
               "src/styles.scss"

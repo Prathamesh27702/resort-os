@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -83,8 +84,8 @@ function report(form: FormGroup, e: unknown, error: (m: string) => void, rows?: 
       <button mat-flat-button type="submit" form="supplier-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(500px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(500px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 180px; } .err { color: var(--ro-error); }`,
 })
 export class SupplierDialog {
   data = inject<{ propertyId: string; supplier: Supplier | null }>(MAT_DIALOG_DATA);
@@ -138,7 +139,7 @@ export class SupplierDialog {
 /** What a store needs: items and quantities in their units, with what is on hand there now. */
 @Component({
   selector: 'app-request-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Ask for stock</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="request-form">
@@ -146,7 +147,7 @@ export class SupplierDialog {
         <mat-form-field appearance="outline"><mat-label>For store</mat-label>
           <mat-select formControlName="locationId">@for (l of stores; track l.id) { <mat-option [value]="l.id">{{ l.name }}</mat-option> }</mat-select>
           <mat-error>{{ server(form.get('locationId')) || 'Choose the store.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Needed by (optional)</mat-label><input matInput type="date" formControlName="neededBy" />
+        <mat-form-field appearance="outline"><mat-label>Needed by (optional)</mat-label><input matInput [matDatepicker]="dp12" formControlName="neededBy" /><mat-datepicker-toggle matIconSuffix [for]="dp12" /><mat-datepicker #dp12 />
           <mat-error>{{ server(form.get('neededBy')) }}</mat-error></mat-form-field>
       </div>
       <div formArrayName="items">
@@ -173,9 +174,9 @@ export class SupplierDialog {
       <button mat-flat-button type="submit" form="request-form" [disabled]="busy()">Send request</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(560px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .line { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
-           .it { flex: 1 1 220px; } .q { flex: 0 1 130px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(560px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 180px; } .line { display: flex; gap: var(--space-2); align-items: flex-start; flex-wrap: wrap; }
+           .it { flex: 1 1 220px; } .q { flex: 0 1 130px; } .err { color: var(--ro-error); }`,
 })
 export class RequestDialog {
   data = inject<{ propertyId: string; inventory: Inventory }>(MAT_DIALOG_DATA);
@@ -226,14 +227,14 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
 /** A draft order: supplier, store, lines with price before GST and GST rate, and the totals as the server will work them out. */
 @Component({
   selector: 'app-order-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ data.order ? 'Edit ' + data.order.number : data.request ? 'Order for ' + data.request.number : 'New purchase order' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="order-form">
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Supplier</mat-label>
           <mat-select formControlName="supplierId">@for (s of suppliers; track s.id) { <mat-option [value]="s.id">{{ s.name }}@if (!s.gstin) { (no GST) }</mat-option> }</mat-select>
-          @if (supplier(); as s) { <mat-hint>{{ s.stateName }} · {{ intra() ? 'CGST + SGST' : 'IGST' }}@if (!s.gstin) { · unregistered: GST 0 % } </mat-hint> }
+          @if (supplier(); as s) { <mat-hint>{{ s.stateName }}, {{ intra() ? 'CGST + SGST' : 'IGST' }}@if (!s.gstin) {, unregistered: GST 0 % } </mat-hint> }
           <mat-error>{{ server(form.get('supplierId')) || 'Choose the supplier.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Deliver to</mat-label>
           <mat-select formControlName="locationId">@for (l of stores; track l.id) { <mat-option [value]="l.id">{{ l.name }}</mat-option> }</mat-select>
@@ -262,9 +263,9 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
         }
       </div>
       <button mat-button type="button" (click)="add()"><mat-icon>add</mat-icon>Another item</button>
-      <p class="tot" data-testid="order-total">Before GST {{ rupeesExact(totals().taxable) }} · GST {{ rupeesExact(totals().tax) }} · <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
+      <p class="tot" data-testid="order-total">Before GST {{ rupeesExact(totals().taxable) }}, GST {{ rupeesExact(totals().tax) }}, <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>Expected on (optional)</mat-label><input matInput type="date" formControlName="expectedDate" />
+        <mat-form-field appearance="outline"><mat-label>Expected on (optional)</mat-label><input matInput [matDatepicker]="dp13" formControlName="expectedDate" /><mat-datepicker-toggle matIconSuffix [for]="dp13" /><mat-datepicker #dp13 />
           <mat-error>{{ server(form.get('expectedDate')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Note to the supplier</mat-label><input matInput formControlName="note" maxlength="500" />
           <mat-error>{{ server(form.get('note')) }}</mat-error></mat-form-field>
@@ -276,10 +277,10 @@ export interface OrderData { propertyId: string; inventory: Inventory; suppliers
       <button mat-flat-button type="submit" form="order-form" [disabled]="busy()">Save draft</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(760px, 88vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 200px; } .line { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid #eef2f1; padding-top: 6px; }
-           .it { flex: 1 1 200px; } .q { flex: 0 1 110px; } .r { flex: 0 1 96px; } .amt { padding-top: 16px; min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
-           .tot { text-align: right; margin: 4px 0 8px; font-variant-numeric: tabular-nums; } .err { color: #b3261e; } .full { flex-basis: 100%; margin: 0 0 6px; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(760px, 88vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 200px; } .line { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
+           .it { flex: 1 1 200px; } .q { flex: 0 1 110px; } .r { flex: 0 1 96px; } .amt { padding-top: var(--space-4); min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+           .tot { text-align: right; margin: var(--space-1) 0 var(--space-2); font-variant-numeric: tabular-nums; } .err { color: var(--ro-error); } .full { flex-basis: 100%; margin: 0 0 6px; }`,
 })
 export class OrderDialog {
   data = inject<OrderData>(MAT_DIALOG_DATA);
@@ -356,7 +357,7 @@ export class OrderDialog {
 /** What came in on a delivery: each line still to come, how much arrived (empty: didn't come), the challan number. */
 @Component({
   selector: 'app-receive-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Goods received on {{ data.order.number }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="receive-form">
@@ -378,7 +379,7 @@ export class OrderDialog {
           <mat-error>{{ server(form.get('locationId')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Delivery challan no.</mat-label><input matInput formControlName="challanNumber" maxlength="40" />
           <mat-error>{{ server(form.get('challanNumber')) }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Received on</mat-label><input matInput type="date" formControlName="receivedOn" />
+        <mat-form-field appearance="outline"><mat-label>Received on</mat-label><input matInput [matDatepicker]="dp14" formControlName="receivedOn" /><mat-datepicker-toggle matIconSuffix [for]="dp14" /><mat-datepicker #dp14 />
           <mat-error>{{ server(form.get('receivedOn')) }}</mat-error></mat-form-field>
       </div>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
@@ -388,10 +389,10 @@ export class OrderDialog {
       <button mat-flat-button type="submit" form="receive-form" [disabled]="busy()">Save delivery</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(600px, 86vw); } .mute { color: #5b6b6e; margin: 0 0 8px; }
-           .line { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid #eef2f1; padding-top: 6px; }
-           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: 8px; } .q { flex: 0 1 150px; } button { margin-top: 8px; }
-           .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 160px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(600px, 86vw); } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+           .line { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
+           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: var(--space-2); } .q { flex: 0 1 150px; } button { margin-top: var(--space-2); }
+           .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 160px; } .err { color: var(--ro-error); }`,
 })
 export class ReceiveDialog {
   data = inject<{ propertyId: string; order: PurchaseOrder; inventory: Inventory }>(MAT_DIALOG_DATA);
@@ -436,16 +437,16 @@ export class ReceiveDialog {
 /** The supplier's bill: their number and date, and per received line what they billed, at what price and GST. */
 @Component({
   selector: 'app-bill-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ data.order.supplierName }}'s bill</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="bill-form">
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Their bill number</mat-label><input matInput formControlName="supplierNumber" maxlength="40" />
           <mat-error>{{ server(form.get('supplierNumber')) || 'Enter the number printed on the bill.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Bill date</mat-label><input matInput type="date" formControlName="invoiceDate" />
+        <mat-form-field appearance="outline"><mat-label>Bill date</mat-label><input matInput [matDatepicker]="dp15" formControlName="invoiceDate" /><mat-datepicker-toggle matIconSuffix [for]="dp15" /><mat-datepicker #dp15 />
           <mat-error>{{ server(form.get('invoiceDate')) || 'Enter the date on the bill.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Due (optional)</mat-label><input matInput type="date" formControlName="dueDate" />
+        <mat-form-field appearance="outline"><mat-label>Due (optional)</mat-label><input matInput [matDatepicker]="dp16" formControlName="dueDate" /><mat-datepicker-toggle matIconSuffix [for]="dp16" /><mat-datepicker #dp16 />
           <mat-hint>Empty: {{ terms }}</mat-hint>
           <mat-error>{{ server(form.get('dueDate')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Counts in the budget for</mat-label>
@@ -459,7 +460,7 @@ export class ReceiveDialog {
       <div formArrayName="lines">
         @for (g of lines.controls; track $index; let n = $index) {
           <div class="line" [formGroupName]="n" [attr.data-line]="open[n].itemName">
-            <div class="nm"><b>{{ open[n].itemName }}</b><small class="mute">To bill {{ qty(open[n].toBill, open[n].unit) }} · ordered at {{ rupeesExact(open[n].unitPrice) }}</small></div>
+            <div class="nm"><b>{{ open[n].itemName }}</b><small class="mute">To bill {{ qty(open[n].toBill, open[n].unit) }}, ordered at {{ rupeesExact(open[n].unitPrice) }}</small></div>
             <mat-form-field appearance="outline" class="q"><mat-label>Billed ({{ open[n].unit }})</mat-label>
               <input matInput type="number" inputmode="decimal" formControlName="quantity" [attr.aria-label]="open[n].itemName + ' billed'" />
               <mat-error>{{ server(g.get('quantity')) || 'More than 0.' }}</mat-error></mat-form-field>
@@ -473,7 +474,7 @@ export class ReceiveDialog {
           </div>
         }
       </div>
-      <p class="tot" data-testid="bill-total">Before GST {{ rupeesExact(totals().taxable) }} · {{ data.order.intraState ? 'CGST + SGST' : 'IGST' }} {{ rupeesExact(totals().tax) }} ·
+      <p class="tot" data-testid="bill-total">Before GST {{ rupeesExact(totals().taxable) }}, {{ data.order.intraState ? 'CGST + SGST' : 'IGST' }} {{ rupeesExact(totals().tax) }},
         <b>Total {{ rupeesExact(totals().taxable + totals().tax) }}</b></p>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
     </form>
@@ -482,11 +483,11 @@ export class ReceiveDialog {
       <button mat-flat-button type="submit" form="bill-form" [disabled]="busy()">Record bill</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(700px, 88vw); } .mute { color: #5b6b6e; margin: 0 0 8px; }
-           .row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1 1 160px; }
-           .line { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid #eef2f1; padding-top: 6px; }
-           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: 8px; } .q { flex: 0 1 120px; } .r { flex: 0 1 96px; }
-           .tot { text-align: right; font-variant-numeric: tabular-nums; } .err { color: #b3261e; } .full { flex-basis: 100%; margin: 0 0 6px; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(700px, 88vw); } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+           .row { display: flex; gap: var(--space-2); flex-wrap: wrap; } .row > * { flex: 1 1 160px; }
+           .line { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--ro-sunk); padding-top: 6px; }
+           .nm { flex: 1 1 160px; display: flex; flex-direction: column; padding-top: var(--space-2); } .q { flex: 0 1 120px; } .r { flex: 0 1 96px; }
+           .tot { text-align: right; font-variant-numeric: tabular-nums; } .err { color: var(--ro-error); } .full { flex-basis: 100%; margin: 0 0 6px; }`,
 })
 export class BillDialog {
   data = inject<{ propertyId: string; order: PurchaseOrder; today: string; termsDays: number }>(MAT_DIALOG_DATA);
@@ -559,7 +560,7 @@ export class BillDialog {
       <button mat-flat-button type="button" (click)="save()" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `.body { min-width: min(420px, 84vw); } .mute { color: #5b6b6e; } .err { color: #b3261e; } mat-form-field { width: 100%; }`,
+  styles: `.body { min-width: min(420px, 84vw); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } mat-form-field { width: 100%; }`,
 })
 export class BillDepartmentDialog {
   data = inject<{ propertyId: string; invoice: SupplierInvoice }>(MAT_DIALOG_DATA);
@@ -584,11 +585,11 @@ export class BillDepartmentDialog {
 /** A payment against a bill: how much (the balance by default), how, and the UTR or cheque number. Sent once (Idempotency-Key). */
 @Component({
   selector: 'app-pay-supplier-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Pay {{ data.invoice.supplierName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
-      <p class="mute">{{ data.invoice.number }} · their bill {{ data.invoice.supplierNumber }} · {{ rupees(data.invoice.balance) }} left of {{ rupees(data.invoice.total) }}</p>
+      <p class="mute">{{ data.invoice.number }}, their bill {{ data.invoice.supplierNumber }}, {{ rupees(data.invoice.balance) }} left of {{ rupees(data.invoice.total) }}</p>
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Amount (₹)</mat-label><input matInput type="number" inputmode="decimal" formControlName="amount" />
           <mat-error>{{ server(form.get('amount')) || 'More than ₹0.' }}</mat-error></mat-form-field>
@@ -601,7 +602,7 @@ export class BillDepartmentDialog {
         <input matInput formControlName="reference" maxlength="60" />
         <mat-error>{{ server(form.get('reference')) }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>Paid on</mat-label><input matInput type="date" formControlName="paidOn" />
+        <mat-form-field appearance="outline"><mat-label>Paid on</mat-label><input matInput [matDatepicker]="dp17" formControlName="paidOn" /><mat-datepicker-toggle matIconSuffix [for]="dp17" /><mat-datepicker #dp17 />
           <mat-error>{{ server(form.get('paidOn')) }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Note</mat-label><input matInput formControlName="note" maxlength="300" />
           <mat-error>{{ server(form.get('note')) }}</mat-error></mat-form-field>
@@ -613,8 +614,8 @@ export class BillDepartmentDialog {
       <button mat-flat-button type="submit" form="pay-form" [disabled]="busy()">Record payment</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 160px; } .mute { color: #5b6b6e; margin: 0 0 8px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 160px; } .mute { color: var(--ro-mute); margin: 0 0 var(--space-2); } .err { color: var(--ro-error); }`,
 })
 export class PaySupplierDialog {
   data = inject<{ propertyId: string; invoice: SupplierInvoice; today: string }>(MAT_DIALOG_DATA);

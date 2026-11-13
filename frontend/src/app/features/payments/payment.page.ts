@@ -27,9 +27,9 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
         <div class="page-head">
           <div>
             <a routerLink="/payments" class="back">Payments</a>
-            <h1><span class="num">{{ p.number }}</span> · {{ money(p.amount) }} {{ methodLabel(p.method) }}
+            <h1><span class="num">{{ p.number }}</span>, {{ money(p.amount) }} {{ methodLabel(p.method) }}
               <span [class]="'chip ' + statusClass(p.status)" data-testid="status">{{ statusLabel(p.status) }}</span></h1>
-            <p>{{ p.guestName }} · <a [routerLink]="['/reservations', p.reservationId]" class="num">{{ p.reference }}</a> ·
+            <p>{{ p.guestName }}, <a [routerLink]="['/reservations', p.reservationId]" class="num">{{ p.reference }}</a>,
               taken {{ time(p.receivedAt) }}@if (p.receivedByName) { by {{ p.receivedByName }} }</p>
           </div>
           <div class="head-actions">
@@ -69,7 +69,7 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
             <thead><tr><th>Folio</th><th class="hide-sm">When</th><th class="right">Amount</th><th class="right">Refunded</th></tr></thead>
             <tbody>
               @for (a of p.allocations; track a.id) {
-                <tr><td><a [routerLink]="['/folios', a.folioId]" class="num"><b>{{ a.folioNumber }}</b></a> · {{ a.folioName }}</td>
+                <tr><td><a [routerLink]="['/folios', a.folioId]" class="num"><b>{{ a.folioNumber }}</b></a>, {{ a.folioName }}</td>
                   <td class="hide-sm">{{ time(a.allocatedAt) }}</td>
                   <td class="right num">{{ money(a.amount) }}</td><td class="right num">{{ a.refunded ? money(a.refunded) : '' }}</td></tr>
               } @empty {
@@ -89,8 +89,8 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
                   <tr [attr.data-refund]="r.id"><td><b>{{ r.reason }}</b>
                     @if (r.status === 'PENDING') { <span class="chip wait">Waiting for Razorpay</span> }
                     @if (r.status === 'FAILED') { <span class="chip off">Razorpay couldn't send it; money back on the payment</span> }
-                    <br /><small class="mute">{{ methodLabel(r.method) }} · {{ time(r.refundedAt) }}
-                    @if (r.refundedByName) { · {{ r.refundedByName }} }@if (r.reference) { · {{ r.reference }} }</small></td>
+                    <br /><small class="mute">{{ methodLabel(r.method) }}, {{ time(r.refundedAt) }}
+                    @if (r.refundedByName) {, {{ r.refundedByName }} }@if (r.reference) {, {{ r.reference }} }</small></td>
                     <td class="hide-sm">{{ r.folioNumber ?? 'On account' }}</td>
                     <td class="right num bad">− {{ money(r.amount) }}</td></tr>
                 }
@@ -106,26 +106,26 @@ import { PaymentsApi, methodLabel, onlineMethodText, paymentStatusClass, payment
     </div>
   `,
   styles: `
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    h2 { margin: 20px 0 8px; }
-    .note { background: #f3e3e3; color: #7a1f1f; border-radius: 8px; padding: 10px 12px; }
-    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; background: #fff; border: 1px solid #d9e0de; border-radius: 10px;
-            padding: 12px 16px; margin-bottom: 12px; }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    h2 { margin: var(--space-5) 0 var(--space-2); }
+    .note { background: var(--ro-off-bg); color: var(--ro-off); border-radius: 8px; padding: 10px var(--space-3); }
+    .sums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius);
+            padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3); }
     .sums div { display: flex; flex-direction: column; }
-    .sums span { color: #5b6b6e; font-size: .8rem; }
-    .sums b { font-size: 1.15rem; color: #0e3b43; }
-    .facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 0 0 8px; }
-    .facts dt { color: #5b6b6e; }
+    .sums span { color: var(--ro-mute); font-size: .8rem; }
+    .sums b { font-size: 1.15rem; color: var(--ro-tide); }
+    .facts { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-4); margin: 0 0 var(--space-2); }
+    .facts dt { color: var(--ro-mute); }
     .facts dd { margin: 0; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.back { background: #f6e3ec; color: #8a2449; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .mute { color: #5b6b6e; }
-    .bad, .sums b.bad { color: #b3261e; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .mute { color: var(--ro-mute); }
+    .bad, .sums b.bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .empty { color: #5b6b6e; padding: 16px; }
-    .err { color: #b3261e; }
+    .empty { color: var(--ro-mute); padding: var(--space-4); }
+    .err { color: var(--ro-error); }
     @media (max-width: 760px) { .sums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   `,
 })

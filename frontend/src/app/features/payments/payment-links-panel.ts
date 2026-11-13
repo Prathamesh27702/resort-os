@@ -30,7 +30,7 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
         <div class="head">
           <h2>Online payment links</h2>
           <span class="sums">Owes <b class="num" data-testid="owed">{{ money(d.owed) }}</b> of {{ money(d.due) }}
-            @if (d.open > 0) { · links ask for <b class="num">{{ money(d.open) }}</b> }</span>
+            @if (d.open > 0) {, links ask for <b class="num">{{ money(d.open) }}</b> }</span>
           <button mat-icon-button (click)="load()" aria-label="Refresh payment links" title="Refresh"><mat-icon>refresh</mat-icon></button>
           @if (canCreate()) {
             <button mat-flat-button (click)="send(d)" [disabled]="!d.canCreate" [title]="d.cantCreateReason ?? ''" data-testid="send-link">
@@ -47,9 +47,9 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
               <span><b class="num">{{ money(l.amount) }}</b> <span [class]="'chip ' + statusClass(l.status)">{{ statusLabel(l.status) }}</span>
                 @if (l.status === 'CREATED' && l.callbackAt) { <span class="chip wait">Guest says paid; waiting for Razorpay</span> }
                 <br /><small class="mute">Sent {{ time(l.createdAt) }}@if (l.createdByName) { by {{ l.createdByName }} }
-                  @if (l.note) { · {{ l.note }} }</small>
+                  @if (l.note) {, {{ l.note }} }</small>
                 @if (l.status === 'PAID' && l.paymentId) {
-                  <br /><small>Paid {{ time(l.paidAt!) }} ·
+                  <br /><small>Paid {{ time(l.paidAt!) }},
                     <a [routerLink]="['/payments', l.paymentId]" class="num">{{ l.paymentNumber }}</a></small>
                 }
                 @if (l.status === 'CANCELLED') {
@@ -74,7 +74,7 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
                 <small class="mute">Razorpay order <span class="num">{{ l.gatewayOrderId }}</span></small>
                 @for (e of events(); track e.id) {
                   <p><b>{{ e.eventType }}</b> <span [class]="'chip ' + (e.status === 'PROCESSED' ? 'ok' : e.status === 'FAILED' ? 'bad' : 'off')">{{ eventLabel(e.status) }}</span>
-                    <small class="mute"> {{ time(e.receivedAt) }}@if (e.attempts > 1) { · {{ e.attempts }} deliveries }</small>
+                    <small class="mute"> {{ time(e.receivedAt) }}@if (e.attempts > 1) {, {{ e.attempts }} deliveries }</small>
                     @if (e.outcome) { <br /><small>{{ e.outcome }}</small> }</p>
                 } @empty { <p class="mute">Nothing from Razorpay yet.</p> }
               </div>
@@ -88,23 +88,23 @@ import { PaymentsApi, linkStatusClass, linkStatusLabel, looksLikeCardNumber, pay
     } @else if (error()) { <p class="err" role="alert">{{ error() }}</p> }
   `,
   styles: `
-    .card { padding: 16px 20px; margin-bottom: 16px; }
-    .head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    h2 { font-size: 1rem; color: #0e3b43; margin: 0; }
-    .sums { flex: 1; color: #5b6b6e; }
-    .sums b { color: #0e3b43; }
-    .link { border-top: 1px solid #edf1f0; padding: 10px 0; }
-    .main { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .actions { display: flex; gap: 4px; flex-wrap: wrap; }
-    .events { background: #f6f8f7; border-radius: 8px; padding: 8px 12px; margin-top: 8px; }
+    .card { padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4); }
+    .head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0; }
+    .sums { flex: 1; color: var(--ro-mute); }
+    .sums b { color: var(--ro-tide); }
+    .link { border-top: 1px solid var(--ro-line-soft); padding: 10px 0; }
+    .main { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+    .actions { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+    .events { background: var(--ro-wash); border-radius: 8px; padding: var(--space-2) var(--space-3); margin-top: var(--space-2); }
     .events p { margin: 6px 0; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 8px 0; }
-    .mute { color: #5b6b6e; }
-    .bad, .danger, .err { color: #b3261e; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.bad { background: #f3e3e3; color: #7a1f1f; }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-2) 0; }
+    .mute { color: var(--ro-mute); }
+    .bad, .danger, .err { color: var(--ro-error); }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
+    .chip.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })
 export class PaymentLinksPanel implements OnInit {
@@ -199,7 +199,7 @@ export interface SendLinkData { propertyId: string; links: BookingPaymentLinks; 
   selector: 'app-send-payment-link-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>Send a payment link · <span class="num">{{ data.links.reference }}</span></h2>
+    <h2 mat-dialog-title>Send a payment link, <span class="num">{{ data.links.reference }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="link-form">
       <p class="hint">The guest opens the link and pays with UPI or a card through Razorpay. The payment goes on the bill by itself
         when Razorpay confirms it, and a pending booking is confirmed. Owes <b class="num">{{ money(data.links.owed) }}</b>
@@ -224,9 +224,9 @@ export interface SendLinkData { propertyId: string; links: BookingPaymentLinks; 
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
-    .full { width: 100%; margin-top: 8px; }
-    .err { color: #b3261e; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
+    .full { width: 100%; margin-top: var(--space-2); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class SendPaymentLinkDialog {
@@ -307,9 +307,9 @@ export interface CancelLinkData { propertyId: string; link: PaymentLink; }
   `,
   styles: `
     form { min-width: min(440px, 82vw); }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class CancelPaymentLinkDialog {

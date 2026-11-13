@@ -36,17 +36,17 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
           <span [class]="'status ' + o.status">{{ o.status === 'OPEN' ? 'Open' : o.status === 'SETTLED' ? 'Settled' : 'Voided' }}</span>
         </div>
         <p class="mute">
-          {{ typeLabel[o.orderType] }}@if (o.guestName) { · {{ o.guestName }} ({{ o.reservationReference }}) }
-          · opened {{ time(o.createdAt) }}@if (o.openedByName) { by {{ o.openedByName }} }
+          {{ typeLabel[o.orderType] }}@if (o.guestName) {, {{ o.guestName }} ({{ o.reservationReference }})},
+         opened {{ time(o.createdAt) }}@if (o.openedByName) { by {{ o.openedByName }} }
         </p>
         @if (o.status === 'SETTLED') {
           <p class="banner ok" data-testid="settled">
             @if (o.settlement === 'ROOM_CHARGE') { Charged to {{ o.unitName ?? 'the room' }} on folio <a [routerLink]="['/folios', o.folioId]">{{ o.folioNumber }}</a> }
-            @else { Paid by {{ method(o.paymentMethod!) }}@if (o.paymentReference) { ({{ o.paymentReference }}) } }
-            · {{ time(o.settledAt!) }}@if (o.settledByName) { by {{ o.settledByName }} }
+            @else { Paid by {{ method(o.paymentMethod!) }}@if (o.paymentReference) { ({{ o.paymentReference }}) }},
+           {{ time(o.settledAt!) }}@if (o.settledByName) { by {{ o.settledByName }} }
           </p>
         }
-        @if (o.status === 'VOIDED') { <p class="banner off">Voided: {{ o.voidReason }}@if (o.voidedByName) { · {{ o.voidedByName }} }</p> }
+        @if (o.status === 'VOIDED') { <p class="banner off">Voided: {{ o.voidReason }}@if (o.voidedByName) {, {{ o.voidedByName }} }</p> }
 
         <section>
           <h2>On the order</h2>
@@ -84,7 +84,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
             <ul class="kots">
               @for (k of o.kots; track k.id) {
                 <li [attr.data-kot]="k.number">
-                  <b>{{ k.number }}</b> · {{ k.lines }} line{{ k.lines === 1 ? '' : 's' }} · sent {{ time(k.sentAt) }}
+                  <b>{{ k.number }}</b>, {{ k.lines }} line{{ k.lines === 1 ? '' : 's' }}, sent {{ time(k.sentAt) }}
                   <span [class]="'kstate ' + k.status">{{ kot(k.status) }}</span>
                   @if (k.status === 'READY' && can('serve')) {
                     <button mat-flat-button class="serve" (click)="serve(k)" [disabled]="busy()">Served</button>
@@ -156,50 +156,50 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, ORDER_TYPE_LABEL, RestaurantApi, kotLab
     .order { max-width: 760px; padding-bottom: 80px; }
     .back { margin-left: -8px; }
     .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    h1 { margin: 4px 0 0; } .where { font-weight: 400; color: #33474a; }
-    .status { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #fbefd8; color: #8a5a00; }
-    .status.SETTLED { background: #e1f2e8; color: #1d5b36; } .status.VOIDED { background: #e3e7e6; color: #33474a; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; }
-    .banner { padding: 10px 12px; border-radius: 10px; } .banner.ok { background: #e1f2e8; } .banner.off { background: #eef2f1; }
-    section { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 4px 14px 14px; margin-top: 12px; }
-    h2 { font-size: 1rem; margin: 12px 0 8px; }
+    h1 { margin: var(--space-1) 0 0; } .where { font-weight: 400; color: var(--ro-ink-soft); }
+    .status { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .status.SETTLED { background: var(--ro-ok-bg); color: var(--ro-ok); } .status.VOIDED { background: var(--ro-line-mid); color: var(--ro-ink-soft); }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
+    .banner { padding: 10px var(--space-3); border-radius: 10px; } .banner.ok { background: var(--ro-ok-bg); } .banner.off { background: var(--ro-sunk); }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-1) 14px 14px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); }
+    h2 { font-size: 1rem; margin: var(--space-3) 0 var(--space-2); }
     ul { list-style: none; margin: 0; padding: 0; }
-    .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
-    .lines li.voided .nm, .lines li.voided .amt { text-decoration: line-through; color: #7a8a8d; }
+    .lines li { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); }
+    .lines li.voided .nm, .lines li.voided .amt { text-decoration: line-through; color: var(--ro-mute); }
     .what small { display: block; }
-    .note { color: #5b3a00; }
+    .note { color: var(--ro-warn-strong); }
     .amt { text-align: right; font-variant-numeric: tabular-nums; }
-    .ctl { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; }
-    .kstate { font-size: .75rem; font-weight: 600; color: #5b6b6e; }
-    .kstate.NEW, .kstate.unsent { color: #8a5a00; } .kstate.READY { color: #134e63; } .kstate.SERVED { color: #1d5b36; } .kstate.VOIDED { color: #b3261e; }
-    .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0; border-bottom: 1px solid #eef2f1; }
-    .kots .kstate { padding: 2px 10px; border-radius: 999px; background: #eef2f1; }
-    .kots .kstate.READY { background: #e0eff5; }
+    .ctl { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: var(--space-1); }
+    .kstate { font-size: .75rem; font-weight: 600; color: var(--ro-mute); }
+    .kstate.NEW, .kstate.unsent { color: var(--ro-warn); } .kstate.READY { color: var(--ro-info); } .kstate.SERVED { color: var(--ro-ok); } .kstate.VOIDED { color: var(--ro-error); }
+    .kots li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); }
+    .kots .kstate { padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); }
+    .kots .kstate.READY { background: var(--ro-info-bg); }
     .serve { margin-left: auto; min-height: 44px; }
-    .big { min-height: 52px; font-size: 1.05rem; border-radius: 10px; margin-top: 12px; width: 100%; }
-    dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; }
+    .big { min-height: 52px; font-size: 1.05rem; border-radius: 10px; margin-top: var(--space-3); width: 100%; }
+    dl { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-3); margin: 0; }
     dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-    .total { font-weight: 700; font-size: 1.15rem; border-top: 1px solid #d9e0de; padding-top: 6px; }
-    .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .total { font-weight: 700; font-size: 1.15rem; border-top: 1px solid var(--ro-line); padding-top: 6px; }
+    .acts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
     .acts .big { flex: 1 1 200px; }
-    .danger { color: #b3261e; }
+    .danger { color: var(--ro-error); }
     .full { width: 100%; }
     .cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
-    .cats button { flex: 0 0 auto; border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
-    .cats button.on { background: #0e3b43; color: #fff; border-color: #0e3b43; }
-    .dish { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 4px;
-            border-bottom: 1px solid #eef2f1; cursor: pointer; }
-    .dish:focus-visible { outline: 2px solid #8a2449; }
+    .cats button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit; min-height: 40px; cursor: pointer; box-shadow: var(--ro-shadow-card); }
+    .cats button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
+    .dish { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: var(--space-2) var(--space-1);
+            border-bottom: 1px solid var(--ro-sunk); cursor: pointer; }
+    .dish:focus-visible { outline: 2px solid var(--ro-kokum); }
     .dish[disabled] { opacity: .55; cursor: default; }
     .dish .nm { flex: 1; } .dish .nm small { display: block; }
     .dish .pr { font-variant-numeric: tabular-nums; }
-    .dish mat-icon { color: #0e3b43; }
-    .out { margin-left: 6px; font-size: .75rem; color: #b3261e; }
-    .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
-    .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
-    .food.NON_VEG { border-color: #8c1d18; background: radial-gradient(#8c1d18 40%, transparent 45%); }
-    .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
-    @media (max-width: 640px) { h1 { font-size: 1.35rem; } section { padding: 2px 12px 12px; } }
+    .dish mat-icon { color: var(--ro-tide); }
+    .out { margin-left: 6px; font-size: .75rem; color: var(--ro-error); }
+    .food { display: inline-block; flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: var(--space-1); vertical-align: middle; }
+    .food.VEG { border-color: var(--ro-ok-mid); background: radial-gradient(var(--ro-ok-mid) 40%, transparent 45%); }
+    .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
+    .food.EGG { border-color: var(--ro-warn-mid); background: radial-gradient(var(--ro-warn-mid) 40%, transparent 45%); }
+    @media (max-width: 640px) { h1 { font-size: 1.35rem; } section { padding: 2px var(--space-3) var(--space-3); } }
   `,
 })
 export class OrderPage {
@@ -267,7 +267,7 @@ export class OrderPage {
   lineState(l: OrderItem): { text: string; cls: string } {
     if (l.status === 'VOIDED') return { text: `Voided: ${l.voidReason}`, cls: 'VOIDED' };
     if (l.status === 'NEW') return { text: 'Not sent yet', cls: 'unsent' };
-    return { text: `${l.kotNumber} · ${kotLabel(l.kitchenStatus ?? 'NEW')}`, cls: l.kitchenStatus ?? 'NEW' };
+    return { text: `${l.kotNumber}, ${kotLabel(l.kitchenStatus ?? 'NEW')}`, cls: l.kitchenStatus ?? 'NEW' };
   }
 
   /** Runs a change and shows the order it returns. A refusal says why; a version conflict reloads the other waiter's order. */

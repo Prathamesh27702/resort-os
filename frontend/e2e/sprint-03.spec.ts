@@ -106,7 +106,7 @@ test('S03-05 add a passport with a scan; the number is masked until opened, and 
   await shot(p, '06-documents-number-shown');
 
   await p.goto('/audit');
-  await expect(p.locator('table.data')).toContainText('Opened (sensitive) · ID document');
+  await expect(p.locator('table.data')).toContainText('Opened (sensitive), ID document');
   await shot(p, '07-audit-sensitive-read');
 });
 

@@ -57,9 +57,9 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
       @if (result(); as r) {
         <div class="totals" aria-label="Totals">
           <div class="net"><span>Taken, less refunds</span><b class="num" data-testid="net">{{ money(r.net) }}</b>
-            <small class="mute">{{ money(r.received) }} in · {{ money(r.refundedTotal) }} refunded</small></div>
+            <small class="mute">{{ money(r.received) }} in, {{ money(r.refundedTotal) }} refunded</small></div>
           @for (m of r.byMethod; track m.method) {
-            <div class="by" [attr.data-method]="m.method"><span>{{ methodLabel(m.method) }} · {{ m.count }}</span><b class="num">{{ money(m.net) }}</b>
+            <div class="by" [attr.data-method]="m.method"><span>{{ methodLabel(m.method) }}, {{ m.count }}</span><b class="num">{{ money(m.net) }}</b>
               @if (m.refunded) { <small class="mute">{{ money(m.refunded) }} refunded</small> }</div>
           }
         </div>
@@ -72,9 +72,9 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
             @for (p of result()?.items ?? []; track p.id) {
               <tr class="clickable" (click)="open(p.id)" tabindex="0" (keydown.enter)="open(p.id)" [attr.data-payment]="p.number">
                 <td><b class="num">{{ p.number }}</b> <span [class]="'chip ' + statusClass(p.status)">{{ statusLabel(p.status) }}</span>
-                  <br /><small class="mute">{{ methodLabel(p.method) }}@if (p.paymentReference) { · {{ p.paymentReference }} }</small></td>
-                <td><b>{{ p.guestName }}</b><br /><small class="mute num">{{ p.reference }}@if (p.folios) { · {{ p.folios }} }
-                  @if (p.onAccount > 0) { · {{ money(p.onAccount) }} on account }</small></td>
+                  <br /><small class="mute">{{ methodLabel(p.method) }}@if (p.paymentReference) {, {{ p.paymentReference }} }</small></td>
+                <td><b>{{ p.guestName }}</b><br /><small class="mute num">{{ p.reference }}@if (p.folios) {, {{ p.folios }} }
+                  @if (p.onAccount > 0) {, {{ money(p.onAccount) }} on account }</small></td>
                 <td class="hide-sm">{{ time(p.receivedAt) }}<br /><small class="mute">{{ p.receivedByName ?? '' }}</small></td>
                 <td class="right num"><b [class.void]="p.status === 'CANCELLED'">{{ money(p.amount) }}</b>
                   @if (p.refunded) { <br /><small class="bad">− {{ money(p.refunded) }} refunded</small> }</td>
@@ -103,25 +103,25 @@ type Period = 'today' | 'yesterday' | 'week' | 'all';
   `,
   styles: `
     .wide { max-width: 1100px; }
-    .filters { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .filters { display: flex; align-items: center; gap: var(--space-3) var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-2); }
     .q { flex: 1; min-width: 220px; max-width: 420px; }
     .m { width: 170px; }
-    .totals { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .totals > div { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 10px 14px; min-width: 130px; }
-    .totals span { color: #5b6b6e; font-size: .8rem; }
-    .totals b { font-size: 1.15rem; color: #0e3b43; }
+    .totals { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
+    .totals > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 10px 14px; min-width: 130px; }
+    .totals span { color: var(--ro-mute); font-size: .8rem; }
+    .totals b { font-size: 1.15rem; color: var(--ro-tide); }
     .totals .net b { font-size: 1.4rem; }
-    .mute { color: #5b6b6e; }
-    .bad { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .void { text-decoration: line-through; color: #7a8a8c; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.back { background: #f6e3ec; color: #8a2449; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    .err { color: #b3261e; }
-    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid #edf1f0; }
+    .void { text-decoration: line-through; color: var(--ro-mute); }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
+    .err { color: var(--ro-error); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-top: 1px solid var(--ro-line-soft); }
     @media (max-width: 760px) { .m { width: 100%; } .totals > div { flex: 1; } }
   `,
 })
