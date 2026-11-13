@@ -61,16 +61,20 @@ Guards only hide what a user can't use; the API checks every request again.
 | Element | Convention |
 |---|---|
 | Layout | `.page` > `.page-head` (h1 + one-line purpose + primary action on the right) > `.panel` |
-| Buttons | One `mat-flat-button` (kokum) primary per screen; `mat-stroked-button` secondary; text buttons for cancel |
+| Buttons | One `mat-flat-button` (lagoon gradient pill) primary per screen; `mat-stroked-button` secondary; text buttons for cancel |
 | Forms | Reactive forms, `appearance="outline"`, two-column grid collapsing to one at 640 px; server field errors mapped onto controls |
 | Tables | `table.data`; secondary columns `.hide-sm` on phones; clickable rows keyboard-accessible |
 | Notifications | `MatSnackBar`, 2.5 s, past-tense of the action ("Changes saved") |
 | States | Every list has loading, empty (with the next action) and error states. Errors show the API `message` |
 | Time | Always rendered in the **property's** timezone via `inZone()`; IST shown as "IST" |
-| Motion | None beyond Material defaults; `prefers-reduced-motion` respected |
+| Motion | Slow background glow, content rises on page change, cards lift on hover, buttons press in; all off with `prefers-reduced-motion` |
+| Dates | Every date field is a Material date picker with `IsoDateAdapter`: shows "13 Nov 2026", stores "2026-11-13". Never `type="date"` (it shows MM/DD/YYYY on US browsers) |
+| Charts | `app-chart` (`features/reports/chart.ts`) with a `ChartSpec` from a `computed()`; the numbers are also on the page as a table or text |
+| Themes | Light, dark and Solid panels: use only `--ro-*` tokens, check every screen in both themes ([design.md](../design.md)) |
 | Touch | Targets ≥ 44 px on mobile screens used by housekeeping, kitchen, drivers |
 | Offline (Sprint 28) | Status chip ONLINE / OFFLINE / SYNCING / SYNC FAILED in the top bar; financial actions disabled offline |
 
-Palette: tide `#0E3B43` (navigation), lime-wash `#F5F7F6` (background), kokum `#8A2449` (primary actions), palm
-`#2E6B3C` (success), ink `#1B2A2E` (text). Type: IBM Plex Sans (self-hosted; has a Devanagari companion for future
-Hindi/Marathi UI).
+Look: **Lagoon Glass** ([design.md](../design.md)), with light and dark themes. Lagoon `#0E7C80` for primary actions and
+the current menu item, coral for money highlights, frosted panels over a soft glow. Type: Onest for text and Unbounded
+for titles and big numbers (both self-hosted); IBM Plex Sans only draws the ₹ sign. Kokum `#8A2449` stays for the
+resort's own brand on the guest pay page and invoices.

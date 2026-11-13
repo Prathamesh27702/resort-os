@@ -209,4 +209,28 @@ public static partial class MessageText
         }
         return sb.Append("</div>").ToString();
     }
+
+    /// <summary>
+    /// The email as the guest sees it: the property's name in a header band, the text on a white card, and a footer with
+    /// the property's phone and email when they are set. Tables and inline styles only, so Gmail, Outlook and phone mail
+    /// apps all show it the same way; the plain text goes alongside for mail apps that don't show HTML.
+    /// </summary>
+    public static string BrandedHtml(string text, string propertyName, string? subject, string? phone, string? email)
+    {
+        string E(string? v) => System.Net.WebUtility.HtmlEncode(v ?? "");
+        var contact = string.Join(" &nbsp;|&nbsp; ", new[] { phone, email }.Where(v => !string.IsNullOrWhiteSpace(v)).Select(E));
+        var sb = new StringBuilder();
+        sb.Append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#eef5f3;padding:24px 0\"><tr><td align=\"center\">");
+        sb.Append("<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #d9e6e3\">");
+        sb.Append("<tr><td style=\"background:#0a3a40;padding:22px 28px;font-family:Arial,sans-serif\">");
+        sb.Append("<div style=\"color:#ffffff;font-size:20px;font-weight:bold;letter-spacing:-0.2px\">").Append(E(propertyName)).Append("</div>");
+        if (!string.IsNullOrWhiteSpace(subject))
+            sb.Append("<div style=\"color:#b6d8d4;font-size:13px;margin-top:4px\">").Append(E(subject)).Append("</div>");
+        sb.Append("</td></tr><tr><td style=\"padding:26px 28px\">").Append(Html(text)).Append("</td></tr>");
+        sb.Append("<tr><td style=\"padding:16px 28px;background:#f6faf9;border-top:1px solid #e3eeeb;font-family:Arial,sans-serif;font-size:12px;color:#5b6b6e\">");
+        sb.Append(E(propertyName));
+        if (contact.Length > 0) sb.Append("<br>").Append(contact);
+        sb.Append("</td></tr></table></td></tr></table>");
+        return sb.ToString();
+    }
 }

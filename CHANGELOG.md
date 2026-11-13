@@ -2,6 +2,45 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [Unreleased] — Lagoon Glass look, light and dark themes, modern dashboards and reports
+
+### Added
+- **Light and dark themes** with a button in the top bar (Light, Dark, Match my phone) and the same choice in the
+  account menu on phones. The choice is kept per device (`ro-theme`); a small script in `index.html` applies it before
+  the app starts, so nothing flashes. The phone's status bar colour follows the theme. `core/theme.ts`.
+- **Solid panels** switch in the account menu (and automatically on phones with 4 GB memory or less, or "reduce
+  transparency"): no see-through glass, no blur, easier to read in the sun.
+- **Search everything** (Ctrl K, or the search field in the top bar): guests by name or phone, bookings by reference or
+  guest, and every screen by name or keyword ("upi", "kot", "tariff"). Only what the person may open. `layout/search.ts`.
+- **Branded guest emails**: every guest email now has the property name in a coloured header (with the subject under
+  it) and the property's phone and email in the footer, read from the property at send time. Everything is HTML-escaped;
+  the plain-text part is unchanged. `MessageText.BrandedHtml`, `OutboxDispatcher`.
+- **Phone tab bar**: a floating bar at the bottom with the four screens a person's role uses most (for example Today,
+  Desk, Rooms, Cleaning) and More for the full menu. Housekeeping and kitchen staff see their own screens.
+- **Today**: a *Needs attention* card with the few things to act on now, each with its button: guests arriving to a room
+  that isn't ready, stays past check-out, money to collect from guests leaving today, leave waiting, guest messages that
+  couldn't be sent, low stock. Big KPI cards with arrows against last month and a year ago, an occupancy chart for the
+  next 14 nights with weekends shaded, revenue each day, *Where the money came from* (rooms, food, activities,
+  transport), the last 12 months, and booking sources with the share booked direct as a headline.
+- **Reports**: a chart above every table (occupancy, revenue by kind stacked, booking sources, nights by kind of source,
+  GST output against input, food cost % and pay %, operating profit), headline numbers on the month at a glance, and
+  quick periods: This month, Last month, Last 30 days, This financial year (April to March), Last financial year,
+  Last 12 months. Charts use ECharts (Apache 2.0), loaded only on the screens that show a chart.
+
+### Changed
+- The Lagoon Glass look chosen on 9 Nov 2026 (`docs/design.md`): frosted panels over a slow sea-green, coral and lilac
+  glow, lagoon teal for the main action on each screen, pill buttons, larger corners, soft shadows. Fonts Onest (text)
+  and Unbounded (page titles and big numbers), self-hosted; IBM Plex Sans stays only to draw the ₹ sign.
+- The menu is in sections (Today, Guests & money, Rooms, Resort, Stock & buying, Team, Settings) that fold and remember
+  it per device; sections a role can't use are hidden. The sidebar floats as a glass panel on screens 1024 px and wider.
+- **Every date field shows Indian dates** ("13 Nov 2026") with a calendar button. 29 fields used the browser's own date
+  box, which showed 11/13/2026 on English (US) browsers: Reports, Room status, Rates, Restaurant orders, GST, leave,
+  purchasing, expenses, activities, transport, inventory, attendance, maintenance and folio dialogs.
+- The sign-in page: a lagoon brand panel with moving waves and a glass sign-in card.
+- Front desk and Reports tabs are pill tabs; the roster's shortage list is a calm amber panel that scrolls instead of a
+  long red block; expense rows show the whole description on phones.
+- Chart colours are six tokens (`--ro-chart-1..6`) per theme, checked for colour blindness and contrast.
+
 ## [Unreleased] — UI polish from the Hallmark audit
 
 ### Changed

@@ -6,6 +6,14 @@ Clickable mockup of the front-desk screen (light): https://claude.ai/artifact/Nw
 
 Read this before changing any screen. It says what the app should look like, which tokens to use, and what to leave alone.
 
+## Status (13 Nov 2026)
+
+Built: build-order steps 1 to 6 for every screen (tokens and both themes with the toggle, fonts, glow and glass with the
+`ro-solid` fallback and the Solid panels switch, the sectioned floating sidebar, top bar with search and theme button,
+phone tab bar with More), the Today dashboard and Reports with charts, page-enter and hover motion, and the new sign-in
+page. Not yet: the tablet icon rail (tablets use the slide-over menu), route cross-fade, Lottie animations (step 8),
+count-up numbers. Chart colours: `--ro-chart-1..6` per theme, validated for colour blindness and contrast.
+
 ## 1. The idea in one paragraph
 
 Soft, airy and modern, like a good boutique resort's own app. Screens are made of **frosted glass panels** that float over a **slow colour glow** of sea green, sunrise coral and dusk lilac. In the dark theme the same glow becomes a lagoon at night. Corners are generous, shadows are soft, and the one strong colour is **lagoon teal**, used for the main action on each screen. Coral is the second colour and is used for money and highlights, never for buttons.
