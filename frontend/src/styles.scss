@@ -299,13 +299,10 @@ body::before {
     radial-gradient(36vmax 36vmax at 92% 88%, var(--ro-glow-2), transparent 70%),
     radial-gradient(30vmax 30vmax at 55% 45%, var(--ro-glow-3), transparent 72%);
   opacity: 0.55;
-  animation: ro-drift 24s ease-in-out infinite alternate;
+  // Still, on purpose: a moving glow under the frosted panels makes the browser re-blur them every frame, which
+  // drops frames on cheap phones and lets Material dialogs miss their opening frame (they then stay half-open).
 }
-@keyframes ro-drift {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(2vmax, -1.5vmax, 0) scale(1.06); }
-}
-html.ro-solid body::before { animation: none; opacity: 0.35; }
+html.ro-solid body::before { opacity: 0.35; }
 
 // Theme switch: a circle grows from the theme button (View Transitions), or a plain cross-fade elsewhere.
 ::view-transition-old(root) { animation: none; }
@@ -375,7 +372,7 @@ html {
 .mat-mdc-outlined-button:not(:disabled) { background: var(--ro-glass-strong); }
 
 // Dialogs and menus: frosted, over a soft blurred backdrop.
-.cdk-overlay-dark-backdrop { background: var(--ro-scrim); backdrop-filter: blur(3px); }
+.cdk-overlay-dark-backdrop { background: var(--ro-scrim); }
 .mat-mdc-dialog-surface { border: 1px solid var(--ro-glass-edge); }
 .mat-mdc-menu-panel, .mat-mdc-select-panel, .mat-mdc-autocomplete-panel { border: 1px solid var(--ro-line); }
 .mat-mdc-snack-bar-container .mat-mdc-snackbar-surface { box-shadow: var(--ro-shadow-card-lift); }

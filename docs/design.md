@@ -200,7 +200,7 @@ Motion should feel like water: smooth, never bouncy, and never in the way.
 
 | What | How | Time |
 |---|---|---|
-| Background glow | Three blurred blobs drift and scale slightly | 18 to 26 s loop, alternate |
+| Background glow | Three soft blobs, still (a moving glow under frosted panels re-blurs them every frame: dropped frames on cheap phones, and Material dialogs missed their opening frame in CI) | none |
 | Page enter | Cards rise 14 px into place, 70 ms apart | 600 ms, `cubic-bezier(.2,.8,.2,1)` |
 | KPI numbers | Count up from 0 on first load of the day only | 900 ms, ease-out |
 | Hover on cards and tiles | Lift 2 to 3 px, shadow grows | 200 ms |
