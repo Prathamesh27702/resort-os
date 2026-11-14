@@ -45,6 +45,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<PropertySetting> PropertySettings => Set<PropertySetting>();
+    public DbSet<Resort.Domain.Compliance.FormCRecord> FormCRecords => Set<Resort.Domain.Compliance.FormCRecord>();
     public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
@@ -195,6 +196,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, ICurren
     {
         b.Entity<Organization>().ToTable("organizations");
         b.Entity<Property>().ToTable("properties");
+        b.Entity<Resort.Domain.Compliance.FormCRecord>().ToTable("form_c_records");
         b.Entity<PropertySetting>(e =>
         {
             e.ToTable("property_settings");

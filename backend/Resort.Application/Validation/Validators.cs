@@ -68,8 +68,17 @@ public abstract class PropertyFieldsValidator<T> : AbstractValidator<T>
         System.Linq.Expressions.Expression<Func<T, string?>> gstState,
         System.Linq.Expressions.Expression<Func<T, string?>> email,
         System.Linq.Expressions.Expression<Func<T, decimal?>> lat,
-        System.Linq.Expressions.Expression<Func<T, decimal?>> lng)
+        System.Linq.Expressions.Expression<Func<T, decimal?>> lng,
+        System.Linq.Expressions.Expression<Func<T, string?>> fssai,
+        System.Linq.Expressions.Expression<Func<T, string?>> upiId,
+        System.Linq.Expressions.Expression<Func<T, string?>> upiPayee)
     {
+        RuleFor(fssai).Must(n => string.IsNullOrWhiteSpace(n) || Resort.Domain.Compliance.Upi.IsValidFssai(n.Replace(" ", "", StringComparison.Ordinal)))
+            .WithMessage("An FSSAI licence number has 14 digits, as printed on the licence (e.g. 10020042004371). Leave it empty if the property serves no food.");
+        RuleFor(upiId).Must(u => string.IsNullOrWhiteSpace(u) || Resort.Domain.Compliance.Upi.IsValidId(u.Trim()))
+            .WithMessage("A UPI ID looks like name@bank, e.g. palmgrove@okhdfcbank. Copy it from the property's UPI app or QR sticker.");
+        RuleFor(upiPayee).Must(n => string.IsNullOrWhiteSpace(n) || n.Trim().Length is >= 2 and <= 60)
+            .WithMessage("The name shown to the payer must have 2 to 60 characters.");
         RuleFor(name).NotEmpty().MaximumLength(200);
         RuleFor(type).Must(t => PropertyTypes.All.Contains(t))
             .WithMessage($"Property type must be one of: {string.Join(", ", PropertyTypes.All)}.");
@@ -91,7 +100,7 @@ public sealed class CreatePropertyRequestValidator : PropertyFieldsValidator<Cre
         RuleFor(x => x.Code).NotEmpty().Matches("^[A-Za-z0-9_]{2,30}$")
             .WithMessage("Code: 2–30 letters, digits or underscore.");
         PropertyRules(x => x.Name, x => x.PropertyType, x => x.Timezone, x => x.Currency, x => x.CountryCode,
-            x => x.GstStateCode, x => x.Email, x => x.Latitude, x => x.Longitude);
+            x => x.GstStateCode, x => x.Email, x => x.Latitude, x => x.Longitude, x => x.FssaiLicenceNo, x => x.UpiId, x => x.UpiPayeeName);
     }
 }
 
@@ -99,7 +108,7 @@ public sealed class UpdatePropertyRequestValidator : PropertyFieldsValidator<Upd
 {
     public UpdatePropertyRequestValidator() =>
         PropertyRules(x => x.Name, x => x.PropertyType, x => x.Timezone, x => x.Currency, x => x.CountryCode,
-            x => x.GstStateCode, x => x.Email, x => x.Latitude, x => x.Longitude);
+            x => x.GstStateCode, x => x.Email, x => x.Latitude, x => x.Longitude, x => x.FssaiLicenceNo, x => x.UpiId, x => x.UpiPayeeName);
 }
 
 public sealed class PropertySettingKeyValidator : AbstractValidator<string>

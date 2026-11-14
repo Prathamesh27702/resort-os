@@ -1,6 +1,6 @@
 # Sprints
 
-> **Current sprint: [Sprint 25 — Zoho Books, Tally export, e-invoice reconciliation](sprint-25-zoho-books-tally-export-e-invoice.md)** · status: ⚪ Planned
+> **Current sprint: [Sprint 30 — India readiness — FSSAI and UPI on bills, printed bill and kitchen ticket, Form C](sprint-30-india-readiness.md)** · status: 🟡 In review
 >
 > Change the current sprint by editing `current:` in [sprints.yml](sprints.yml) and running
 > `python3 scripts/github/sync-sprints.py docs`.
@@ -41,6 +41,10 @@ Each guide starts with **Where this sprint stands**: what is happening now, what
 | 27 | [Direct booking website](sprint-27-direct-booking-website.md) | Phase 9 | L | ⚪ Planned |
 | 28 | [Offline PWA and security hardening](sprint-28-offline-pwa-and-security-hardening.md) | Phase 10 | L | ⚪ Planned |
 | 29 | [Backups, monitoring, CI/CD to production, acceptance](sprint-29-backups-monitoring-ci-cd-to-production.md) | Phase 10 | L | ⚪ Planned |
+| 30 | [India readiness — FSSAI and UPI on bills, printed bill and kitchen ticket, Form C](sprint-30-india-readiness.md) | Phase 10 | M | 🟡 In review |
+| 31 | [Groups, company accounts, day close and bill handling](sprint-31-groups-company-accounts-day-close-and.md) | Phase 10 | L | ⚪ Planned |
+| 32 | [Guest self-service, languages and the DPDP Act](sprint-32-guest-self-service-languages-and-the.md) | Phase 10 | L | ⚪ Planned |
+| 33 | [Online food orders and QR table ordering (only if wanted)](sprint-33-online-food-orders-and-qr-table-ordering.md) | Phase 10 | L | ⚪ Planned |
 
 Sizes assume a 2-week sprint with two developers: S ≈ 1 dev-week, M ≈ 2, L ≈ 3–4. Sprints that don't depend on each other
 (for example 13 Housekeeping and 17 Employees) can run in parallel with a bigger team.

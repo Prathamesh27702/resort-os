@@ -54,6 +54,16 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
         </div>
       }
 
+      @if (dash(); as d) {
+        @if (d.formCPending && canFormC()) {
+          <a [class]="'formc' + (d.formCOverdue ? ' late' : '')" routerLink="/form-c" data-testid="form-c-card">
+            <mat-icon>{{ d.formCOverdue ? 'warning' : 'badge' }}</mat-icon>
+            <span><b>{{ d.formCPending }} Form C to file</b> for foreign guests@if (d.formCOverdue) {, {{ d.formCOverdue }} past the 24 hours}. The FRRO must get each within 24 hours of arrival.</span>
+            <span class="go">Open</span>
+          </a>
+        }
+      }
+
       @if (canDrawer()) { <app-cash-drawer-panel /> }
 
       <nav class="tabs" aria-label="Front desk lists">
@@ -171,6 +181,10 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
     .tile span { color: var(--ro-mute); font-size: .85rem; }
     .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; font-size: .8rem; }
     .tile small { color: var(--ro-mute); font-size: .8rem; }
+    .formc { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); border-radius: var(--ro-radius);
+             background: var(--ro-warn-bg); color: var(--ro-warn-strong); border: 1px solid var(--ro-warn-line); text-decoration: none; }
+    .formc.late { background: var(--ro-error-bg); color: var(--ro-error-strong); border-color: var(--ro-error-line); }
+    .formc .go { margin-left: auto; font-weight: 600; text-decoration: underline; }
     .tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); overflow-x: auto; padding: 4px; border-radius: 999px; width: fit-content; max-width: 100%;
             box-sizing: border-box; background: var(--ro-glass); border: 1px solid var(--ro-glass-edge); scrollbar-width: none; }
     .tabs a { padding: 8px 16px; color: var(--ro-ink-soft); text-decoration: none; border-radius: 999px; white-space: nowrap; font-weight: 500; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; }
@@ -255,6 +269,7 @@ export class FrontDeskPage {
   canCheckIn = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkin', this.props.current()?.id); });
   canCheckOut = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkout', this.props.current()?.id); });
   canWalkIn = computed(() => this.canCheckIn() && this.auth.can('reservation.create', this.props.current()?.id));
+  canFormC = computed(() => { this.auth.me(); return this.auth.can('guest_document.read', this.props.current()?.id); });
   canDrawer = computed(() => { this.auth.me(); return this.auth.can('payment.read', this.props.current()?.id); });
   canFolio = computed(() => { this.auth.me(); return this.auth.can('folio.read', this.props.current()?.id); });
   canHousekeeping = computed(() => { this.auth.me(); return this.auth.can('housekeeping.update', this.props.current()?.id); });

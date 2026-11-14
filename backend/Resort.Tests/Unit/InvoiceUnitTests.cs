@@ -137,7 +137,7 @@ public class InvoiceUnitTests
     [Fact]
     public void A_B2B_invoice_prints_both_GSTINs_the_place_of_supply_the_SAC_and_each_tax_with_its_rate()
     {
-        var doc = new InvoicePrinter().Invoice(Sample("27AAPFU0939F1ZV"), ("+91 832 000 0000", "desk@example.com"));
+        var doc = new InvoicePrinter().Invoice(Sample("27AAPFU0939F1ZV"), new PropertyPrint("+91 832 000 0000", "desk@example.com"));
         Assert.Equal(("TAX INVOICE", "BEACH/2627/00007", "23 Oct 2026", "BEACH-2627-00007.pdf"), (doc.Title, doc.Number, doc.Date, doc.FileName));
         Assert.Contains("GSTIN 30AABCT1234C1Z9", doc.Supplier.Lines);
         Assert.Contains("GSTIN 27AAPFU0939F1ZV", doc.Customer!.Lines);
@@ -154,13 +154,26 @@ public class InvoiceUnitTests
     [Fact]
     public void A_B2C_invoice_says_unregistered_and_a_cancelled_one_says_cancelled_and_a_bill_of_supply_shows_no_GST()
     {
-        var b2c = new InvoicePrinter().Invoice(Sample(null, InvoiceStatuses.Cancelled), (null, null));
+        var b2c = new InvoicePrinter().Invoice(Sample(null, InvoiceStatuses.Cancelled), new PropertyPrint(null, null));
         Assert.Contains("Unregistered (B2C)", b2c.Customer!.Lines);
         Assert.Equal("CANCELLED", b2c.Watermark);
 
-        var supply = new InvoicePrinter().Invoice(Sample(null, type: DocumentTypes.BillOfSupply), (null, null));
+        var supply = new InvoicePrinter().Invoice(Sample(null, type: DocumentTypes.BillOfSupply), new PropertyPrint(null, null));
         Assert.Equal("BILL OF SUPPLY", supply.Title);
         Assert.DoesNotContain(supply.Tables[0].Columns, c => c.Header == "GST");
         Assert.Contains("Composition taxable person, not eligible to collect tax on supplies.", supply.Notes);
+    }
+
+    [Fact]
+    public void An_invoice_prints_the_FSSAI_licence_number_and_the_UPI_QR_when_the_property_has_them()
+    {
+        var qr = new PrintQr([1, 2, 3], "Scan to pay ₹3,675.00 by UPI", ["palmgrove@okhdfcbank"]);
+        var doc = new InvoicePrinter().Invoice(Sample(null), new PropertyPrint(null, null, "10020099000456"), qr);
+        Assert.Contains("FSSAI Lic. No. 10020099000456", doc.Supplier.Lines);
+        Assert.Same(qr, doc.Qr);
+
+        var plain = new InvoicePrinter().Invoice(Sample(null), new PropertyPrint(null, null));
+        Assert.DoesNotContain(plain.Supplier.Lines, l => l.StartsWith("FSSAI", StringComparison.Ordinal));
+        Assert.Null(plain.Qr);
     }
 }

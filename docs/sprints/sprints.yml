@@ -5,7 +5,7 @@
 # status: planned | in-progress | in-review | done
 # size:   S (≈1 dev-week) | M (≈2 dev-weeks) | L (≈3–4 dev-weeks)  — for a 2-week sprint with 2 developers
 
-current: 25
+current: 30
 
 sprints:
 
@@ -2098,6 +2098,9 @@ sprints:
     - "IAccountingProvider + ZohoBooksProvider; external_id/sync_status/last_sync_at/sync_error"
     - "Sync customers, items, taxes, invoices, credit notes, payments, expenses via outbox"
     - "Tally-compatible XML/CSV export"
+    - "GSTR-1 export for the accountant: B2B invoices, B2C totals by rate, credit notes and the HSN/SAC summary for a month, as the GST portal's offline-tool CSV/JSON (market comparison of 13 Nov 2026)"
+    - "GST invoice for walk-in restaurant bills when the guest asks for one with their GSTIN (open point from Sprint 14)"
+    - "Print the IRN and the e-invoice QR on the invoice PDF next to the UPI QR added in Sprint 30"
   tests:
     - Integration — retry after timeout creates no duplicate invoice (fake Zoho server)
   acceptance:
@@ -2123,6 +2126,9 @@ sprints:
     - "IChannelManager; provider chosen in Sprint 0"
     - "OTA reservation id + event id dedupe; safe failure/reconciliation when no room"
     - "Inventory and rate push jobs"
+    - "Choose a channel manager that Indian properties use and that covers MakeMyTrip, Goibibo, Agoda and Booking.com: STAAH, AxisRooms or eZee Centrix (market comparison of 13 Nov 2026)"
+    - "Push the prices the simple pricing rules of Sprint 32 produce, so the OTAs and the desk never quote different rates"
+    - "An OTA booking for a foreign guest opens its Form C at check-in like any other (Sprint 30); map the OTA's nationality field to the guest profile"
   tests:
     - OTA webhook — duplicate → no duplicate reservation
     - OTA webhook — no availability → reconciliation queue
@@ -2156,6 +2162,9 @@ sprints:
   tasks:
     - "Separate public API surface; captcha/turnstile on pay step"
     - "SEO-friendly pages served via Cloudflare"
+    - "UPI first on the pay step (UPI intent on phones, QR on desktops) through Razorpay, so the payment is matched to the booking automatically"
+    - "The confirmation carries the online check-in link of Sprint 32, so guests send their ID before they arrive"
+    - "Guest pages in English and Hindi; prices shown with GST included, the way Indian guests expect"
   tests:
     - E2E — booking + payment (brief §73 start)
   acceptance:
@@ -2179,6 +2188,8 @@ sprints:
     - "TOTP MFA for OWNER/GM/ACCOUNTANT"
     - "OWASP Top 10 test pack (docs/SECURITY.md table) incl. SSRF on webhook/URL inputs"
     - "Shared cache for access/permissions if >1 API instance"
+    - "Restaurant billing keeps working when the connection drops: orders, KOT printing and the printed bill with FSSAI number and UPI QR (Sprint 30) work offline and sync when back, the main reason Indian restaurants pick an offline POS; settlement to a room still needs the connection"
+    - "Aadhaar offline verification (the QR on the card, or UIDAI's offline e-KYC where it is open to hotels) so reception doesn't keep a photocopy"
   tests:
     - Security — every OWASP row has an automated test or a documented manual check
   acceptance:
@@ -2203,6 +2214,8 @@ sprints:
     - "Alerts: payment failures, OTA failures, DB failures, backup failures, error rate, auth attacks"
     - "E2E suite for §73, §74, §75 on staging"
     - "User manual and admin manual"
+    - "DPDP checklist before go-live: privacy notice shown, consent kept, retention periods running, breach log and the person to contact named (the DPDP Rules apply fully from about May 2027; the pieces are built in Sprint 32)"
+    - "Go-live checklist lines for India: GST notification numbers verified by the accountant, FSSAI licence number and UPI ID set on every property, a real Form C filed from the sheet"
   tests:
     - E2E — brief §73, §74, §75 green on staging
     - Restore drill documented with timings
@@ -2211,3 +2224,155 @@ sprints:
   debug: []
   demo:
     - Full guest journey on staging
+
+- id: 30
+  title: India readiness — FSSAI and UPI on bills, printed bill and kitchen ticket, Form C
+  phase: 10
+  status: in-review
+  size: M
+  module: Compliance
+  feature: india
+  depends: [12, 14, 24]
+  goal: Close the must-have gaps found against Indian hotel and restaurant software in the market comparison of 13 Nov 2026.
+  client: "Restaurant bills print on a thermal printer with the FSSAI licence number and a UPI QR the guest scans; kitchen tickets print; every foreign guest gets a Form C sheet with a 24-hour deadline, a reminder and a register."
+  progress:
+    now: "Built and waiting for the owner's review. Aadhaar masking (last 4 digits only) and the calendar date boxes, the two other must-haves of the comparison, were already in place."
+    done:
+      - "Migration V027: properties.fssai_licence_no, upi_id, upi_payee_name; form_c_records (one per foreign guest and stay, sheet encrypted, never deleted); the form_c_reminder job"
+      - "UPI: the upi://pay link and its QR (made on the server, no money moves through the app) on the restaurant bill, in the restaurant Paid dialog, in the folio Take payment dialog, on the invoice PDF for the balance still owed, and as a preview in the property's settings"
+      - "FSSAI licence number on the restaurant bill and on the invoice PDF"
+      - "Printed restaurant bill (80 mm or 58 mm) with GSTIN, FSSAI number, each tax and the UPI QR; printed kitchen ticket from the order and from the kitchen display"
+      - "Form C: a sheet opened at check-in for each guest whose nationality isn't Indian, filled in from the profile, passport, visa and booking; copy buttons with dates the way the FRRO portal takes them; mark as filed with the FRRO number, not needed with a reason, reopen; the foreign guest register as CSV; a count on the front desk; a bell and email reminder every morning"
+      - "Dev seed S022: a made-up FSSAI number and UPI ID on the demo property"
+      - "Sprint plan: the remaining suggestions of the comparison written into Sprints 25 to 29 and the new Sprints 31 to 33"
+    files:
+      - "database/migrations/V027__india_readiness.sql; database/seed/dev/S022__india_readiness.sql; database/queries/check-sprint-30.sql"
+      - "backend/Resort.Domain/Compliance/ (Upi.cs, FormC.cs); backend/Resort.Contracts/ComplianceContracts.cs"
+      - "backend/Resort.Application/ — Compliance/ (UpiService, FormCService), Restaurant/OrderService.cs, Invoicing/ (InvoicePrinter, InvoiceService, Printing), Notifications/ (NotificationCatalog, NotificationJobs), FrontDesk/FrontDeskService.cs, Guests/GuestService.cs, Properties/PropertyService.cs"
+      - "backend/Resort.Infrastructure/ — Compliance/QrCodes.cs, Documents/PdfRenderer.cs; backend/Resort.Api/Endpoints/ComplianceEndpoints.cs"
+      - "backend/Resort.Tests/ — Integration/IndiaReadinessTests.cs, Unit/IndiaUnitTests.cs"
+      - "frontend/src/app/features/india/ (india.api.ts, upi-qr.ts, receipt.ts, receipt-dialog.ts, form-c.page.ts, form-c-sheet.page.ts, india.spec.ts); restaurant/order.page.ts, order-dialogs.ts, kitchen.page.ts; payments/payment-dialogs.ts; settings/properties/property-edit.page.ts; front-desk/front-desk.page.ts; layout/nav.ts; app.routes.ts"
+      - "frontend/e2e/sprint-30.spec.ts; scripts/check-api.mjs (Sprint 30 checks)"
+      - "docs/INDIA.md, docs/API.md, docs/DATABASE.md, docs/database/schema-sprint-30.md, docs/architecture/system-design.md, docs/RUN_AND_TEST.md, docs/sprints/REVIEWING.md, sprint-30-screens/"
+    results:
+      - "Backend: 664 passed, 0 failed on real PostgreSQL 16 (48 new: FSSAI and UPI checked under their fields; the QR link with the exact amount; the bill until it is paid; a foreign guest's check-in opens one Form C, refused with gaps naming them, filed, reopened, not needed; the register without a full passport number; the reminder run twice sends once; anonymising empties the sheet)"
+      - "Frontend: 145 of 145 unit tests passed (10 new); ESLint clean; production build OK"
+      - "Browser tests: Sprint 30's 7 steps pass (settings with a wrong value explained; the bill on 80 and 58 mm; the kitchen ticket and Paid by UPI; Form C on the front desk; the sheet filled, gaps named, filed; the Filed list and the register; a 360 px phone)"
+  scope:
+    tables: [form_c_records]
+    api:
+      - "/api/v1/properties/{propertyId}/upi-qr"
+      - "/api/v1/properties/{propertyId}/orders/{id}/bill"
+      - "/api/v1/properties/{propertyId}/form-c/*"
+    screens:
+      - "/form-c and /form-c/{id}"
+      - "/restaurant/orders/{id} (Print bill, print ticket, UPI QR when paying)"
+      - "/settings/properties/{id} (Food licence and UPI)"
+  tasks:
+    - "[done] FSSAI licence number and UPI ID per property, with their checks explained under the field"
+    - "[done] UPI QR for an amount: restaurant bill, Paid dialog, Take payment dialog, invoice PDF"
+    - "[done] Thermal bill (80 mm and 58 mm) and kitchen ticket printing from the browser"
+    - "[done] Form C sheet per foreign guest and stay, 24-hour deadline, reminder job, register"
+    - "[done] The comparison's later suggestions written into the plan"
+  tests:
+    - Integration — a foreign guest's check-in opens one Form C; filing with gaps is refused naming the gaps
+    - Integration — the reminder job run twice sends once
+    - Unit — the UPI link carries the ID, the name and the exact amount
+  acceptance:
+    - A restaurant bill prints with the FSSAI number and a UPI QR that a UPI app reads with the right amount
+    - A foreign guest checked in appears under Form C with 24 hours to file, and is marked as filed with the FRRO number
+  debug: []
+  demo:
+    - Print a restaurant bill → scan the QR with a UPI app
+    - Check in a foreign guest → fill the Form C sheet → mark as filed → download the register
+
+- id: 31
+  title: Groups, company accounts, day close and bill handling
+  phase: 10
+  status: planned
+  size: L
+  module: FrontOffice
+  feature: groups
+  depends: [8, 12, 14, 23]
+  goal: What Indian hotel software has for weddings, corporate guests and the end of the day (market comparison of 13 Nov 2026, the should-have list).
+  client: "A wedding or a company books many rooms on one bill; companies and travel agents pay on credit; the day is closed every night with a summary on the owner's WhatsApp; restaurant bills can be split, merged and moved."
+  scope:
+    tables: [reservation_groups, company_accounts, company_ledger_entries, day_closes]
+    screens:
+      - "/groups"
+      - "/companies"
+      - "/day-close"
+      - "/restaurant/orders/{id} (split, merge, move table)"
+      - "/reports (payment modes, outstanding by company, item-wise sales, cash book)"
+  tasks:
+    - "Group and wedding blocks: hold many rooms under one name, a rooming list, a master bill that takes chosen charges of every room, one invoice or one per room"
+    - "Company and travel-agent accounts: credit limit, bill to company at check-out, statement, payments against several invoices, TDS deducted recorded, commission for agents"
+    - "Night audit / day close: the checks (guests not checked out, open restaurant bills, cash drawer not counted, room charges not posted), then the business date moves; the day's summary to the owner on WhatsApp and email"
+    - "Split a restaurant bill by dish or by people, merge two tables, move an order to another table, with the kitchen told"
+    - "Reports Indian owners ask for: payment-mode summary (cash, UPI, card, room, company), outstanding by company with ageing, item-wise and category-wise sales, daily cash book"
+    - "Service charge only as a clearly optional line the guest can refuse (CCPA guidelines of July 2022); off by default"
+  tests:
+    - Integration — a master bill never charges the same room night twice
+    - Integration — the day can't be closed twice, and not while a required check fails without a reason
+  acceptance:
+    - A 10-room wedding block is checked in from a rooming list and leaves on one invoice
+  debug: []
+  demo:
+    - Wedding block → rooming list → master bill → day close summary on WhatsApp
+
+- id: 32
+  title: Guest self-service, languages and the DPDP Act
+  phase: 10
+  status: planned
+  size: L
+  module: Guests
+  feature: guest-experience
+  depends: [24, 27, 30]
+  goal: What guests and staff in India now expect on their phone, and what the Digital Personal Data Protection Act asks for (market comparison of 13 Nov 2026).
+  client: "Guests check in from their phone before they arrive and get their invoice on WhatsApp; staff use their phone screens in Hindi, Marathi or Konkani; guest data is kept and erased as the DPDP Act requires."
+  scope:
+    tables: [guest_checkins, feedback_responses, privacy_notices, retention_rules, data_breach_log, pricing_rules]
+    screens:
+      - "public: online check-in, feedback"
+      - "/settings/privacy"
+      - "/settings/pricing-rules"
+  tasks:
+    - "Online check-in link on WhatsApp: the guest sends ID, signature and arrival time; a digital guest registration card (C-form details for foreign guests feed the Form C sheet of Sprint 30)"
+    - "Invoice PDF and payment receipt to the guest on WhatsApp at check-out"
+    - "Feedback request after check-out; a happy guest is asked for a Google review, an unhappy one reaches the manager first"
+    - "Hindi, Marathi and Konkani on the staff phone screens (housekeeping tasks, kitchen display, attendance, leave); English stays for the desk"
+    - "DPDP: a privacy notice in plain words at every point data is collected, consent kept with its notice version, retention periods with automatic erasure (ID documents a set time after check-out, Form C sheets kept as long as the law asks), a breach log with the 72-hour report to the Data Protection Board, a parent's consent for a child's data, a named person to contact"
+    - "Simple pricing rules: weekend, long weekend and festival prices, a price rise when occupancy passes a level, shown on the rate calendar before they apply"
+  tests:
+    - Integration — erasure removes what the retention rule names and nothing the law says to keep
+    - E2E — online check-in on a 360 px phone
+  acceptance:
+    - A guest completes online check-in on their phone and reception only hands over the key
+  debug: []
+  demo:
+    - Booking → WhatsApp link → online check-in → key handed over → invoice on WhatsApp
+
+- id: 33
+  title: Online food orders and QR table ordering (only if wanted)
+  phase: 10
+  status: planned
+  size: L
+  module: Restaurant
+  feature: online-orders
+  depends: [14, 30]
+  goal: Take orders from Swiggy and Zomato and from a QR code on the table, for properties whose restaurant also serves outside guests (market comparison of 13 Nov 2026, the could-have list). The owner decides whether this sprint is done at all.
+  client: "Swiggy and Zomato orders arrive in the kitchen by themselves, and guests can order from their table by scanning a QR."
+  scope:
+    tables: [online_order_channels, online_orders, table_qr_codes]
+    external:
+      - "An aggregator hub such as UrbanPiper (one integration for Swiggy and Zomato)"
+  tasks:
+    - "Aggregator orders through one hub: menu and price sync, item on or off, an order accepted into the kitchen display and the bill, commission recorded"
+    - "QR on each table and in each room: the menu, an order that reaches the waiter to confirm, the bill and its UPI QR on the guest's phone"
+  tests:
+    - Integration — an aggregator order delivered twice makes one order
+  acceptance:
+    - A test Swiggy order prints its kitchen ticket once
+  debug: []
+  demo:
+    - Scan the table QR → order → kitchen ticket → pay by UPI

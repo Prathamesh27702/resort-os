@@ -43,6 +43,12 @@ public class Property : AuditableEntity, IOrganizationScoped, ISoftDelete, IVers
     public TimeOnly CheckOutTime { get; set; } = new(11, 0);
     public decimal? Latitude { get; set; }
     public decimal? Longitude { get; set; }
+    /// <summary>The 14-digit FSSAI licence or registration number, printed on food bills and invoices (Sprint 30).</summary>
+    public string? FssaiLicenceNo { get; set; }
+    /// <summary>The UPI ID (VPA) the property collects on, e.g. palmgrove@okhdfcbank: the QR on bills is made from it.</summary>
+    public string? UpiId { get; set; }
+    /// <summary>The name the guest's UPI app shows; the property's name when not set.</summary>
+    public string? UpiPayeeName { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
     public uint Version { get; set; }

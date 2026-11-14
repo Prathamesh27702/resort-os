@@ -27,7 +27,7 @@ public sealed record FrontDeskRoomDto(
 public sealed record FrontDeskDashboardDto(
     DateOnly Today, int ArrivalsExpected, int ArrivalsCheckedIn, int DeparturesExpected, int DeparturesCheckedOut, int Overdue,
     int InHouseStays, int InHouseGuests, int RoomsTotal, int RoomsOccupied, int RoomsReady, int RoomsNotReady, int RoomsBlocked,
-    IReadOnlyList<FrontDeskBoardRoomDto> Rooms);
+    IReadOnlyList<FrontDeskBoardRoomDto> Rooms, int FormCPending = 0, int FormCOverdue = 0);
 
 /// <summary>A room (or a dorm bed) on the reception board. Occupancy: VACANT, OCCUPIED (a guest checked in),
 /// ARRIVING (a booking arrives today and isn't checked in yet), BLOCKED (an active block tonight) or INACTIVE.

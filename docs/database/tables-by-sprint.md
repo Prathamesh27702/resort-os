@@ -2,7 +2,7 @@
 
 _Generated from docs/sprints/sprints.yml — do not edit by hand._
 
-157 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
+171 tables planned. Column-level definitions are written into [../DATABASE.md](../DATABASE.md) by the sprint that creates them.
 
 | Table | Sprint | Status |
 |---|---|---|
@@ -163,3 +163,17 @@ _Generated from docs/sprints/sprints.yml — do not edit by hand._
 | `ota_reservations` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
 | `ota_events` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
 | `ota_inventory_pushes` | [Sprint 26](../sprints/sprint-26-ota-channel-manager.md) | ⚪ Planned |
+| `form_c_records` | [Sprint 30](../sprints/sprint-30-india-readiness.md) | 🟡 In review |
+| `reservation_groups` | [Sprint 31](../sprints/sprint-31-groups-company-accounts-day-close-and.md) | ⚪ Planned |
+| `company_accounts` | [Sprint 31](../sprints/sprint-31-groups-company-accounts-day-close-and.md) | ⚪ Planned |
+| `company_ledger_entries` | [Sprint 31](../sprints/sprint-31-groups-company-accounts-day-close-and.md) | ⚪ Planned |
+| `day_closes` | [Sprint 31](../sprints/sprint-31-groups-company-accounts-day-close-and.md) | ⚪ Planned |
+| `guest_checkins` | [Sprint 32](../sprints/sprint-32-guest-self-service-languages-and-the.md) | ⚪ Planned |
+| `feedback_responses` | [Sprint 32](../sprints/sprint-32-guest-self-service-languages-and-the.md) | ⚪ Planned |
+| `privacy_notices` | [Sprint 32](../sprints/sprint-32-guest-self-service-languages-and-the.md) | ⚪ Planned |
+| `retention_rules` | [Sprint 32](../sprints/sprint-32-guest-self-service-languages-and-the.md) | ⚪ Planned |
+| `data_breach_log` | [Sprint 32](../sprints/sprint-32-guest-self-service-languages-and-the.md) | ⚪ Planned |
+| `pricing_rules` | [Sprint 32](../sprints/sprint-32-guest-self-service-languages-and-the.md) | ⚪ Planned |
+| `online_order_channels` | [Sprint 33](../sprints/sprint-33-online-food-orders-and-qr-table-ordering.md) | ⚪ Planned |
+| `online_orders` | [Sprint 33](../sprints/sprint-33-online-food-orders-and-qr-table-ordering.md) | ⚪ Planned |
+| `table_qr_codes` | [Sprint 33](../sprints/sprint-33-online-food-orders-and-qr-table-ordering.md) | ⚪ Planned |
