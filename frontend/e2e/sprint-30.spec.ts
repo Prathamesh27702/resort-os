@@ -55,7 +55,16 @@ test.beforeAll(async ({ browser }: { browser: Browser }) => {
   } });
   expect(g.status(), await g.text()).toBe(201);
   const avail = await (await api.get(`/api/v1/properties/${pid}/availability?from=${today}&to=${addDays(today, 2)}&adults=1&children=0`)).json();
-  const type = (avail.types as FreeType[]).find(t => t.inventoryMode === 'UNIT' && t.freeRooms.length >= 1)!;
+  const unitTypes = (avail.types as FreeType[]).filter(t => t.inventoryMode === 'UNIT');
+  let type = unitTypes.find(t => t.freeRooms.length >= 1);
+  if (!type) {
+    // After the earlier review scripts every room can be taken for tonight, so this script brings its own.
+    const made = await api.post(`/api/v1/properties/${pid}/rooms`, { data: {
+      code: `F${runId}`.slice(0, 20), name: `Form C room ${runId}`, accommodationTypeId: unitTypes[0].accommodationTypeId, floor: null, notes: null, sortOrder: 9000 } });
+    expect(made.status(), await made.text()).toBe(201);
+    const room = await made.json();
+    type = { ...unitTypes[0], freeRooms: [{ id: room.id, name: room.name }] };
+  }
   const source = (await (await api.get(`/api/v1/properties/${pid}/reservation-sources`)).json()).find((s: { code: string }) => s.code === 'PHONE').id;
   const res = await api.post(`/api/v1/properties/${pid}/reservations`, {
     headers: { 'Idempotency-Key': `e2e-s30-${runId}` },
