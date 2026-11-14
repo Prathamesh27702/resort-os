@@ -9,6 +9,7 @@ using Resort.Domain.Activities;
 using Resort.Domain.Transport;
 using Resort.Domain.Finance;
 using Resort.Domain.Audit;
+using Resort.Domain.Compliance;
 using Resort.Domain.Folios;
 using Resort.Domain.FrontDesk;
 using Resort.Domain.Guests;
@@ -35,6 +36,7 @@ public interface IAppDbContext
     DbSet<Organization> Organizations { get; }
     DbSet<Property> Properties { get; }
     DbSet<PropertySetting> PropertySettings { get; }
+    DbSet<FormCRecord> FormCRecords { get; }
     DbSet<SystemSetting> SystemSettings { get; }
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }

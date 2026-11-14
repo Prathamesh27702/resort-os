@@ -14,6 +14,8 @@ export interface Property {
   gstStateCode: string | null; postalCode: string | null; countryCode: string; phone: string | null; email: string | null;
   checkInTime: string; checkOutTime: string; latitude: number | null; longitude: number | null;
   isActive: boolean; localDate: string; version: number;
+  /** Sprint 30: the FSSAI licence number on food bills, and the UPI ID bills show as a QR. */
+  fssaiLicenceNo: string | null; upiId: string | null; upiPayeeName: string | null;
 }
 
 export interface RoleGrant { roleCode: string; propertyId: string | null; }
@@ -243,6 +245,8 @@ export interface FrontDeskDashboard {
   today: string; arrivalsExpected: number; arrivalsCheckedIn: number; departuresExpected: number; departuresCheckedOut: number;
   overdue: number; inHouseStays: number; inHouseGuests: number; roomsTotal: number; roomsOccupied: number; roomsReady: number;
   roomsNotReady: number; roomsBlocked: number; rooms: FrontDeskBoardRoom[];
+  /** Sprint 30: Form C sheets still to file for foreign guests, and how many are past their 24 hours. */
+  formCPending: number; formCOverdue: number;
 }
 export interface RoomOption {
   unitId: string; unitCode: string; unitName: string; bedId: string | null; bedCode: string | null; accommodationTypeId: string;

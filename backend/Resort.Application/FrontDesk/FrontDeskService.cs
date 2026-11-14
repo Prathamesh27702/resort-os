@@ -26,7 +26,8 @@ namespace Resort.Application.FrontDesk;
 /// </summary>
 public sealed class FrontDeskService(
     IAppDbContext db, ICurrentUser caller, AuditContext audit, TimeProvider clock, ReservationService reservations, GuestService guests,
-    CallerAccess access, IFolioBalances folios, FolioPosting posting, Invoicing.InvoiceService invoicing, HousekeepingState housekeeping)
+    CallerAccess access, IFolioBalances folios, FolioPosting posting, Invoicing.InvoiceService invoicing, HousekeepingState housekeeping,
+    Compliance.FormCService formC)
 {
     public const string AllowCheckoutWithBalance = "frontdesk.allow_checkout_with_balance";
     public const string AllowCheckinWhenNotReady = "frontdesk.allow_checkin_when_not_ready";
@@ -132,6 +133,7 @@ public sealed class FrontDeskService(
             }
         }
         var active = board.Where(b => b.Occupancy != "INACTIVE").ToList();
+        var (formCPending, formCOverdue) = await formC.CountsAsync(propertyId, clock.GetUtcNow(), ct);
         return new FrontDeskDashboardDto(today,
             arrivals.Count, arrivals.Count(a => a.Status is ReservationStatuses.CheckedIn or ReservationStatuses.CheckedOut),
             departures.Count, departures.Count(d => d.Status == ReservationStatuses.CheckedOut), departures.Count(d => d.Overdue),
@@ -139,7 +141,7 @@ public sealed class FrontDeskService(
             active.Count, active.Count(b => b.Occupancy == "OCCUPIED"),
             active.Count(b => b.Occupancy is "VACANT" or "ARRIVING" && b.Housekeeping == HousekeepingStatuses.Ready),
             active.Count(b => b.Housekeeping != HousekeepingStatuses.Ready), active.Count(b => b.Occupancy == "BLOCKED"),
-            board);
+            board, formCPending, formCOverdue);
     }
 
     // ------------------------------------------------------------------ rooms a booking's room can go to
@@ -330,6 +332,9 @@ public sealed class FrontDeskService(
 
         // The stay goes on the bill: the whole stay now, or tonight only when the property posts room nights nightly.
         await posting.PostDueRoomNightsAsync(property, reservation, ct);
+
+        // A foreign guest has arrived: their Form C sheet opens now and the 24 hours to file it start (Sprint 30).
+        await formC.OpenForStayAsync(property, reservation, now, ct);
     }
 
     // ------------------------------------------------------------------ check-out

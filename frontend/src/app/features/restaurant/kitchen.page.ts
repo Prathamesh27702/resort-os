@@ -1,6 +1,9 @@
 import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { KotTicket } from '../india/receipt';
+import { ReceiptData, ReceiptDialog } from '../india/receipt-dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth.service';
@@ -16,7 +19,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
  */
 @Component({
   selector: 'app-kitchen',
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatSnackBarModule],
+  imports: [RouterLink, MatButtonModule, MatDialogModule, MatIconModule, MatSnackBarModule],
   template: `
     <div class="page kds">
       <div class="head">
@@ -41,6 +44,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
                   <b class="num">{{ k.number }}</b>
                   <span class="where">{{ k.where }}</span>
                   <span class="age">{{ age(k) }} min</span>
+                  <button mat-icon-button class="kprint" (click)="print(k)" [attr.aria-label]="'Print ticket ' + k.number"><mat-icon>print</mat-icon></button>
                 </header>
                 <ul>
                   @for (i of k.items; track i.id) {
@@ -83,7 +87,7 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
     .PREPARING .ticket { border-top-color: var(--ro-info-bright); } .READY .ticket { border-top-color: var(--ro-ok-mid); }
     .ticket.late { border-top-color: var(--ro-error); box-shadow: 0 0 0 2px var(--ro-error) inset; }
     .ticket.late .age { color: var(--ro-error); font-weight: 700; }
-    header { display: flex; align-items: baseline; gap: var(--space-2); }
+    header { display: flex; align-items: center; gap: var(--space-2); } .kprint { margin: -8px -8px -8px 0; }
     .num { font-size: 1.2rem; } .where { font-weight: 600; } .age { margin-left: auto; font-variant-numeric: tabular-nums; }
     ul { list-style: none; margin: 0; padding: 0; font-size: 1.05rem; }
     li { padding: var(--space-1) 0; border-bottom: 1px dashed var(--ro-line-mid); }
@@ -102,6 +106,18 @@ import { FOOD_LABEL, KITCHEN_REFRESH_MS, LATE_MINUTES, RestaurantApi, ageMinutes
   `,
 })
 export class KitchenPage {
+  private receiptDialog = inject(MatDialog);
+
+  /** The ticket on paper, for kitchens that work from a printer next to the pass. */
+  print(k: Kot) {
+    const kot: KotTicket = {
+      number: k.number, orderNumber: k.orderNumber, where: k.where, sentAt: k.sentAt, sentByName: k.sentByName, note: k.note, reprint: true,
+      items: k.items.map(i => ({ quantity: i.quantity, name: i.name, modifiers: i.modifiers, note: i.note, voided: i.voided })),
+    };
+    const data: ReceiptData = { title: `Kitchen ticket ${k.number}`, kot };
+    this.receiptDialog.open(ReceiptDialog, { data, maxWidth: '100vw' });
+  }
+
   private api = inject(RestaurantApi);
   private ctx = inject(PropertyContext);
   private auth = inject(AuthService);

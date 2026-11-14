@@ -62,6 +62,9 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - [ ] IChannelManager; provider chosen in Sprint 0
 - [ ] OTA reservation id + event id dedupe; safe failure/reconciliation when no room
 - [ ] Inventory and rate push jobs
+- [ ] Choose a channel manager that Indian properties use and that covers MakeMyTrip, Goibibo, Agoda and Booking.com: STAAH, AxisRooms or eZee Centrix (market comparison of 13 Nov 2026)
+- [ ] Push the prices the simple pricing rules of Sprint 32 produce, so the OTAs and the desk never quote different rates
+- [ ] An OTA booking for a foreign guest opens its Form C at check-in like any other (Sprint 30); map the OTA's nationality field to the guest profile
 
 ## How to run this sprint
 

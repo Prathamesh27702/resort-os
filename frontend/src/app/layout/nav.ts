@@ -23,6 +23,7 @@ export const NAV: NavSection[] = [
       { label: 'Payments', icon: 'payments', link: '/payments', perm: 'payment.read', keywords: 'upi cash card razorpay refund drawer' },
       { label: 'Invoices', icon: 'request_quote', link: '/invoices', perm: 'invoice.read', keywords: 'gst tax invoice credit note' },
       { label: 'Guests', icon: 'group', link: '/guests', perm: 'guest.read', keywords: 'customers kyc' },
+      { label: 'Form C', icon: 'badge', link: '/form-c', perm: 'guest_document.read', keywords: 'frro foreign guests passport visa c-form register' },
       { label: 'Messages', icon: 'forum', link: '/messages', perm: 'message.read', keywords: 'whatsapp email sms templates' },
     ],
   },

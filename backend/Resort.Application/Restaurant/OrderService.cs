@@ -33,7 +33,7 @@ namespace Resort.Application.Restaurant;
 /// </summary>
 public sealed class OrderService(
     IAppDbContext db, ICurrentUser caller, CallerAccess access, AuditContext audit, TimeProvider clock, TaxCalculator tax,
-    FolioPosting posting, CashDrawerService drawers, StockLedger stock)
+    FolioPosting posting, CashDrawerService drawers, StockLedger stock, Compliance.UpiService upi)
 {
     /// <summary>Restaurant service is taxed as one supply under the FOOD category (food and soft drinks alike).</summary>
     public const string TaxCategory = ChargeCategories.Food;
@@ -78,6 +78,51 @@ public sealed class OrderService(
         var order = await db.Orders.AsNoTracking().SingleOrDefaultAsync(o => o.Id == id && o.PropertyId == propertyId, ct)
                     ?? throw new NotFoundAppException("That order doesn't exist at this property. Reload the list.");
         return await ToDtoAsync(order, ct);
+    }
+
+    /// <summary>
+    /// The bill as it prints (Sprint 30): who sold it (name, address, the GSTIN on the order's date, the FSSAI licence
+    /// number), the live lines with identical dishes on one line, the discount, each tax and the total. While the order is
+    /// open and the property has a UPI ID it carries the QR that pays exactly the total; a settled bill says how it was paid.
+    /// </summary>
+    public async Task<OrderBillDto> BillAsync(Guid propertyId, Guid id, CancellationToken ct)
+    {
+        var property = await LoadPropertyAsync(propertyId, ct);
+        var o = await db.Orders.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && x.PropertyId == propertyId, ct)
+                ?? throw new NotFoundAppException("That order doesn't exist at this property. Reload the list.");
+        if (o.Status == OrderStatuses.Voided)
+            throw new BusinessRuleAppException("ORDER_VOIDED", $"{o.Number} was voided ({o.VoidReason}), so there is no bill to print.");
+        var dto = await ToDtoAsync(o, ct);
+        var live = dto.Items.Where(l => l.Status != OrderItemStatuses.Voided).ToList();
+        if (live.Count == 0)
+            throw new BusinessRuleAppException("BILL_EMPTY", $"{o.Number} has no dishes on it yet, so there is nothing to print.");
+
+        var outcome = await TaxAsync(o, ct);
+        var lines = live
+            .GroupBy(l => (l.Name, l.VariantName, Mods: string.Join(", ", l.Modifiers), l.UnitPrice, l.FoodType))
+            .Select(g => new BillLineDto(
+                g.Key.VariantName is null ? g.Key.Name : $"{g.Key.Name} ({g.Key.VariantName})",
+                g.Key.Mods.Length == 0 ? null : g.Key.Mods, (short)g.Sum(l => l.Quantity), g.Key.UnitPrice, g.Sum(l => l.Amount), g.Key.FoodType))
+            .ToList();
+        var address = new List<string>();
+        var street = string.Join(", ", new[] { property.AddressLine1, property.AddressLine2 }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        if (street.Length > 0) address.Add(street);
+        var town = string.Join(", ", new[] { property.City, property.StateName }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        if (!string.IsNullOrWhiteSpace(property.PostalCode)) town = town.Length > 0 ? $"{town} {property.PostalCode}" : property.PostalCode;
+        if (town.Length > 0) address.Add(town);
+
+        var paidBy = o.Status != OrderStatuses.Settled ? null
+            : o.Settlement == Settlements.RoomCharge ? $"Charged to {dto.UnitName ?? "the room"}{(dto.FolioNumber is { } f ? $" (folio {f})" : "")}"
+            : $"Paid by {PaymentMethods.Words(o.PaymentMethod!)}{(o.PaymentReference is { } r ? $" ({r})" : "")}";
+        var qr = o.Status == OrderStatuses.Open && o.Total > 0 ? upi.For(property, o.Total, $"Bill {o.Number}") : null;
+        var discount = o.DiscountAmount == 0 ? null
+            : o.DiscountKind == DiscountKinds.Percent ? $"Discount {o.DiscountValue:0.##}%" : "Discount";
+        return new OrderBillDto(
+            new BillPropertyDto(property.Name, outcome.Registration?.LegalName ?? property.LegalName, address, property.Phone,
+                outcome.Registration?.Gstin, property.FssaiLicenceNo),
+            o.Id, o.Number, dto.Where, o.OrderType, o.BusinessDate, clock.GetUtcNow(), o.Covers, dto.OpenedByName, dto.GuestName, lines,
+            o.Subtotal, o.DiscountAmount, discount, o.Subtotal - o.DiscountAmount, dto.Taxes, o.TaxAmount, o.Total, dto.TaxNote,
+            outcome.Lines.Count > 0 ? outcome.Category?.HsnSac : null, o.Status, paidBy, qr?.ToDto());
     }
 
     /// <summary>The stays checked in now, room by room, that a bill can be charged to.</summary>

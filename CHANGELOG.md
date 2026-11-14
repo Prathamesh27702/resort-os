@@ -2,6 +2,42 @@
 
 One entry per accepted sprint, tagged `sprint-NN` on `main`. Format: [Keep a Changelog](https://keepachangelog.com).
 
+## [Unreleased] — Sprint 30: India readiness (FSSAI and UPI on bills, printed bill and kitchen ticket, Form C)
+
+Built from the market comparison of 13 Nov 2026 against Indian hotel and restaurant software. Waiting for the owner's review.
+
+### Added
+- Migration V027: `properties.fssai_licence_no` (14 digits), `upi_id` (name@bank) and `upi_payee_name`, each with a
+  CHECK; `form_c_records` (one per foreign guest and stay: status PENDING, SUBMITTED or NOT_REQUIRED, arrival and the
+  24-hour deadline, the sheet encrypted, the FRRO number, who filed it; never deleted); the job `form_c_reminder`.
+- **UPI QR**: a `upi://pay` link with the property's UPI ID, the name, the exact amount and the bill number, drawn as a
+  QR on the server (QRCoder, MIT). On the printed restaurant bill, in **Paid → UPI** and **Take payment → UPI**, on the
+  invoice PDF for the balance still owed, and as a preview in the property's settings. No money moves through the app.
+- **FSSAI licence number** on the restaurant bill and the invoice PDF.
+- **Print bill** on a restaurant order (80 mm or 58 mm thermal paper, remembered per device): seller with GSTIN and
+  FSSAI number, dishes, discount, each tax, total, SAC, the UPI QR or how it was paid. **Print ticket** for a kitchen
+  ticket, on the order and on the kitchen display.
+- **Form C** (`/form-c`): a sheet is opened at check-in for each guest whose nationality isn't Indian, filled in from
+  the profile, passport, visa and booking; copy buttons with dates as the FRRO portal takes them; **Mark as filed** with
+  the FRRO number (refused while a required field is empty, naming the fields), **No Form C needed** with a reason,
+  **Reopen to correct**; the foreign guest register as CSV; *N Form C to file* on the front desk; a bell line at
+  check-in and a reminder every morning at 09:00. Reading a sheet is audited; anonymising the guest empties it.
+- API: `GET /upi-qr`, `GET /orders/{id}/bill`, `GET /form-c`, `GET /form-c/register.csv`, `GET|PUT /form-c/{id}`,
+  `POST /form-c/{id}/submit`, `/not-required`, `/reopen`; `PropertyDto` and the front desk dashboard carry the new fields.
+- Dev seed S022: a made-up FSSAI number and UPI ID on the demo property.
+- Sprint plan: the comparison's later suggestions are written into Sprints 25 to 29 (GSTR-1 export, an Indian channel
+  manager, UPI on the booking site, offline restaurant billing, the DPDP checklist) and the new Sprints 31 (groups,
+  company accounts, day close, split bills), 32 (online check-in, languages, DPDP, pricing rules) and 33 (Swiggy and
+  Zomato, QR table ordering; only if wanted).
+- Tests: backend `IndiaReadinessTests` and `IndiaUnitTests`; frontend `india.spec.ts`; browser steps S30-01 … S30-07;
+  `check-api.mjs` Sprint 30 block; `check-sprint-30.sql`.
+- Docs: INDIA.md (setup of FSSAI, UPI, thermal printing and the Form C routine), API.md, DATABASE.md,
+  schema-sprint-30.md, system design Sprint 30 and 4.36, RUN_AND_TEST, REVIEWING.
+
+### Changed
+- The daily jobs are seven (the Form C reminder joins them) and the message templates fourteen.
+- *Form-C needed* on a foreign guest's profile is now a link to the Form C page.
+
 ## [Unreleased] — Lagoon Glass look, light and dark themes, modern dashboards and reports
 
 ### Added

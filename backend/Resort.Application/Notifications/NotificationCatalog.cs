@@ -48,6 +48,7 @@ public static class NotificationCatalog
         [MessageCodes.PaymentReminder] = "Payment reminder",
         [MessageCodes.InventoryAlert] = "Low stock alert",
         [MessageCodes.LeaveReminder] = "Leave reminder",
+        [MessageCodes.FormCReminder] = "Form C reminder",
     };
 
     /// <summary>When each message goes, in words.</summary>
@@ -60,6 +61,7 @@ public static class NotificationCatalog
         [MessageCodes.PaymentReminder] = "To bookings still waiting for payment a day after their payment link was made, once.",
         [MessageCodes.InventoryAlert] = "Every morning there are items at or below their reorder level, to staff who manage stock.",
         [MessageCodes.LeaveReminder] = "Every morning leave requests have waited more than a day, to staff who approve leave.",
+        [MessageCodes.FormCReminder] = "When a foreign guest checks in, and every morning a Form C is still to file, to staff who check guests in.",
     };
 
     public static readonly IReadOnlyDictionary<string, MessageVariable[]> Variables = new Dictionary<string, MessageVariable[]>
@@ -85,6 +87,12 @@ public static class NotificationCatalog
             new("property_name", "The property's name", "Sea Breeze Resort"),
             new("count", "How many requests are waiting", "1"),
             new("requests", "Who asked for what", "Kavya Naik: Casual leave, 2 days from Sat 14 Nov 2026"),
+        ],
+        [MessageCodes.FormCReminder] =
+        [
+            new("property_name", "The property's name", "Sea Breeze Resort"),
+            new("count", "How many Form C sheets are still to file", "1"),
+            new("guests", "The guests and their deadlines", "Emma Clarke (R00042), to file by Sat 14 Nov, 2:10 PM"),
         ],
     };
 
@@ -130,6 +138,12 @@ public static class NotificationCatalog
             "These items are at or below their reorder level:\n\n{{items}}\n\nRaise a purchase order on the Purchasing page."),
         new(MessageCodes.LeaveReminder, MessageChannels.InApp, "Leave reminder", null,
             "Leave: {{count}} waiting for a decision", "Waiting for a decision for over a day: {{requests}}."),
+        new(MessageCodes.FormCReminder, MessageChannels.InApp, "Form C reminder", null,
+            "Form C: {{count}} to file", "Foreign guests to report to the FRRO within 24 hours of arrival: {{guests}}."),
+        new(MessageCodes.FormCReminder, MessageChannels.Email, "Form C reminder", null,
+            "Form C to file at {{property_name}}: {{count}}",
+            "These foreign guests must be reported to the FRRO on Form C within 24 hours of their arrival:\n\n{{guests}}\n\n" +
+            "Open Front desk, then Form C, in Resort OS: each sheet has every value the FRRO portal asks for."),
     ];
 
     public static readonly JobDefinition[] Jobs =
@@ -147,6 +161,9 @@ public static class NotificationCatalog
             new TimeOnly(8, 0), MessageCodes.InventoryAlert),
         new(JobCodes.LeaveReminder, "Leave reminder", "Staff who approve leave get the requests that have waited more than a day, once a day.",
             new TimeOnly(9, 0), MessageCodes.LeaveReminder),
+        new(JobCodes.FormCReminder, "Form C reminder",
+            "Staff who check guests in get the foreign guests whose Form C is still to file, with the deadline of each, once a day.",
+            new TimeOnly(9, 0), MessageCodes.FormCReminder),
     ];
 
     public static JobDefinition Job(string code) => Jobs.SingleOrDefault(j => j.Code == code)
