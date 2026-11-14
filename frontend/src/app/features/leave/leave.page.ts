@@ -44,7 +44,7 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
               @for (b of m.balances; track b.leaveTypeId) {
                 @if (b.needsBalance) {
                   <div class="card" [attr.data-type]="b.code"><b>{{ days(b.balance) }}</b><span>{{ b.name }}</span>
-                    @if (b.pending) { <small class="mute">{{ days(b.pending) }} waiting · {{ days(b.available) }} free</small> }
+                    @if (b.pending) { <small class="mute">{{ days(b.pending) }} waiting, {{ days(b.available) }} free</small> }
                   </div>
                 }
               }
@@ -90,7 +90,7 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
               <tbody>
                 @for (e of balances(); track e.employeeId) {
                   <tr [attr.data-emp]="e.employeeCode" (click)="ledger(e.employeeId, canManage())" tabindex="0" (keydown.enter)="ledger(e.employeeId, canManage())">
-                    <td><b>{{ e.employeeName }}</b> <small class="mute">{{ e.employeeCode }} · {{ e.departmentName }}</small></td>
+                    <td><b>{{ e.employeeName }}</b> <small class="mute">{{ e.employeeCode }}, {{ e.departmentName }}</small></td>
                     @for (t of balanceTypes(); track t.id) { <td class="n">{{ bal(e, t.id) }}</td> }
                   </tr>
                 } @empty { <tr><td class="mute">Nobody works here yet.</td></tr> }
@@ -108,7 +108,7 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
           </div>
           <ul class="hols full" data-testid="holidays">
             @for (h of holidays(); track h.id) {
-              <li [class.off]="!h.isActive"><b>{{ dayText(h.date) }}</b> {{ h.name }}@if (!h.isActive) { <small class="mute"> · not a holiday any more</small> }
+              <li [class.off]="!h.isActive"><b>{{ dayText(h.date) }}</b> {{ h.name }}@if (!h.isActive) { <small class="mute">, not a holiday any more</small> }
                 @if (canManage()) { <button mat-button (click)="holiday(h)">Change</button> }</li>
             } @empty { <li class="mute">No holidays in {{ year() }} yet.</li> }
           </ul>
@@ -120,7 +120,7 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
             @for (t of types(); track t.id) {
               <li [class.off]="!t.isActive">
                 <div><b>{{ t.name }}</b> <small class="mute">{{ t.code }}</small>
-                  <small>{{ t.isPaid ? 'Paid' : 'Unpaid' }}{{ t.needsBalance ? '' : ', no balance' }}{{ t.allowHalfDay ? ', half days' : ', whole days' }}{{ t.isActive ? '' : ' · switched off' }}</small>
+                  <small>{{ t.isPaid ? 'Paid' : 'Unpaid' }}{{ t.needsBalance ? '' : ', no balance' }}{{ t.allowHalfDay ? ', half days' : ', whole days' }}{{ t.isActive ? '' : ', switched off' }}</small>
                   <small class="mute">{{ policy(t) }}</small></div>
                 @if (canManage()) { <button mat-button (click)="editType(t)">Change</button> }
               </li>
@@ -136,10 +136,10 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
         <div class="main">
           <div class="top"><b>{{ mine ? r.leaveTypeName : r.employeeName }}</b>
             <span class="status">{{ statusText(r.status) }}</span></div>
-          <span>{{ range(r) }} · <b>{{ days(r.days) }}</b>@if (!mine) { · {{ r.leaveTypeName }} · {{ r.departmentName }} }</span>
-          <small class="mute">{{ r.code }}@if (r.reason) { · {{ r.reason }} }@if (r.decidedBy) { · {{ r.status === 'REJECTED' ? 'refused' : 'approved' }} by {{ r.decidedBy }} }
-            @if (r.decisionNote) { : {{ r.decisionNote }} }@if (r.cancelReason) { · cancelled: {{ r.cancelReason }} }
-            @if (r.shiftsCancelled) { · {{ r.shiftsCancelled }} {{ r.shiftsCancelled === 1 ? 'shift' : 'shifts' }} taken off the roster }</small>
+          <span>{{ range(r) }}, <b>{{ days(r.days) }}</b>@if (!mine) {, {{ r.leaveTypeName }}, {{ r.departmentName }} }</span>
+          <small class="mute">{{ r.code }}@if (r.reason) {, {{ r.reason }} }@if (r.decidedBy) {, {{ r.status === 'REJECTED' ? 'refused' : 'approved' }} by {{ r.decidedBy }} }
+            @if (r.decisionNote) { : {{ r.decisionNote }} }@if (r.cancelReason) {, cancelled: {{ r.cancelReason }} }
+            @if (r.shiftsCancelled) {, {{ r.shiftsCancelled }} {{ r.shiftsCancelled === 1 ? 'shift' : 'shifts' }} taken off the roster }</small>
           @for (w of r.warnings; track w.message) { <small class="w" [class]="'k-' + w.kind"><mat-icon inline>{{ w.kind === 'ROSTERED' ? 'event_busy' : 'warning' }}</mat-icon> {{ w.message }}</small> }
         </div>
         <div class="btns">
@@ -152,31 +152,31 @@ type View = 'mine' | 'team' | 'balances' | 'holidays' | 'types';
   `,
   styles: `
     .leave { max-width: 960px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
     mat-button-toggle-group { flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; }
-    .cards { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
-    .card { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; padding: 10px 14px; min-width: 120px; display: flex; flex-direction: column; }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
+    .cards { display: flex; gap: 10px; flex-wrap: wrap; margin: var(--space-2) 0; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; min-width: 120px; display: flex; flex-direction: column; box-shadow: var(--ro-shadow-card); }
     .card b { font-size: 1.3rem; }
-    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0 4px; }
+    .actions { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin: var(--space-2) 0 var(--space-1); }
     h2 { margin: 18px 0 6px; font-size: 1.1rem; }
-    .reqs, .hols, .types { list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .reqs li, .types li { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid #eef2f1; flex-wrap: wrap; }
+    .reqs, .hols, .types { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .reqs li, .types li { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .reqs li:first-child, .types li:first-child, .hols li:first-child { border-top: 0; }
     .main { flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .top { display: flex; justify-content: space-between; gap: 8px; }
-    .status { font-size: .85rem; border-radius: 10px; padding: 0 8px; background: #eef2f1; white-space: nowrap; }
-    .s-PENDING .status { background: #fdf6e6; color: #6b4a00; } .s-APPROVED .status { background: #e3f3ea; color: #1e6b3a; }
-    .s-REJECTED .status, .s-CANCELLED .status { background: #f3eeee; color: #6b2a2a; }
-    .w { color: #5b4a00; } .k-ROSTERED { color: #0e3b43; }
+    .top { display: flex; justify-content: space-between; gap: var(--space-2); }
+    .status { font-size: .85rem; border-radius: 10px; padding: 0 var(--space-2); background: var(--ro-sunk); white-space: nowrap; }
+    .s-PENDING .status { background: var(--ro-warn-wash); color: var(--ro-warn-strong); } .s-APPROVED .status { background: var(--ro-ok-bg); color: var(--ro-ok-mid); }
+    .s-REJECTED .status, .s-CANCELLED .status { background: var(--ro-line-soft); color: var(--ro-off); }
+    .w { color: var(--ro-warn-strong); } .k-ROSTERED { color: var(--ro-tide); }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .hols li { padding: 8px 14px; border-top: 1px solid #eef2f1; } .hols.full li { display: flex; align-items: center; gap: 8px; } .hols b { min-width: 110px; display: inline-block; }
+    .hols li { padding: var(--space-2) 14px; border-top: 1px solid var(--ro-sunk); } .hols.full li { display: flex; align-items: center; gap: var(--space-2); } .hols b { min-width: 110px; display: inline-block; }
     .off { opacity: .6; }
     .types li > div { flex: 1; display: flex; flex-direction: column; }
-    .scroll { overflow-x: auto; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .bal { width: 100%; border-collapse: collapse; } .bal th, .bal td { padding: 8px 10px; border-bottom: 1px solid #eef2f1; text-align: left; }
-    .bal tbody tr { cursor: pointer; } .bal tbody tr:hover { background: #f4f8f7; } .bal small { display: block; } .n { text-align: right; }
-    .notlinked { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 12px 16px; }
+    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .bal { width: 100%; border-collapse: collapse; } .bal th, .bal td { padding: var(--space-2) 10px; border-bottom: 1px solid var(--ro-sunk); text-align: left; }
+    .bal tbody tr { cursor: pointer; } .bal tbody tr:hover { background: var(--ro-wash); } .bal small { display: block; } .n { text-align: right; }
+    .notlinked { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) var(--space-4); box-shadow: var(--ro-shadow-card); }
   `,
 })
 export class LeavePage {
@@ -254,7 +254,7 @@ export class LeavePage {
   policy(t: LeaveType) {
     const p = t.policies.find(x => x.employmentType === null);
     if (!p || !t.needsBalance) return 'Not taken from a balance';
-    return `${p.daysPerYear} a year · ${ACCRUAL_LABEL[p.accrual].toLowerCase()}${p.maxBalance !== null ? ` · at most ${p.maxBalance}` : ''}`;
+    return `${p.daysPerYear} a year, ${ACCRUAL_LABEL[p.accrual].toLowerCase()}${p.maxBalance !== null ? `, at most ${p.maxBalance}` : ''}`;
   }
 
   ask() {
@@ -270,7 +270,7 @@ export class LeavePage {
 
   askFor() {
     const data: AskData = { propertyId: this.pid(), types: this.types().filter(t => t.isActive), today: this.mine()?.today ?? new Date().toISOString().slice(0, 10),
-      employees: this.balances().map(e => ({ id: e.employeeId, name: `${e.employeeName} · ${e.departmentName}` })) };
+      employees: this.balances().map(e => ({ id: e.employeeId, name: `${e.employeeName}, ${e.departmentName}` })) };
     this.dialog.open(AskLeaveDialog, { data, maxWidth: '100vw' }).afterClosed().subscribe((r?: LeaveRequest) => {
       if (!r) return;
       this.snack.open(`${r.code} for ${r.employeeName}: ${days(r.days)} of ${r.leaveTypeName}, waiting for approval.`, 'OK', { duration: 5000 });

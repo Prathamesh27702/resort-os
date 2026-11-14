@@ -633,6 +633,25 @@ flowchart LR
   card, and booking-message consent on the guest's profile. [4.34](#434-messages-the-outbox-and-the-daily-jobs) explains
   the rules.
 
+### Sprint 30: India readiness (FSSAI and UPI on bills, printed bill and kitchen ticket, Form C)
+
+- Migration V027: three columns on `properties` (`fssai_licence_no`, `upi_id`, `upi_payee_name`, each with a CHECK),
+  `form_c_records` (one per foreign guest and stay; the sheet is AES-256-GCM JSON like an ID document; never deleted) and
+  the job code `form_c_reminder`. Details: [schema-sprint-30.md](../database/schema-sprint-30.md). Dev seed S022.
+- `Domain/Compliance/`: `Upi` (the UPI ID and FSSAI checks, the `upi://pay` link) and `FormC` (the record, the 26 fields
+  of the portal in order, which are required). `Application/Compliance/`: `UpiService` (the QR for an amount; `IQrCodes`
+  is implemented by `Infrastructure/Compliance/QrCodes.cs` with QRCoder) and `FormCService` (opens sheets at check-in,
+  fills them from what is known, saves, files, reopens, the register).
+- Hooks in older code: `FrontDeskService` calls `FormCService.OpenForStayAsync` in the check-in transaction and returns
+  the counts on the dashboard; `OrderService.BillAsync` builds the printed bill; `InvoiceService` passes the FSSAI number
+  and a QR for the balance to `InvoicePrinter`; `NotificationCatalog` and `NotificationJobs` gain the seventh job;
+  `GuestService.AnonymiseAsync` empties the guest's sheets.
+- Endpoints: `ComplianceEndpoints.cs`. No new permission: `property.read` (the QR), `pos_order.read` (the bill),
+  `guest_document.read` (reading Form C, audited) and `frontdesk.checkin` (changing it).
+- Screens: `features/india/` (`upi-qr.ts` used by the pay dialogs and settings, `receipt.ts` and `receipt-dialog.ts`
+  for the thermal bill and ticket, `form-c.page.ts`, `form-c-sheet.page.ts`).
+  [4.36](#436-india-readiness-upi-qr-printed-bills-and-form-c) explains the rules; the owner's guide is [INDIA.md](../INDIA.md).
+
 ---
 
 ## 4. System design: how the hard parts work
@@ -1581,6 +1600,62 @@ Code: `Application/Notifications/` (`Outbox.cs`, `OutboxDispatcher.cs`, `Notific
 8. **Privacy.** Anonymising a guest (Sprint 03) also blanks their messages: name, address, body and parameters. The list
    shows numbers and emails masked (`+91 98•••••345`).
 
+### 4.35 The look: themes, glass and charts (Lagoon Glass)
+
+The staff app's look lives in one place, `frontend/src/styles.scss`, as `--ro-*` colour tokens. Every component style
+uses the tokens, never a typed colour, so one set of values per theme repaints the whole app:
+
+- **Light and dark.** Bare `html` holds the light values. A Sass mixin `ro-dark-tokens` holds the dark ones and is
+  included twice: under `@media (prefers-color-scheme: dark)` for `html:not([data-theme='light'])` (Match my phone) and
+  under `html[data-theme='dark']` (the person chose Dark). `core/theme.ts` (`ThemeService`) sets or removes
+  `data-theme`, remembers the choice per device in `localStorage` (`ro-theme`) and updates `<meta name="theme-color">`.
+  A small script in `index.html` does the same before Angular starts, so a reload never flashes the wrong theme.
+- **Material follows.** Angular Material reads `--mat-sys-*` tokens; `styles.scss` points them at the `--ro-*` tokens,
+  so dialogs, menus, date pickers and snack bars change theme with no extra code.
+- **Glass with a fallback.** Cards are slightly see-through (`--ro-paper`) over one fixed glow layer (`body::before`).
+  Only the sidebar, top bar, phone tab bar and dialogs blur (blur is costly on cheap phones). The class `ro-solid` on
+  `<html>` (set for phones with 4 GB memory or less, for "reduce transparency", or from the account menu) makes every
+  glass token solid and turns blur off.
+- **Charts.** `features/reports/chart.ts` (`ChartComponent`) draws with ECharts (Apache 2.0) from a small `ChartSpec`
+  (area, bar, horizontal bar, donut; categories and series). It loads ECharts lazily, so the first download stays
+  small, runs it outside Angular's change detection (the mouse never re-renders the page), reads the colours from the
+  tokens (`--ro-chart-1..6`, validated for colour blindness) and redraws when the theme changes or the box resizes.
+  Pages pass specs from `computed()` signals, never from a template method: a new object on every check would redraw
+  the chart forever.
+- **Navigation.** `layout/nav.ts` lists the menu in sections with each link's permission; the shell hides links and
+  whole sections a role can't use. The phone tab bar takes the first four of a preference list the person may open.
+  `layout/search.ts` is the Ctrl K search over screens, guests and bookings.
+
+### 4.36 India readiness: UPI QR, printed bills and Form C
+
+**UPI.** A property has one UPI ID. `Upi.PayLink` builds `upi://pay?pa=<id>&pn=<name>&am=<amount>&cu=INR&tn=<note>`:
+the amount with exactly two decimals, the name and note cut to 50 characters and to characters every UPI app accepts.
+The server draws the QR (PNG) so screens, the printed bill and the PDF show the same one, and the browser needs no QR
+library. The app never learns whether the guest paid: staff record the payment with the UPI reference, as before Sprint
+30. That is why the online pay page keeps Razorpay, whose webhook is the proof of payment (4.x Razorpay).
+
+**The printed bill.** `GET /orders/{id}/bill` returns everything in print order (lines of the same dish, portion,
+choices and price are merged). `receipt.ts` turns it into HTML with every value escaped, and `printReceipt` writes it
+into a hidden iframe whose page is the roll: `@page { size: 80mm auto; margin: 0 }`. The UPI QR is on the bill only
+while it is OPEN; a settled bill says how it was paid. The kitchen ticket is built in the browser from the ticket already
+on the screen.
+
+**Form C.** Rules, all in `FormCService`:
+
+- A sheet exists per (stay, guest) for guests whose profile nationality is set and isn't `IN`. It is opened inside the
+  check-in transaction, so a check-in can't succeed without it. `EnsureInHouseAsync` (run when the list is read) opens
+  the ones missing for guests already in house, under an advisory lock per stay; the unique key makes a second one impossible.
+- `due_at = arrived_at + 24 h`. Overdue is worked out when read, never stored.
+- A field's value is what staff typed on the sheet (the encrypted JSON), else what the profile, the newest active
+  passport and visa documents and the booking say (`fromProfile: true`). Clearing a typed value shows the profile's again.
+  Only typed values are stored, so correcting the profile corrects every open sheet.
+- Saving checks each value by its kind (date, 24-hour time, days 1 to 3650, sex, yes/no, length) and answers with
+  `Values.<key>` so the screen shows the reason under that field; one bad value saves nothing.
+- PENDING → SUBMITTED needs every required field; the answer names the gaps. SUBMITTED and NOT_REQUIRED lock the sheet;
+  reopening clears the FRRO number, who and when. Every change carries the row version (4.x concurrency).
+- Reading a sheet or the register writes a SENSITIVE_READ audit row. The register shows a passport as its last 4 characters.
+- The reminder job's business key is the day, so run twice it sends once (4.34).
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1615,3 +1690,4 @@ request:
 | 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (accepted 5 Nov 2026) |
 | 23 | Reports and dashboards (a daily summary per property refreshed every 15 minutes and nightly, occupancy, ADR, RevPAR, revenue, booking sources with commission and net, GST, food and labour cost, profit and loss, the owner's Today and the Reports page, money hidden from managers, five views for Power BI through a read-only role, supplier bills and pay in the budget), report flow diagram; system design 4.33 Reports: the daily summary and Power BI (accepted 7 Nov 2026) |
 | 24 | Notification engine, WhatsApp, email and background jobs (the outbox written with the booking, a sender with retries, a PostgreSQL scheduler with six idempotent daily jobs, WhatsApp template messages and the signed status webhook, email through Resend, the bell, the Messages page with reasons and Send again), message flow diagram; system design 4.34 Messages: the outbox and the daily jobs (accepted 7 Nov 2026) |
+| UI | Lagoon Glass look (light and dark themes, glass with a solid fallback, sectioned menu, phone tab bar, Ctrl K search, charts on Today and Reports, Indian date pickers everywhere); system design 4.35 The look: themes, glass and charts (13 Nov 2026, in review) |

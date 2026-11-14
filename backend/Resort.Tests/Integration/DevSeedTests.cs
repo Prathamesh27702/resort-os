@@ -485,6 +485,6 @@ public class DevSeedTests(ResortApiFactory app) : IClassFixture<ResortApiFactory
         var bell = await owner.GetJsonAsync<NotificationListDto>("/api/v1/notifications");
         Assert.Contains(bell.Items, n => n.Title == "Messages are on" && n.Link == "/messages");
         // The templates and jobs are made by the app on first use.
-        Assert.Equal(12, (await owner.GetJsonAsync<List<MessageTemplateDto>>($"/api/v1/properties/{pid}/message-templates")).Count);
+        Assert.Equal(14, (await owner.GetJsonAsync<List<MessageTemplateDto>>($"/api/v1/properties/{pid}/message-templates")).Count);
     }
 }

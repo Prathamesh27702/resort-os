@@ -1012,17 +1012,17 @@ await expectCall('Messages read newest first, each with its status in words', 'G
   b => (Array.isArray(b?.items) && b.items.every(m => m.statusWords && m.channel)) || JSON.stringify(b).slice(0, 300));
 await expectCall('"Needs a look" lists only failed and not-sent messages, each with its reason', 'GET', `${P}/messages?status=PROBLEM`, 200, { token: T },
   b => (Array.isArray(b?.items) && b.items.every(m => ['FAILED', 'SKIPPED'].includes(m.status) && !!m.reason)) || JSON.stringify(b).slice(0, 300));
-const tpl = await expectCall('12 templates (5 guest messages on WhatsApp, 4 of them also by email; low stock in the app and by email; leave in the app), each with its variables',
+const tpl = await expectCall('14 templates (5 guest messages on WhatsApp, 4 of them also by email; low stock and Form C in the app and by email; leave in the app), each with its variables',
   'GET', `${P}/message-templates`, 200, { token: T },
-  b => (Array.isArray(b) && b.length === 12 && b.every(t => t.variables?.length > 0)) || JSON.stringify(b).slice(0, 300));
+  b => (Array.isArray(b) && b.length === 14 && b.every(t => t.variables?.length > 0)) || JSON.stringify(b).slice(0, 300));
 const email = tpl?.json?.find?.(t => t.code === 'booking_confirmation' && t.channel === 'EMAIL');
 await expectCall('A template with {{room_number}} → 400 under Body naming what it can use (nothing saved)', 'PUT', `${P}/message-templates/${email?.id ?? NONE}`, 400,
   { token: T, body: { providerTemplate: null, language: 'en', subject: email?.subject ?? 'Your booking', body: 'Hello {{guest_name}}, room {{room_number}}', isActive: true, version: email?.version } },
   b => (b.details?.Body?.[0] ?? '').includes('It can use') || JSON.stringify(b.details));
 await expectCall('Receptionist can’t change a template → 403', 'PUT', `${P}/message-templates/${email?.id ?? NONE}`, 403,
   { token: R, body: { providerTemplate: null, language: 'en', subject: 'x', body: 'Hello {{guest_name}}', isActive: true, version: email?.version } });
-await expectCall('6 daily jobs, each with its time and next run', 'GET', `${P}/jobs`, 200, { token: T },
-  b => (b?.jobs?.length === 6 && b.jobs.every(j => j.runAt && j.nextRunAt) && Array.isArray(b.recent)) || JSON.stringify(b).slice(0, 300));
+await expectCall('7 daily jobs, each with its time and next run', 'GET', `${P}/jobs`, 200, { token: T },
+  b => (b?.jobs?.length === 7 && b.jobs.every(j => j.runAt && j.nextRunAt) && Array.isArray(b.recent)) || JSON.stringify(b).slice(0, 300));
 await expectCall('A job time with seconds → 400 under RunAt (nothing saved)', 'PUT', `${P}/jobs/reservation_reminder`, 400,
   { token: T, body: { enabled: true, runAt: '10:00:30', version: null } },
   b => (b.details?.RunAt?.[0] ?? '').length > 0 || JSON.stringify(b.details));
@@ -1034,6 +1034,34 @@ await expectCall('WhatsApp webhook with a wrong signature → 401 (nothing chang
   b => b?.code === 'BAD_SIGNATURE' || JSON.stringify(b));
 await expectCall('WhatsApp URL check with a wrong verify token → 403', 'GET',
   '/api/v1/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=123', 403, {});
+
+// ---------------------------------------------------------------- Sprint 30 — India readiness
+title('Sprint 30 — India readiness: FSSAI and UPI on bills, the printed restaurant bill, Form C');
+const s30Prop = await expectCall('The property carries its FSSAI licence number and UPI ID', 'GET', `${P}`, 200, { token: T },
+  b => ('fssaiLicenceNo' in (b ?? {}) && 'upiId' in b && 'upiPayeeName' in b) || JSON.stringify(b).slice(0, 300));
+if (s30Prop?.json?.upiId) {
+  await expectCall('The UPI QR for ₹1,234.50: the link has the ID, the name, the exact amount and INR; the QR is a PNG', 'GET', `${P}/upi-qr?amount=1234.5&note=CHECK`, 200, { token: T },
+    b => (b?.link?.startsWith('upi://pay?pa=') && b.link.includes('am=1234.50') && b.link.includes('cu=INR') && b.link.includes('tn=CHECK')
+      && b.qrPng?.startsWith('data:image/png;base64,')) || JSON.stringify(b).slice(0, 300));
+} else {
+  await expectCall('No UPI ID on the property → 422 saying where to add it', 'GET', `${P}/upi-qr?amount=100`, 422, { token: T },
+    b => (b?.code === 'UPI_NOT_SET' && b.message.includes('Settings')) || JSON.stringify(b));
+}
+await expectCall('A UPI QR for more than ₹10,00,000 → 422', 'GET', `${P}/upi-qr?amount=2000000`, 422, { token: T }, b => b?.code === 'UPI_AMOUNT' || JSON.stringify(b));
+await expectCall('A 13-digit FSSAI number and a UPI ID without @bank → 400 under each field (nothing saved)', 'PUT', `${P}`, 400,
+  { token: T, body: { ...s30Prop?.json, fssaiLicenceNo: '1002009900012', upiId: 'palmgrove' } },
+  b => ((b.details?.FssaiLicenceNo?.[0] ?? '').includes('14 digits') && (b.details?.UpiId?.[0] ?? '').includes('@')) || JSON.stringify(b.details));
+await expectCall('The bill of an order that doesn’t exist → 404', 'GET', `${P}/orders/${NONE}/bill`, 404, { token: T });
+await expectCall('Form C still to file, with the hours left, the count overdue and the FRRO portal', 'GET', `${P}/form-c`, 200, { token: T },
+  b => (Array.isArray(b?.items) && b.items.every(i => i.status === 'PENDING' && typeof i.hoursLeft === 'number') && b.hoursToFile === 24
+    && typeof b.overdue === 'number' && b.portalUrl?.startsWith('https://')) || JSON.stringify(b).slice(0, 300));
+await expectCall('Form C with a status that doesn’t exist → 400 under status', 'GET', `${P}/form-c?status=LOST`, 400, { token: T },
+  b => (b.details?.status?.[0] ?? '').includes('PENDING') || JSON.stringify(b.details));
+await expectCall('A Form C that doesn’t exist → 404', 'GET', `${P}/form-c/${NONE}`, 404, { token: T });
+await expectCall('The register for more than 366 days → 400 under to', 'GET', `${P}/form-c/register.csv?from=2025-01-01&to=2026-06-01`, 400, { token: T },
+  b => (b.details?.to?.[0] ?? '').includes('366') || JSON.stringify(b.details));
+await expectCall('The front desk counts the Form C still to file', 'GET', `${P}/front-desk/dashboard`, 200, { token: T },
+  b => (typeof b?.formCPending === 'number' && typeof b.formCOverdue === 'number') || JSON.stringify(b).slice(0, 200));
 
 // ---------------------------------------------------------------- summary
 const failed = results.filter(r => !r.ok);

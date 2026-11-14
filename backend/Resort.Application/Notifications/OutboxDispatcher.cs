@@ -145,7 +145,10 @@ public sealed class OutboxDispatcher(IAppDbContext db, IWhatsAppClient whatsapp,
         if (email.Mode == ProviderModes.Off)
             throw new MessageSendException("Email isn't connected on this server. Set Email__ApiKey and Email__FromAddress (docs/WHATSAPP.md), " +
                                            "then send it again.", transient: false);
-        var id = await email.SendAsync(new EmailSend(m.ToAddress!, m.RecipientName, m.Subject ?? m.TemplateCode, m.Body, MessageText.Html(m.Body),
+        var brand = await db.Properties.IgnoreQueryFilters().Where(p => p.Id == m.PropertyId)
+            .Select(p => new { p.Name, p.Phone, p.Email }).SingleOrDefaultAsync(ct);
+        var html = brand is null ? MessageText.Html(m.Body) : MessageText.BrandedHtml(m.Body, brand.Name, m.Subject, brand.Phone, brand.Email);
+        var id = await email.SendAsync(new EmailSend(m.ToAddress!, m.RecipientName, m.Subject ?? m.TemplateCode, m.Body, html,
             m.Id.ToString("N", CultureInfo.InvariantCulture)), ct);
         m.ProviderMessageId = id;
         if (!await db.EmailMessages.IgnoreQueryFilters().AnyAsync(e => e.OutboxMessageId == m.Id, ct))

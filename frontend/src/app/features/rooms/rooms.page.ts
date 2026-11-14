@@ -49,8 +49,8 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
             <header>
               <div>
                 <h2>{{ g.type.name }} @if (!g.type.isActive) { <span class="chip off">Inactive type</span> }</h2>
-                <p class="mute">{{ g.type.inventoryMode === 'BED' ? 'Sold per bed' : 'Sold per room' }} ·
-                  {{ g.type.inventoryMode === 'BED' ? g.type.sellableItems + ' beds' : g.type.sellableItems + ' room' + (g.type.sellableItems === 1 ? '' : 's') }} ·
+                <p class="mute">{{ g.type.inventoryMode === 'BED' ? 'Sold per bed' : 'Sold per room' }},
+                  {{ g.type.inventoryMode === 'BED' ? g.type.sellableItems + ' beds' : g.type.sellableItems + ' room' + (g.type.sellableItems === 1 ? '' : 's') }},
                   {{ g.type.inventoryMode === 'BED' ? '1 guest per bed' : 'up to ' + g.type.maxOccupancy + ' guests per room' }}</p>
               </div>
               <a mat-button [routerLink]="['/settings/room-types', g.type.id]">{{ canManage() ? 'Edit type' : 'View type' }}</a>
@@ -95,9 +95,9 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
               <tbody>
                 @for (b of blocks(); track b.id) {
                   <tr>
-                    <td><b>{{ b.unitCode }}</b>@if (b.bedCode) { <span class="mute"> · bed {{ b.bedCode }}</span> }</td>
+                    <td><b>{{ b.unitCode }}</b>@if (b.bedCode) { <span class="mute">, bed {{ b.bedCode }}</span> }</td>
                     <td class="num">{{ shortDate(b.startDate) }} – {{ shortDate(lastNight(b)) }} <span class="mute">({{ b.nights }})</span></td>
-                    <td class="hide-sm">{{ label(b.blockType) }} · {{ b.reason }}</td>
+                    <td class="hide-sm">{{ label(b.blockType) }}, {{ b.reason }}</td>
                     <td class="hide-sm mute">{{ b.createdByName ?? '—' }}</td>
                     <td class="row-actions">@if (canBlock()) { <button mat-button (click)="release(b)">Release</button> }</td>
                   </tr>
@@ -112,21 +112,21 @@ interface TypeGroup { type: AccommodationType; rooms: Room[]; }
     </div>
   `,
   styles: `
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .actions mat-icon { margin-right: 4px; }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .actions mat-icon { margin-right: var(--space-1); }
     a.disabled { pointer-events: none; opacity: .5; }
-    .group { margin-bottom: 16px; overflow: hidden; }
-    .group header { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 16px 8px; gap: 12px; }
+    .group { margin-bottom: var(--space-4); overflow: hidden; }
+    .group header { display: flex; justify-content: space-between; align-items: flex-start; padding: var(--space-4) var(--space-4) var(--space-2); gap: var(--space-3); }
     .group header p { margin: 2px 0 0; }
     .group.inactive { opacity: .7; }
-    .empty { padding: 24px; max-width: 640px; }
-    .empty p { color: #5b6b6e; }
-    .mute { color: #5b6b6e; }
-    .name { margin-left: 8px; }
-    .pad { padding: 0 16px 16px; margin: 0; }
-    .err { color: #b3261e; }
-    .chip.ok { background: #e3f1e6; color: #1f5130; }
-    .chip.warn { background: #fdf0d8; color: #7a4a00; }
+    .empty { padding: var(--space-6); max-width: 640px; }
+    .empty p { color: var(--ro-mute); }
+    .mute { color: var(--ro-mute); }
+    .name { margin-left: var(--space-2); }
+    .pad { padding: 0 var(--space-4) var(--space-4); margin: 0; }
+    .err { color: var(--ro-error); }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.warn { background: var(--ro-warn-bg); color: var(--ro-warn-strong); }
     .row-actions { text-align: right; white-space: nowrap; width: 1%; }
   `,
 })

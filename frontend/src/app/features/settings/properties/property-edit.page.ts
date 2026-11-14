@@ -12,12 +12,13 @@ import { AuthService } from '../../../core/auth.service';
 import { fieldErrors, toProblem } from '../../../core/http';
 import { GST_STATES, PROPERTY_TYPES, Property } from '../../../core/models';
 import { PropertyContext } from '../../../core/property-context';
+import { UpiQrComponent } from '../../india/upi-qr';
 
 const TIMEZONES = ['Asia/Kolkata', 'Asia/Dubai', 'Asia/Colombo', 'Asia/Kathmandu', 'Asia/Singapore', 'Europe/London', 'UTC'];
 
 @Component({
   selector: 'app-property-edit',
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, UpiQrComponent],
   template: `
     <div class="page">
       <div class="page-head">
@@ -94,6 +95,34 @@ const TIMEZONES = ['Asia/Kolkata', 'Asia/Dubai', 'Asia/Colombo', 'Asia/Kathmandu
           }
         </div>
 
+        <h2>Food licence and UPI</h2>
+        <p class="lead">What Indian bills are expected to carry. Both are optional, and both print on restaurant bills and invoices once set.</p>
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>FSSAI licence number</mat-label>
+            <input matInput formControlName="fssaiLicenceNo" inputmode="numeric" maxlength="17" placeholder="10020042004371" />
+            <mat-hint>14 digits, from the food licence. Printed on every food bill.</mat-hint>
+            @if (err()['fssaiLicenceNo']) { <mat-error>{{ err()['fssaiLicenceNo'] }}</mat-error> }
+            @else { <mat-error>An FSSAI licence number has 14 digits.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>UPI ID for payments</mat-label>
+            <input matInput formControlName="upiId" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="100" placeholder="palmgrove@okhdfcbank" />
+            <mat-hint>Bills show a QR of it; the money goes straight to this account.</mat-hint>
+            @if (err()['upiId']) { <mat-error>{{ err()['upiId'] }}</mat-error> }
+            @else { <mat-error>A UPI ID looks like name&#64;bank, e.g. palmgrove&#64;okhdfcbank.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Name shown to the payer</mat-label>
+            <input matInput formControlName="upiPayeeName" maxlength="60" />
+            <mat-hint>What the guest's UPI app shows. The property's name when empty.</mat-hint>
+            @if (err()['upiPayeeName']) { <mat-error>{{ err()['upiPayeeName'] }}</mat-error> }
+          </mat-form-field>
+          @if (loaded()?.upiId && form.controls.upiId.value === loaded()?.upiId) {
+            <app-upi-qr class="full" [pid]="id()!" [note]="'Test'" />
+          }
+        </div>
+
         @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
         @if (editable()) {
           <div class="actions">
@@ -105,14 +134,15 @@ const TIMEZONES = ['Asia/Kolkata', 'Asia/Dubai', 'Asia/Colombo', 'Asia/Kathmandu
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; }
     .back::before { content: '‹ '; }
-    .box { padding: 24px; max-width: 820px; }
-    h2 { margin: 8px 0 12px; font-size: 1rem; color: #0e3b43; }
-    h2:not(:first-child) { margin-top: 20px; padding-top: 20px; border-top: 1px solid #edf1f0; }
-    .actions { display: flex; gap: 8px; margin-top: 16px; }
-    .error { color: #b3261e; }
-    mat-slide-toggle { margin: 8px 0; }
+    .box { padding: var(--space-6); max-width: 820px; }
+    h2 { margin: var(--space-2) 0 var(--space-3); font-size: 1rem; color: var(--ro-tide); }
+    h2:not(:first-child) { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--ro-line-soft); }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-4); }
+    .error { color: var(--ro-error); }
+    mat-slide-toggle { margin: var(--space-2) 0; }
+    .lead { margin: 0 0 var(--space-3); color: var(--ro-mute); font-size: .9rem; }
   `,
 })
 export class PropertyEditPage implements OnInit {
@@ -147,6 +177,9 @@ export class PropertyEditPage implements OnInit {
     phone: [null as string | null], email: [null as string | null, Validators.email],
     checkInTime: ['14:00'], checkOutTime: ['11:00'],
     isActive: [true],
+    fssaiLicenceNo: [null as string | null, Validators.pattern(/^\s*(\d\s*){14}$/)],
+    upiId: [null as string | null, Validators.pattern(/^\s*[A-Za-z0-9._-]{2,255}@[A-Za-z][A-Za-z0-9.-]{1,63}\s*$/)],
+    upiPayeeName: [null as string | null, [Validators.minLength(2), Validators.maxLength(60)]],
   });
 
   ngOnInit() {

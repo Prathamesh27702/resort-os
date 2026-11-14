@@ -13,7 +13,7 @@ describe('GST helpers (Sprint 9)', () => {
   it('describes a flat rule and a slab rule in words, in order of their limits', () => {
     expect(slabsText([{ upTo: null, rate: 5, inputTaxCredit: false }])).toBe('5%');
     expect(slabsText([{ upTo: null, rate: 18, inputTaxCredit: true }, { upTo: 7500, rate: 5, inputTaxCredit: false }]))
-      .toBe('Up to ₹7,500: 5% · Above ₹7,500: 18% with ITC');
+      .toBe('Up to ₹7,500: 5%, Above ₹7,500: 18% with ITC');
   });
 
   it('shows a line’s GST as the total rate: CGST + SGST is GST at twice the half', () => {

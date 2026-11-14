@@ -79,7 +79,7 @@ test('S05-04 Two people try to book the last Deluxe room: one gets it, the other
     await page.getByRole('button', { name: 'Choose Deluxe room' }).click();
     await guestAndRate(page, guest, name);
     await expect(page.locator('dl.summary')).toBeVisible();
-    await expect(page.locator('dl.summary')).toContainText('Deluxe room · first free room (Room 102)');
+    await expect(page.locator('dl.summary')).toContainText('Deluxe room, first free room (Room 102)');
   }
   await shot(p, '04-confirm-step');
 
@@ -131,7 +131,7 @@ test('S05-06 The booking page: add a note, change the dates, cancel with a reaso
   await dlg.getByLabel('Check-out').blur();
   await shot(p, '06-change-dates');
   await dlg.getByRole('button', { name: 'Save and re-price' }).click();
-  await expect(p.locator('mat-snack-bar-container').last()).toContainText(/updated · new total/);
+  await expect(p.locator('mat-snack-bar-container').last()).toContainText(/updated, new total/);
   await expect(p.locator('h1 + p')).toContainText('2 nights');
 
   await p.getByRole('button', { name: 'Cancel booking' }).click();

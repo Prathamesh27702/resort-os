@@ -84,13 +84,13 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         <!-- 2. Availability -->
         <mat-step [completed]="!!chosen()" label="Room">
           @if (availability(); as a) {
-            <p class="lead">{{ stayText(a.from, a.to) }} · {{ guests() }}</p>
+            <p class="lead">{{ stayText(a.from, a.to) }}, {{ guests() }}</p>
             <div class="types">
               @for (t of a.types; track t.accommodationTypeId) {
                 <div class="type" [class.full]="!t.fits">
                   <div class="what">
                     <b>{{ t.name }}</b>
-                    <small class="mute">{{ t.inventoryMode === 'BED' ? 'Per bed' : 'Up to ' + t.maxOccupancy + ' guests' }} ·
+                    <small class="mute">{{ t.inventoryMode === 'BED' ? 'Per bed' : 'Up to ' + t.maxOccupancy + ' guests' }},
                       <span [class.none]="t.free === 0">{{ t.free }} of {{ t.total }} {{ t.inventoryMode === 'BED' ? 'beds' : 'rooms' }} free</span></small>
                     @if (t.fitProblem) { <small class="warn">{{ t.fitProblem }}</small> }
                   </div>
@@ -104,7 +104,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                       <mat-select [ngModel]="roomPick()[t.accommodationTypeId] ?? null" (ngModelChange)="pickRoom(t.accommodationTypeId, $event)"
                                   [attr.aria-label]="'Room for ' + t.name">
                         <mat-option [value]="null">First free room</mat-option>
-                        @for (r of t.freeRooms; track r.id) { <mat-option [value]="r.id">{{ r.name }}@if (r.floor) { · {{ r.floor }} }</mat-option> }
+                        @for (r of t.freeRooms; track r.id) { <mat-option [value]="r.id">{{ r.name }}@if (r.floor) {, {{ r.floor }} }</mat-option> }
                       </mat-select>
                     </mat-form-field>
                   }
@@ -130,7 +130,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
               </mat-form-field>
               @for (g of found(); track g.id) {
                 <button mat-stroked-button class="found" (click)="useGuest(g)">
-                  <b>{{ g.fullName }}</b>@if (g.phone) { · <span class="mute num">{{ phone(g.phone) }}</span> }
+                  <b>{{ g.fullName }}</b>@if (g.phone) {, <span class="mute num">{{ phone(g.phone) }}</span> }
                 </button>
               } @empty { @if (guestQ().trim().length >= 2) { <p class="mute">No guest matches “{{ guestQ() }}”. Add them below.</p> } }
             </section>
@@ -161,7 +161,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                   <div class="full dups" role="alert">
                     <p>This may be someone who has stayed before:</p>
                     @for (d of duplicates(); track d.id) {
-                      <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b> · {{ phone(d.phone) || d.email }} · {{ d.reasons.join(', ') }}</button>
+                      <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b>, {{ phone(d.phone) || d.email }}, {{ d.reasons.join(', ') }}</button>
                     }
                     <button mat-button type="button" (click)="addGuest(true)">No, add a new profile</button>
                   </div>
@@ -218,9 +218,9 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                   <thead><tr><th>Night</th><th class="right">Price</th></tr></thead>
                   <tbody>
                     @for (n of q.breakdown; track n.date) {
-                      <tr><td>{{ day(n.date) }}@if (n.units > 1) { <small class="mute"> · {{ n.units }} beds × {{ rupees(n.unitPrice) }}</small> }
-                        @if (n.extraAdults) { <small class="mute"> · {{ n.extraAdults }} extra adult</small> }
-                        @if (n.extraChildren) { <small class="mute"> · {{ n.extraChildren }} extra child</small> }</td>
+                      <tr><td>{{ day(n.date) }}@if (n.units > 1) { <small class="mute">, {{ n.units }} beds × {{ rupees(n.unitPrice) }}</small> }
+                        @if (n.extraAdults) { <small class="mute">, {{ n.extraAdults }} extra adult</small> }
+                        @if (n.extraChildren) { <small class="mute">, {{ n.extraChildren }} extra child</small> }</td>
                         <td class="right num">{{ rupees(n.total) }}</td></tr>
                     }
                     <tr class="sum"><td>Total before tax</td><td class="right num">{{ rupees(q.total) }}</td></tr>
@@ -239,11 +239,11 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         <mat-step label="Confirm">
           @if (chosen() && guest() && quote(); as q) {
             <dl class="summary">
-              <dt>Guest</dt><dd><b>{{ guest()!.fullName }}</b>@if (guest()!.phone) { · <span class="mute num">{{ phone(guest()!.phone) }}</span> }</dd>
-              <dt>Stay</dt><dd>{{ stayText(availability()!.from, availability()!.to) }} · {{ guests() }}</dd>
-              <dt>Room</dt><dd>{{ chosen()!.name }} · {{ chosenRoomName() }}</dd>
-              <dt>Rate</dt><dd>{{ planName() }} · <b class="num">{{ rupees(q.total) }}</b> before tax</dd>
-              <dt>Booked via</dt><dd>{{ sourceName() }} · {{ statusText() }}</dd>
+              <dt>Guest</dt><dd><b>{{ guest()!.fullName }}</b>@if (guest()!.phone) {, <span class="mute num">{{ phone(guest()!.phone) }}</span> }</dd>
+              <dt>Stay</dt><dd>{{ stayText(availability()!.from, availability()!.to) }}, {{ guests() }}</dd>
+              <dt>Room</dt><dd>{{ chosen()!.name }}, {{ chosenRoomName() }}</dd>
+              <dt>Rate</dt><dd>{{ planName() }}, <b class="num">{{ rupees(q.total) }}</b> before tax</dd>
+              <dt>Booked via</dt><dd>{{ sourceName() }}, {{ statusText() }}</dd>
               @if (details.controls.specialRequests.value) { <dt>Requests</dt><dd>{{ details.controls.specialRequests.value }}</dd> }
             </dl>
             <div class="actions">
@@ -258,35 +258,35 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    mat-stepper { padding: 8px 4px; }
-    .dates { display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: 4px 12px; align-items: start; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    mat-stepper { padding: var(--space-2) var(--space-1); }
+    .dates { display: grid; grid-template-columns: 1fr 1fr 120px 120px; gap: var(--space-1) var(--space-3); align-items: start; }
     .dates .full { grid-column: 1 / -1; }
-    .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 12px; }
-    .err { color: #b3261e; }
-    .warn { color: #8a5a00; display: block; }
-    .mute { color: #5b6b6e; }
-    .none { color: #b3261e; }
-    .lead { margin: 4px 0 12px; font-weight: 500; }
-    .types { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
-    .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid #d9e0de; border-radius: 10px; }
-    .type.full { background: #f8faf9; }
+    .actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-3); }
+    .err { color: var(--ro-error); }
+    .warn { color: var(--ro-warn); display: block; }
+    .mute { color: var(--ro-mute); }
+    .none { color: var(--ro-error); }
+    .lead { margin: var(--space-1) 0 var(--space-3); font-weight: 500; }
+    .types { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-2); }
+    .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: var(--space-3); align-items: center; padding: var(--space-3); border: 1px solid var(--ro-line); border-radius: 10px; }
+    .type.full { background: var(--ro-hover); }
     .type .what small, .type .price small { display: block; }
     .type .price { text-align: right; }
     .pick { width: 100%; }
-    .guest-step { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
-    .guest-step h3 { font-size: 1rem; margin: 4px 0 8px; }
+    .guest-step { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-6); }
+    .guest-step h3 { font-size: 1rem; margin: var(--space-1) 0 var(--space-2); }
     .wide { width: 100%; }
     .found { display: block; width: 100%; text-align: left; margin-bottom: 6px; }
-    .dups { background: #fbefd8; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+    .dups { background: var(--ro-warn-bg); border-radius: 8px; padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
     .dups p { margin: 0 0 6px; }
-    .dups button { display: block; margin-bottom: 4px; text-align: left; }
-    .quote { margin: 4px 0 8px; }
+    .dups button { display: block; margin-bottom: var(--space-1); text-align: left; }
+    .quote { margin: var(--space-1) 0 var(--space-2); }
     table.compact td, table.compact th { padding: 6px 10px; }
     .right { text-align: right; }
-    tr.sum td { font-weight: 600; border-top: 1px solid #d9e0de; }
-    .summary { display: grid; grid-template-columns: 120px 1fr; gap: 6px 16px; margin: 8px 0 16px; }
-    .summary dt { color: #5b6b6e; }
+    tr.sum td { font-weight: 600; border-top: 1px solid var(--ro-line); }
+    .summary { display: grid; grid-template-columns: 120px 1fr; gap: 6px var(--space-4); margin: var(--space-2) 0 var(--space-4); }
+    .summary dt { color: var(--ro-mute); }
     .summary dd { margin: 0; }
     @media (max-width: 760px) {
       .dates { grid-template-columns: 1fr 1fr; }
@@ -295,7 +295,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
       .type .price { text-align: left; }
       .guest-step { grid-template-columns: 1fr; }
       .summary { grid-template-columns: 1fr; gap: 0 0; }
-      .summary dd { margin-bottom: 8px; }
+      .summary dd { margin-bottom: var(--space-2); }
     }
   `,
 })
@@ -381,7 +381,7 @@ export class ReservationNewPage {
   stepError = (i: number) => this.errors()[i] ?? '';
   stayText(from: string, to: string) {
     const n = Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
-    return `${dayLabel(from)} – ${dayLabel(to)} · ${n} night${n === 1 ? '' : 's'}`;
+    return `${dayLabel(from)} – ${dayLabel(to)}, ${n} night${n === 1 ? '' : 's'}`;
   }
   planName = () => this.plans().find(p => p.id === this.details.controls.ratePlanId.value)?.name ?? '';
   sourceName = () => this.sources().find(s => s.id === this.details.controls.sourceId.value)?.name ?? '';

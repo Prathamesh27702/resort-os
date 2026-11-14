@@ -17,7 +17,7 @@ public sealed class InvoicePrinter
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-    public PrintDocument Invoice(InvoiceDto i, (string? Phone, string? Email) contact)
+    public PrintDocument Invoice(InvoiceDto i, PropertyPrint contact, PrintQr? qr = null)
     {
         var supply = i.DocumentType == DocumentTypes.BillOfSupply;
         var meta = new List<(string, string)>
@@ -51,10 +51,11 @@ public sealed class InvoicePrinter
             supply ? "BILL OF SUPPLY" : "TAX INVOICE", "Original for recipient", i.Number, Day(i.InvoiceDate), meta,
             SupplierBlock(i.Supplier, contact), CustomerBlock(i.Customer, i.IsB2B),
             tables, Totals(i.TaxableValue, i.Cgst, i.Sgst, i.Igst, i.Cess, i.Total, "Invoice total"), i.AmountInWords, notes,
-            i.Status == InvoiceStatuses.Cancelled ? "CANCELLED" : null, i.Supplier.Name, FileName(i.Number));
+            i.Status == InvoiceStatuses.Cancelled ? "CANCELLED" : null, i.Supplier.Name, FileName(i.Number),
+            i.Status == InvoiceStatuses.Cancelled ? null : qr);
     }
 
-    public PrintDocument Note(InvoiceDto i, NoteDto note, (string? Phone, string? Email) contact)
+    public PrintDocument Note(InvoiceDto i, NoteDto note, PropertyPrint contact)
     {
         var credit = note.Kind == DocumentTypes.CreditNote;
         var meta = new List<(string, string)>
@@ -92,7 +93,7 @@ public sealed class InvoicePrinter
         if (invoices.Count > 0) meta.Add(("Invoice", string.Join(", ", invoices)));
         var notes = new List<string>();
         if (r.Voided) notes.Add($"Payment {r.PaymentNumber} was voided after this receipt was issued, so this receipt no longer counts.");
-        return new PrintDocument("RECEIPT", null, r.Number, Day(r.ReceiptDate), meta, SupplierBlock(supplier, (property.Phone, property.Email)),
+        return new PrintDocument("RECEIPT", null, r.Number, Day(r.ReceiptDate), meta, SupplierBlock(supplier, new PropertyPrint(property.Phone, property.Email, property.FssaiLicenceNo)),
             new PrintParty("Received from", [r.ReceivedFrom]), [],
             [("Amount received", Money(r.Amount), true)], InvoiceMath.AmountInWords(r.Amount), notes,
             r.Voided ? "VOID" : null, supplier.Name, FileName(r.Number));
@@ -137,7 +138,7 @@ public sealed class InvoicePrinter
         return rows;
     }
 
-    private static PrintParty SupplierBlock(DocumentPartyDto s, (string? Phone, string? Email) contact)
+    private static PrintParty SupplierBlock(DocumentPartyDto s, PropertyPrint contact)
     {
         var lines = new List<string>();
         if (s.TradeName is { } t && t != s.Name) lines.Add(t);
@@ -145,6 +146,7 @@ public sealed class InvoicePrinter
         if (s.Address is { } a) lines.Add(a);
         if (s.Gstin is { } g) lines.Add($"GSTIN {g}");
         if (s.StateName is { } st) lines.Add($"State: {st}");
+        if (contact.FssaiLicenceNo is { } fssai) lines.Add($"FSSAI Lic. No. {fssai}");
         var reach = string.Join(" · ", new[] { contact.Phone, contact.Email }.Where(x => !string.IsNullOrWhiteSpace(x)));
         if (reach.Length > 0) lines.Add(reach);
         return new PrintParty("Supplier", lines);

@@ -47,7 +47,7 @@ function addDays(iso: string, n: number): string {
       @if (view() !== 'setup') {
         <div class="bar">
           <button mat-icon-button (click)="go(-1)" aria-label="Previous day"><mat-icon>chevron_left</mat-icon></button>
-          <b class="date" data-testid="day">{{ date() ? dayText(date()!) : '' }}@if (date() === today()) { <small> · today</small> }</b>
+          <b class="date" data-testid="day">{{ date() ? dayText(date()!) : '' }}@if (date() === today()) { <small>, today</small> }</b>
           <button mat-icon-button (click)="go(1)" aria-label="Next day"><mat-icon>chevron_right</mat-icon></button>
           @if (date() !== today()) { <button mat-button (click)="date.set(today())">Today</button> }
           <span class="grow"></span>
@@ -63,7 +63,7 @@ function addDays(iso: string, n: number): string {
                 <span class="time">{{ t.departTime }}<small>to {{ t.arriveTime }}</small></span>
                 <span class="what"><b>{{ t.routeName }}</b>
                   <small class="mute">{{ t.origin }} → {{ t.destination }}</small>
-                  <small class="mute">{{ t.vehicleName }} · {{ t.driverName ? 'driver ' + t.driverName : 'no driver yet' }} · {{ t.price ? rupees(t.price) + ' a seat' : 'free' }}@if (t.note) { · {{ t.note }} }</small>
+                  <small class="mute">{{ t.vehicleName }}, {{ t.driverName ? 'driver ' + t.driverName : 'no driver yet' }}, {{ t.price ? rupees(t.price) + ' a seat' : 'free' }}@if (t.note) {, {{ t.note }} }</small>
                   @if (t.status === 'CANCELLED') { <small class="cx">Cancelled: {{ t.cancelReason }}</small> }
                   @else if (t.status !== 'SCHEDULED') { <small class="st">{{ statusText(t) }}</small> }
                 </span>
@@ -88,8 +88,8 @@ function addDays(iso: string, n: number): string {
                     @for (p of detail()?.passengers ?? []; track p.id) {
                       <li [attr.data-passenger]="p.code" [class.off]="p.status === 'CANCELLED'">
                         <div class="main">
-                          <span><b>{{ p.guestName }}</b> · {{ seats(p.seats) }}@if (p.room) { · {{ p.room }} }</span>
-                          <small class="mute">{{ p.code }} · {{ fareText(p) }}@if (p.note) { · {{ p.note }} }</small>
+                          <span><b>{{ p.guestName }}</b>, {{ seats(p.seats) }}@if (p.room) {, {{ p.room }} }</span>
+                          <small class="mute">{{ p.code }}, {{ fareText(p) }}@if (p.note) {, {{ p.note }} }</small>
                           @if (p.status === 'CANCELLED') { <small class="cx">Cancelled: {{ p.cancelReason }}</small> }
                           @else if (p.status !== 'BOOKED') { <small class="st" [class.ok]="p.status === 'BOARDED'">{{ passengerStatus[p.status] }}</small> }
                         </div>
@@ -112,7 +112,7 @@ function addDays(iso: string, n: number): string {
             <section class="card" [attr.data-my-trip]="d.trip.routeCode + '-' + d.trip.departTime" [class.off]="d.trip.status === 'CANCELLED'">
               <header>
                 <span class="big">{{ d.trip.departTime }}</span>
-                <span class="what"><b>{{ d.trip.routeName }}</b><small>{{ d.trip.origin }} → {{ d.trip.destination }} · {{ d.trip.vehicleName }} {{ d.trip.registration }}</small></span>
+                <span class="what"><b>{{ d.trip.routeName }}</b><small>{{ d.trip.origin }} → {{ d.trip.destination }}, {{ d.trip.vehicleName }} {{ d.trip.registration }}</small></span>
                 <span class="count" data-testid="on-board"><b>{{ d.trip.onBoard }}/{{ d.trip.seatsBooked }}</b><small>on board</small></span>
               </header>
               @if (d.trip.status === 'CANCELLED') { <p class="cx">Cancelled: {{ d.trip.cancelReason }}</p> }
@@ -127,7 +127,7 @@ function addDays(iso: string, n: number): string {
                     </button>
                     <span class="who">
                       <span class="line"><b>{{ p.guestName }}</b><span class="n">{{ seats(p.seats) }}</span></span>
-                      <small>{{ p.room ?? (p.settlement === 'COMPLIMENTARY' ? 'Complimentary' : 'Visitor') }}@if (p.note) { · {{ p.note }} }@if (p.status === 'NO_SHOW') { · no-show }</small>
+                      <small>{{ p.room ?? (p.settlement === 'COMPLIMENTARY' ? 'Complimentary' : 'Visitor') }}@if (p.note) {, {{ p.note }} }@if (p.status === 'NO_SHOW') {, no-show }</small>
                     </span>
                     @if (p.status === 'BOARDED') { <span class="tag ok">On board</span> }
                   </li>
@@ -147,8 +147,8 @@ function addDays(iso: string, n: number): string {
         <ul class="list" data-testid="vehicles">
           @for (v of day()?.vehicles ?? []; track v.id) {
             <li [class.off]="!v.isActive">
-              <div class="main"><b>{{ v.name }}</b> <small class="mute">{{ v.code }} · {{ v.registration }}</small>
-                <small>{{ seats(v.seats) }}@if (v.note) { · {{ v.note }} }{{ v.isActive ? '' : ' · not in use' }}</small></div>
+              <div class="main"><b>{{ v.name }}</b> <small class="mute">{{ v.code }}, {{ v.registration }}</small>
+                <small>{{ seats(v.seats) }}@if (v.note) {, {{ v.note }} }{{ v.isActive ? '' : ', not in use' }}</small></div>
               <button mat-button (click)="editVehicle(v)">Change</button>
             </li>
           } @empty { <li class="mute">No vehicles yet.</li> }
@@ -159,7 +159,7 @@ function addDays(iso: string, n: number): string {
           @for (r of day()?.routes ?? []; track r.id) {
             <li [class.off]="!r.isActive">
               <div class="main"><b>{{ r.name }}</b> <small class="mute">{{ r.code }}</small>
-                <small>{{ r.origin }} → {{ r.destination }} · {{ r.distanceKm }} km · {{ r.durationMinutes }} min · {{ r.price ? rupees(r.price) + ' a seat' : 'free' }}{{ r.isActive ? '' : ' · not in use' }}</small></div>
+                <small>{{ r.origin }} → {{ r.destination }}, {{ r.distanceKm }} km, {{ r.durationMinutes }} min, {{ r.price ? rupees(r.price) + ' a seat' : 'free' }}{{ r.isActive ? '' : ', not in use' }}</small></div>
               <button mat-button (click)="editRoute(r)">Change</button>
             </li>
           } @empty { <li class="mute">No routes yet.</li> }
@@ -170,48 +170,48 @@ function addDays(iso: string, n: number): string {
   `,
   styles: `
     .trans { max-width: 900px; padding-bottom: 60px; }
-    .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .head { justify-content: space-between; }
-    .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: #5b6b6e; } .err { color: #b3261e; } .cx { color: #8a1c1c; }
-    .st { color: #0e3b43; } .st.ok { color: #1b6e3a; } h2 { margin: 18px 0 0; font-size: 1.1rem; }
-    .trips, .list, .pax, .tick { list-style: none; margin: 8px 0 0; padding: 0; }
-    .trips > li { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+    .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; }
+    .grow { flex: 1; } .date { min-width: 130px; text-align: center; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .cx { color: var(--ro-error-strong); }
+    .st { color: var(--ro-tide); } .st.ok { color: var(--ro-ok-mid); } h2 { margin: 18px 0 0; font-size: 1.1rem; }
+    .trips, .list, .pax, .tick { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
+    .trips > li { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); margin-bottom: var(--space-2); overflow: hidden; box-shadow: var(--ro-shadow-card); }
     .trips > li.empty { padding: 14px; } .trips > li.off { opacity: .7; }
-    .row { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
-    .row:hover { background: #f4f8f7; }
-    .time { display: flex; flex-direction: column; font-weight: 600; font-size: 1.05rem; min-width: 52px; } .time small { font-weight: 400; color: #5b6b6e; font-size: .8rem; }
+    .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .row:hover { background: var(--ro-wash); }
+    .time { display: flex; flex-direction: column; font-weight: 600; font-size: 1.05rem; min-width: 52px; } .time small { font-weight: 400; color: var(--ro-mute); font-size: .8rem; }
     .what { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .seats { display: flex; flex-direction: column; align-items: flex-end; min-width: 72px; } .seats small { color: #5b6b6e; }
-    .seats.full b, .seats.full small { color: #8a1c1c; }
-    .meter { width: 72px; height: 5px; background: #eef2f1; border-radius: 3px; margin-top: 3px; overflow: hidden; }
-    .meter span { display: block; height: 100%; background: #0e7c86; }
-    .detail { border-top: 1px solid #eef2f1; padding: 8px 14px 12px; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
-    .pax li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid #f1f4f3; }
+    .seats { display: flex; flex-direction: column; align-items: flex-end; min-width: 72px; } .seats small { color: var(--ro-mute); }
+    .seats.full b, .seats.full small { color: var(--ro-error-strong); }
+    .meter { width: 72px; height: 5px; background: var(--ro-sunk); border-radius: 3px; margin-top: 3px; overflow: hidden; }
+    .meter span { display: block; height: 100%; background: var(--ro-sea); }
+    .detail { border-top: 1px solid var(--ro-sunk); padding: var(--space-2) 14px var(--space-3); }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: 6px 0; }
+    .pax li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: var(--space-2) 0; border-top: 1px solid var(--ro-tint); }
     .pax li:first-child { border-top: 0; } .pax li.off { opacity: .65; }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; }
     .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .list { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .list li { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid #eef2f1; } .list li:first-child { border-top: 0; }
+    .list { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; }
-    .mine { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; } .empty { padding: 14px 0; }
-    .card { background: #fff; border: 1px solid #d9e0de; border-radius: 16px; padding: 12px 14px; } .card.off { opacity: .7; }
-    .card header { display: flex; gap: 12px; align-items: center; }
-    .big { font-size: 1.6rem; font-weight: 700; color: #0e3b43; }
-    .card .what small { color: #5b6b6e; }
-    .count { display: flex; flex-direction: column; align-items: flex-end; } .count b { font-size: 1.3rem; } .count small { color: #5b6b6e; }
-    .tick li { display: flex; gap: 10px; align-items: center; padding: 4px 0; border-top: 1px solid #f1f4f3; } .tick li:first-child { border-top: 0; }
-    .tick li.on .who b { color: #1b6e3a; } .tick li.gone { opacity: .6; }
+    .mine { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2); } .empty { padding: 14px 0; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) 14px; box-shadow: var(--ro-shadow-card); } .card.off { opacity: .7; }
+    .card header { display: flex; gap: var(--space-3); align-items: center; }
+    .big { font-size: 1.6rem; font-weight: 700; color: var(--ro-tide); }
+    .card .what small { color: var(--ro-mute); }
+    .count { display: flex; flex-direction: column; align-items: flex-end; } .count b { font-size: 1.3rem; } .count small { color: var(--ro-mute); }
+    .tick li { display: flex; gap: 10px; align-items: center; padding: var(--space-1) 0; border-top: 1px solid var(--ro-tint); } .tick li:first-child { border-top: 0; }
+    .tick li.on .who b { color: var(--ro-ok-mid); } .tick li.gone { opacity: .6; }
     .box { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: none; cursor: pointer;
-           color: #0e3b43; border-radius: 10px; flex: none; }
-    .box:disabled { cursor: default; color: #9aa7a9; } .box:not(:disabled):hover { background: #eef5f4; }
+           color: var(--ro-tide); border-radius: 10px; flex: none; }
+    .box:disabled { cursor: default; color: var(--ro-faint); } .box:not(:disabled):hover { background: var(--ro-tint); }
     .box mat-icon { font-size: 32px; width: 32px; height: 32px; }
-    .tick li.on .box { color: #1b6e3a; }
-    .who { flex: 1; display: flex; flex-direction: column; min-width: 0; } .who small { color: #5b6b6e; }
-    .who .line { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-    .who .n { font-size: .85rem; color: #0e3b43; background: #eef5f4; border-radius: 10px; padding: 1px 8px; }
-    .tag { font-size: .8rem; border-radius: 10px; padding: 2px 8px; flex: none; } .tag.ok { color: #1b6e3a; background: #e3f0e6; }
+    .tick li.on .box { color: var(--ro-ok-mid); }
+    .who { flex: 1; display: flex; flex-direction: column; min-width: 0; } .who small { color: var(--ro-mute); }
+    .who .line { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; }
+    .who .n { font-size: .85rem; color: var(--ro-tide); background: var(--ro-tint); border-radius: 10px; padding: 1px var(--space-2); }
+    .tag { font-size: .8rem; border-radius: 10px; padding: 2px var(--space-2); flex: none; } .tag.ok { color: var(--ro-ok-mid); background: var(--ro-ok-bg); }
     .big-btns { margin-top: 10px; } .big-btns button { min-height: 48px; border-radius: 24px; }
-    .chev { color: #5b6b6e; flex: none; }
+    .chev { color: var(--ro-mute); flex: none; }
   `,
 })
 export class TransportPage {

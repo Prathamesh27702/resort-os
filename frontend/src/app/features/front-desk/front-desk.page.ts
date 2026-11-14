@@ -47,11 +47,21 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
         <div class="tiles">
           <a class="tile" routerLink="/front-desk/arrivals"><b class="num">{{ d.arrivalsCheckedIn }} / {{ d.arrivalsExpected }}</b><span>Arrivals checked in</span></a>
           <a class="tile" routerLink="/front-desk/departures"><b class="num">{{ d.departuresCheckedOut }} / {{ d.departuresExpected }}</b>
-            <span>Departures checked out@if (d.overdue) { · <em>{{ d.overdue }} overdue</em> }</span></a>
-          <a class="tile" routerLink="/front-desk/in-house"><b class="num">{{ d.inHouseStays }}</b><span>In house · {{ d.inHouseGuests }} guest{{ d.inHouseGuests === 1 ? '' : 's' }}</span></a>
+            <span>Departures checked out</span>@if (d.overdue) { <em>{{ d.overdue }} overdue</em> }</a>
+          <a class="tile" routerLink="/front-desk/in-house"><b class="num">{{ d.inHouseStays }}</b><span>In house</span><small>{{ d.inHouseGuests }} guest{{ d.inHouseGuests === 1 ? '' : 's' }}</small></a>
           <a class="tile" routerLink="/front-desk/rooms"><b class="num">{{ d.roomsReady }}</b>
-            <span>Ready to sell · {{ d.roomsNotReady }} not ready · {{ d.roomsOccupied }} occupied</span></a>
+            <span>Ready to sell</span><small>{{ d.roomsNotReady }} not ready, {{ d.roomsOccupied }} occupied</small></a>
         </div>
+      }
+
+      @if (dash(); as d) {
+        @if (d.formCPending && canFormC()) {
+          <a [class]="'formc' + (d.formCOverdue ? ' late' : '')" routerLink="/form-c" data-testid="form-c-card">
+            <mat-icon>{{ d.formCOverdue ? 'warning' : 'badge' }}</mat-icon>
+            <span><b>{{ d.formCPending }} Form C to file</b> for foreign guests@if (d.formCOverdue) {, {{ d.formCOverdue }} past the 24 hours}. The FRRO must get each within 24 hours of arrival.</span>
+            <span class="go">Open</span>
+          </a>
+        }
       }
 
       @if (canDrawer()) { <app-cash-drawer-panel /> }
@@ -78,11 +88,11 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
         <div class="board">
           @for (r of dash()?.rooms ?? []; track r.unitId + (r.bedId ?? '')) {
             <div class="room" [class]="'room ' + r.occupancy + ' hk-' + r.housekeeping" [attr.data-room]="place(r)">
-              <div class="top"><b class="code">{{ r.bedCode ? r.unitCode + ' · ' + r.bedCode : r.unitCode }}</b><span class="type">{{ r.typeName }}</span></div>
+              <div class="top"><b class="code">{{ r.unitCode }}@if (r.bedCode) { <span class="bed">{{ r.bedCode }}</span> }</b><span class="type">{{ r.typeName }}</span></div>
               <div class="state">{{ occupancy(r.occupancy) }}</div>
               <span [class]="'chip hk ' + r.housekeeping">{{ hk(r.housekeeping) }}</span>
               @if (r.reference) {
-                <a class="who" [routerLink]="['/reservations', r.reservationId]">{{ r.guestName }} · {{ r.reference }}</a>
+                <a class="who" [routerLink]="['/reservations', r.reservationId]">{{ r.guestName }} <small class="ref num">{{ r.reference }}</small></a>
                 @if (r.until) { <small class="mute">until {{ shortDate(r.until) }}</small> }
               }
               @if (canHousekeeping() && r.occupancy !== 'INACTIVE') {
@@ -104,7 +114,7 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
                   <td>
                     <a [routerLink]="['/reservations', s.reservationId]"><b>{{ s.guestName }}</b></a>
                     @if (s.isVip) { <span class="chip vip">VIP</span> }
-                    <br /><small class="mute num">{{ s.reference }}@if (s.guestPhone) { · {{ phone(s.guestPhone) }} } · {{ guestsText(s.adults, s.children) }}</small>
+                    <br /><small class="mute num">{{ s.reference }}@if (s.guestPhone) {, {{ phone(s.guestPhone) }}}, {{ guestsText(s.adults, s.children) }}</small>
                     @if (s.specialRequests) { <br /><small class="req">{{ s.specialRequests }}</small> }
                   </td>
                   <td class="num">{{ shortDate(s.checkIn) }} – {{ shortDate(s.checkOut) }}<br />
@@ -162,57 +172,66 @@ export type DeskTab = 'arrivals' | 'departures' | 'in-house' | 'rooms';
   `,
   styles: `
     .wide { max-width: 1200px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .tile { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-radius: 10px; background: #fff; border: 1px solid #d9e0de;
-            color: #1b2a2e; text-decoration: none; }
-    .tile:hover { box-shadow: 0 1px 6px rgba(14,59,67,.12); }
-    .tile b { font-size: 1.5rem; letter-spacing: -0.01em; color: #0e3b43; }
-    .tile span { color: #5b6b6e; font-size: .85rem; }
-    .tile em { color: #b3261e; font-style: normal; font-weight: 600; }
-    .tabs { display: flex; gap: 4px; border-bottom: 1px solid #d9e0de; margin-bottom: 12px; overflow-x: auto; }
-    .tabs a { padding: 10px 14px; color: #5b6b6e; text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-    .tabs a.on { color: #0e3b43; border-bottom-color: #0e3b43; font-weight: 500; }
-    .day { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+    .tile { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); border-radius: var(--ro-radius); background: var(--ro-paper); border: 1px solid var(--ro-line);
+            color: var(--ro-ink); text-decoration: none; }
+    .tile:hover { box-shadow: 0 1px 6px var(--ro-shadow); }
+    .tile b { font-size: 1.5rem; letter-spacing: -0.01em; color: var(--ro-tide); }
+    .tile span { color: var(--ro-mute); font-size: .85rem; }
+    .tile em { color: var(--ro-error); font-style: normal; font-weight: 600; font-size: .8rem; }
+    .tile small { color: var(--ro-mute); font-size: .8rem; }
+    .formc { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); border-radius: var(--ro-radius);
+             background: var(--ro-warn-bg); color: var(--ro-warn-strong); border: 1px solid var(--ro-warn-line); text-decoration: none; }
+    .formc.late { background: var(--ro-error-bg); color: var(--ro-error-strong); border-color: var(--ro-error-line); }
+    .formc .go { margin-left: auto; font-weight: 600; text-decoration: underline; }
+    .tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-3); overflow-x: auto; padding: 4px; border-radius: 999px; width: fit-content; max-width: 100%;
+            box-sizing: border-box; background: var(--ro-glass); border: 1px solid var(--ro-glass-edge); scrollbar-width: none; }
+    .tabs a { padding: 8px 16px; color: var(--ro-ink-soft); text-decoration: none; border-radius: 999px; white-space: nowrap; font-weight: 500; min-height: 40px; box-sizing: border-box; display: inline-flex; align-items: center; }
+    .tabs a:hover { background: var(--ro-hover); }
+    .tabs a.on { background: var(--ro-accent-grad); color: var(--ro-on-accent); box-shadow: var(--ro-accent-glow); font-weight: 600; }
+    .day { display: flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-2); }
     .day .when { font-weight: 500; min-width: 150px; text-align: center; }
-    .mute { color: #5b6b6e; }
-    .warn { color: #8a5a00; display: block; }
-    .bad { color: #b3261e; display: block; }
-    .req { color: #0e3b43; }
-    .err { color: #b3261e; }
+    .mute { color: var(--ro-mute); }
+    .warn { color: var(--ro-warn); display: block; }
+    .bad { color: var(--ro-error); display: block; }
+    .req { color: var(--ro-tide); }
+    .err { color: var(--ro-error); }
     .row-err { margin: 6px 0 0; text-align: left; white-space: normal; max-width: 280px; margin-left: auto; }
     .right { text-align: right; }
     .actions { white-space: nowrap; }
-    .actions button { margin-left: 4px; }
+    .actions button { margin-left: var(--space-1); }
     .rm { margin-bottom: 2px; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .chip.vip { background: #f6e3ec; color: #8a2449; }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .chip.vip { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
     .chip.hk { font-size: .72rem; }
-    .chip.hk.READY { background: #e1f2e8; color: #1d5b36; }
-    .chip.hk.DIRTY { background: #fbefd8; color: #8a5a00; }
-    .chip.hk.OUT_OF_ORDER { background: #f3e3e3; color: #7a1f1f; }
-    .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-    .room { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 120px; padding: 12px 14px; border-radius: 10px;
-            background: #fff; border: 1px solid #d9e0de; border-left-width: 5px; }
-    .room.VACANT { border-left-color: #2e6b3c; }
-    .room.OCCUPIED { border-left-color: #0e3b43; background: #f2f7f8; }
-    .room.ARRIVING { border-left-color: #d29a2c; }
-    .room.BLOCKED { border-left-color: #b45309; background: #fffaf0; }
-    .room.INACTIVE { border-left-color: #a9b6b3; color: #5b6b6e; background: #f5f7f6; }
-    .room .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: 100%; }
-    .room .code { font-size: 1.25rem; }
-    .room .type { font-size: .75rem; color: #5b6b6e; text-align: right; }
+    .chip.hk.READY { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.hk.DIRTY { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .chip.hk.OUT_OF_ORDER { background: var(--ro-off-bg); color: var(--ro-off); }
+    .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
+    .room { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); min-height: 120px; padding: var(--space-3) 14px; border-radius: var(--ro-radius);
+            background: var(--ro-paper); border: 1px solid var(--ro-line); border-left-width: 5px; }
+    .room.VACANT { border-left-color: var(--ro-ok-mid); }
+    .room.OCCUPIED { border-left-color: var(--ro-tide); background: var(--ro-wash); }
+    .room.ARRIVING { border-left-color: var(--ro-warn-bright); }
+    .room.BLOCKED { border-left-color: var(--ro-rust); background: var(--ro-warn-wash); }
+    .room.INACTIVE { border-left-color: var(--ro-outline); color: var(--ro-mute); background: var(--ro-wash); }
+    .room .top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); width: 100%; }
+    .room .code { font-size: 1.25rem; white-space: nowrap; }
+    .room .code .bed, .room .who .ref { margin-left: 6px; font-weight: 400; color: var(--ro-mute); }
+    .room .code .bed { font-size: .9rem; }
+    .room .type { font-size: .75rem; color: var(--ro-mute); text-align: right; }
     .room .state { font-weight: 500; }
-    .room .who { font-size: .85rem; color: #0e3b43; }
+    .room .who { font-size: .85rem; color: var(--ro-tide); }
     .hk-actions { margin-top: auto; }
     @media (max-width: 760px) {
       .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .actions { white-space: normal; }
-      .actions button { margin: 0 0 4px 0; display: block; width: 100%; }
-      table.data td, table.data th { padding: 10px 8px; }
+      .actions button { margin: 0 0 var(--space-1) 0; display: block; width: 100%; }
+      table.data td, table.data th { padding: 10px var(--space-2); }
     }
   `,
 })
@@ -250,6 +269,7 @@ export class FrontDeskPage {
   canCheckIn = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkin', this.props.current()?.id); });
   canCheckOut = computed(() => { this.auth.me(); return this.auth.can('frontdesk.checkout', this.props.current()?.id); });
   canWalkIn = computed(() => this.canCheckIn() && this.auth.can('reservation.create', this.props.current()?.id));
+  canFormC = computed(() => { this.auth.me(); return this.auth.can('guest_document.read', this.props.current()?.id); });
   canDrawer = computed(() => { this.auth.me(); return this.auth.can('payment.read', this.props.current()?.id); });
   canFolio = computed(() => { this.auth.me(); return this.auth.can('folio.read', this.props.current()?.id); });
   canHousekeeping = computed(() => { this.auth.me(); return this.auth.can('housekeeping.update', this.props.current()?.id); });

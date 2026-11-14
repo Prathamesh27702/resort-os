@@ -56,8 +56,8 @@ import { EMPLOYMENT_LABEL, EmployeesApi, dayName } from './employees.api';
           <li [attr.data-employee]="e.code">
             <a [routerLink]="['/employees', e.id]" class="nm">
               <b>{{ e.fullName }}</b> <small class="mute">{{ e.code }}</small>
-              <small>{{ e.departmentName }}@if (e.designationName) { · {{ e.designationName }} } · {{ type[e.employmentType] }}</small>
-              <small class="mute">@if (e.phone) { {{ e.phone }} · }@if (e.weeklyOff) { off on {{ dayName(e.weeklyOff) }} · }joined {{ dayText(e.joinedOn) }}</small>
+              <small>{{ e.departmentName }}@if (e.designationName) {, {{ e.designationName }}}, {{ type[e.employmentType] }}</small>
+              <small class="mute">@if (e.phone) { {{ e.phone }}, }@if (e.weeklyOff) { off on {{ dayName(e.weeklyOff) }}, }joined {{ dayText(e.joinedOn) }}</small>
               @if (e.status === 'LEFT') { <small class="left">Left on {{ dayText(e.leftOn!) }}: {{ e.leavingReason }}</small> }
               @if (e.userEmail) { <small class="mute"><mat-icon inline>badge</mat-icon> {{ e.userEmail }}</small> }
             </a>
@@ -69,13 +69,13 @@ import { EMPLOYMENT_LABEL, EmployeesApi, dayName } from './employees.api';
   `,
   styles: `
     .emp { max-width: 900px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .left { color: #8a5a00; }
-    .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; } .search { flex: 1 1 220px; } .dept { flex: 0 1 200px; }
+    .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .left { color: var(--ro-warn); }
+    .tools { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); } .search { flex: 1 1 220px; } .dept { flex: 0 1 200px; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: center; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .cards li { display: flex; gap: 10px; align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; margin-top: var(--space-2); box-shadow: var(--ro-shadow-card); }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; color: inherit; text-decoration: none; }
-    .go { color: #8a9a9c; }
+    .go { color: var(--ro-mute); }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .dept { flex: 1 1 100%; } }
   `,
 })

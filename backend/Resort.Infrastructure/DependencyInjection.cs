@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddSingleton<IFieldEncryptor, AesGcmFieldEncryptor>();
         services.AddSingleton<IFileStore, LocalDiskFileStore>();
         services.AddSingleton<Resort.Application.Invoicing.IPdfRenderer, Documents.PdfRenderer>();
+        services.AddSingleton<Resort.Application.Compliance.IQrCodes, Compliance.QrCodes>();
 
         services.AddSingleton<ITokenService, TokenService>();
         services.AddSingleton<IPasswordHasherService, PasswordHasherService>();

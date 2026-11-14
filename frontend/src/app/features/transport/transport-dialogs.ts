@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,13 +31,13 @@ export interface BookTripData { propertyId: string; trip: Trip; }
   template: `
     <h2 mat-dialog-title>Book {{ t.routeName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="trip-book-form">
-      <p class="mute">{{ short(t.date) }} · {{ t.departTime }} {{ t.origin }} → {{ t.destination }} {{ t.arriveTime }} · {{ seats(t.seatsLeft) }} left ·
+      <p class="mute">{{ short(t.date) }}, {{ t.departTime }} {{ t.origin }} → {{ t.destination }} {{ t.arriveTime }}, {{ seats(t.seatsLeft) }} left,
         {{ t.price ? rupees(t.price) + ' a seat' : 'free' }}</p>
       <mat-form-field appearance="outline"><mat-label>Guest staying</mat-label>
         <mat-select formControlName="reservationId" [aria-label]="'Guest staying'">
           <mat-option [value]="null">Not staying with us (type the name)</mat-option>
           @for (x of stays(); track x.reservationId) {
-            <mat-option [value]="x.reservationId">{{ x.rooms }} · {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
+            <mat-option [value]="x.reservationId">{{ x.rooms }}, {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
           }
         </mat-select>
         <mat-error>{{ server(form.get('reservationId')) }}</mat-error></mat-form-field>
@@ -68,8 +69,8 @@ export interface BookTripData { propertyId: string; trip: Trip; }
       <button mat-flat-button type="submit" form="trip-book-form" [disabled]="busy()">Book</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
-           .total { font-weight: 600; margin: 4px 0; } mat-checkbox { margin: -4px 0 8px; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
+           .total { font-weight: 600; margin: var(--space-1) 0; } mat-checkbox { margin: -4px 0 var(--space-2); }`,
 })
 export class BookTripDialog {
   data = inject<BookTripData>(MAT_DIALOG_DATA);
@@ -118,7 +119,7 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
 /** Puts trips on for a range of days at one or more departure times, with the vehicle and the driver. */
 @Component({
   selector: 'app-trips-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Put trips on</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="trips-form">
@@ -130,7 +131,7 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Vehicle</mat-label>
           <mat-select formControlName="vehicleId" [aria-label]="'Vehicle'">
-            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }} · {{ seats(v.seats) }}</mat-option> }
+            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }}, {{ seats(v.seats) }}</mat-option> }
           </mat-select>
           <mat-error>{{ server(form.get('vehicleId')) || 'Choose the vehicle.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Driver</mat-label>
@@ -141,9 +142,9 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
           <mat-error>{{ server(form.get('driverUserId')) }}</mat-error></mat-form-field>
       </div>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput type="date" formControlName="fromDate" />
+        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput [matDatepicker]="dp26" formControlName="fromDate" /><mat-datepicker-toggle matIconSuffix [for]="dp26" /><mat-datepicker #dp26 />
           <mat-error>{{ server(form.get('fromDate')) || 'Choose the first day.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput type="date" formControlName="toDate" />
+        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput [matDatepicker]="dp27" formControlName="toDate" /><mat-datepicker-toggle matIconSuffix [for]="dp27" /><mat-datepicker #dp27 />
           <mat-error>{{ server(form.get('toDate')) || 'Choose the last day.' }}</mat-error></mat-form-field>
       </div>
       <mat-form-field appearance="outline"><mat-label>Departure times</mat-label>
@@ -159,8 +160,8 @@ export interface TripsData { propertyId: string; routes: TransportRoute[]; vehic
       <button mat-flat-button type="submit" form="trips-form" [disabled]="busy()">Put on</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); }`,
 })
 export class TripsDialog {
   data = inject<TripsData>(MAT_DIALOG_DATA);
@@ -202,13 +203,13 @@ export interface TripEditData { propertyId: string; trip: Trip; vehicles: Vehicl
   selector: 'app-trip-edit-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>{{ t.routeName }} · {{ short(t.date) }} {{ t.departTime }}</h2>
+    <h2 mat-dialog-title>{{ t.routeName }}, {{ short(t.date) }} {{ t.departTime }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="trip-edit-form">
       <p class="mute">{{ seats(t.seatsBooked) }} booked. A new price is for new bookings only.</p>
       <div class="row">
         <mat-form-field appearance="outline"><mat-label>Vehicle</mat-label>
           <mat-select formControlName="vehicleId" [aria-label]="'Vehicle'">
-            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }} · {{ seats(v.seats) }}</mat-option> }
+            @for (v of data.vehicles; track v.id) { <mat-option [value]="v.id">{{ v.name }}, {{ seats(v.seats) }}</mat-option> }
           </mat-select>
           <mat-error>{{ server(form.get('vehicleId')) || 'Choose the vehicle.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Driver</mat-label>
@@ -233,8 +234,8 @@ export interface TripEditData { propertyId: string; trip: Trip; vehicles: Vehicl
       <button mat-flat-button type="submit" form="trip-edit-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; } .mute { color: #5b6b6e; }`,
+  styles: `form { display: flex; flex-direction: column; min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class TripEditDialog {
   data = inject<TripEditData>(MAT_DIALOG_DATA);
@@ -300,8 +301,8 @@ export interface VehicleData { propertyId: string; vehicle: Vehicle | null; }
       <button mat-flat-button type="submit" form="vehicle-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .code { flex: 0 1 130px; } .err { color: #b3261e; } mat-slide-toggle { margin: 4px 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: var(--space-1) 0; }`,
 })
 export class VehicleDialog {
   data = inject<VehicleData>(MAT_DIALOG_DATA);
@@ -371,8 +372,8 @@ export interface RouteData { propertyId: string; route: TransportRoute | null; }
       <button mat-flat-button type="submit" form="route-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 120px; } .code { flex: 0 1 130px; } .err { color: #b3261e; } mat-slide-toggle { margin: 4px 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(520px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 120px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: var(--space-1) 0; }`,
 })
 export class RouteDialog {
   data = inject<RouteData>(MAT_DIALOG_DATA);

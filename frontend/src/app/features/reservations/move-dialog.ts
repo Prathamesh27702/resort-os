@@ -34,10 +34,10 @@ export interface MoveDialogData { propertyId: string; cal: Calendar; booking: Ca
     <div mat-dialog-content>
       <dl class="summary">
         <dt>Status</dt><dd><span [class]="'chip ' + statusClass(b.status)">{{ statusLabel(b.status) }}</span></dd>
-        <dt>Stay</dt><dd>{{ shortDate(b.startDate) }} – {{ shortDate(b.endDate) }} · {{ guestsText(b.adults, b.children) }}</dd>
+        <dt>Stay</dt><dd>{{ shortDate(b.startDate) }} – {{ shortDate(b.endDate) }}, {{ guestsText(b.adults, b.children) }}</dd>
         <dt>Room</dt><dd>{{ current()?.label }}</dd>
         <dt>Source</dt><dd>{{ b.sourceName }}</dd>
-        <dt>Payment</dt><dd>{{ paymentText(b.paymentStatus) }} · booking total {{ rupees(b.totalAmount) }}</dd>
+        <dt>Payment</dt><dd>{{ paymentText(b.paymentStatus) }}, booking total {{ rupees(b.totalAmount) }}</dd>
       </dl>
 
       @if (data.canMove && movable) {
@@ -48,7 +48,7 @@ export interface MoveDialogData { propertyId: string; cal: Calendar; booking: Ca
             <mat-label>Move to</mat-label>
             <mat-select formControlName="target">
               @for (r of options(); track r.key) {
-                <mat-option [value]="r.key">{{ r.label }} · {{ r.typeName }}@if (problems().get(r.key)) { <small class="mute"> · not free</small> }</mat-option>
+                <mat-option [value]="r.key">{{ r.label }}, {{ r.typeName }}@if (problems().get(r.key)) { <small class="mute">, not free</small> }</mat-option>
               }
             </mat-select>
             @if (targetError()) { <mat-error>{{ targetError() }}</mat-error> }
@@ -77,16 +77,16 @@ export interface MoveDialogData { propertyId: string; cal: Calendar; booking: Ca
   `,
   styles: `
     [mat-dialog-content] { min-width: min(440px, 82vw); }
-    .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 12px; }
-    .summary dt { color: #5b6b6e; }
+    .summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px var(--space-4); margin: 0 0 var(--space-3); }
+    .summary dt { color: var(--ro-mute); }
     .summary dd { margin: 0; }
-    h3 { margin: 8px 0 2px; font-size: 15px; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    h3 { margin: var(--space-2) 0 2px; font-size: 15px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; margin: -4px 0 12px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); margin: -4px 0 var(--space-3); }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
   `,
 })
 export class MoveDialog {

@@ -102,6 +102,8 @@ public static class DependencyInjection
         services.AddScoped<ReportRefresher>();
         services.AddScoped<ReportService>();
         services.AddScoped<PayrollService>();
+        services.AddScoped<Compliance.UpiService>();
+        services.AddScoped<Compliance.FormCService>();
         return services;
     }
 }

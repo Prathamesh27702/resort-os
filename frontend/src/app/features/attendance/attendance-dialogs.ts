@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,7 +30,7 @@ export interface RecordData { propertyId: string; row: AttendanceRow; date: stri
  */
 @Component({
   selector: 'app-record-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Record for {{ data.row.employeeName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="record-form">
@@ -40,7 +41,7 @@ export interface RecordData { propertyId: string; row: AttendanceRow; date: stri
         </mat-select>
         <mat-error>{{ server(form.get('action')) || 'Choose what to record.' }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>Day</mat-label><input matInput type="date" formControlName="date" />
+        <mat-form-field appearance="outline"><mat-label>Day</mat-label><input matInput [matDatepicker]="dp3" formControlName="date" /><mat-datepicker-toggle matIconSuffix [for]="dp3" /><mat-datepicker #dp3 />
           <mat-error>{{ server(form.get('date')) || 'Choose the day.' }}</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Time</mat-label><input matInput type="time" formControlName="time" />
           <mat-hint>At the property</mat-hint>
@@ -56,8 +57,8 @@ export interface RecordData { propertyId: string; row: AttendanceRow; date: stri
       <button mat-flat-button type="submit" form="record-form" [disabled]="busy()">Record</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; } .mute { color: #5b6b6e; margin-top: 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(440px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class RecordDialog {
   data = inject<RecordData>(MAT_DIALOG_DATA);
@@ -111,7 +112,7 @@ export class RecordDialog {
       <p class="mute">Staff can clock in and out only inside one of these (their phone's accuracy counts, up to 50 m).</p>
       <ul class="list">
         @for (g of list(); track g.id) {
-          <li [class.off]="!g.isActive"><b>{{ g.name }}</b> <span class="mute">{{ g.radiusM }} m around {{ g.latitude }}, {{ g.longitude }}{{ g.isActive ? '' : ' · switched off' }}</span>
+          <li [class.off]="!g.isActive"><b>{{ g.name }}</b> <span class="mute">{{ g.radiusM }} m around {{ g.latitude }}, {{ g.longitude }}{{ g.isActive ? '' : ', switched off' }}</span>
             <button mat-button (click)="edit(g)">Change</button></li>
         } @empty { <li class="mute">No areas yet.</li> }
       </ul>
@@ -138,9 +139,9 @@ export class RecordDialog {
       <button mat-flat-button type="submit" form="fence-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `.list { list-style: none; padding: 0; margin: 0 0 8px; } .list li { padding: 4px 0; border-bottom: 1px solid #eef2f1; } .list li.off b { color: #5b6b6e; }
-           form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .radius { margin-top: 8px; } .err { color: #b3261e; } .mute { color: #5b6b6e; } h3 { margin: 8px 0 4px; font-size: 1rem; }`,
+  styles: `.list { list-style: none; padding: 0; margin: 0 0 var(--space-2); } .list li { padding: var(--space-1) 0; border-bottom: 1px solid var(--ro-sunk); } .list li.off b { color: var(--ro-mute); }
+           form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .radius { margin-top: var(--space-2); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } h3 { margin: var(--space-2) 0 var(--space-1); font-size: 1rem; }`,
 })
 export class GeofencesDialog {
   private data = inject<{ propertyId: string }>(MAT_DIALOG_DATA);
@@ -207,7 +208,7 @@ export interface CorrectData { propertyId: string; timesheet: Timesheet; line: T
   selector: 'app-correct-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>Correct a day · {{ data.timesheet.sheet.employeeName }}</h2>
+    <h2 mat-dialog-title>Correct a day, {{ data.timesheet.sheet.employeeName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="correct-form">
       @if (data.line; as l) {
         <p class="mute">Now: {{ l.clockIn ? hm(l.clockIn) : '—' }} to {{ l.clockOut ? hm(l.clockOut) : '—' }}, break {{ l.breakMinutes }} min, worked {{ hours(l.workedMinutes) }}.
@@ -237,8 +238,8 @@ export interface CorrectData { propertyId: string; timesheet: Timesheet; line: T
       <button mat-flat-button type="submit" form="correct-form" [disabled]="busy()">Save correction</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(480px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 120px; } .err { color: #b3261e; } .mute { color: #5b6b6e; margin-top: 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(480px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 120px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class CorrectDialog {
   data = inject<CorrectData>(MAT_DIALOG_DATA);

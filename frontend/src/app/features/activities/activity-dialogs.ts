@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,13 +32,13 @@ export interface BookData { propertyId: string; session: ActivitySession; }
   template: `
     <h2 mat-dialog-title>Book {{ s.activityName }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="book-form">
-      <p class="mute">{{ short(s.date) }} · {{ s.startTime }}–{{ s.endTime }} · {{ seats(s.seatsLeft) }} left ·
-        {{ s.price ? rupees(s.price) + ' a person' : 'free' }}@if (s.meetingPoint) { · meet at {{ s.meetingPoint }} }</p>
+      <p class="mute">{{ short(s.date) }}, {{ s.startTime }}–{{ s.endTime }}, {{ seats(s.seatsLeft) }} left,
+        {{ s.price ? rupees(s.price) + ' a person' : 'free' }}@if (s.meetingPoint) {, meet at {{ s.meetingPoint }} }</p>
       <mat-form-field appearance="outline"><mat-label>Guest staying</mat-label>
         <mat-select formControlName="reservationId" [aria-label]="'Guest staying'">
           <mat-option [value]="null">Not staying with us (type the name)</mat-option>
           @for (x of stays(); track x.reservationId) {
-            <mat-option [value]="x.reservationId">{{ x.rooms }} · {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
+            <mat-option [value]="x.reservationId">{{ x.rooms }}, {{ x.guestName }} ({{ x.reference }}{{ x.status === 'CONFIRMED' ? ', arriving' : '' }})</mat-option>
           }
         </mat-select>
         <mat-error>{{ server(form.get('reservationId')) }}</mat-error></mat-form-field>
@@ -69,8 +70,8 @@ export interface BookData { propertyId: string; session: ActivitySession; }
       <button mat-flat-button type="submit" form="book-form" [disabled]="busy()">Book</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
-           .total { font-weight: 600; margin: 4px 0; } mat-checkbox { margin: -4px 0 8px; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 2px; min-width: min(460px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
+           .total { font-weight: 600; margin: var(--space-1) 0; } mat-checkbox { margin: -4px 0 var(--space-2); }`,
 })
 export class BookActivityDialog {
   data = inject<BookData>(MAT_DIALOG_DATA);
@@ -123,7 +124,7 @@ export interface WeatherData { propertyId: string; detail: ActivitySessionDetail
   template: `
     <h2 mat-dialog-title>Cancel for the weather?</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="weather-form">
-      <p><b>{{ s.activityName }}</b> · {{ short(s.date) }} {{ s.startTime }} · {{ seats(s.seatsBooked) }} booked</p>
+      <p><b>{{ s.activityName }}</b>, {{ short(s.date) }} {{ s.startTime }}, {{ seats(s.seatsBooked) }} booked</p>
       <mat-form-field appearance="outline"><mat-label>What is the weather doing</mat-label>
         <input matInput formControlName="reason" maxlength="300" placeholder="e.g. Rough sea, red flag" cdkFocusInitial />
         <mat-error>{{ server(form.get('reason')) || 'Say what the weather is doing (at least 3 characters).' }}</mat-error></mat-form-field>
@@ -132,7 +133,7 @@ export interface WeatherData { propertyId: string; detail: ActivitySessionDetail
         <div formArrayName="moves" class="moves">
           @for (b of booked; track b.id; let i = $index) {
             <div class="mv" [attr.data-booking]="b.code">
-              <span><b>{{ b.guestName }}</b> · {{ seats(b.seats) }} · {{ b.code }}</span>
+              <span><b>{{ b.guestName }}</b>, {{ seats(b.seats) }}, {{ b.code }}</span>
               <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>{{ b.code }}</mat-label>
                 <mat-select [formControlName]="i" [aria-label]="'What happens to ' + b.code">
                   <mat-option [value]="''">{{ b.settlement === 'ROOM_CHARGE' ? 'Refund ' + rupees(b.amount) + ' on the bill' : 'Cancel (nothing was charged)' }}</mat-option>
@@ -152,8 +153,8 @@ export interface WeatherData { propertyId: string; detail: ActivitySessionDetail
       <button mat-flat-button color="warn" type="submit" form="weather-form" [disabled]="busy()">Cancel the session</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(520px, 86vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; } p { margin: 4px 0; }
-           .moves { display: flex; flex-direction: column; gap: 6px; } .mv { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  styles: `form { display: flex; flex-direction: column; min-width: min(520px, 86vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } p { margin: var(--space-1) 0; }
+           .moves { display: flex; flex-direction: column; gap: 6px; } .mv { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
            .mv > span { flex: 1 1 180px; } .mv mat-form-field { flex: 1 1 220px; }`,
 })
 export class WeatherCancelDialog {
@@ -193,7 +194,7 @@ export interface SessionsData { propertyId: string; activities: Activity[]; from
 /** Puts sessions on for a range of days at one or more start times. */
 @Component({
   selector: 'app-sessions-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Put sessions on</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="sessions-form">
@@ -203,9 +204,9 @@ export interface SessionsData { propertyId: string; activities: Activity[]; from
         </mat-select>
         <mat-error>{{ server(form.get('activityId')) || 'Choose the activity.' }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput type="date" formControlName="fromDate" />
+        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput [matDatepicker]="dp1" formControlName="fromDate" /><mat-datepicker-toggle matIconSuffix [for]="dp1" /><mat-datepicker #dp1 />
           <mat-error>{{ server(form.get('fromDate')) || 'Choose the first day.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput type="date" formControlName="toDate" />
+        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput [matDatepicker]="dp2" formControlName="toDate" /><mat-datepicker-toggle matIconSuffix [for]="dp2" /><mat-datepicker #dp2 />
           <mat-error>{{ server(form.get('toDate')) || 'Choose the last day.' }}</mat-error></mat-form-field>
       </div>
       <mat-form-field appearance="outline"><mat-label>Start times</mat-label>
@@ -225,8 +226,8 @@ export interface SessionsData { propertyId: string; activities: Activity[]; from
       <button mat-flat-button type="submit" form="sessions-form" [disabled]="busy()">Put on</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .err { color: var(--ro-error); }`,
 })
 export class SessionsDialog {
   data = inject<SessionsData>(MAT_DIALOG_DATA);
@@ -267,7 +268,7 @@ export interface SessionEditData { propertyId: string; session: ActivitySession;
   selector: 'app-session-edit-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>{{ s.activityName }} · {{ short(s.date) }} {{ s.startTime }}</h2>
+    <h2 mat-dialog-title>{{ s.activityName }}, {{ short(s.date) }} {{ s.startTime }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="session-form">
       <p class="mute">{{ seats(s.seatsBooked) }} booked. A new price is for new bookings only.</p>
       <div class="row">
@@ -285,8 +286,8 @@ export interface SessionEditData { propertyId: string; session: ActivitySession;
       <button mat-flat-button type="submit" form="session-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(420px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 140px; } .err { color: #b3261e; } .mute { color: #5b6b6e; }`,
+  styles: `form { display: flex; flex-direction: column; min-width: min(420px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 140px; } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class SessionEditDialog {
   data = inject<SessionEditData>(MAT_DIALOG_DATA);
@@ -357,8 +358,8 @@ export interface ActivityEditData { propertyId: string; activity: Activity | nul
       <button mat-flat-button type="submit" form="activity-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 86vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 130px; } .code { flex: 0 1 130px; } .err { color: #b3261e; } mat-slide-toggle { margin: 4px 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(520px, 86vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 130px; } .code { flex: 0 1 130px; } .err { color: var(--ro-error); } mat-slide-toggle { margin: var(--space-1) 0; }`,
 })
 export class ActivityDialog {
   data = inject<ActivityEditData>(MAT_DIALOG_DATA);

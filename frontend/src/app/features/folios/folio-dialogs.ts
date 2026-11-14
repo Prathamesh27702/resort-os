@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -28,7 +29,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
  */
 @Component({
   selector: 'app-post-charge-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>Post a charge to <span class="num">{{ data.folio.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="charge-form">
@@ -66,7 +67,7 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
         <mat-form-field appearance="outline" class="full">
           <mat-label>Package</mat-label>
           <mat-select formControlName="packageId">
-            @for (p of packages(); track p.id) { <mat-option [value]="p.id">{{ p.name }} · {{ money(p.price) }}</mat-option> }
+            @for (p of packages(); track p.id) { <mat-option [value]="p.id">{{ p.name }}, {{ money(p.price) }}</mat-option> }
           </mat-select>
           @if (!packages().length) { <mat-hint>No packages are switched on. Managers add them in Settings → Packages.</mat-hint> }
           <mat-error>{{ err('packageId') || 'Choose a package.' }}</mat-error>
@@ -79,14 +80,14 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
         @if (chosenPackage(); as p) {
           <ul class="split" aria-label="Lines this package adds">
             @for (c of p.components; track c.id) {
-              @if (c.amount > 0) { <li><span>{{ label(c.category) }} · {{ c.description }}</span><b class="num">{{ money(c.amount * qty()) }}</b></li> }
+              @if (c.amount > 0) { <li><span>{{ label(c.category) }}, {{ c.description }}</span><b class="num">{{ money(c.amount * qty()) }}</b></li> }
             }
           </ul>
         }
       }
       <mat-form-field appearance="outline">
         <mat-label>Day of the service</mat-label>
-        <input matInput type="date" formControlName="serviceDate" [max]="data.today" />
+        <input matInput [matDatepicker]="dp5" formControlName="serviceDate" [max]="data.today" /><mat-datepicker-toggle matIconSuffix [for]="dp5" /><mat-datepicker #dp5 />
         <mat-error>{{ err('serviceDate') || 'Choose the day.' }}</mat-error>
       </mat-form-field>
       <p class="amount">Adds <b class="num">{{ money(amount()) }}</b> to the bill, before GST</p>
@@ -99,13 +100,13 @@ export interface PostChargeData { propertyId: string; folio: Folio; today: strin
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .mode { margin-bottom: 16px; align-self: flex-start; }
+    .mode { margin-bottom: var(--space-4); align-self: flex-start; }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .split { list-style: none; margin: 0 0 12px; padding: 8px 12px; background: #f2f7f8; border-radius: 8px; }
-    .split li { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
-    .amount { margin: 0 0 8px; color: #0e3b43; }
-    .err { color: #b3261e; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .split { list-style: none; margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); background: var(--ro-wash); border-radius: 8px; }
+    .split li { display: flex; justify-content: space-between; gap: var(--space-3); padding: 2px 0; }
+    .amount { margin: 0 0 var(--space-2); color: var(--ro-tide); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class PostChargeDialog {
@@ -186,7 +187,7 @@ export interface ReverseData { propertyId: string; folio: Folio; item: FolioItem
   template: `
     <h2 mat-dialog-title>Reverse a charge</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="reverse-form">
-      <p class="line"><b>{{ data.item.description }}</b> · {{ shortDate(data.item.serviceDate) }} · <b class="num">{{ money(data.item.total) }}</b></p>
+      <p class="line"><b>{{ data.item.description }}</b>, {{ shortDate(data.item.serviceDate) }}, <b class="num">{{ money(data.item.total) }}</b></p>
       <p class="hint">A reversal line of {{ money(-data.item.total) }} is added; nothing is deleted. The reason is kept on the bill and in the
         audit trail.</p>
       <mat-form-field appearance="outline" class="full">
@@ -203,10 +204,10 @@ export interface ReverseData { propertyId: string; folio: Folio; item: FolioItem
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .line { margin: 0 0 8px; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .line { margin: 0 0 var(--space-2); }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class ReverseChargeDialog {
@@ -253,14 +254,14 @@ export interface SplitResult { from: Folio; to: Folio; }
       <div class="lines" role="group" aria-label="Lines to move">
         @for (i of lines; track i.id) {
           <mat-checkbox [checked]="picked().has(i.id)" (change)="toggle(i.id)">
-            {{ shortDate(i.serviceDate) }} · {{ i.description }} · <b class="num">{{ money(i.total) }}</b>
+            {{ shortDate(i.serviceDate) }}, {{ i.description }}, <b class="num">{{ money(i.total) }}</b>
           </mat-checkbox>
         }
       </div>
       @if (itemsError()) { <p class="err" role="alert">{{ itemsError() }}</p> }
 
       <mat-radio-group formControlName="target" class="targets" aria-label="Move to">
-        @for (f of others; track f.id) { <mat-radio-button [value]="f.id">{{ f.number }} · {{ f.name }}</mat-radio-button> }
+        @for (f of others; track f.id) { <mat-radio-button [value]="f.id">{{ f.number }}, {{ f.name }}</mat-radio-button> }
         <mat-radio-button value="new">A new folio</mat-radio-button>
       </mat-radio-group>
       @if (form.controls.target.value === 'new') {
@@ -280,12 +281,12 @@ export interface SplitResult { from: Folio; to: Folio; }
   `,
   styles: `
     form { min-width: min(480px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 8px; }
-    .lines { display: flex; flex-direction: column; max-height: 260px; overflow: auto; margin-bottom: 12px; }
-    .targets { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-2); }
+    .lines { display: flex; flex-direction: column; max-height: 260px; overflow: auto; margin-bottom: var(--space-3); }
+    .targets { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); }
     .full { width: 100%; }
-    .amount { margin: 0 0 8px; color: #0e3b43; }
-    .err { color: #b3261e; }
+    .amount { margin: 0 0 var(--space-2); color: var(--ro-tide); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class SplitFolioDialog {

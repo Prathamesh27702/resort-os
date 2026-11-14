@@ -10,6 +10,8 @@
     <!-- Invoice and receipt PDFs (Sprint 12). MIT-licensed. -->
     <PackageReference Include="PDFsharp-MigraDoc" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <!-- UPI QR codes on bills and invoices (Sprint 30). MIT-licensed. -->
+    <PackageReference Include="QRCoder" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Resort.Tests" />

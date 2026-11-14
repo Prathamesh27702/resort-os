@@ -1172,6 +1172,49 @@ sent; **Run now** again sends nothing twice. How it works:
 By hand: [REVIEWING.md → Sprint 24](sprints/REVIEWING.md#sprint-24--notification-engine-whatsapp-email-background-jobs).
 Screenshots: [sprint-24-screens/](sprints/sprint-24-screens/).
 
+### Sprint 30: India readiness (FSSAI and UPI on bills, printed bill and kitchen ticket, Form C)
+
+**New:** **Settings → Properties → the property** has **Food licence and UPI** (FSSAI licence number, UPI ID, the name
+the payer sees, and the QR once saved). A restaurant order has **Print bill** (80 mm or 58 mm, with the FSSAI number and
+a UPI QR for the total) and a printer symbol on each kitchen ticket; **Paid → UPI** and **Take payment → UPI** show the QR
+for the amount; invoice PDFs carry the FSSAI number and a UPI QR for the balance. **Form C** in the menu (`/form-c`)
+lists the foreign guests to report to the FRRO within 24 hours: a sheet is opened at check-in, the front desk shows how
+many are waiting, and a reminder goes out at 09:00. Setup and the routine: [INDIA.md](INDIA.md). Demo data (S022): a
+made-up FSSAI number and UPI ID. Restart the API and watch for `Applying migration V027__india_readiness`.
+
+```powershell
+# Backend (IndiaReadinessTests and IndiaUnitTests: FSSAI and UPI checked under their fields; the QR link carries the exact
+# amount; the bill has the FSSAI number and a QR until it is paid; a foreign guest's check-in opens one Form C, filled
+# from the profile and passport, refused with gaps, filed, reopened, not needed; the register; the reminder run twice
+# sends once; anonymising empties the sheet)
+dotnet test ResortOS.sln -c Release --filter "FullyQualifiedName~India"
+
+# Frontend unit tests (the printed bill and ticket, the deadline in words, dates for the portal)
+cd frontend
+npm run test:ci
+
+# Browser, the owner and a receptionist (7 steps, S30-01 … S30-07: FSSAI and UPI in settings with a wrong value explained →
+# the bill with FSSAI number and UPI QR on 80 and 58 mm → the kitchen ticket and Paid by UPI → a foreign guest's check-in
+# puts a Form C on the front desk → the sheet filled, gaps named, marked as filed → the Filed list and the register →
+# a 360 px phone)
+npm run e2e -- e2e/sprint-30.spec.ts
+cd ..
+
+# API checks: the Sprint 30 block must be all PASS (it reads and checks refusals; nothing is saved)
+node scripts/check-api.mjs
+
+# Database checks (blocks 5, 6 and the second query of 9 must return no rows)
+Get-Content database/queries/check-sprint-30.sql | docker compose --env-file .env -f infra/docker/docker-compose.yml exec -T db psql -U resort -d resort_dev
+```
+
+Quick acceptance check: reset the database and sign in. **Restaurant** → an open order → **Print bill**: the FSSAI number
+and a UPI QR for the total. **Front desk** → **Walk-in** → a guest with nationality *Germany* → check in: *1 Form C to
+file* appears on the front desk; open it, fill the gaps, **Mark as filed** with a number. How it works:
+[system-design.md → 4.36](architecture/system-design.md#436-india-readiness-upi-qr-printed-bills-and-form-c).
+
+By hand: [REVIEWING.md → Sprint 30](sprints/REVIEWING.md#sprint-30--india-readiness-fssai-and-upi-on-bills-printed-bill-and-kitchen-ticket-form-c).
+Screenshots: [sprint-30-screens/](sprints/sprint-30-screens/).
+
 ### Adding the next sprint here
 
 Each sprint adds a block like the ones above in the same pull request as its code: what's new, its backend filter

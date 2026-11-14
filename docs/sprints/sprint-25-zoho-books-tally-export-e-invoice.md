@@ -2,7 +2,7 @@
 
 | Status | Phase | Size | Depends on |
 |---|---|---|---|
-| ⚪ Planned — **current sprint** | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 24](sprint-24-notification-engine-whatsapp-email.md) |
+| ⚪ Planned | Phase 9 — Notifications, WhatsApp, Zoho Books, OTA, booking site | L | [Sprint 12](sprint-12-gst-invoices-credit-debit-notes-receipts.md), [Sprint 24](sprint-24-notification-engine-whatsapp-email.md) |
 
 **Goal:** Sync accounting without duplicates on retry (brief §26, §27, §25).
 
@@ -60,6 +60,9 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - [ ] IAccountingProvider + ZohoBooksProvider; external_id/sync_status/last_sync_at/sync_error
 - [ ] Sync customers, items, taxes, invoices, credit notes, payments, expenses via outbox
 - [ ] Tally-compatible XML/CSV export
+- [ ] GSTR-1 export for the accountant: B2B invoices, B2C totals by rate, credit notes and the HSN/SAC summary for a month, as the GST portal's offline-tool CSV/JSON (market comparison of 13 Nov 2026)
+- [ ] GST invoice for walk-in restaurant bills when the guest asks for one with their GSTIN (open point from Sprint 14)
+- [ ] Print the IRN and the e-invoice QR on the invoice PDF next to the UPI QR added in Sprint 30
 
 ## How to run this sprint
 

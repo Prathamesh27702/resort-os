@@ -26,8 +26,8 @@ import { PaymentsApi } from './payments.api';
           @if (d.current; as s) {
             <div>
               <b>{{ d.name }} drawer open</b> <span class="chip ok">Open</span>
-              <br /><small class="mute">since {{ time(s.openedAt) }}@if (s.openedByName) { · {{ s.openedByName }} } · float {{ money(s.openingFloat) }}
-                · {{ s.payments }} cash payment{{ s.payments === 1 ? '' : 's' }}</small>
+              <br /><small class="mute">since {{ time(s.openedAt) }}@if (s.openedByName) {, {{ s.openedByName }}}, float {{ money(s.openingFloat) }},
+               {{ s.payments }} cash payment{{ s.payments === 1 ? '' : 's' }}</small>
             </div>
             <div class="expected"><span>Should hold</span><b class="num" data-testid="drawer-expected">{{ money(s.expected) }}</b></div>
             @if (canOperate()) { <button mat-stroked-button (click)="close(s)">Close drawer</button> }
@@ -40,8 +40,8 @@ import { PaymentsApi } from './payments.api';
         </div>
         @for (p of d.pendingApproval; track p.id) {
           <div class="pending" [attr.data-session]="p.id">
-            <span><b class="bad num">{{ money(abs(p.variance ?? 0)) }} {{ (p.variance ?? 0) < 0 ? 'short' : 'over' }}</b> · shift closed {{ time(p.closedAt!) }}
-              @if (p.closedByName) { by {{ p.closedByName }} } · “{{ p.closeNote }}”</span>
+            <span><b class="bad num">{{ money(abs(p.variance ?? 0)) }} {{ (p.variance ?? 0) < 0 ? 'short' : 'over' }}</b>, shift closed {{ time(p.closedAt!) }}
+              @if (p.closedByName) { by {{ p.closedByName }}}, “{{ p.closeNote }}”</span>
             @if (canApprove()) { <button mat-button (click)="approve(p)">Approve</button> } @else { <small class="mute">Waiting for a manager</small> }
           </div>
         }
@@ -50,19 +50,19 @@ import { PaymentsApi } from './payments.api';
     } @else if (error()) { <p class="err" role="alert">{{ error() }}</p> }
   `,
   styles: `
-    .drawer { background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+    .drawer { background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
     .main { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .main > mat-icon { color: #0e3b43; }
+    .main > mat-icon { color: var(--ro-tide); }
     .main > div:first-of-type { flex: 1; min-width: 200px; }
     .expected { display: flex; flex-direction: column; align-items: flex-end; }
-    .expected span { color: #5b6b6e; font-size: .8rem; }
-    .expected b { font-size: 1.3rem; color: #0e3b43; }
-    .pending { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; padding: 8px 12px;
-               background: #fbefd8; border-radius: 8px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .mute { color: #5b6b6e; }
-    .bad { color: #b3261e; }
-    .err { color: #b3261e; margin: 8px 0 0; }
+    .expected span { color: var(--ro-mute); font-size: .8rem; }
+    .expected b { font-size: 1.3rem; color: var(--ro-tide); }
+    .pending { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-top: 10px; padding: var(--space-2) var(--space-3);
+               background: var(--ro-warn-bg); border-radius: 8px; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .mute { color: var(--ro-mute); }
+    .bad { color: var(--ro-error); }
+    .err { color: var(--ro-error); margin: var(--space-2) 0 0; }
   `,
 })
 export class CashDrawerPanel {

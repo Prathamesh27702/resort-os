@@ -39,14 +39,14 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
         <div class="page-head">
           <div>
             <a routerLink="/reservations" class="back">Reservations</a>
-            <h1><span class="num">{{ r.reference }}</span> · {{ primary()?.fullName }}
+            <h1><span class="num ref">{{ r.reference }}</span> <span class="name">{{ primary()?.fullName }}</span>
               <span [class]="'chip ' + statusClass(r.status)">{{ statusLabel(r.status) }}</span></h1>
-            <p>{{ dayLabel(r.checkIn) }} – {{ dayLabel(r.checkOut) }} · {{ r.nights }} night{{ r.nights === 1 ? '' : 's' }} ·
+            <p>{{ dayLabel(r.checkIn) }} – {{ dayLabel(r.checkOut) }}, {{ r.nights }} night{{ r.nights === 1 ? '' : 's' }},
                {{ guestsText(r.adults, r.children) }}</p>
           </div>
           <div class="head-actions">
             @if (folio(); as fo) {
-              <a mat-stroked-button [routerLink]="['/folios', fo.id]" data-testid="bill"><mat-icon>receipt_long</mat-icon>Bill · {{ rupeesExact(fo.balance) }}</a>
+              <a mat-stroked-button [routerLink]="['/folios', fo.id]" data-testid="bill"><mat-icon>receipt_long</mat-icon>Bill <span class="num">{{ rupeesExact(fo.balance) }}</span></a>
             }
             @for (inv of invoices(); track inv.id) {
               <a mat-stroked-button [routerLink]="['/invoices', inv.id]" data-testid="invoice"><mat-icon>request_quote</mat-icon>Invoice {{ inv.number }}</a>
@@ -113,7 +113,7 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
             <tbody>
               @for (u of currentUnits(); track u.id) {
                 <tr>
-                  <td><b>{{ u.unitName }}</b>@if (u.bedCode) { · bed {{ u.bedCode }} }</td>
+                  <td><b>{{ u.unitName }}</b>@if (u.bedCode) {, bed {{ u.bedCode }} }</td>
                   <td>{{ u.accommodationTypeName }}</td>
                   <td>{{ guestsText(u.adults, u.children) }}</td>
                   <td class="right num">{{ rupeesExact(u.total) }}</td>
@@ -147,7 +147,7 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
           <section class="panel card">
             <h2>Notes</h2>
             @for (n of r.notes; track n.id) {
-              <p class="note"><span class="pre">{{ n.note }}</span><br /><small class="mute">{{ when(n.createdAt) }}@if (n.createdByName) { · {{ n.createdByName }} }</small></p>
+              <p class="note"><span class="pre">{{ n.note }}</span><br /><small class="mute">{{ when(n.createdAt) }}@if (n.createdByName) {, {{ n.createdByName }} }</small></p>
             } @empty { <p class="mute">No notes yet.</p> }
             <form [formGroup]="noteForm" (ngSubmit)="addNote()" *appCan="'reservation.update'">
               <mat-form-field appearance="outline" class="full">
@@ -166,7 +166,7 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
               <p>
                 @if (h.fromStatus) { {{ statusLabel(h.fromStatus) }} → } <b>{{ statusLabel(h.toStatus) }}</b>
                 @if (h.reason) { <br /><span class="pre">“{{ h.reason }}”</span> }
-                <br /><small class="mute">{{ when(h.changedAt) }}@if (h.changedByName) { · {{ h.changedByName }} }</small>
+                <br /><small class="mute">{{ when(h.changedAt) }}@if (h.changedByName) {, {{ h.changedByName }} }</small>
               </p>
             }
           </section>
@@ -180,26 +180,28 @@ import { BookingMessagesPanel } from '../messages/booking-messages-panel';
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: 8px; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
-    .card { padding: 16px 20px; }
-    .wide { margin-bottom: 16px; }
-    h2 { font-size: 1rem; color: #0e3b43; margin: 0 0 12px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; margin: 0; }
-    dt { color: #5b6b6e; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    h1 .ref { margin-right: var(--space-2); }
+    h1 .name { overflow-wrap: anywhere; }
+    h1 .chip { font-size: .8rem; vertical-align: middle; margin-left: var(--space-2); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4); }
+    .card { padding: var(--space-4) var(--space-5); }
+    .wide { margin-bottom: var(--space-4); }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin: 0 0 var(--space-3); }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px var(--space-3); margin: 0; }
+    dt { color: var(--ro-mute); }
     dd { margin: 0; }
-    .mute { color: #5b6b6e; }
+    .mute { color: var(--ro-mute); }
     .right { text-align: right; white-space: nowrap; }
     .pre { white-space: pre-wrap; }
-    .err { color: #b3261e; }
-    .danger { color: #b3261e; }
+    .err { color: var(--ro-error); }
+    .danger { color: var(--ro-error); }
     .full { width: 100%; }
-    .note { border-bottom: 1px solid #edf1f0; padding-bottom: 8px; margin: 0 0 8px; }
-    .hint { color: #5b6b6e; font-size: .85rem; margin: 8px 0 0; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
+    .note { border-bottom: 1px solid var(--ro-line-soft); padding-bottom: var(--space-2); margin: 0 0 var(--space-2); }
+    .hint { color: var(--ro-mute); font-size: .85rem; margin: var(--space-2) 0 0; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
   `,
 })
@@ -267,7 +269,7 @@ export class ReservationPage implements OnInit {
   when(iso: string) { return inZone(iso, this.props.current()!.timezone, { dateStyle: 'medium', timeStyle: 'short' }); }
   unitName(ruId: string) {
     const u = this.r()?.units.find(x => x.id === ruId);
-    return u ? u.unitName + (u.bedCode ? ` · bed ${u.bedCode}` : '') : '';
+    return u ? u.unitName + (u.bedCode ? `, bed ${u.bedCode}` : '') : '';
   }
 
   private done(r: Reservation, message: string) {
@@ -331,7 +333,7 @@ export class ReservationPage implements OnInit {
   change() {
     this.dialog.open<ChangeStayDialog, ChangeStayData, Reservation>(ChangeStayDialog, {
       data: { reservation: this.r()!, propertyId: this.pid, today: this.props.current()!.localDate },
-    }).afterClosed().subscribe(r => { if (r) this.done(r, `${r.reference} updated · new total ${rupeesExact(r.totalAmount)}`); });
+    }).afterClosed().subscribe(r => { if (r) this.done(r, `${r.reference} updated, new total ${rupeesExact(r.totalAmount)}`); });
   }
 }
 
@@ -394,10 +396,10 @@ export interface ChangeStayData { reservation: Reservation; propertyId: string; 
   `,
   styles: `
     form { min-width: min(460px, 80vw); display: flex; flex-direction: column; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; align-items: start; }
-    .room { grid-column: 1 / -1; font-weight: 500; margin: 4px 0 8px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1) var(--space-3); align-items: start; }
+    .room { grid-column: 1 / -1; font-weight: 500; margin: var(--space-1) 0 var(--space-2); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class ChangeStayDialog {

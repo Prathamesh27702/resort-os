@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -33,7 +34,7 @@ export interface AskData {
  */
 @Component({
   selector: 'app-ask-leave-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>{{ data.employees ? 'Leave for someone' : 'Ask for leave' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="ask-form">
@@ -50,9 +51,9 @@ export interface AskData {
         </mat-select>
         <mat-error>{{ server(form.get('leaveTypeId')) || 'Choose the kind of leave.' }}</mat-error></mat-form-field>
       <div class="row">
-        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput type="date" formControlName="fromDate" />
+        <mat-form-field appearance="outline"><mat-label>From</mat-label><input matInput [matDatepicker]="dp8" formControlName="fromDate" /><mat-datepicker-toggle matIconSuffix [for]="dp8" /><mat-datepicker #dp8 />
           <mat-error>{{ server(form.get('fromDate')) || 'Choose the first day.' }}</mat-error></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput type="date" formControlName="toDate" />
+        <mat-form-field appearance="outline"><mat-label>To</mat-label><input matInput [matDatepicker]="dp9" formControlName="toDate" /><mat-datepicker-toggle matIconSuffix [for]="dp9" /><mat-datepicker #dp9 />
           <mat-error>{{ server(form.get('toDate')) || 'Choose the last day.' }}</mat-error></mat-form-field>
       </div>
       @if (type()?.allowHalfDay) {
@@ -71,7 +72,7 @@ export interface AskData {
       @if (preview(); as p) {
         <section class="preview" data-testid="leave-preview">
           <p class="big"><b>{{ days(p.days) }}</b>
-            @if (p.balanceAfter !== null) { <span> · {{ days(p.available!) }} available, <b>{{ days(p.balanceAfter) }}</b> left after</span> }
+            @if (p.balanceAfter !== null) { <span>, {{ days(p.available!) }} available, <b>{{ days(p.balanceAfter) }}</b> left after</span> }
           </p>
           @if (p.skipped.length) { <p class="mute small">Not counted: {{ p.skipped.join('; ') }}</p> }
           @for (w of p.warnings; track w.message) {
@@ -86,11 +87,11 @@ export interface AskData {
       <button mat-flat-button type="submit" form="ask-form" [disabled]="busy()">Send</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(460px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .halves { display: flex; gap: 12px; flex-wrap: wrap; margin: -4px 0 8px; }
-           .err { color: #b3261e; } .mute { color: #5b6b6e; } .small { font-size: .85rem; }
-           .preview { background: #f4f8f7; border-radius: 10px; padding: 8px 12px; margin-top: 4px; } .preview p { margin: 4px 0; }
-           .big { font-size: 1.05rem; } .w { color: #5b4a00; } .k-ROSTERED { color: #0e3b43; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(460px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .halves { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: -4px 0 var(--space-2); }
+           .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
+           .preview { background: var(--ro-wash); border-radius: 10px; padding: var(--space-2) var(--space-3); margin-top: var(--space-1); } .preview p { margin: var(--space-1) 0; }
+           .big { font-size: 1.05rem; } .w { color: var(--ro-warn-strong); } .k-ROSTERED { color: var(--ro-tide); }`,
 })
 export class AskLeaveDialog {
   data = inject<AskData>(MAT_DIALOG_DATA);
@@ -169,7 +170,7 @@ export interface ApproveData { propertyId: string; request: LeaveRequest; }
   template: `
     <h2 mat-dialog-title>Approve {{ r.code }}?</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="approve-form">
-      <p><b>{{ r.employeeName }}</b> · {{ r.leaveTypeName }} · {{ days(r.days) }}</p>
+      <p><b>{{ r.employeeName }}</b>, {{ r.leaveTypeName }}, {{ days(r.days) }}</p>
       @if (r.balance !== null) { <p class="mute">{{ days(r.balance) }} in the balance, {{ days(r.balance - r.days) }} after.</p> }
       @for (w of r.warnings; track w.message) { <p class="w"><mat-icon inline>{{ w.kind === 'ROSTERED' ? 'event_busy' : 'warning' }}</mat-icon> {{ w.message }}</p> }
       <mat-form-field appearance="outline"><mat-label>Note (optional)</mat-label><input matInput formControlName="note" maxlength="300" />
@@ -181,8 +182,8 @@ export interface ApproveData { propertyId: string; request: LeaveRequest; }
       <button mat-flat-button type="submit" form="approve-form" [disabled]="busy()">Approve</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(440px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
-           .w { color: #5b4a00; margin: 4px 0; } p { margin: 4px 0; }`,
+  styles: `form { display: flex; flex-direction: column; min-width: min(440px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
+           .w { color: var(--ro-warn-strong); margin: var(--space-1) 0; } p { margin: var(--space-1) 0; }`,
 })
 export class ApproveLeaveDialog {
   data = inject<ApproveData>(MAT_DIALOG_DATA);
@@ -248,9 +249,9 @@ export interface TypeData { propertyId: string; type: LeaveType | null; }
       <button mat-flat-button type="submit" form="type-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(520px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 140px; } .code { flex: 0 1 110px; } .toggles { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 12px; }
-           .err { color: #b3261e; } .mute { color: #5b6b6e; } .small { font-size: .85rem; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(520px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 140px; } .code { flex: 0 1 110px; } .toggles { display: flex; gap: var(--space-4); flex-wrap: wrap; margin: 0 0 var(--space-3); }
+           .err { color: var(--ro-error); } .mute { color: var(--ro-mute); } .small { font-size: .85rem; }`,
 })
 export class LeaveTypeDialog {
   data = inject<TypeData>(MAT_DIALOG_DATA);
@@ -298,12 +299,12 @@ export interface HolidayData { propertyId: string; holiday: Holiday | null; }
 
 @Component({
   selector: 'app-holiday-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSlideToggleModule],
   template: `
     <h2 mat-dialog-title>{{ h ? h.name : 'Add a holiday' }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="holiday-form">
       <p class="mute">Leave over a holiday doesn't count it. Leave already asked for keeps its days.</p>
-      <mat-form-field appearance="outline"><mat-label>Date</mat-label><input matInput type="date" formControlName="date" />
+      <mat-form-field appearance="outline"><mat-label>Date</mat-label><input matInput [matDatepicker]="dp10" formControlName="date" /><mat-datepicker-toggle matIconSuffix [for]="dp10" /><mat-datepicker #dp10 />
         <mat-error>{{ server(form.get('date')) || 'Choose the date.' }}</mat-error></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput formControlName="name" maxlength="60" placeholder="e.g. Diwali" />
         <mat-error>{{ server(form.get('name')) || 'Give the holiday a name.' }}</mat-error></mat-form-field>
@@ -315,7 +316,7 @@ export interface HolidayData { propertyId: string; holiday: Holiday | null; }
       <button mat-flat-button type="submit" form="holiday-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(380px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; margin-top: 0; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(380px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); margin-top: 0; }`,
 })
 export class HolidayDialog {
   data = inject<HolidayData>(MAT_DIALOG_DATA);
@@ -383,7 +384,7 @@ export interface LedgerData { propertyId: string; employeeId: string; canAdjust:
           <tbody>
             @for (e of l.entries; track e.id) {
               <tr><td>{{ dayText(e.entryDate) }}</td>
-                <td>{{ entryLabel[e.entryType] }} {{ e.leaveTypeCode }}@if (e.requestCode) { · {{ e.requestCode }} }@if (e.period) { · {{ e.period }} }
+                <td>{{ entryLabel[e.entryType] }} {{ e.leaveTypeCode }}@if (e.requestCode) {, {{ e.requestCode }} }@if (e.period) {, {{ e.period }} }
                   @if (e.reason) { <small class="mute">{{ e.reason }}</small> }@if (e.by) { <small class="mute">by {{ e.by }}</small> }</td>
                 <td class="n" [class.neg]="e.days < 0">{{ e.days > 0 ? '+' : '' }}{{ e.days }}</td><td class="n">{{ e.balanceAfter }}</td></tr>
             } @empty { <tr><td colspan="4" class="mute">Nothing yet: no leave earned, taken or brought in.</td></tr> }
@@ -393,10 +394,10 @@ export interface LedgerData { propertyId: string; employeeId: string; canAdjust:
     </div>
     <div mat-dialog-actions align="end"><button mat-button type="button" (click)="ref.close(changed)">Close</button></div>
   `,
-  styles: `.bal { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; } .adjust { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  styles: `.bal { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: var(--space-2); } .adjust { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
            .adjust > mat-form-field { flex: 1 1 140px; } .adjust .days { flex: 0 1 120px; } .adjust .why { flex: 2 1 200px; }
-           .ledger { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; } .ledger th, .ledger td { text-align: left; padding: 6px; border-bottom: 1px solid #eef2f1; vertical-align: top; }
-           .ledger small { display: block; } .n { text-align: right; white-space: nowrap; } .neg { color: #8c1d18; } .err { color: #b3261e; } .mute { color: #5b6b6e; }
+           .ledger { width: 100%; border-collapse: collapse; margin-top: var(--space-2); font-size: .9rem; } .ledger th, .ledger td { text-align: left; padding: 6px; border-bottom: 1px solid var(--ro-sunk); vertical-align: top; }
+           .ledger small { display: block; } .n { text-align: right; white-space: nowrap; } .neg { color: var(--ro-error-strong); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
            :host { display: block; min-width: min(640px, 88vw); }`,
 })
 export class LedgerDialog {

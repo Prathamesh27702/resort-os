@@ -1,3 +1,4 @@
+import { UpiQrComponent } from '../india/upi-qr';
 import { Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -44,7 +45,7 @@ export interface DishData { item: MenuItem; }
       @if (item.variants.length) {
         <h3>Portion</h3>
         <mat-radio-group [ngModel]="variantId()" (ngModelChange)="variantId.set($event)" aria-label="Portion" class="opts">
-          @for (v of item.variants; track v.id) { <mat-radio-button [value]="v.id">{{ v.name }} · {{ rupees(v.price) }}</mat-radio-button> }
+          @for (v of item.variants; track v.id) { <mat-radio-button [value]="v.id">{{ v.name }}, {{ rupees(v.price) }}</mat-radio-button> }
         </mat-radio-group>
       }
       @for (g of item.modifierGroups; track g.id) {
@@ -52,7 +53,7 @@ export interface DishData { item: MenuItem; }
         <div class="opts" role="group" [attr.aria-label]="g.name">
           @for (m of g.modifiers; track m.id) {
             <mat-checkbox [checked]="picked().includes(m.id)" (change)="toggle(g.id, m.id, $event.checked)">
-              {{ m.name }}@if (m.priceDelta) { · +{{ rupees(m.priceDelta) }} }
+              {{ m.name }}@if (m.priceDelta) {, +{{ rupees(m.priceDelta) }} }
             </mat-checkbox>
           }
         </div>
@@ -70,22 +71,22 @@ export interface DishData { item: MenuItem; }
     </div>
     <div mat-dialog-actions align="end">
       <button mat-button mat-dialog-close type="button">Cancel</button>
-      <button mat-flat-button type="button" (click)="add()">Add · {{ rupees(price() * qty()) }}</button>
+      <button mat-flat-button type="button" (click)="add()">Add for {{ rupees(price() * qty()) }}</button>
     </div>
   `,
   styles: `
     .dish { min-width: min(420px, 84vw); }
-    h3 { margin: 12px 0 4px; font-size: 1rem; }
+    h3 { margin: var(--space-3) 0 var(--space-1); font-size: 1rem; }
     .opts { display: flex; flex-direction: column; }
-    .qty { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+    .qty { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-3) 0; }
     .qty b { font-size: 1.3rem; min-width: 2ch; text-align: center; }
     .full { width: 100%; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; }
-    .food { display: inline-block; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: 8px; vertical-align: middle; }
-    .food.VEG { border-color: #2e7d32; background: radial-gradient(#2e7d32 40%, transparent 45%); }
-    .food.NON_VEG { border-color: #8c1d18; background: radial-gradient(#8c1d18 40%, transparent 45%); }
-    .food.EGG { border-color: #c77700; background: radial-gradient(#c77700 40%, transparent 45%); }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
+    .food { display: inline-block; width: 12px; height: 12px; border: 2px solid; border-radius: 2px; margin-right: var(--space-2); vertical-align: middle; }
+    .food.VEG { border-color: var(--ro-ok-mid); background: radial-gradient(var(--ro-ok-mid) 40%, transparent 45%); }
+    .food.NON_VEG { border-color: var(--ro-error-strong); background: radial-gradient(var(--ro-error-strong) 40%, transparent 45%); }
+    .food.EGG { border-color: var(--ro-warn-mid); background: radial-gradient(var(--ro-warn-mid) 40%, transparent 45%); }
   `,
 })
 export class DishDialog {
@@ -144,7 +145,7 @@ export interface ReasonData<T> { title: string; intro: string; button: string; p
       <button mat-flat-button color="warn" type="submit" form="reason-form" [disabled]="busy()">{{ data.button }}</button>
     </div>
   `,
-  styles: `form { min-width: min(400px, 84vw); } .full { width: 100%; } .err { color: #b3261e; }`,
+  styles: `form { min-width: min(400px, 84vw); } .full { width: 100%; } .err { color: var(--ro-error); }`,
 })
 export class ReasonDialog<T> {
   data = inject<ReasonData<T>>(MAT_DIALOG_DATA);
@@ -204,8 +205,8 @@ export interface DiscountData<T> {
       <button mat-flat-button type="submit" form="discount-form" [disabled]="busy()">Give discount</button>
     </div>
   `,
-  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: 8px; } .full { width: 100%; }
-           .err { color: #b3261e; margin: 0; } .mute { color: #5b6b6e; }`,
+  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: var(--space-2); } .full { width: 100%; }
+           .err { color: var(--ro-error); margin: 0; } .mute { color: var(--ro-mute); }`,
 })
 export class DiscountDialog<T> {
   data = inject<DiscountData<T>>(MAT_DIALOG_DATA);
@@ -240,14 +241,15 @@ export class DiscountDialog<T> {
 
 // ------------------------------------------------------------------ paid at the restaurant
 
-export interface PayData<T> { total: number; run: (method: PaymentMethod, reference: string | null) => Observable<T>; }
+/** upi: the property and the bill number, so choosing UPI shows the property's QR for exactly the total (Sprint 30). */
+export interface PayData<T> { total: number; run: (method: PaymentMethod, reference: string | null) => Observable<T>; upi?: { pid: string; note: string; canFix: boolean }; }
 
 /** How a walk-in bill was paid. Cash goes into the open cash drawer; UPI / card / bank transfer take their reference. */
 @Component({
   selector: 'app-pay-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, UpiQrComponent],
   template: `
-    <h2 mat-dialog-title>Paid · {{ rupeesExact(data.total) }}</h2>
+    <h2 mat-dialog-title>Paid {{ rupeesExact(data.total) }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
       <mat-button-toggle-group formControlName="method" aria-label="How it was paid" class="methods">
         @for (m of methods; track m) { <mat-button-toggle [value]="m">{{ label(m) }}</mat-button-toggle> }
@@ -256,6 +258,9 @@ export interface PayData<T> { total: number; run: (method: PaymentMethod, refere
       @if (form.controls.method.value === 'CASH') {
         <p class="mute">The cash goes into the open cash drawer.</p>
       } @else {
+        @if (form.controls.method.value === 'UPI' && data.upi; as u) {
+          <app-upi-qr [pid]="u.pid" [amount]="data.total" [note]="u.note" [canFix]="u.canFix" />
+        }
         <mat-form-field appearance="outline" class="full">
           <mat-label>Reference (UPI ref, card slip or bank ref)</mat-label>
           <input matInput formControlName="reference" maxlength="100" placeholder="e.g. UPI 4123 5678 9012" />
@@ -269,8 +274,8 @@ export interface PayData<T> { total: number; run: (method: PaymentMethod, refere
       <button mat-flat-button type="submit" form="pay-form" [disabled]="busy()">Settle the bill</button>
     </div>
   `,
-  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: 8px; } .full { width: 100%; }
-           .methods { flex-wrap: wrap; } .err { color: #b3261e; margin: 0; } .mute { color: #5b6b6e; }`,
+  styles: `form { min-width: min(400px, 84vw); display: flex; flex-direction: column; gap: var(--space-2); } .full { width: 100%; }
+           .methods { flex-wrap: wrap; } .err { color: var(--ro-error); margin: 0; } .mute { color: var(--ro-mute); }`,
 })
 export class PayDialog<T> {
   data = inject<PayData<T>>(MAT_DIALOG_DATA);
@@ -313,7 +318,7 @@ export interface RoomData<T> {
         <mat-radio-group [(ngModel)]="picked" aria-label="Room" class="opts">
           @for (r of data.rooms; track r.reservationId) {
             <mat-radio-button [value]="r.reservationId" [attr.data-room]="r.unitCode">
-              <b>{{ r.unitName }}</b> · {{ r.guestName }} <span class="mute">({{ r.reference }})</span>
+              <b>{{ r.unitName }}</b>, {{ r.guestName }} <span class="mute">({{ r.reference }})</span>
             </mat-radio-button>
           }
         </mat-radio-group>
@@ -327,7 +332,7 @@ export interface RoomData<T> {
       <button mat-flat-button type="button" (click)="save()" [disabled]="busy() || !data.rooms.length">{{ data.button }}</button>
     </div>
   `,
-  styles: `.rooms { min-width: min(420px, 84vw); } .opts { display: flex; flex-direction: column; gap: 4px; } .mute { color: #5b6b6e; } .err { color: #b3261e; }`,
+  styles: `.rooms { min-width: min(420px, 84vw); } .opts { display: flex; flex-direction: column; gap: var(--space-1); } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }`,
 })
 export class RoomDialog<T> {
   data = inject<RoomData<T>>(MAT_DIALOG_DATA);

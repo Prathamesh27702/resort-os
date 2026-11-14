@@ -82,7 +82,7 @@ test('S10-02 Part of the bill in cash, a card number refused, the rest by UPI: t
   await said(r, `${money(1000)} paid`);
   await expect(r.getByTestId('balance')).toHaveText(money(owed - 1000));
   const cashLine = r.locator('tr[data-payment-line]').first();
-  await expect(cashLine).toContainText('Payment · Cash');
+  await expect(cashLine).toContainText('Payment, Cash');
   cashPaymentId = (await cashLine.getByRole('link').getAttribute('href'))!.split('/').pop()!;
 
   // a card number typed into the reference is refused before it is sent, under the field

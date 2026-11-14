@@ -184,6 +184,7 @@ app.MapTransportEndpoints();
 app.MapFinanceEndpoints();
 app.MapReportEndpoints();
 app.MapNotificationsEndpoints();
+app.MapComplianceEndpoints();
 
 app.Run();
 

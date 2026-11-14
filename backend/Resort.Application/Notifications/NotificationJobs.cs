@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Resort.Application.Common;
 using Resort.Application.Validation;
 using Resort.Contracts;
+using Resort.Domain.Compliance;
 using Resort.Domain.Inventory;
 using Resort.Domain.Leave;
 using Resort.Domain.Notifications;
@@ -91,6 +92,7 @@ public sealed class NotificationJobs(IAppDbContext db, Outbox outbox, TimeProvid
             JobCodes.PaymentReminder => await UnpaidAsync(p, today, now, ct),
             JobCodes.InventoryAlert => await LowStockAsync(p, today, ct),
             JobCodes.LeaveReminder => await LeaveWaitingAsync(p, today, now, ct),
+            JobCodes.FormCReminder => await FormCWaitingAsync(p, today, ct),
             _ => [],
         };
 
@@ -243,6 +245,39 @@ public sealed class NotificationJobs(IAppDbContext db, Outbox outbox, TimeProvid
             new Work(key, null, $"{waiting.Count} leave request{(waiting.Count == 1 ? "" : "s")} waiting on {QuoteEngine.Day(today)}",
                 runId => outbox.StaffAsync(p, MessageCodes.LeaveReminder, Perm.LeaveApprove, $"{MessageCodes.LeaveReminder}:{key}", values,
                     "/leave", MessageSources.Job, runId, ct)),
+        ];
+    }
+
+    /// <summary>Form C sheets still to file (Sprint 30): one reminder a day to the staff who check guests in, with each
+    /// guest's deadline, the ones already past it first.</summary>
+    private async Task<List<Work>> FormCWaitingAsync(Property p, DateOnly today, CancellationToken ct)
+    {
+        var waiting = await db.FormCRecords.IgnoreQueryFilters().AsNoTracking()
+            .Where(f => f.PropertyId == p.Id && f.Status == FormCStatuses.Pending)
+            .Join(db.Guests.IgnoreQueryFilters(), f => f.GuestId, g => g.Id, (f, g) => new { f, g.FirstName, g.LastName })
+            .Join(db.Reservations.IgnoreQueryFilters(), x => x.f.ReservationId, r => r.Id, (x, r) => new { x.f, x.FirstName, x.LastName, r.Reference })
+            .OrderBy(x => x.f.DueAt).ToListAsync(ct);
+        if (waiting.Count == 0) return [];
+        var tz = TimeZoneInfo.FindSystemTimeZoneById(p.Timezone);
+        var now = clock.GetUtcNow();
+        var text = string.Join("; ", waiting.Select(x =>
+        {
+            var name = string.IsNullOrWhiteSpace(x.LastName) ? x.FirstName : x.FirstName + " " + x.LastName;
+            var due = TimeZoneInfo.ConvertTime(x.f.DueAt, tz).ToString("ddd d MMM, h:mm tt", CultureInfo.InvariantCulture);
+            return x.f.DueAt <= now ? $"{name} ({x.Reference}), overdue since {due}" : $"{name} ({x.Reference}), to file by {due}";
+        }));
+        var values = new Dictionary<string, string>
+        {
+            ["property_name"] = p.Name,
+            ["count"] = waiting.Count.ToString(CultureInfo.InvariantCulture),
+            ["guests"] = text,
+        };
+        var key = today.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+        return
+        [
+            new Work(key, null, $"{waiting.Count} Form C to file on {QuoteEngine.Day(today)}",
+                runId => outbox.StaffAsync(p, MessageCodes.FormCReminder, Perm.FrontDeskCheckIn, $"{MessageCodes.FormCReminder}:{key}", values,
+                    "/form-c", MessageSources.Job, runId, ct)),
         ];
     }
 

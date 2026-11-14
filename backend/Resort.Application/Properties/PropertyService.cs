@@ -30,7 +30,7 @@ public sealed class PropertyService(IAppDbContext db, ICurrentUser caller, Calle
         var p = new Property { OrganizationId = orgId, Code = code };
         Apply(p, r.Name, r.LegalName, r.PropertyType, r.Timezone, r.Currency, r.AddressLine1, r.AddressLine2, r.City,
             r.District, r.StateName, r.GstStateCode, r.PostalCode, r.CountryCode, r.Phone, r.Email, r.CheckInTime,
-            r.CheckOutTime, r.Latitude, r.Longitude, isActive: true);
+            r.CheckOutTime, r.Latitude, r.Longitude, isActive: true, r.FssaiLicenceNo, r.UpiId, r.UpiPayeeName);
         db.Properties.Add(p);
         await db.SaveChangesAsync(ct);
         return ToDto(p, clock.GetUtcNow());
@@ -42,7 +42,7 @@ public sealed class PropertyService(IAppDbContext db, ICurrentUser caller, Calle
         ConcurrencyGuard.ExpectVersion(db, p, r.Version);
         Apply(p, r.Name, r.LegalName, r.PropertyType, r.Timezone, r.Currency, r.AddressLine1, r.AddressLine2, r.City,
             r.District, r.StateName, r.GstStateCode, r.PostalCode, r.CountryCode, r.Phone, r.Email, r.CheckInTime,
-            r.CheckOutTime, r.Latitude, r.Longitude, r.IsActive);
+            r.CheckOutTime, r.Latitude, r.Longitude, r.IsActive, r.FssaiLicenceNo, r.UpiId, r.UpiPayeeName);
         await db.SaveChangesAsync(ct);
         return ToDto(p, clock.GetUtcNow());
     }
@@ -73,7 +73,8 @@ public sealed class PropertyService(IAppDbContext db, ICurrentUser caller, Calle
 
     private static void Apply(Property p, string name, string? legalName, string type, string tz, string currency,
         string? a1, string? a2, string? city, string? district, string? state, string? gstState, string? postal,
-        string country, string? phone, string? email, TimeOnly ci, TimeOnly co, decimal? lat, decimal? lng, bool isActive)
+        string country, string? phone, string? email, TimeOnly ci, TimeOnly co, decimal? lat, decimal? lng, bool isActive,
+        string? fssai, string? upiId, string? upiPayee)
     {
         p.Name = name.Trim();
         p.LegalName = NullIfBlank(legalName);
@@ -95,6 +96,9 @@ public sealed class PropertyService(IAppDbContext db, ICurrentUser caller, Calle
         p.Latitude = lat;
         p.Longitude = lng;
         p.IsActive = isActive;
+        p.FssaiLicenceNo = NullIfBlank(fssai)?.Replace(" ", "", StringComparison.Ordinal);
+        p.UpiId = NullIfBlank(upiId);
+        p.UpiPayeeName = NullIfBlank(upiPayee);
     }
 
     private static string? NullIfBlank(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
@@ -102,7 +106,8 @@ public sealed class PropertyService(IAppDbContext db, ICurrentUser caller, Calle
     internal static PropertyDto ToDto(Property p, DateTimeOffset now) => new(
         p.Id, p.Code, p.Name, p.LegalName, p.PropertyType, p.Timezone, p.Currency, p.AddressLine1, p.AddressLine2,
         p.City, p.District, p.StateName, p.GstStateCode, p.PostalCode, p.CountryCode, p.Phone, p.Email,
-        p.CheckInTime, p.CheckOutTime, p.Latitude, p.Longitude, p.IsActive, p.LocalDate(now), p.Version);
+        p.CheckInTime, p.CheckOutTime, p.Latitude, p.Longitude, p.IsActive, p.LocalDate(now), p.Version,
+        p.FssaiLicenceNo, p.UpiId, p.UpiPayeeName);
 }
 
 public sealed class OrganizationService(IAppDbContext db, ICurrentUser caller)
