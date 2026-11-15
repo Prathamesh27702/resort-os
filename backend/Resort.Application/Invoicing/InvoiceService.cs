@@ -28,7 +28,8 @@ namespace Resort.Application.Invoicing;
 /// </summary>
 public sealed class InvoiceService(
     IAppDbContext db, ICurrentUser caller, CallerAccess access, AuditContext audit, TimeProvider clock, ReservationService reservations,
-    FolioBilling billing, ReceiptService receipts, InvoicePrinter printer, IPdfRenderer pdf)
+    FolioBilling billing, ReceiptService receipts, InvoicePrinter printer, IPdfRenderer pdf, Compliance.UpiService upi,
+    FrontDesk.IFolioBalances balances)
 {
     public const string IssueAtCheckOutSetting = "invoice.issue_at_checkout";
 
@@ -499,7 +500,13 @@ public sealed class InvoiceService(
     public async Task<PrintDocument> InvoicePdfAsync(Guid propertyId, Guid id, CancellationToken ct)
     {
         var dto = await GetAsync(propertyId, id, ct);
-        return printer.Invoice(dto, await PropertyContactAsync(propertyId, ct));
+        // Money still owed on the booking and a UPI ID on the property: the invoice carries a QR for exactly that amount.
+        var property = await LoadPropertyAsync(propertyId, ct);
+        var due = dto.Status == InvoiceStatuses.Cancelled ? 0m : await balances.BalanceAsync(dto.ReservationId, ct);
+        var qr = due > 0 && upi.For(property, due, dto.Number) is { } q
+            ? new PrintQr(q.Png, $"Scan to pay {Money.Rupees(due)} by UPI", [$"UPI ID: {q.UpiId}", $"Payee: {q.PayeeName}", "Any UPI app: GPay, PhonePe, Paytm, BHIM"])
+            : null;
+        return printer.Invoice(dto, new PropertyPrint(property.Phone, property.Email, property.FssaiLicenceNo), qr);
     }
 
     public async Task<PrintDocument> CreditNotePdfAsync(Guid propertyId, Guid noteId, CancellationToken ct)
@@ -728,10 +735,10 @@ public sealed class InvoiceService(
             .SingleOrDefaultAsync(r => r.PropertyId == property.Id && r.EffectiveFrom <= day && (r.EffectiveTo == null || r.EffectiveTo >= day), ct);
 
     /// <summary>Phone and e-mail printed under the supplier.</summary>
-    private async Task<(string? Phone, string? Email)> PropertyContactAsync(Guid propertyId, CancellationToken ct)
+    private async Task<PropertyPrint> PropertyContactAsync(Guid propertyId, CancellationToken ct)
     {
         var p = await LoadPropertyAsync(propertyId, ct);
-        return (p.Phone, p.Email);
+        return new PropertyPrint(p.Phone, p.Email, p.FssaiLicenceNo);
     }
 
     private async Task<(Folio Folio, Reservation Reservation)> LockFolioAsync(Guid propertyId, Guid folioId, CancellationToken ct)

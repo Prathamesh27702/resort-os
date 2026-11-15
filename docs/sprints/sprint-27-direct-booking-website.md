@@ -60,6 +60,9 @@ Each task becomes a GitHub issue under this sprint's milestone.
 
 - [ ] Separate public API surface; captcha/turnstile on pay step
 - [ ] SEO-friendly pages served via Cloudflare
+- [ ] UPI first on the pay step (UPI intent on phones, QR on desktops) through Razorpay, so the payment is matched to the booking automatically
+- [ ] The confirmation carries the online check-in link of Sprint 32, so guests send their ID before they arrive
+- [ ] Guest pages in English and Hindi; prices shown with GST included, the way Indian guests expect
 
 ## How to run this sprint
 

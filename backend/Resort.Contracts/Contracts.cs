@@ -37,19 +37,24 @@ public sealed record PropertyDto(
     string? AddressLine1, string? AddressLine2, string? City, string? District, string? StateName, string? GstStateCode,
     string? PostalCode, string CountryCode, string? Phone, string? Email,
     TimeOnly CheckInTime, TimeOnly CheckOutTime, decimal? Latitude, decimal? Longitude,
-    bool IsActive, DateOnly LocalDate, uint Version);
+    bool IsActive, DateOnly LocalDate, uint Version,
+    string? FssaiLicenceNo = null, string? UpiId = null, string? UpiPayeeName = null);
 
 public sealed record CreatePropertyRequest(
     string Code, string Name, string? LegalName, string PropertyType, string Timezone, string Currency,
     string? AddressLine1, string? AddressLine2, string? City, string? District, string? StateName, string? GstStateCode,
     string? PostalCode, string CountryCode, string? Phone, string? Email,
-    TimeOnly CheckInTime, TimeOnly CheckOutTime, decimal? Latitude, decimal? Longitude);
+    TimeOnly CheckInTime, TimeOnly CheckOutTime, decimal? Latitude, decimal? Longitude,
+    string? FssaiLicenceNo = null, string? UpiId = null, string? UpiPayeeName = null);
 
+/// <summary>FssaiLicenceNo: the 14-digit FSSAI number printed on food bills. UpiId: the UPI ID bills show as a QR
+/// (name@bank). UpiPayeeName: the name the guest's UPI app shows (the property's name when empty). Sprint 30.</summary>
 public sealed record UpdatePropertyRequest(
     string Name, string? LegalName, string PropertyType, string Timezone, string Currency,
     string? AddressLine1, string? AddressLine2, string? City, string? District, string? StateName, string? GstStateCode,
     string? PostalCode, string CountryCode, string? Phone, string? Email,
-    TimeOnly CheckInTime, TimeOnly CheckOutTime, decimal? Latitude, decimal? Longitude, bool IsActive, uint Version);
+    TimeOnly CheckInTime, TimeOnly CheckOutTime, decimal? Latitude, decimal? Longitude, bool IsActive, uint Version,
+    string? FssaiLicenceNo = null, string? UpiId = null, string? UpiPayeeName = null);
 
 public sealed record PropertySettingDto(string Key, System.Text.Json.JsonElement Value, DateTimeOffset UpdatedAt);
 public sealed record PutPropertySettingRequest(System.Text.Json.JsonElement Value);

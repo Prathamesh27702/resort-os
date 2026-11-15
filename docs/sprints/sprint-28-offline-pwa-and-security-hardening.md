@@ -53,6 +53,8 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - [ ] TOTP MFA for OWNER/GM/ACCOUNTANT
 - [ ] OWASP Top 10 test pack (docs/SECURITY.md table) incl. SSRF on webhook/URL inputs
 - [ ] Shared cache for access/permissions if >1 API instance
+- [ ] Restaurant billing keeps working when the connection drops: orders, KOT printing and the printed bill with FSSAI number and UPI QR (Sprint 30) work offline and sync when back, the main reason Indian restaurants pick an offline POS; settlement to a room still needs the connection
+- [ ] Aadhaar offline verification (the QR on the card, or UIDAI's offline e-KYC where it is open to hotels) so reception doesn't keep a photocopy
 
 ## How to run this sprint
 

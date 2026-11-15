@@ -55,6 +55,8 @@ Each task becomes a GitHub issue under this sprint's milestone.
 - [ ] Alerts: payment failures, OTA failures, DB failures, backup failures, error rate, auth attacks
 - [ ] E2E suite for §73, §74, §75 on staging
 - [ ] User manual and admin manual
+- [ ] DPDP checklist before go-live: privacy notice shown, consent kept, retention periods running, breach log and the person to contact named (the DPDP Rules apply fully from about May 2027; the pieces are built in Sprint 32)
+- [ ] Go-live checklist lines for India: GST notification numbers verified by the accountant, FSSAI licence number and UPI ID set on every property, a real Form C filed from the sheet
 
 ## How to run this sprint
 

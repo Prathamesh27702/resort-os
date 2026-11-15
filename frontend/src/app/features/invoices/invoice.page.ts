@@ -29,10 +29,10 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
         <div class="page-head">
           <div>
             <a routerLink="/invoices" class="back">Invoices</a>
-            <h1><span class="num">{{ i.number }}</span> · {{ i.customer.name }}
+            <h1><span class="num">{{ i.number }}</span>, {{ i.customer.name }}
               <span [class]="'chip ' + statusClass(i.status)" data-testid="invoice-status">{{ statusLabel(i.status) }}</span></h1>
-            <p>{{ i.title }} · {{ shortDate(i.invoiceDate) }} · <a [routerLink]="['/reservations', i.reservationId]" class="num">{{ i.reference }}</a> ·
-              <a [routerLink]="['/folios', i.folioId]" class="num">{{ i.folioNumber }}</a>@if (i.issuedByName) { · issued by {{ i.issuedByName }} }</p>
+            <p>{{ i.title }}, {{ shortDate(i.invoiceDate) }}, <a [routerLink]="['/reservations', i.reservationId]" class="num">{{ i.reference }}</a>,
+              <a [routerLink]="['/folios', i.folioId]" class="num">{{ i.folioNumber }}</a>@if (i.issuedByName) {, issued by {{ i.issuedByName }} }</p>
           </div>
           <div class="head-actions">
             <button mat-flat-button (click)="pdf('invoices', i.id, i.number)" [disabled]="busy()"><mat-icon>download</mat-icon>PDF</button>
@@ -62,7 +62,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
             @if (i.customer.address) { <span>{{ i.customer.address }}</span> }
             <span class="num" data-testid="customer-gstin">{{ i.customer.gstin ? 'GSTIN ' + i.customer.gstin : 'Unregistered (B2C)' }}</span>
             @if (i.customer.stateName) { <span>{{ i.customer.stateName }}</span> }</div>
-          <div><small>Place of supply</small><b>{{ i.placeOfSupplyName }}</b><span>{{ i.isB2B ? 'B2B' : 'B2C' }} · reverse charge: no</span>
+          <div><small>Place of supply</small><b>{{ i.placeOfSupplyName }}</b><span>{{ i.isB2B ? 'B2B' : 'B2C' }}, reverse charge: no</span>
             <span>Financial year {{ i.financialYear }}</span></div>
         </div>
 
@@ -73,8 +73,8 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
               @for (l of i.items; track l.id) {
                 <tr [attr.data-line]="l.description">
                   <td class="num">{{ l.lineNo }}</td>
-                  <td>{{ l.description }}<br /><small class="mute">{{ shortDate(l.serviceDate) }}@if (l.debitNoteNumber) { · on debit note {{ l.debitNoteNumber }} }
-                    @if (l.discount) { · {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited before }</small>
+                  <td>{{ l.description }}<br /><small class="mute">{{ shortDate(l.serviceDate) }}@if (l.debitNoteNumber) {, on debit note {{ l.debitNoteNumber }} }
+                    @if (l.discount) {, {{ money(l.grossAmount) }} less {{ money(l.discount) }} credited before }</small>
                     @if (l.credited) { <br /><small class="why">{{ money(l.credited) }} credited</small> }</td>
                   <td class="hide-sm num">{{ l.hsnSac }}</td>
                   <td class="right num">{{ money(l.taxableValue) }}</td>
@@ -113,7 +113,7 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
                 @for (n of notes(); track n.id) {
                   <tr [attr.data-note]="n.number">
                     <td><b class="num">{{ n.number }}</b> {{ noteLabel(n) }}<br /><small class="why">{{ n.reason }}</small>
-                      <br /><small class="mute">{{ when(n.issuedAt) }}@if (n.issuedByName) { · {{ n.issuedByName }} }</small></td>
+                      <br /><small class="mute">{{ when(n.issuedAt) }}@if (n.issuedByName) {, {{ n.issuedByName }} }</small></td>
                     <td class="hide-sm">@for (l of n.lines; track l.lineNo) { <div>{{ l.description }} <small class="mute num">{{ money(l.total) }}</small></div> }</td>
                     <td class="right num"><b [class.bad]="n.kind === 'CREDIT_NOTE'">{{ n.kind === 'CREDIT_NOTE' ? '− ' : '' }}{{ money(n.total) }}</b>
                       <br /><small class="mute">GST {{ money(n.taxTotal) }}</small></td>
@@ -134,9 +134,9 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
             <tbody>
               @for (r of i.receipts; track r.id) {
                 <tr [class.reversed]="r.voided" [attr.data-receipt]="r.number">
-                  <td><b class="num">{{ r.number }}</b> · {{ shortDate(r.receiptDate) }}@if (r.voided) { <span class="chip back">Payment voided</span> }</td>
-                  <td class="hide-sm"><a [routerLink]="['/payments', r.paymentId]" class="num">{{ r.paymentNumber }}</a> · {{ methodLabel(r.method) }}
-                    @if (r.paymentReference) { <small class="mute"> · {{ r.paymentReference }}</small> }</td>
+                  <td><b class="num">{{ r.number }}</b>, {{ shortDate(r.receiptDate) }}@if (r.voided) { <span class="chip back">Payment voided</span> }</td>
+                  <td class="hide-sm"><a [routerLink]="['/payments', r.paymentId]" class="num">{{ r.paymentNumber }}</a>, {{ methodLabel(r.method) }}
+                    @if (r.paymentReference) { <small class="mute">, {{ r.paymentReference }}</small> }</td>
                   <td class="right num"><b>{{ money(r.amount) }}</b></td>
                   <td class="right doc-actions"><button mat-button (click)="pdf('receipts', r.id, r.number)" [attr.aria-label]="'PDF of ' + r.number"><mat-icon>download</mat-icon>PDF</button>
                     <button mat-icon-button (click)="print('receipts', r.id)" [attr.aria-label]="'Print ' + r.number"><mat-icon>print</mat-icon></button></td>
@@ -155,47 +155,47 @@ import { InvoicesApi, PdfKind, invoiceStatusClass, invoiceStatusLabel, lineTaxTe
   `,
   styles: `
     .wide { max-width: 1100px; }
-    h2 { margin: 20px 0 8px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    h2 { margin: var(--space-5) 0 var(--space-2); }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .doc-actions { white-space: nowrap; }
-    .note { background: #fbefd8; color: #6b4600; border-radius: 8px; padding: 10px 12px; }
-    .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: #fff; border: 1px solid #d9e0de; border-radius: 10px;
-               padding: 14px 16px; margin-bottom: 16px; }
+    .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
+    .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius);
+               padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .parties > div { display: flex; flex-direction: column; gap: 2px; }
-    .parties small { color: #5b6b6e; text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
-    .sums { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 0; }
-    .sums > div { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-radius: 10px; padding: 10px 14px; min-width: 140px; }
-    .sums span { color: #5b6b6e; font-size: .8rem; }
-    .sums b { font-size: 1.2rem; color: #0e3b43; }
-    .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 14px 16px 16px;
-            border-top: 1px solid #d9e0de; }
-    .words { font-style: italic; color: #33474a; max-width: 460px; }
-    .words span { display: block; font-style: normal; color: #5b6b6e; text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; margin-bottom: 2px; }
-    .words p { margin: 8px 0 0; font-style: normal; }
+    .parties small { color: var(--ro-mute); font-size: .8rem; }
+    .sums { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-4) 0 0; }
+    .sums > div { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 10px 14px; min-width: 140px; }
+    .sums span { color: var(--ro-mute); font-size: .8rem; }
+    .sums b { font-size: 1.2rem; color: var(--ro-tide); }
+    .foot { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-6); padding: 14px var(--space-4) var(--space-4);
+            border-top: 1px solid var(--ro-line); }
+    .words { font-style: italic; color: var(--ro-ink-soft); max-width: 460px; }
+    .words span { display: block; font-style: normal; color: var(--ro-mute); font-size: .8rem; margin-bottom: 2px; }
+    .words p { margin: var(--space-2) 0 0; font-style: normal; }
     .totals { margin: 0; min-width: 280px; }
-    .totals > div { display: flex; justify-content: space-between; gap: 24px; padding: 3px 0; }
-    .totals dt { color: #5b6b6e; }
+    .totals > div { display: flex; justify-content: space-between; gap: var(--space-6); padding: 3px 0; }
+    .totals dt { color: var(--ro-mute); }
     .totals dd { margin: 0; text-align: right; }
-    .totals .grand { border-top: 2px solid #d9e0de; margin-top: 6px; padding-top: 8px; font-size: 1.1rem; }
-    .totals .grand dt { color: #1b2a2e; font-weight: 600; }
-    .totals .grand dd { font-weight: 700; color: #0e3b43; }
-    .mute { color: #5b6b6e; }
-    .why { color: #8a2449; }
-    .bad, .sums b.bad { color: #b3261e; }
+    .totals .grand { border-top: 2px solid var(--ro-line); margin-top: 6px; padding-top: var(--space-2); font-size: 1.1rem; }
+    .totals .grand dt { color: var(--ro-ink); font-weight: 600; }
+    .totals .grand dd { font-weight: 700; color: var(--ro-tide); }
+    .mute { color: var(--ro-mute); }
+    .why { color: var(--ro-kokum); }
+    .bad, .sums b.bad { color: var(--ro-error); }
     .right { text-align: right; }
-    .err { color: #b3261e; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
+    .err { color: var(--ro-error); }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
     .chip { margin-left: 6px; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.back { background: #f6e3ec; color: #8a2449; }
-    .chip.off { background: #eceff0; color: #5b6b6e; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    tr.reversed b { text-decoration: line-through; color: #7a8a8c; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.back { background: var(--ro-kokum-wash); color: var(--ro-kokum); }
+    .chip.off { background: var(--ro-line-soft); color: var(--ro-mute); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    tr.reversed b { text-decoration: line-through; color: var(--ro-mute); }
     @media (max-width: 760px) {
       .parties { grid-template-columns: 1fr; }
       .foot { flex-direction: column-reverse; }
       .totals { width: 100%; min-width: 0; }
-      table.data td, table.data th { padding: 10px 8px; }
+      table.data td, table.data th { padding: 10px var(--space-2); }
     }
   `,
 })
@@ -229,7 +229,7 @@ export class InvoicePage {
 
   noteLabel(n: InvoiceNote) {
     if (n.kind === 'DEBIT_NOTE') return 'Debit note';
-    return n.noteType === 'CANCEL' ? 'Credit note · cancels the invoice' : 'Credit note';
+    return n.noteType === 'CANCEL' ? 'Credit note, cancels the invoice' : 'Credit note';
   }
 
   when(iso: string) {

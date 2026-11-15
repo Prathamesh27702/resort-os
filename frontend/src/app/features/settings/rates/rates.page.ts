@@ -114,12 +114,12 @@ const DAYS = [
             </mat-form-field>
             @if (canManage() && selectedPlan()) { <button mat-button type="button" (click)="editPlan()">Edit plan</button> }
             <span class="spacer"></span>
-            <button mat-stroked-button type="button" (click)="move(-7)" aria-label="Previous week">‹ Week</button>
-            <input class="start" type="date" [value]="start()" (change)="setStart($any($event.target).value)" aria-label="First night shown" />
-            <button mat-stroked-button type="button" (click)="move(7)" aria-label="Next week">Week ›</button>
+            <button mat-stroked-button type="button" (click)="move(-7)">Previous week</button>
+            <input class="start" [matDatepicker]="dp25" [value]="start()" (dateChange)="setStart($event.value)" aria-label="First night shown" /><mat-datepicker-toggle [for]="dp25" /><mat-datepicker #dp25 />
+            <button mat-stroked-button type="button" (click)="move(7)">Next week</button>
           </div>
           @if (selectedPlan(); as sp) {
-            <p class="mute small">{{ mealLabel[sp.mealPlan] }}{{ sp.description ? ' · ' + sp.description : '' }}</p>
+            <p class="mute small">{{ mealLabel[sp.mealPlan] }}{{ sp.description ? ', ' + sp.description : '' }}</p>
           }
 
           <div class="grid-wrap">
@@ -238,7 +238,7 @@ const DAYS = [
               <mat-label>Room or room type</mat-label>
               <mat-select formControlName="target">
                 <mat-optgroup label="Rooms">
-                  @for (r of rooms(); track r.id) { <mat-option [value]="'room:' + r.code">{{ r.name }} · {{ r.accommodationTypeName }}</mat-option> }
+                  @for (r of rooms(); track r.id) { <mat-option [value]="'room:' + r.code">{{ r.name }}, {{ r.accommodationTypeName }}</mat-option> }
                 </mat-optgroup>
                 <mat-optgroup label="Room types">
                   @for (t of types(); track t.id) { <mat-option [value]="'type:' + t.id">{{ t.name }}</mat-option> }
@@ -276,9 +276,9 @@ const DAYS = [
 
           @if (quote(); as q) {
             <div class="quote" aria-label="Quote result">
-              <p><b>{{ q.roomCode ? 'Room ' + q.roomCode + ' · ' : '' }}{{ q.accommodationTypeName }}</b>, {{ q.nights }} night{{ q.nights === 1 ? '' : 's' }},
-                {{ q.adults }} adult{{ q.adults === 1 ? '' : 's' }}{{ q.children ? ', ' + q.children + ' child' + (q.children === 1 ? '' : 'ren') : '' }}
-                · {{ q.ratePlanName }} ({{ q.mealPlan }}){{ q.inventoryMode === 'BED' ? ' · ' + q.units + ' bed' + (q.units === 1 ? '' : 's') : '' }}</p>
+              <p><b>{{ q.roomCode ? 'Room ' + q.roomCode + ', ' : '' }}{{ q.accommodationTypeName }}</b>, {{ q.nights }} night{{ q.nights === 1 ? '' : 's' }},
+                {{ q.adults }} adult{{ q.adults === 1 ? '' : 's' }}{{ q.children ? ', ' + q.children + ' child' + (q.children === 1 ? '' : 'ren') : '' }},
+               {{ q.ratePlanName }} ({{ q.mealPlan }}){{ q.inventoryMode === 'BED' ? ', ' + q.units + ' bed' + (q.units === 1 ? '' : 's') : '' }}</p>
               <table class="data">
                 <thead><tr><th>Night</th><th class="num">{{ q.inventoryMode === 'BED' ? 'Beds' : 'Room' }}</th><th class="num">Extra adults</th><th class="num">Extra children</th><th class="num">Total</th></tr></thead>
                 <tbody>
@@ -301,33 +301,33 @@ const DAYS = [
     </div>
   `,
   styles: `
-    .box { padding: 20px 24px; margin-bottom: 16px; }
-    .empty { padding: 24px; margin-bottom: 16px; } .empty p { color: #5b6b6e; margin-top: 0; }
-    h2 { font-size: 1rem; color: #0e3b43; margin-bottom: 12px; }
-    .head-actions { display: flex; gap: 8px; align-items: center; }
-    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .box { padding: var(--space-5) var(--space-6); margin-bottom: var(--space-4); }
+    .empty { padding: var(--space-6); margin-bottom: var(--space-4); } .empty p { color: var(--ro-mute); margin-top: 0; }
+    h2 { font-size: 1rem; color: var(--ro-tide); margin-bottom: var(--space-3); }
+    .head-actions { display: flex; gap: var(--space-2); align-items: center; }
+    .toolbar { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .toolbar .spacer { flex: 1; }
     .plan-pick { min-width: 280px; }
-    .start { height: 36px; border: 1px solid #c5cfcc; border-radius: 6px; padding: 0 8px; font: inherit; }
-    .grid-wrap { overflow-x: auto; margin: 8px 0; }
+    .start { height: 36px; border: 1px solid var(--ro-line-strong); border-radius: 6px; padding: 0 var(--space-2); font: inherit; }
+    .grid-wrap { overflow-x: auto; margin: var(--space-2) 0; }
     table.rate-grid { border-collapse: collapse; min-width: 100%; font-variant-numeric: tabular-nums; }
-    table.rate-grid th, table.rate-grid td { border: 1px solid #edf1f0; padding: 8px 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
-    table.rate-grid thead th { color: #5b6b6e; font-weight: 500; font-size: .8rem; }
-    table.rate-grid .type-col { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; }
-    table.rate-grid .weekend { background: #fbf4e6; }
-    table.rate-grid .today { color: #8a2449; font-weight: 600; }
-    table.rate-grid td.missing { background: #fbeaea; }
+    table.rate-grid th, table.rate-grid td { border: 1px solid var(--ro-line-soft); padding: var(--space-2) 10px; text-align: right; white-space: nowrap; font-size: .9rem; }
+    table.rate-grid thead th { color: var(--ro-mute); font-weight: 500; font-size: .8rem; }
+    table.rate-grid .type-col { text-align: left; position: sticky; left: 0; background: var(--ro-paper); z-index: 1; }
+    table.rate-grid .weekend { background: var(--ro-warn-wash); }
+    table.rate-grid .today { color: var(--ro-kokum); font-weight: 600; }
+    table.rate-grid td.missing { background: var(--ro-error-bg); }
     table.rate-grid td.clickable { cursor: pointer; }
-    table.rate-grid td.clickable:hover { outline: 2px solid #0e3b43; outline-offset: -2px; }
-    .min { display: block; font-size: .7rem; color: #8a5a00; }
-    .days { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
+    table.rate-grid td.clickable:hover { outline: 2px solid var(--ro-tide); outline-offset: -2px; }
+    .min { display: block; font-size: .7rem; color: var(--ro-warn); }
+    .days { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-1) 0 var(--space-4); }
     .form-grid.four { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-    .actions { display: flex; gap: 8px; margin-top: 8px; }
-    .quote { margin-top: 16px; }
-    .quote tr.total td { font-weight: 600; border-top: 2px solid #d9e0de; }
-    .error { color: #b3261e; }
-    .mute { color: #5b6b6e; } .small { font-size: .85rem; }
-    mat-slide-toggle { display: block; margin: 8px 0; }
+    .actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+    .quote { margin-top: var(--space-4); }
+    .quote tr.total td { font-weight: 600; border-top: 2px solid var(--ro-line); }
+    .error { color: var(--ro-error); }
+    .mute { color: var(--ro-mute); } .small { font-size: .85rem; }
+    mat-slide-toggle { display: block; margin: var(--space-2) 0; }
   `,
 })
 export class RatesPage {

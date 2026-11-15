@@ -276,6 +276,12 @@ public sealed class GuestService(
         var docs = await db.GuestDocuments.Where(d => ids.Contains(d.GuestId) && d.Status == DocumentStatuses.Active).ToListAsync(ct);
         var blobs = docs.Where(d => d.StorageKey is not null).Select(d => d.StorageKey!).ToList();
         foreach (var d in docs) d.Purge(now);
+        // Their Form C sheets (Sprint 30) keep that they were filed, not the passport and visa details on them.
+        foreach (var f in await db.FormCRecords.Where(f => ids.Contains(f.GuestId) && f.DetailsEncrypted != null).ToListAsync(ct))
+        {
+            f.DetailsEncrypted = null;
+            f.KeyId = null;
+        }
 
         foreach (var x in everyone)
         {

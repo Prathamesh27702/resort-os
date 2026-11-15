@@ -85,6 +85,8 @@ public static class MessageCodes
     public const string PaymentReminder = "payment_reminder";
     public const string InventoryAlert = "inventory_alert";
     public const string LeaveReminder = "leave_reminder";
+    /// <summary>Form C sheets still to file for foreign guests (Sprint 30): at check-in and every morning.</summary>
+    public const string FormCReminder = "form_c_reminder";
 }
 
 /// <summary>The scheduled jobs (scheduled_jobs.job, job_runs.job).</summary>
@@ -96,8 +98,9 @@ public static class JobCodes
     public const string PaymentReminder = "payment_reminder";
     public const string InventoryAlert = "inventory_alert";
     public const string LeaveReminder = "leave_reminder";
+    public const string FormCReminder = "form_c_reminder";
 
-    public static readonly string[] All = [ReservationReminder, PreArrival, CheckoutReminder, PaymentReminder, InventoryAlert, LeaveReminder];
+    public static readonly string[] All = [ReservationReminder, PreArrival, CheckoutReminder, PaymentReminder, InventoryAlert, LeaveReminder, FormCReminder];
 }
 
 public static class JobTriggers

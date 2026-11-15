@@ -50,16 +50,16 @@ import { ROLE_ORDER } from './roles';
     .wide { max-width: none; }
     .scroll { overflow: auto; max-height: calc(100vh - 190px); }
     .matrix { border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
-    .matrix th, .matrix td { border-bottom: 1px solid #edf1f0; padding: 6px 8px; }
-    thead th { position: sticky; top: 0; background: #fff; z-index: 1; border-bottom: 1px solid #d9e0de; }
-    th.role { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; font-weight: 500; color: #1b2a2e; height: 150px; white-space: nowrap; }
-    .perm { position: sticky; left: 0; background: #fff; min-width: 300px; text-align: left; }
-    .perm code { display: block; color: #8a9a9c; font-size: 0.75rem; }
-    .sens { font-size: 14px; width: 14px; height: 14px; color: #8a2449; vertical-align: -2px; }
-    tr.mod td { background: #f5f7f6; font-weight: 600; color: #0e3b43; position: sticky; left: 0; }
+    .matrix th, .matrix td { border-bottom: 1px solid var(--ro-line-soft); padding: 6px var(--space-2); }
+    thead th { position: sticky; top: 0; background: var(--ro-paper); z-index: 1; border-bottom: 1px solid var(--ro-line); }
+    th.role { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; font-weight: 500; color: var(--ro-ink); height: 150px; white-space: nowrap; }
+    .perm { position: sticky; left: 0; background: var(--ro-paper); min-width: 300px; text-align: left; }
+    .perm code { display: block; color: var(--ro-mute); font-size: 0.75rem; }
+    .sens { font-size: 14px; width: 14px; height: 14px; color: var(--ro-kokum); vertical-align: -2px; }
+    tr.mod td { background: var(--ro-wash); font-weight: 600; color: var(--ro-tide); position: sticky; left: 0; }
     .cell { text-align: center; }
-    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #0e3b43; }
-    tbody tr:not(.mod):hover td { background: #f8faf9; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ro-tide); }
+    tbody tr:not(.mod):hover td { background: var(--ro-hover); }
   `,
 })
 export class RolesPage {

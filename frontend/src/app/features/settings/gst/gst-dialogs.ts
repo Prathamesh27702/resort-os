@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -27,7 +28,7 @@ export interface RegistrationData { property: Property; }
 /** Adds the GSTIN a property bills under, from the date on its certificate. A registration that runs on is ended the day before. */
 @Component({
   selector: 'app-gst-registration-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>GST registration of {{ data.property.name }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="reg-form">
@@ -58,12 +59,12 @@ export interface RegistrationData { property: Property; }
       <div class="row">
         <mat-form-field appearance="outline">
           <mat-label>Valid from</mat-label>
-          <input matInput type="date" formControlName="effectiveFrom" />
+          <input matInput [matDatepicker]="dp20" formControlName="effectiveFrom" /><mat-datepicker-toggle matIconSuffix [for]="dp20" /><mat-datepicker #dp20 />
           <mat-error>{{ err('effectiveFrom') || 'Enter the date the registration is valid from.' }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Valid until (optional)</mat-label>
-          <input matInput type="date" formControlName="effectiveTo" />
+          <input matInput [matDatepicker]="dp21" formControlName="effectiveTo" /><mat-datepicker-toggle matIconSuffix [for]="dp21" /><mat-datepicker #dp21 />
           <mat-error>{{ err('effectiveTo') }}</mat-error>
         </mat-form-field>
       </div>
@@ -75,11 +76,11 @@ export interface RegistrationData { property: Property; }
     </div>
   `,
   styles: `
-    form { min-width: min(460px, 82vw); display: flex; flex-direction: column; gap: 4px; }
+    form { min-width: min(460px, 82vw); display: flex; flex-direction: column; gap: var(--space-1); }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .caps { text-transform: uppercase; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })
@@ -102,7 +103,7 @@ export class RegistrationDialog {
   private gstin = toSignal(this.form.controls.gstin.valueChanges, { initialValue: '' });
   stateHint = computed(() => {
     const s = STATES.find(x => x.code === this.gstin().trim().slice(0, 2));
-    return s ? ` · ${s.name}` : '';
+    return s ? `. State: ${s.name}` : '';
   });
 
   err(field: string) { return this.serverErrors()[field] ?? ''; }
@@ -178,11 +179,11 @@ export class RegistrationDialog {
     </div>
   `,
   styles: `
-    form { min-width: min(500px, 82vw); display: flex; flex-direction: column; gap: 4px; }
+    form { min-width: min(500px, 82vw); display: flex; flex-direction: column; gap: var(--space-1); }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .caps { text-transform: uppercase; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })
@@ -238,7 +239,7 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
  */
 @Component({
   selector: 'app-tax-rule-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
+  imports: [MatDatepickerModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
             MatInputModule, MatSelectModule],
   template: `
     <h2 mat-dialog-title>New GST rule</h2>
@@ -246,20 +247,20 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
       <mat-form-field appearance="outline" class="full">
         <mat-label>Tax category</mat-label>
         <mat-select formControlName="taxCategoryId">
-          @for (c of data.categories; track c.id) { <mat-option [value]="c.id">{{ c.name }} · SAC {{ c.hsnSac }}</mat-option> }
+          @for (c of data.categories; track c.id) { <mat-option [value]="c.id">{{ c.name }}, SAC {{ c.hsnSac }}</mat-option> }
         </mat-select>
         <mat-error>{{ err('taxCategoryId') || 'Choose the tax category the rule is for.' }}</mat-error>
       </mat-form-field>
       <div class="row">
         <mat-form-field appearance="outline">
           <mat-label>Applies from</mat-label>
-          <input matInput type="date" formControlName="effectiveFrom" [min]="data.today" />
+          <input matInput [matDatepicker]="dp22" formControlName="effectiveFrom" [min]="data.today" /><mat-datepicker-toggle matIconSuffix [for]="dp22" /><mat-datepicker #dp22 />
           <mat-hint>The rule running now ends the day before</mat-hint>
           <mat-error>{{ err('effectiveFrom') || 'Enter the first day the rule applies (today or later).' }}</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Until (optional)</mat-label>
-          <input matInput type="date" formControlName="effectiveTo" />
+          <input matInput [matDatepicker]="dp23" formControlName="effectiveTo" /><mat-datepicker-toggle matIconSuffix [for]="dp23" /><mat-datepicker #dp23 />
           <mat-error>{{ err('effectiveTo') }}</mat-error>
         </mat-form-field>
       </div>
@@ -315,16 +316,16 @@ export interface RuleResult { rule: TaxRule; closedRule: TaxRule | null; }
     </div>
   `,
   styles: `
-    form { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: 4px; }
+    form { min-width: min(560px, 84vw); display: flex; flex-direction: column; gap: var(--space-1); }
     .full { width: 100%; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .mode { margin: 4px 0 12px; align-self: flex-start; flex-wrap: wrap; }
-    .slabs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-    .slab { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .mode { margin: var(--space-1) 0 var(--space-3); align-self: flex-start; flex-wrap: wrap; }
+    .slabs { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-2); }
+    .slab { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
     .slab mat-form-field { flex: 1 1 160px; }
     .slab .rate { flex: 0 1 140px; }
-    .above { flex: 1 1 160px; color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .above { flex: 1 1 160px; color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })

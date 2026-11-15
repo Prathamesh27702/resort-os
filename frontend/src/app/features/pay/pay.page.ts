@@ -44,7 +44,7 @@ function loadCheckout(): Promise<RazorpayCtor> {
         <section class="card" [attr.data-status]="p.status">
           <p class="prop">{{ p.propertyName }}</p>
           <h1>{{ money(p.amount) }}</h1>
-          <p class="mute">Booking <b class="num">{{ p.bookingReference }}</b> · {{ p.guestName }}<br />
+          <p class="mute">Booking <b class="num">{{ p.bookingReference }}</b>, {{ p.guestName }}<br />
             {{ day(p.checkIn) }} – {{ day(p.checkOut) }}</p>
 
           @switch (p.status) {
@@ -91,23 +91,23 @@ function loadCheckout(): Promise<RazorpayCtor> {
     </main>
   `,
   styles: `
-    :host { display: block; min-height: 100vh; background: #eef3f2; }
-    .wrap { max-width: 460px; margin: 0 auto; padding: 32px 16px; }
-    .card { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; padding: 24px; }
-    .prop { color: #0e3b43; font-weight: 600; margin: 0; }
-    h1 { font-size: 2.2rem; color: #0e3b43; margin: 8px 0; }
-    .mute { color: #5b6b6e; }
+    :host { display: block; min-height: 100vh; background: var(--ro-sunk); }
+    .wrap { max-width: 460px; margin: 0 auto; padding: var(--space-8) var(--space-4); }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-6); box-shadow: var(--ro-shadow-card); }
+    .prop { color: var(--ro-tide); font-weight: 600; margin: 0; }
+    h1 { font-size: 2.2rem; color: var(--ro-tide); margin: var(--space-2) 0; }
+    .mute { color: var(--ro-mute); }
     .small { font-size: .85rem; }
-    .msg { margin: 16px 0; }
-    .actions { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 8px; }
+    .msg { margin: var(--space-4) 0; }
+    .actions { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-4) 0 var(--space-2); }
     .actions button { height: 48px; font-size: 1rem; }
-    .methods { margin-top: 4px; }
-    .test { background: #fbefd8; color: #6b4600; border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
-    .state { display: flex; gap: 8px; align-items: flex-start; border-radius: 8px; padding: 10px 12px; margin: 16px 0 8px; }
-    .state.ok { background: #e1f2e8; color: #1d5b36; }
-    .state.wait { background: #fbefd8; color: #6b4600; }
-    .state.off { background: #eceff0; color: #3c4a4c; }
-    .state.bad { background: #f3e3e3; color: #7a1f1f; }
+    .methods { margin-top: var(--space-1); }
+    .test { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: var(--space-2) var(--space-3); font-size: .9rem; }
+    .state { display: flex; gap: var(--space-2); align-items: flex-start; border-radius: 8px; padding: 10px var(--space-3); margin: var(--space-4) 0 var(--space-2); }
+    .state.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .state.wait { background: var(--ro-warn-bg); color: var(--ro-warn-strong); }
+    .state.off { background: var(--ro-line-soft); color: var(--ro-ink-soft); }
+    .state.bad { background: var(--ro-off-bg); color: var(--ro-off); }
   `,
 })
 export class PayPageComponent implements OnInit, OnDestroy {

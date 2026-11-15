@@ -120,7 +120,7 @@ public class NotificationsTests(NotificationsFactory app) : IClassFixture<Notifi
         var s = await SetupAsync();
         await BookAsync(s, Today.AddDays(1));
         var jobs = await s.Owner.GetJsonAsync<JobsDto>($"{Url(s.Pid)}/jobs");
-        Assert.Equal(["reservation_reminder", "pre_arrival", "checkout_reminder", "payment_reminder", "inventory_alert", "leave_reminder"],
+        Assert.Equal(["reservation_reminder", "pre_arrival", "checkout_reminder", "payment_reminder", "inventory_alert", "leave_reminder", "form_c_reminder"],
             jobs.Jobs.Select(j => j.Job));
         var reminder = jobs.Jobs[0];
         Assert.Equal((true, new TimeOnly(10, 0)), (reminder.Enabled, reminder.RunAt));
@@ -147,7 +147,7 @@ public class NotificationsTests(NotificationsFactory app) : IClassFixture<Notifi
         Assert.Equal(HttpStatusCode.Forbidden, (await s.Manager.PutAsync($"{Url(s.Pid)}/jobs/pre_arrival", new SaveScheduledJobRequest(false, new TimeOnly(9, 0), null))).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await s.Manager.PostAsync($"{Url(s.Pid)}/jobs/pre_arrival/run")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await s.Housekeeper.GetAsync($"{Url(s.Pid)}/messages")).StatusCode);
-        Assert.Equal("There is no job called nightly. The jobs are: reservation_reminder, pre_arrival, checkout_reminder, payment_reminder, inventory_alert, leave_reminder.",
+        Assert.Equal("There is no job called nightly. The jobs are: reservation_reminder, pre_arrival, checkout_reminder, payment_reminder, inventory_alert, leave_reminder, form_c_reminder.",
             (await ProblemAsync(await s.Owner.PostAsync($"{Url(s.Pid)}/jobs/nightly/run"))).Message);
     }
 
@@ -292,7 +292,7 @@ public class NotificationsTests(NotificationsFactory app) : IClassFixture<Notifi
     {
         var s = await SetupAsync();
         var templates = await s.Manager.GetJsonAsync<List<MessageTemplateDto>>($"/api/v1/properties/{s.Pid}/message-templates");
-        Assert.Equal(12, templates.Count);
+        Assert.Equal(14, templates.Count);
         var wa = templates.Single(t => t.Code == "booking_confirmation" && t.Channel == "WHATSAPP");
         Assert.Equal(("booking_confirmation", "en", (string?)null), (wa.ProviderTemplate, wa.Language, wa.Subject));
         Assert.Contains(wa.Variables, v => v.Name == "guest_name" && v.Sample == "Asha");

@@ -33,7 +33,7 @@ type OrderFilter = 'open' | 'waiting' | 'all';
       <div class="head">
         <h1>Purchases</h1>
         @if (orders(); as o) {
-          <p class="mute">Orders over {{ rupees(o.approvalLimit) }} need a second person's approval@if (o.waiting) { · <b class="wait">{{ o.waiting }} waiting</b> }</p>
+          <p class="mute">Orders over {{ rupees(o.approvalLimit) }} need a second person's approval@if (o.waiting) {, <b class="wait">{{ o.waiting }} waiting</b> }</p>
         }
       </div>
       <mat-button-toggle-group [value]="view()" (change)="go($event.value)" aria-label="Purchases view" class="views">
@@ -59,7 +59,7 @@ type OrderFilter = 'open' | 'waiting' | 'all';
               <li [attr.data-order]="o.number">
                 <a class="nm" [routerLink]="['/inventory/purchases', o.id]">
                   <b>{{ o.number }}</b> {{ o.supplierName }}
-                  <small class="mute">{{ dayText(o.orderDate) }} · for {{ o.locationName }}@if (o.expectedDate) { · expected {{ dayText(o.expectedDate) }} }@if (o.createdByName) { · {{ o.createdByName }} }</small>
+                  <small class="mute">{{ dayText(o.orderDate) }}, for {{ o.locationName }}@if (o.expectedDate) {, expected {{ dayText(o.expectedDate) }} }@if (o.createdByName) {, {{ o.createdByName }} }</small>
                   @if (o.status === 'PARTLY_RECEIVED') { <small>{{ o.received }} % received</small> }
                 </a>
                 <span class="right"><b>{{ rupees(o.total) }}</b><small [class]="'st ' + o.status">{{ statusLabel[o.status] }}</small></span>
@@ -78,7 +78,7 @@ type OrderFilter = 'open' | 'waiting' | 'all';
                 <div class="nm">
                   <b>{{ r.number }}</b> for {{ r.locationName }} <small [class]="'st ' + r.status">{{ requestLabel[r.status] }}</small>
                   <small>{{ items(r) }}</small>
-                  <small class="mute">@if (r.byName) { {{ r.byName }} · }{{ when(r.createdAt) }}@if (r.neededBy) { · needed by {{ dayText(r.neededBy) }} }@if (r.note) { · {{ r.note }} }</small>
+                  <small class="mute">@if (r.byName) { {{ r.byName }}, }{{ when(r.createdAt) }}@if (r.neededBy) {, needed by {{ dayText(r.neededBy) }} }@if (r.note) {, {{ r.note }} }</small>
                   @if (r.status === 'ORDERED') { <small>On <a [routerLink]="['/inventory/purchases', r.purchaseOrderId]">{{ r.purchaseOrderNumber }}</a></small> }
                   @if (r.status === 'CANCELLED') { <small class="mute">Cancelled: {{ r.cancelReason }}</small> }
                 </div>
@@ -105,11 +105,11 @@ type OrderFilter = 'open' | 'waiting' | 'all';
                 <li [attr.data-bill]="i.number">
                   <div class="nm">
                     <b>{{ i.number }}</b> {{ i.supplierName }} <small class="mute">bill {{ i.supplierNumber }}</small>
-                    <small class="mute">{{ dayText(i.invoiceDate) }} · due {{ dayText(i.dueDate) }} · on <a [routerLink]="['/inventory/purchases', i.orderId]">{{ i.orderNumber }}</a></small>
+                    <small class="mute">{{ dayText(i.invoiceDate) }}, due {{ dayText(i.dueDate) }}, on <a [routerLink]="['/inventory/purchases', i.orderId]">{{ i.orderNumber }}</a></small>
                     <small>GST {{ rupees(i.inputTax) }}@if (i.inputTax > 0) { ({{ i.intraState ? 'CGST + SGST' : 'IGST' }}{{ i.itcEligible ? ', claimable' : ', not claimable' }}) }</small>
                   </div>
                   <span class="right"><b>{{ rupees(i.total) }}</b>
-                    <small [class]="'st ' + i.status + (i.overdue ? ' late' : '')">{{ i.overdue ? 'Overdue' : billLabel[i.status] }}@if (i.status === 'PART_PAID') { · {{ rupees(i.balance) }} left }</small>
+                    <small [class]="'st ' + i.status + (i.overdue ? ' late' : '')">{{ i.overdue ? 'Overdue' : billLabel[i.status] }}@if (i.status === 'PART_PAID') {, {{ rupees(i.balance) }} left }</small>
                     @if (i.balance > 0 && can('supplier_invoice.manage')) { <button mat-stroked-button (click)="pay(i)" [attr.aria-label]="'Pay ' + i.number">Pay</button> }
                   </span>
                 </li>
@@ -122,22 +122,22 @@ type OrderFilter = 'open' | 'waiting' | 'all';
   `,
   styles: `
     .pur { max-width: 940px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .wait { color: #8a5a00; } .late { color: #b3261e; }
-    .views { margin: 4px 0 10px; flex-wrap: wrap; }
-    .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .wait { color: var(--ro-warn); } .late { color: var(--ro-error); }
+    .views { margin: var(--space-1) 0 10px; flex-wrap: wrap; }
+    .tools { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-2); }
     .tools mat-button-toggle-group { flex-wrap: wrap; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .cards li { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 14px; margin-top: 8px; }
+    .cards li { display: flex; gap: 10px; align-items: flex-start; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px 14px; margin-top: var(--space-2); box-shadow: var(--ro-shadow-card); }
     .cards li.off { opacity: .7; }
     .nm { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
     a.nm { min-height: 40px; }
     .right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; font-variant-numeric: tabular-nums; }
-    .acts { display: flex; flex-direction: column; gap: 4px; }
-    .st { font-size: .8rem; } .st.PENDING_APPROVAL, .st.OPEN, .st.PART_PAID { color: #8a5a00; } .st.APPROVED, .st.PARTLY_RECEIVED { color: #1b5e8a; }
-    .st.RECEIVED, .st.PAID, .st.ORDERED { color: #2e7d32; } .st.CANCELLED, .st.CLOSED { color: #5b6b6e; } .st.UNPAID { color: #b3261e; }
-    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-    .tiles div { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; }
+    .acts { display: flex; flex-direction: column; gap: var(--space-1); }
+    .st { font-size: .8rem; } .st.PENDING_APPROVAL, .st.OPEN, .st.PART_PAID { color: var(--ro-warn); } .st.APPROVED, .st.PARTLY_RECEIVED { color: var(--ro-info-bright); }
+    .st.RECEIVED, .st.PAID, .st.ORDERED { color: var(--ro-ok-mid); } .st.CANCELLED, .st.CLOSED { color: var(--ro-mute); } .st.UNPAID { color: var(--ro-error); }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); }
+    .tiles div { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px var(--space-3); display: flex; flex-direction: column; box-shadow: var(--ro-shadow-card); }
     .tiles b { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } .cards li { flex-wrap: wrap; } .right { align-items: flex-start; text-align: left; } .acts { flex-direction: row; } }
   `,
@@ -192,7 +192,7 @@ export class PurchasesPage {
     if (v === 'bills') this.api.invoices(this.pid()).subscribe({ next: b => { this.bills.set(b); this.error.set(''); }, error: fail });
   }
 
-  items(r: PurchaseRequest) { return r.items.map(i => `${qty(i.quantity, i.unit)} ${i.itemName}`).join(' · '); }
+  items(r: PurchaseRequest) { return r.items.map(i => `${qty(i.quantity, i.unit)} ${i.itemName}`).join(', '); }
   when(at: string) { return new Date(at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }); }
 
   newRequest() {

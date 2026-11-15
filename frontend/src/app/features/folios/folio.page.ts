@@ -35,10 +35,10 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
         <div class="page-head">
           <div>
             <a routerLink="/folios" class="back">Folios</a>
-            <h1><span class="num">{{ f.number }}</span> · {{ f.isPrimary ? f.guestName : f.name }}
+            <h1><span class="num">{{ f.number }}</span>, {{ f.isPrimary ? f.guestName : f.name }}
               <span [class]="'chip ' + statusClass(f.reservationStatus)">{{ statusLabel(f.reservationStatus) }}</span></h1>
-            <p><a [routerLink]="['/reservations', f.reservationId]" class="num">{{ f.reference }}</a> · {{ f.guestName }} · {{ f.rooms }} ·
-              {{ dayLabel(f.checkIn) }} – {{ dayLabel(f.checkOut) }}@if (!f.isPrimary) { · {{ f.name }} }</p>
+            <p><a [routerLink]="['/reservations', f.reservationId]" class="num">{{ f.reference }}</a>, {{ f.guestName }}, {{ f.rooms }},
+              {{ dayLabel(f.checkIn) }} – {{ dayLabel(f.checkOut) }}@if (!f.isPrimary) {, {{ f.name }} }</p>
           </div>
           <div class="head-actions">
             @if (preview(); as pv) {
@@ -59,7 +59,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
         @if (f.folios.length > 1) {
           <nav class="folios" aria-label="Folios of this stay">
             @for (o of f.folios; track o.id) {
-              <a [routerLink]="['/folios', o.id]" [class.on]="o.id === f.id"><b class="num">{{ o.number }}</b> {{ o.name }} · <span class="num">{{ money(o.balance) }}</span></a>
+              <a [routerLink]="['/folios', o.id]" [class.on]="o.id === f.id"><b class="num">{{ o.number }}</b> {{ o.name }}, <span class="num">{{ money(o.balance) }}</span></a>
             }
           </nav>
         }
@@ -92,7 +92,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
                   <td class="num">{{ shortDate(i.serviceDate) }}</td>
                   <td>
                     <span class="desc">{{ i.description }}</span>
-                    @if (qty(i)) { <small class="mute num"> · {{ qty(i) }}</small> }
+                    @if (qty(i)) { <small class="mute num">, {{ qty(i) }}</small> }
                     @if (i.invoiceNumber) { <small class="chip inv num" [attr.title]="'Billed on ' + i.invoiceNumber">{{ i.invoiceNumber }}</small> }
                     <br /><small class="mute">{{ i.postedByName ?? 'System' }} at {{ time(i.postedAt) }}</small>
                     @if (note(i); as n) { <br /><small [class]="i.itemType !== 'CHARGE' || i.reversedByItemId ? 'why' : 'mute'">{{ n }}</small> }
@@ -124,7 +124,7 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
               @for (p of f.paymentLines; track (p.refundId ?? p.paymentId)) {
                 <tr [class.reversed]="p.voided" [class.reversal]="p.kind === 'REFUND'" [attr.data-payment-line]="p.paymentNumber + (p.kind === 'REFUND' ? '-refund' : '')">
                   <td><a [routerLink]="['/payments', p.paymentId]" class="num"><b>{{ p.paymentNumber }}</b></a>
-                    {{ p.kind === 'REFUND' ? 'Refund' : 'Payment' }} · {{ methodLabel(p.method) }}@if (p.voided) { · voided }
+                    {{ p.kind === 'REFUND' ? 'Refund' : 'Payment' }}, {{ methodLabel(p.method) }}@if (p.voided) {, voided }
                     @if (p.detail) { <br /><small [class]="p.kind === 'REFUND' ? 'why' : 'mute'">{{ p.detail }}</small> }</td>
                   <td class="hide-sm">{{ time(p.at) }}@if (p.byName) { <br /><small class="mute">{{ p.byName }}</small> }</td>
                   <td class="right num"><b>{{ lineMoney(p) }}</b></td>
@@ -143,37 +143,37 @@ import { FoliosApi, categoryLabel, lineNote, liveCharges, quantityText } from '.
   `,
   styles: `
     .wide { max-width: 1100px; }
-    h2 { margin: 20px 0 8px; }
-    .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .folios { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .folios a { padding: 6px 12px; border: 1px solid #d9e0de; border-radius: 16px; color: #1b2a2e; text-decoration: none; background: #fff; }
-    .folios a.on { border-color: #0e3b43; background: #e6f0f1; }
-    .note { background: #fbefd8; color: #6b4600; border-radius: 8px; padding: 10px 12px; }
-    .sums { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(220px, 1fr) 2fr; gap: 16px; align-items: start; background: #fff;
-            border: 1px solid #d9e0de; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+    h2 { margin: var(--space-5) 0 var(--space-2); }
+    .head-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .folios { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
+    .folios a { padding: 6px var(--space-3); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); color: var(--ro-ink); text-decoration: none; background: var(--ro-paper); box-shadow: var(--ro-shadow-card); }
+    .folios a.on { border-color: var(--ro-tide); background: var(--ro-line-soft); }
+    .note { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 10px var(--space-3); }
+    .sums { display: grid; grid-template-columns: minmax(200px, 1fr) minmax(220px, 1fr) 2fr; gap: var(--space-4); align-items: start; background: var(--ro-paper);
+            border: 1px solid var(--ro-line); border-radius: var(--ro-radius); padding: 14px var(--space-4); margin-bottom: var(--space-4); }
     .balance { display: flex; flex-direction: column; gap: 2px; }
-    .balance span { color: #5b6b6e; font-size: .85rem; }
-    .balance b { font-size: 1.8rem; color: #0e3b43; letter-spacing: -0.01em; }
-    .balance b.owed { color: #b3261e; }
-    dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; margin: 0; }
-    dt { color: #5b6b6e; }
+    .balance span { color: var(--ro-mute); font-size: .85rem; }
+    .balance b { font-size: 1.8rem; color: var(--ro-tide); letter-spacing: -0.01em; }
+    .balance b.owed { color: var(--ro-error); }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-4); margin: 0; }
+    dt { color: var(--ro-mute); }
     dd { margin: 0; text-align: right; }
     .cats { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip.cat { background: #eef3f2; color: #24423f; }
-    .chip.inv { background: #e6eef8; color: #1f3f6b; margin-left: 6px; font-size: .72rem; }
-    .chip.ok { background: #e1f2e8; color: #1d5b36; }
-    .chip.wait { background: #fbefd8; color: #8a5a00; }
-    .mute { color: #5b6b6e; }
-    .why { color: #8a2449; }
+    .chip.cat { background: var(--ro-sunk); color: var(--ro-tide-deep); }
+    .chip.inv { background: var(--ro-info-bg); color: var(--ro-info-mid); margin-left: 6px; font-size: .72rem; }
+    .chip.ok { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .chip.wait { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .mute { color: var(--ro-mute); }
+    .why { color: var(--ro-kokum); }
     .right { text-align: right; }
-    .err { color: #b3261e; }
-    .empty { color: #5b6b6e; padding: 20px 16px; }
-    tr.reversed .desc, tr.reversed td.num b { text-decoration: line-through; color: #7a8a8c; }
-    tr.reversal td.num b { color: #b3261e; }
-    tfoot td { border-top: 2px solid #d9e0de; padding-top: 10px; }
+    .err { color: var(--ro-error); }
+    .empty { color: var(--ro-mute); padding: var(--space-5) var(--space-4); }
+    tr.reversed .desc, tr.reversed td.num b { text-decoration: line-through; color: var(--ro-mute); }
+    tr.reversal td.num b { color: var(--ro-error); }
+    tfoot td { border-top: 2px solid var(--ro-line); padding-top: 10px; }
     @media (max-width: 760px) {
       .sums { grid-template-columns: 1fr; }
-      table.data td, table.data th { padding: 10px 8px; }
+      table.data td, table.data th { padding: 10px var(--space-2); }
     }
   `,
 })
@@ -211,7 +211,7 @@ export class FolioPage {
   qty = (i: FolioItem) => quantityText(i, rupeesExact);
   tax = taxText;
   /** "CGST 2.5% ₹36.25 · SGST 2.5% ₹36.25" on hover. */
-  taxTitle = (i: FolioItem) => i.taxes.map(t => `${t.code} ${pct(t.rate)} ${rupeesExact(t.amount)}`).join(' · ');
+  taxTitle = (i: FolioItem) => i.taxes.map(t => `${t.code} ${pct(t.rate)} ${rupeesExact(t.amount)}`).join(', ');
   private pid = () => this.props.current()!.id;
 
   constructor() {

@@ -80,7 +80,7 @@ test('S06-01 Calendar shows this week: bookings by room and the maintenance bloc
   // the demo booking in Room 101 tonight
   await expect(row(p, 'Room 101').locator('.bar', { hasText: 'R00001' })).toBeVisible();
   // the dormitory group (two beds) is drawn on bed rows
-  await expect(p.locator('.row[data-row^="Dormitory · "] .bar', { hasText: 'R00004' })).toHaveCount(2);
+  await expect(p.locator('.row[data-row^="Dormitory "] .bar', { hasText: 'R00004' })).toHaveCount(2);
   await shot(p, '01-calendar-week');
 });
 

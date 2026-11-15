@@ -1,0 +1,31 @@
+[
+ {
+  "mode": "redesign",
+  "depth": "polish",
+  "scope": "app",
+  "shape": "app screen",
+  "theme": "brand (project tokens)",
+  "prompt": "resort operations staff app: front desk, rooms, F&B, stores, staff",
+  "fixed": [
+   "19",
+   "30a",
+   "40",
+   "48",
+   "50",
+   "63",
+   "49a",
+   "F3",
+   "F23"
+  ],
+  "waived": [
+   "3",
+   "24b"
+  ],
+  "structural": [
+   "dashboard lead",
+   "sidebar grouping",
+   "reservation action row"
+  ],
+  "date": "2026-11-09"
+ }
+]

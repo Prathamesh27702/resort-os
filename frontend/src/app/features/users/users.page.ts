@@ -25,7 +25,7 @@ import { roleName } from './roles';
                 <td><b>{{ u.fullName }}</b><br /><small class="mute">{{ u.email }}</small></td>
                 <td>
                   @for (r of u.roles; track r.roleCode + r.propertyId) {
-                    <span class="chip">{{ roleName(r.roleCode) }}@if (r.propertyId) { · {{ propName(r.propertyId) }} }</span>
+                    <span class="chip">{{ roleName(r.roleCode) }}@if (r.propertyId) {, {{ propName(r.propertyId) }} }</span>
                   } @empty { <span class="mute">No roles</span> }
                 </td>
                 <td class="hide-sm num">{{ u.lastLoginAt ? when(u.lastLoginAt) : 'Never' }}</td>
@@ -43,7 +43,7 @@ import { roleName } from './roles';
       </div>
     </div>
   `,
-  styles: `.mute { color: #5b6b6e; }`,
+  styles: `.mute { color: var(--ro-mute); }`,
 })
 export class UsersPage {
   private http = inject(HttpClient);

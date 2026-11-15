@@ -42,7 +42,7 @@ const differs = (c: AbstractControl): ValidationErrors | null =>
       </form>
     </div>
   `,
-  styles: `.box { padding: 24px; max-width: 420px; display: flex; flex-direction: column; gap: 8px; } .error { color: #b3261e; margin: 0; }`,
+  styles: `.box { padding: var(--space-6); max-width: 420px; display: flex; flex-direction: column; gap: var(--space-2); } .error { color: var(--ro-error); margin: 0; }`,
 })
 export class PasswordPage {
   private auth = inject(AuthService);

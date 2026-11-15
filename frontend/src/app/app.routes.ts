@@ -59,6 +59,9 @@ export const routes: Routes = [
       // /front-desk (Sprint 7)
       { path: 'front-desk', pathMatch: 'full', redirectTo: 'front-desk/arrivals' },
       { path: 'front-desk/walk-in', canActivate: [permissionGuard('frontdesk.checkin')], loadComponent: () => import('./features/front-desk/walk-in.page').then(m => m.WalkInPage) },
+      // Form C for foreign guests (Sprint 30)
+      { path: 'form-c', canActivate: [permissionGuard('guest_document.read')], loadComponent: () => import('./features/india/form-c.page').then(m => m.FormCPage) },
+      { path: 'form-c/:id', canActivate: [permissionGuard('guest_document.read')], loadComponent: () => import('./features/india/form-c-sheet.page').then(m => m.FormCSheetPage) },
       ...(['arrivals', 'departures', 'in-house', 'rooms'] as const).map(tab => ({
         path: `front-desk/${tab}`, data: { tab }, canActivate: [permissionGuard('reservation.read')],
         loadComponent: () => import('./features/front-desk/front-desk.page').then(m => m.FrontDeskPage),

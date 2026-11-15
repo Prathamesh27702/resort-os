@@ -21,7 +21,7 @@ describe('invoice helpers (Sprint 12)', () => {
   });
 
   it('lists a line\'s taxes with their rates', () => {
-    expect(lineTaxText(roomNight)).toBe('CGST 2.5% · SGST 2.5%');
+    expect(lineTaxText(roomNight)).toBe('CGST 2.5%, SGST 2.5%');
     expect(lineTaxText({ taxes: [] })).toBe('');
   });
 

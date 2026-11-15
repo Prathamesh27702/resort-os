@@ -68,9 +68,9 @@ type Period = 'month' | 'last' | 'year' | 'any';
         </div>
 
         @if (list(); as l) {
-          <p class="sum" data-testid="totals">{{ l.items.length }} {{ l.items.length === 1 ? 'expense' : 'expenses' }} · {{ inr(l.total) }} paid
-            @if (l.costTotal !== l.total) { · {{ inr(l.costTotal) }} cost after GST credit }
-            @if (l.waiting && show() !== 'waiting') { · <b>{{ l.waiting }} waiting for approval ({{ inr(l.waitingAmount) }})</b> }</p>
+          <p class="sum" data-testid="totals">{{ l.items.length }} {{ l.items.length === 1 ? 'expense' : 'expenses' }}, {{ inr(l.total) }} paid
+            @if (l.costTotal !== l.total) {, {{ inr(l.costTotal) }} cost after GST credit }
+            @if (l.waiting && show() !== 'waiting') {, <b>{{ l.waiting }} waiting for approval ({{ inr(l.waitingAmount) }})</b> }</p>
         }
         <ul class="items" data-testid="expenses">
           @for (e of list()?.items ?? []; track e.id) {
@@ -78,7 +78,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
               <button class="row" type="button" (click)="toggle(e)" [attr.aria-expanded]="openId() === e.id">
                 <span class="day">{{ short(e.expenseDate) }}</span>
                 <span class="what"><b>{{ e.description }}</b>
-                  <small class="mute">{{ e.payee }} · {{ e.costCentreName }} · {{ e.categoryName }}</small></span>
+                  <small class="mute">{{ e.payee }}, {{ e.costCentreName }}, {{ e.categoryName }}</small></span>
                 <span class="amt"><b>{{ inr(e.amount) }}</b>
                   <small class="chip" [class]="e.status.toLowerCase()">{{ statusText[e.status] }}</small>
                   @if (e.needsReceipt) { <small class="need"><mat-icon inline>receipt_long</mat-icon> needs receipt</small> }</span>
@@ -89,9 +89,9 @@ type Period = 'month' | 'last' | 'year' | 'any';
                     <dt>Number</dt><dd>{{ e.code }}</dd>
                     <dt>Paid</dt><dd>{{ inr(e.amount) }} by {{ method[e.paymentMethod] }}@if (e.paymentReference) { ({{ e.paymentReference }}) }</dd>
                     @if (e.vendorGstin) {
-                      <dt>GST bill</dt><dd>{{ e.billNumber }} · GSTIN {{ e.vendorGstin }}</dd>
-                      <dt>GST</dt><dd>@if (e.igst) { IGST {{ inr(e.igst) }} } @else { CGST {{ inr(e.cgst) }} + SGST {{ inr(e.sgst) }} } on {{ inr(e.taxableValue) }}
-                        · {{ e.itcEligible ? 'claimable as input credit' : 'not claimable' }}</dd>
+                      <dt>GST bill</dt><dd>{{ e.billNumber }}, GSTIN {{ e.vendorGstin }}</dd>
+                      <dt>GST</dt><dd>@if (e.igst) { IGST {{ inr(e.igst) }} } @else { CGST {{ inr(e.cgst) }} + SGST {{ inr(e.sgst) }} } on {{ inr(e.taxableValue) }},
+                       {{ e.itcEligible ? 'claimable as input credit' : 'not claimable' }}</dd>
                     }
                     <dt>Counts in the budget</dt><dd>{{ inr(e.costAmount) }}{{ e.status === 'APPROVED' ? '' : ' once approved' }}</dd>
                     <dt>Recorded</dt><dd>by {{ e.recordedBy ?? 'someone' }}</dd>
@@ -133,7 +133,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
         <div class="bar"><span class="grow"></span><button mat-flat-button (click)="editItem('centre', null)"><mat-icon>add</mat-icon>New department</button></div>
         <ul class="list" data-testid="centres">
           @for (c of setup()?.costCentres ?? []; track c.id) {
-            <li [class.off]="!c.isActive"><div class="main"><b>{{ c.name }}</b> <small class="mute">{{ c.code }}{{ c.isActive ? '' : ' · not in use' }}</small></div>
+            <li [class.off]="!c.isActive"><div class="main"><b>{{ c.name }}</b> <small class="mute">{{ c.code }}{{ c.isActive ? '' : ', not in use' }}</small></div>
               <button mat-button (click)="editItem('centre', c)">Change</button></li>
           }
         </ul>
@@ -141,7 +141,7 @@ type Period = 'month' | 'last' | 'year' | 'any';
         <ul class="list" data-testid="categories">
           @for (c of setup()?.categories ?? []; track c.id) {
             <li [class.off]="!c.isActive"><div class="main"><b>{{ c.name }}</b>
-              <small class="mute">{{ c.code }}{{ c.gstClaimable ? '' : ' · GST not claimable' }}{{ c.isActive ? '' : ' · not in use' }}</small></div>
+              <small class="mute">{{ c.code }}{{ c.gstClaimable ? '' : ', GST not claimable' }}{{ c.isActive ? '' : ', not in use' }}</small></div>
               <button mat-button (click)="editItem('category', c)">Change</button></li>
           }
         </ul>
@@ -152,36 +152,40 @@ type Period = 'month' | 'last' | 'year' | 'any';
   `,
   styles: `
     .exp { max-width: 900px; padding-bottom: 60px; }
-    .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .bar { margin-top: 8px; }
-    .grow { flex: 1; } .mute { color: #5b6b6e; } .err { color: #b3261e; } h2 { margin: 18px 0 0; font-size: 1.1rem; }
-    .sel { width: 180px; } .sum { margin: 10px 0 4px; color: #33474a; }
-    .items, .list { list-style: none; margin: 8px 0 0; padding: 0; }
-    .items > li { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+    .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .bar { margin-top: var(--space-2); }
+    .grow { flex: 1; } .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } h2 { margin: 18px 0 0; font-size: 1.1rem; }
+    .sel { width: 180px; } .sum { margin: 10px 0 var(--space-1); color: var(--ro-ink-soft); }
+    .items, .list { list-style: none; margin: var(--space-2) 0 0; padding: 0; }
+    .items > li { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); margin-bottom: var(--space-2); overflow: hidden; box-shadow: var(--ro-shadow-card); }
     .items > li.off { opacity: .7; } .items > li.empty { padding: 14px; }
-    .row { display: flex; gap: 12px; align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer;
-           font: inherit; color: inherit; } .row:hover { background: #f4f8f7; }
-    .day { min-width: 76px; font-weight: 600; color: #0e3b43; font-size: .9rem; }
+    .row { display: flex; gap: var(--space-3); align-items: center; width: 100%; padding: 10px 14px; background: none; border: 0; text-align: left; cursor: pointer;
+           font: inherit; color: inherit; } .row:hover { background: var(--ro-wash); }
+    .day { min-width: 76px; font-weight: 600; color: var(--ro-tide); font-size: .9rem; }
     .what { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     .what b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .amt { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .chip { border-radius: 10px; padding: 1px 8px; font-size: .75rem; background: #fff4d6; color: #6b4e00; }
-    .chip.approved { background: #e2f3e8; color: #1b6e3a; } .chip.rejected, .chip.cancelled { background: #f3e3e3; color: #8a1c1c; }
-    .need { color: #8a5a00; font-size: .75rem; }
-    .detail { border-top: 1px solid #eef2f1; padding: 8px 14px 12px; }
-    dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 4px 0 8px; } dt { color: #5b6b6e; } dd { margin: 0; }
-    .receipts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
-    .thumb { width: 84px; height: 84px; border: 1px solid #d9e0de; border-radius: 8px; background: #fff; padding: 0; overflow: hidden; cursor: pointer;
-             display: flex; flex-direction: column; align-items: center; justify-content: center; color: #33474a; }
+    .chip { border-radius: 10px; padding: 1px var(--space-2); font-size: .75rem; background: var(--ro-warn-bg); color: var(--ro-warn-strong); }
+    .chip.approved { background: var(--ro-ok-bg); color: var(--ro-ok-mid); } .chip.rejected, .chip.cancelled { background: var(--ro-off-bg); color: var(--ro-error-strong); }
+    .need { color: var(--ro-warn); font-size: .75rem; }
+    .detail { border-top: 1px solid var(--ro-sunk); padding: var(--space-2) 14px var(--space-3); }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px var(--space-3); margin: var(--space-1) 0 var(--space-2); } dt { color: var(--ro-mute); } dd { margin: 0; }
+    .receipts { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin: 6px 0; }
+    .thumb { width: 84px; height: 84px; border: 1px solid var(--ro-line); border-radius: 8px; background: var(--ro-paper); padding: 0; overflow: hidden; cursor: pointer;
+             display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ro-ink-soft); }
     .thumb img { width: 100%; height: 100%; object-fit: cover; } .thumb small { font-size: .7rem; max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .add { position: relative; width: 84px; height: 84px; border: 2px dashed #a9b6b3; border-radius: 8px; display: flex; flex-direction: column;
-           align-items: center; justify-content: center; color: #33474a; font-size: .8rem; cursor: pointer; text-align: center; }
+    .add { position: relative; width: 84px; height: 84px; border: 2px dashed var(--ro-outline); border-radius: 8px; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; color: var(--ro-ink-soft); font-size: .8rem; cursor: pointer; text-align: center; }
     .add input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-    .why { background: #fff4d6; color: #6b4e00; border-radius: 8px; padding: 6px 10px; margin: 6px 0; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; } .actions button { min-height: 44px; }
-    .list { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .list li { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid #eef2f1; } .list li:first-child { border-top: 0; }
+    .why { background: var(--ro-warn-bg); color: var(--ro-warn-strong); border-radius: 8px; padding: 6px 10px; margin: 6px 0; }
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: 6px; } .actions button { min-height: 44px; }
+    .list { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .list li { display: flex; gap: var(--space-2); align-items: center; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); } .list li:first-child { border-top: 0; }
     .list li.off { opacity: .6; } .main { flex: 1; display: flex; flex-direction: column; }
-    @media (max-width: 560px) { .sel { width: calc(50% - 4px); } .day { min-width: 54px; font-size: .8rem; } }
+    @media (max-width: 560px) {
+      .sel { width: calc(50% - 4px); }
+      .row { flex-wrap: wrap; gap: 2px var(--space-3); } .day { min-width: 100%; font-size: .8rem; color: var(--ro-mute); }
+      .what b { white-space: normal; }
+    }
   `,
 })
 export class ExpensesPage {
