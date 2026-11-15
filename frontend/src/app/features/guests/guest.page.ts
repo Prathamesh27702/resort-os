@@ -66,7 +66,7 @@ const CONSENT_LABEL: Record<string, string> = {
             <dl>
               <dt>Phone</dt><dd class="num">{{ phone(g.phone) || '—' }}</dd>
               <dt>Email</dt><dd>{{ g.email || '—' }}</dd>
-              <dt>Nationality</dt><dd>{{ country(g.nationality) || '—' }}@if (g.nationality && g.nationality !== 'IN') { <span class="chip">Form-C needed</span> }</dd>
+              <dt>Nationality</dt><dd>{{ country(g.nationality) || '—' }}@if (g.nationality && g.nationality !== 'IN') { <a class="chip" routerLink="/form-c" title="Foreign guests are reported to the FRRO within 24 hours of check-in">Form C needed</a> }</dd>
               @if (g.dateOfBirth) { <dt>Date of birth</dt><dd>{{ g.dateOfBirth }}</dd> }
               @if (g.gstin) { <dt>GSTIN</dt><dd class="num">{{ g.gstin }}</dd> }
             </dl>

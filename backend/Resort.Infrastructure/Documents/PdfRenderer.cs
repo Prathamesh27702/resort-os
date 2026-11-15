@@ -131,6 +131,23 @@ public sealed class PdfRenderer : IPdfRenderer
             Gap(section, 8);
             foreach (var n in d.Notes) Small(section.AddParagraph(n));
         }
+        if (d.Qr is { } qr)
+        {
+            Gap(section, 6);
+            var box = section.AddTable();
+            box.AddColumn(Unit.FromCentimeter(3.4));
+            box.AddColumn(Unit.FromCentimeter(10));
+            var row = box.AddRow();
+            row.KeepWith = 0;
+            var image = row.Cells[0].AddImage("base64:" + Convert.ToBase64String(qr.Png));
+            image.Width = Unit.FromCentimeter(3);
+            image.LockAspectRatio = true;
+            row.Cells[1].VerticalAlignment = VerticalAlignment.Center;
+            var caption = row.Cells[1].AddParagraph(qr.Caption);
+            caption.Format.Font.Bold = true;
+            caption.Format.Font.Size = 10;
+            foreach (var line in qr.Lines) Small(row.Cells[1].AddParagraph(line));
+        }
         if (d.Signatory is { } who)
         {
             var s = section.AddParagraph($"For {who}");

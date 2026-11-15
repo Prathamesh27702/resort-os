@@ -129,3 +129,6 @@ Full specifications (permission, request/response, errors, idempotency, audit) a
 | `/api/v1/public/* — separate` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |
 | `rate-limited` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |
 | `no admin data` | [Sprint 27](../sprints/sprint-27-direct-booking-website.md) | ⚪ Planned |
+| `/api/v1/properties/{propertyId}/upi-qr` | [Sprint 30](../sprints/sprint-30-india-readiness.md) | 🟡 In review |
+| `/api/v1/properties/{propertyId}/orders/{id}/bill` | [Sprint 30](../sprints/sprint-30-india-readiness.md) | 🟡 In review |
+| `/api/v1/properties/{propertyId}/form-c/*` | [Sprint 30](../sprints/sprint-30-india-readiness.md) | 🟡 In review |

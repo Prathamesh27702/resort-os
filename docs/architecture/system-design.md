@@ -633,6 +633,25 @@ flowchart LR
   card, and booking-message consent on the guest's profile. [4.34](#434-messages-the-outbox-and-the-daily-jobs) explains
   the rules.
 
+### Sprint 30: India readiness (FSSAI and UPI on bills, printed bill and kitchen ticket, Form C)
+
+- Migration V027: three columns on `properties` (`fssai_licence_no`, `upi_id`, `upi_payee_name`, each with a CHECK),
+  `form_c_records` (one per foreign guest and stay; the sheet is AES-256-GCM JSON like an ID document; never deleted) and
+  the job code `form_c_reminder`. Details: [schema-sprint-30.md](../database/schema-sprint-30.md). Dev seed S022.
+- `Domain/Compliance/`: `Upi` (the UPI ID and FSSAI checks, the `upi://pay` link) and `FormC` (the record, the 26 fields
+  of the portal in order, which are required). `Application/Compliance/`: `UpiService` (the QR for an amount; `IQrCodes`
+  is implemented by `Infrastructure/Compliance/QrCodes.cs` with QRCoder) and `FormCService` (opens sheets at check-in,
+  fills them from what is known, saves, files, reopens, the register).
+- Hooks in older code: `FrontDeskService` calls `FormCService.OpenForStayAsync` in the check-in transaction and returns
+  the counts on the dashboard; `OrderService.BillAsync` builds the printed bill; `InvoiceService` passes the FSSAI number
+  and a QR for the balance to `InvoicePrinter`; `NotificationCatalog` and `NotificationJobs` gain the seventh job;
+  `GuestService.AnonymiseAsync` empties the guest's sheets.
+- Endpoints: `ComplianceEndpoints.cs`. No new permission: `property.read` (the QR), `pos_order.read` (the bill),
+  `guest_document.read` (reading Form C, audited) and `frontdesk.checkin` (changing it).
+- Screens: `features/india/` (`upi-qr.ts` used by the pay dialogs and settings, `receipt.ts` and `receipt-dialog.ts`
+  for the thermal bill and ticket, `form-c.page.ts`, `form-c-sheet.page.ts`).
+  [4.36](#436-india-readiness-upi-qr-printed-bills-and-form-c) explains the rules; the owner's guide is [INDIA.md](../INDIA.md).
+
 ---
 
 ## 4. System design: how the hard parts work
@@ -1606,6 +1625,36 @@ uses the tokens, never a typed colour, so one set of values per theme repaints t
 - **Navigation.** `layout/nav.ts` lists the menu in sections with each link's permission; the shell hides links and
   whole sections a role can't use. The phone tab bar takes the first four of a preference list the person may open.
   `layout/search.ts` is the Ctrl K search over screens, guests and bookings.
+
+### 4.36 India readiness: UPI QR, printed bills and Form C
+
+**UPI.** A property has one UPI ID. `Upi.PayLink` builds `upi://pay?pa=<id>&pn=<name>&am=<amount>&cu=INR&tn=<note>`:
+the amount with exactly two decimals, the name and note cut to 50 characters and to characters every UPI app accepts.
+The server draws the QR (PNG) so screens, the printed bill and the PDF show the same one, and the browser needs no QR
+library. The app never learns whether the guest paid: staff record the payment with the UPI reference, as before Sprint
+30. That is why the online pay page keeps Razorpay, whose webhook is the proof of payment (4.x Razorpay).
+
+**The printed bill.** `GET /orders/{id}/bill` returns everything in print order (lines of the same dish, portion,
+choices and price are merged). `receipt.ts` turns it into HTML with every value escaped, and `printReceipt` writes it
+into a hidden iframe whose page is the roll: `@page { size: 80mm auto; margin: 0 }`. The UPI QR is on the bill only
+while it is OPEN; a settled bill says how it was paid. The kitchen ticket is built in the browser from the ticket already
+on the screen.
+
+**Form C.** Rules, all in `FormCService`:
+
+- A sheet exists per (stay, guest) for guests whose profile nationality is set and isn't `IN`. It is opened inside the
+  check-in transaction, so a check-in can't succeed without it. `EnsureInHouseAsync` (run when the list is read) opens
+  the ones missing for guests already in house, under an advisory lock per stay; the unique key makes a second one impossible.
+- `due_at = arrived_at + 24 h`. Overdue is worked out when read, never stored.
+- A field's value is what staff typed on the sheet (the encrypted JSON), else what the profile, the newest active
+  passport and visa documents and the booking say (`fromProfile: true`). Clearing a typed value shows the profile's again.
+  Only typed values are stored, so correcting the profile corrects every open sheet.
+- Saving checks each value by its kind (date, 24-hour time, days 1 to 3650, sex, yes/no, length) and answers with
+  `Values.<key>` so the screen shows the reason under that field; one bad value saves nothing.
+- PENDING → SUBMITTED needs every required field; the answer names the gaps. SUBMITTED and NOT_REQUIRED lock the sheet;
+  reopening clears the FRRO number, who and when. Every change carries the row version (4.x concurrency).
+- Reading a sheet or the register writes a SENSITIVE_READ audit row. The register shows a passport as its last 4 characters.
+- The reminder job's business key is the day, so run twice it sends once (4.34).
 
 ## How this guide stays current
 

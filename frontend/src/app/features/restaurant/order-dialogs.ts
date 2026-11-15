@@ -1,3 +1,4 @@
+import { UpiQrComponent } from '../india/upi-qr';
 import { Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -240,12 +241,13 @@ export class DiscountDialog<T> {
 
 // ------------------------------------------------------------------ paid at the restaurant
 
-export interface PayData<T> { total: number; run: (method: PaymentMethod, reference: string | null) => Observable<T>; }
+/** upi: the property and the bill number, so choosing UPI shows the property's QR for exactly the total (Sprint 30). */
+export interface PayData<T> { total: number; run: (method: PaymentMethod, reference: string | null) => Observable<T>; upi?: { pid: string; note: string; canFix: boolean }; }
 
 /** How a walk-in bill was paid. Cash goes into the open cash drawer; UPI / card / bank transfer take their reference. */
 @Component({
   selector: 'app-pay-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, UpiQrComponent],
   template: `
     <h2 mat-dialog-title>Paid {{ rupeesExact(data.total) }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
@@ -256,6 +258,9 @@ export interface PayData<T> { total: number; run: (method: PaymentMethod, refere
       @if (form.controls.method.value === 'CASH') {
         <p class="mute">The cash goes into the open cash drawer.</p>
       } @else {
+        @if (form.controls.method.value === 'UPI' && data.upi; as u) {
+          <app-upi-qr [pid]="u.pid" [amount]="data.total" [note]="u.note" [canFix]="u.canFix" />
+        }
         <mat-form-field appearance="outline" class="full">
           <mat-label>Reference (UPI ref, card slip or bank ref)</mat-label>
           <input matInput formControlName="reference" maxlength="100" placeholder="e.g. UPI 4123 5678 9012" />

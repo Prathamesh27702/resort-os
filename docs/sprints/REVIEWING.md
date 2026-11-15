@@ -782,6 +782,43 @@ How it works: [system-design.md → 4.34](../architecture/system-design.md#434-m
 | 17 | **Guests** → a guest → **Consent** → *Booking messages on WhatsApp* → **No**; book them confirmed | WhatsApp *Not sent*: *… asked not to get booking messages on WhatsApp (recorded …).* |
 | 18 | Phone (360 × 780): **Messages** | Filters, the list and the jobs fit; nothing scrolls sideways |
 
+### Sprint 30 — India readiness (FSSAI and UPI on bills, printed bill and kitchen ticket, Form C)
+
+Continue on a **freshly reset database** (then restart the API and watch for `Applying migration V027__india_readiness`).
+Demo data (S022): the demo property has a made-up FSSAI number and UPI ID, so bills show both from the start. Use two
+windows: the **owner** and a **Receptionist**. A UPI app on your phone is useful for step 5 (scanning shows the name and
+amount; don't pay, the demo UPI ID can't receive money). Screenshots: [sprint-30-screens/](sprint-30-screens/). The
+browser tests do the same on their own: `cd frontend; npm run e2e:headed -- e2e/sprint-30.spec.ts` (names S30-01 …
+S30-07). Database checks: `database/queries/check-sprint-30.sql`. Setup and the routine: [INDIA.md](../INDIA.md).
+
+| # | Do | You should see |
+|---|---|---|
+| 1 | Owner: **Settings** → **Properties** → Palm Grove → **Food licence and UPI** | FSSAI licence number, UPI ID, name shown to the payer, and the QR of the saved UPI ID |
+| 2 | FSSAI: remove one digit. UPI ID: *palmgrove*. **Save** | Under each field: *An FSSAI licence number has 14 digits.* and *A UPI ID looks like name@bank…* Nothing saved |
+| 3 | Put your own FSSAI number and UPI ID → **Save** → open the property again | *Changes saved*; the QR shows your UPI ID |
+| 4 | **Restaurant** → a free table → add two dishes → **Send to kitchen** → **Print bill** | The bill as it prints: property, GSTIN, *FSSAI Lic. No.*, the dishes, CGST and SGST, TOTAL, *Scan to pay ₹… by UPI* with the QR |
+| 5 | Scan the QR with a UPI app (don't pay) | The app shows your name and the bill's exact total |
+| 6 | **58 mm** → **Print** | The narrower bill; the browser's print window with the paper sized to the roll |
+| 7 | Close; on the kitchen ticket press the printer symbol | The ticket in large type: number, table, each dish with its note |
+| 8 | **Kitchen**: Start, Ready; back on the order **Serve**; **Paid** → **UPI** | The QR for the amount next to the reference field; type the UPI reference → the bill is settled |
+| 9 | **Print bill** again | *Paid by UPI* instead of the QR |
+| 10 | Receptionist: **Front desk** → **Walk-in** → new guest, nationality **Germany**, one night → check in | Checked in; the bell has *Form C to file* |
+| 11 | **Front desk** | A band: *1 Form C to file for foreign guests…* |
+| 12 | Tap it (or **Form C** in the menu) | The guest with *23 h left* and *N fields to fill* |
+| 13 | **Fill and file** | The sheet: name, nationality, address in India, arrival date and time and days of stay filled in; a blue band with the deadline |
+| 14 | **Mark as filed** straight away | Refused: *N required fields are still empty: Passport: Passport number; …*; each empty field says *The FRRO portal needs this.* |
+| 15 | *Intended stay here (days)*: 0 → **Save** | Under the field: *Intended stay here (days) must be a whole number of days from 1 to 3650.* |
+| 16 | Fill every field → **Save** | *Form C saved.*; the passport number in capitals |
+| 17 | Press copy next to a date | *… copied: 14/01/2031* (the portal's date format) |
+| 18 | **Mark as filed** → number *AB* | Under the field: *The acknowledgement number … has 3 to 40 characters…* |
+| 19 | A real-looking number → **Mark as filed** | Green band: *Filed … by you. FRRO number …*; the fields are locked; **Reopen to correct** |
+| 20 | **Form C** → **Filed** | The guest with the FRRO number; **To file** no longer lists them |
+| 21 | **Download register** | A spreadsheet: guest, nationality, passport as *•••• 1234*, booking, arrived, filed on, by whom, FRRO number |
+| 22 | A guest's profile with a foreign nationality | *Form C needed* links to the Form C page |
+| 23 | **Messages** → **Daily jobs** | *Form C reminder* at 09:00; **Run now** says how many are waiting, and a second **Run now** sends nothing twice |
+| 24 | **Invoices** → an invoice of a booking that still owes money → PDF | *FSSAI Lic. No.* under the GSTIN, and a UPI QR for the balance |
+| 25 | Phone (360 × 780): **Form C** and a sheet | Both fit; nothing scrolls sideways |
+
 ## Part C — Decide
 
 ### Accept

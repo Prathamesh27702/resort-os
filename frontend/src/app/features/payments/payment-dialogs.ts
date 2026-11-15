@@ -1,3 +1,5 @@
+import { AuthService } from '../../core/auth.service';
+import { UpiQrComponent } from '../india/upi-qr';
 import { Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -39,7 +41,7 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
  */
 @Component({
   selector: 'app-take-payment-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule, UpiQrComponent],
   template: `
     <h2 mat-dialog-title>Take a payment, <span class="num">{{ data.folio.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
@@ -60,6 +62,9 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
         @if (target() === 'account') { <mat-hint>Kept for {{ data.folio.reference }} until it is put on a bill</mat-hint> }
         <mat-error>{{ err('amount') || 'The amount must be more than ₹0.' }}</mat-error>
       </mat-form-field>
+      @if (form.controls.method.value === 'UPI' && amount() > 0) {
+        <app-upi-qr class="qr" [pid]="data.propertyId" [amount]="amount()" [note]="data.folio.reference + ' ' + data.folio.number" [canFix]="canFixUpi" />
+      }
       <mat-form-field appearance="outline" class="full">
         <mat-label>{{ ref().label }}</mat-label>
         <input matInput formControlName="paymentReference" maxlength="100" autocomplete="off" />
@@ -85,6 +90,7 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
     .full { width: 100%; }
     .err { color: var(--ro-error); }
     .err.field { margin: -8px 0 var(--space-3); font-size: .85rem; }
+    .qr { display: block; margin-bottom: var(--space-4); }
   `,
 })
 export class TakePaymentDialog {
@@ -92,6 +98,7 @@ export class TakePaymentDialog {
   private ref$ = inject(MatDialogRef<TakePaymentDialog, Payment>);
   private api = inject(PaymentsApi);
   private key = newKey();
+  canFixUpi = inject(AuthService).can('property.update', this.data.propertyId);
   methods = METHODS;
   methodLabel = methodLabel;
   money = rupeesExact;

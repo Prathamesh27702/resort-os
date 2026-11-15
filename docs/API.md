@@ -1433,6 +1433,38 @@ Also in Sprint 24: guest consents take `SERVICE_WHATSAPP` and `SERVICE_EMAIL` (`
 before); a booking confirmed by `POST /reservations` (status CONFIRMED), `POST /reservations/{id}/confirm` or a Razorpay payment queues the
 confirmation in the same transaction.
 
+## Built endpoints (Sprint 30 — India readiness: UPI QR, the printed restaurant bill, Form C)
+
+Setup and the routine: [INDIA.md](INDIA.md). How it works:
+[system-design.md → 4.36](architecture/system-design.md#436-india-readiness-upi-qr-printed-bills-and-form-c).
+`PropertyDto`, `CreatePropertyRequest` and `UpdatePropertyRequest` gain `fssaiLicenceNo` (14 digits; spaces dropped),
+`upiId` (name@bank) and `upiPayeeName` (2 to 60 characters); a wrong one is a 400 under its field. The front desk
+dashboard gains `formCPending` and `formCOverdue`.
+
+Under `/api/v1/properties/{propertyId}`:
+
+| Method and path | Permission | What it does |
+|---|---|---|
+| `GET /upi-qr?amount=&note=` | `property.read` | The property's UPI QR. `amount` optional (₹0.01 to ₹10,00,000; without it the payer types it). 422 `UPI_NOT_SET` when the property has no UPI ID, `UPI_AMOUNT` when too large |
+| `GET /orders/{id}/bill` | `pos_order.read` | The restaurant bill in print order. 422 `BILL_EMPTY` (nothing on the order), `ORDER_VOIDED` |
+| `GET /form-c?status=` | `guest_document.read` | PENDING (default), SUBMITTED, NOT_REQUIRED or ALL; pending first by deadline, at most 200. Opens the sheets missing for foreign guests in house |
+| `GET /form-c/register.csv?from=&to=` | `guest_document.read` | The foreign guest register by arrival day, at most 366 days; audited |
+| `GET /form-c/{id}` | `guest_document.read` | The sheet; audited as a sensitive read |
+| `PUT /form-c/{id}` | `frontdesk.checkin` | `{ values: { key: value or null }, version }`. Only PENDING sheets. 400 under `Values.<key>`; 422 `FORM_C_CLOSED` |
+| `POST /form-c/{id}/submit` | `frontdesk.checkin` | `{ frroReference?, version }`. 422 `FORM_C_INCOMPLETE` naming the empty required fields; 409 `FORM_C_ALREADY_FILED` |
+| `POST /form-c/{id}/not-required` | `frontdesk.checkin` | `{ reason, version }` (3 to 300 characters) |
+| `POST /form-c/{id}/reopen` | `frontdesk.checkin` | `{ version }`. Back to PENDING; clears the FRRO number. 409 `FORM_C_OPEN` |
+
+`UpiQrDto = { upiId, payeeName, amount, note, link, qrPng }` (`link`: the `upi://pay` link; `qrPng`: a PNG data URI).
+`OrderBillDto = { property: { name, legalName, addressLines, phone, gstin, fssaiLicenceNo }, orderId, number, where,
+orderType, businessDate, printedAt, covers, waiterName, guestName, lines: [{ name, detail, quantity, unitPrice, amount,
+foodType }], subtotal, discountAmount, discountLabel, net, taxes, taxAmount, total, taxNote, sacCode, status, paidBy,
+upi }` (`upi` only while OPEN and the property has a UPI ID). `FormCListDto = { items, pending, overdue, hoursToFile,
+portalUrl }`; an item has `{ id, status, guestId, guestName, nationality, reservationId, reference, room, checkOut,
+arrivedAt, dueAt, hoursLeft, overdue, missing, frroReference, submittedAt, submittedByName, notRequiredReason }`.
+`FormCSheetDto` adds `checkIn`, `fields: [{ key, section, label, required, hint, kind, maxLength, value, fromProfile }]`
+(`kind`: text, date `yyyy-MM-dd`, time `HH:mm`, number, sex, yesno), `missing` (labels) and `version`.
+
 ### Health (no auth, not rate-limited)
 
 `GET /health/live` (process up) · `GET /health/ready` (database reachable).
