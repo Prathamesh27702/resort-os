@@ -50,9 +50,9 @@ type View = 'out' | 'items';
         <ul class="list" data-testid="out">
           @for (x of out(); track x.id) {
             <li [attr.data-tag]="x.tag" [class.late]="x.overdue">
-              <div class="main"><span><b>{{ x.tag }}</b> {{ x.typeName }} · <b>{{ x.issuedTo }}</b></span>
-                <small class="mute">{{ x.status === 'RESERVED' ? 'Kept aside' : 'Out since ' + time(x.issuedAt) }}@if (x.bookingCode) { · {{ x.bookingCode }} }
-                  @if (x.reservationReference) { · {{ x.reservationReference }} }@if (x.dueBackAt) { · due back {{ time(x.dueBackAt) }} }</small>
+              <div class="main"><span><b>{{ x.tag }}</b> {{ x.typeName }}, <b>{{ x.issuedTo }}</b></span>
+                <small class="mute">{{ x.status === 'RESERVED' ? 'Kept aside' : 'Out since ' + time(x.issuedAt) }}@if (x.bookingCode) {, {{ x.bookingCode }} }
+                  @if (x.reservationReference) {, {{ x.reservationReference }} }@if (x.dueBackAt) {, due back {{ time(x.dueBackAt) }} }</small>
                 @if (x.overdue) { <small class="bad">Overdue</small> }</div>
               @if (canIssue()) {
                 <div class="btns">
@@ -86,19 +86,19 @@ type View = 'out' | 'items';
   `,
   styles: `
     .eq { max-width: 900px; padding-bottom: 60px; }
-    .head, .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .head { justify-content: space-between; } .bar { margin: 8px 0; }
-    .mute { color: #5b6b6e; } .err, .bad { color: #b3261e; }
-    .kinds { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; align-items: stretch; }
-    .kind { background: #fff; border: 1px solid #d9e0de; border-radius: 14px; padding: 8px 12px; min-width: 110px; display: flex; flex-direction: column;
-            text-align: left; cursor: pointer; font: inherit; color: inherit; }
-    .kind.sel { border-color: #0e7c86; box-shadow: 0 0 0 1px #0e7c86 inset; } .kind b { font-size: 1.25rem; } .kind b small { font-size: .85rem; color: #5b6b6e; }
-    .list { list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .list li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid #eef2f1; }
-    .list li:first-child { border-top: 0; } .list li.late { background: #fff6f5; }
+    .head, .bar { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; } .head { justify-content: space-between; } .bar { margin: var(--space-2) 0; }
+    .mute { color: var(--ro-mute); } .err, .bad { color: var(--ro-error); }
+    .kinds { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-2) 0; align-items: stretch; }
+    .kind { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-2) var(--space-3); min-width: 110px; display: flex; flex-direction: column;
+            text-align: left; cursor: pointer; font: inherit; color: inherit; box-shadow: var(--ro-shadow-card); }
+    .kind.sel { border-color: var(--ro-sea); box-shadow: 0 0 0 1px var(--ro-sea) inset; } .kind b { font-size: 1.25rem; } .kind b small { font-size: .85rem; color: var(--ro-mute); }
+    .list { list-style: none; margin: 0; padding: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .list li { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); }
+    .list li:first-child { border-top: 0; } .list li.late { background: var(--ro-error-bg); }
     .main { flex: 1 1 240px; display: flex; flex-direction: column; min-width: 0; } .btns { display: flex; gap: 6px; }
-    .status { font-size: .85rem; border-radius: 10px; padding: 0 8px; background: #eef2f1; white-space: nowrap; }
-    .s-AVAILABLE .status { background: #e3f3ea; color: #1e6b3a; } .s-ISSUED .status, .s-RESERVED .status { background: #e5f0f7; color: #0e3b5a; }
-    .s-DAMAGED .status, .s-LOST .status { background: #fbeaea; color: #8a1c1c; } .s-MAINTENANCE .status { background: #fdf6e6; color: #6b4a00; }
+    .status { font-size: .85rem; border-radius: 10px; padding: 0 var(--space-2); background: var(--ro-sunk); white-space: nowrap; }
+    .s-AVAILABLE .status { background: var(--ro-ok-bg); color: var(--ro-ok-mid); } .s-ISSUED .status, .s-RESERVED .status { background: var(--ro-info-bg); color: var(--ro-tide); }
+    .s-DAMAGED .status, .s-LOST .status { background: var(--ro-error-bg); color: var(--ro-error-strong); } .s-MAINTENANCE .status { background: var(--ro-warn-wash); color: var(--ro-warn-strong); }
     .s-RETIRED { opacity: .6; }
   `,
 })

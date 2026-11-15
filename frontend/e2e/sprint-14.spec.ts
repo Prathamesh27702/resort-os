@@ -155,7 +155,7 @@ test('S14-04 Send to kitchen: the ticket appears on the kitchen display by itsel
   await said(w1, 'Sent to the kitchen.');
   kotNumber = (await w1.locator('li[data-kot]').last().getAttribute('data-kot'))!;
   expect(kotNumber).toMatch(/^K\d{5}$/);
-  await expect(line(w1, 'Butter Naan')).toContainText(`${kotNumber} · New`);
+  await expect(line(w1, 'Butter Naan')).toContainText(`${kotNumber}, New`);
   // Nothing can be settled while food is in the kitchen.
   await expect(w1.getByTestId('charge')).toHaveCount(0);
   await expect(w1.getByText('The bill can be settled once every kitchen ticket is served.')).toBeVisible();

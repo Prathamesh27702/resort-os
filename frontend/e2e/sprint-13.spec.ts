@@ -1,5 +1,5 @@
 import { APIRequestContext, Browser, Page, expect, test } from '@playwright/test';
-import { addDays, apiAs, createStaff, owner, runId, shot, signIn } from './helpers';
+import { addDays, apiAs, createStaff, fieldDate, owner, runId, shot, signIn } from './helpers';
 
 // Sprint 13 — the same checks as docs/sprints/REVIEWING.md → "Sprint 13", automated, on a phone-sized screen (360 px).
 // The demo: a guest checks out and their room shows up on the housekeeper's phone by itself. Two taps (Start, Done) and it
@@ -166,7 +166,7 @@ test('S13-05 The housekeeper reports a broken AC with a photo and takes the room
   await hk.locator('mat-select[formcontrolname=priority]').click();
   await hk.getByRole('option', { name: 'High' }).click();
   await hk.getByRole('switch', { name: /out of order/ }).click();
-  await expect(hk.getByLabel('Usable again on')).toHaveValue(addDays(today, 2));
+  await expect(hk.getByLabel('Usable again on')).toHaveValue(fieldDate(addDays(today, 2)));
   await hk.getByLabel('Usable again on').fill(addDays(today, 1));
   await hk.getByTestId('photo-input').setInputFiles({ name: 'ac.png', mimeType: 'image/png', buffer: PNG });
   await expect(hk.locator('figure img')).toHaveCount(1);

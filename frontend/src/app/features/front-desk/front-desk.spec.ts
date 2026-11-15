@@ -8,7 +8,7 @@ describe('front desk helpers', () => {
     expect(placeName(room('u1', 'Room 101'))).toBe('Room 101');
     expect(placeName(room('d', 'Dormitory', 'B05'))).toBe('Dormitory bed B05');
     expect(roomsText([room('u1', 'Room 101'), room('u2', 'Room 102')])).toBe('Room 101, Room 102');
-    expect(roomsText([room('d', 'Dormitory', 'B01'), room('d', 'Dormitory', 'B02')])).toBe('Dormitory · 2 beds');
+    expect(roomsText([room('d', 'Dormitory', 'B01'), room('d', 'Dormitory', 'B02')])).toBe('Dormitory, 2 beds');
     expect(housekeepingLabel('OUT_OF_ORDER')).toBe('Out of order');
   });
 

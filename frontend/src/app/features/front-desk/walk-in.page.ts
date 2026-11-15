@@ -100,7 +100,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         <h2><span class="n">2</span> Guest</h2>
         @if (chosen()) {
           @if (guest(); as g) {
-            <p class="picked"><mat-icon>person</mat-icon><b>{{ g.fullName }}</b>@if (g.phone) { · <span class="num mute">{{ phone(g.phone) }}</span> }
+            <p class="picked"><mat-icon>person</mat-icon><b>{{ g.fullName }}</b>@if (g.phone) {, <span class="num mute">{{ phone(g.phone) }}</span> }
               <button mat-button (click)="clearGuest()">Change</button></p>
           } @else if (newGuestReady()) {
             <p class="picked"><mat-icon>person_add</mat-icon><b>New: {{ newGuestName() }}</b>
@@ -116,7 +116,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
                 </mat-form-field>
                 @for (g of found(); track g.id) {
                   <button mat-stroked-button class="found" (click)="useGuest(g)">
-                    <b>{{ g.fullName }}</b>@if (g.phone) { · <span class="mute num">{{ phone(g.phone) }}</span> }
+                    <b>{{ g.fullName }}</b>@if (g.phone) {, <span class="mute num">{{ phone(g.phone) }}</span> }
                   </button>
                 } @empty { @if (guestQ().trim().length >= 2) { <p class="mute">No guest matches “{{ guestQ() }}”. Add them as new.</p> } }
               </div>
@@ -155,8 +155,8 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
         @if (ready()) {
           <dl class="summary">
             <dt>Guest</dt><dd><b>{{ guest()?.fullName ?? newGuestName() }}</b>@if (!guest()) { <span class="mute"> (new profile)</span> }</dd>
-            <dt>Stay</dt><dd>{{ day(today) }} – {{ day(availability()!.to) }} · {{ availability()!.nights }} night{{ availability()!.nights === 1 ? '' : 's' }} · {{ guestsLine() }}</dd>
-            <dt>Room</dt><dd>{{ chosen()!.name }} · {{ roomLine() }}</dd>
+            <dt>Stay</dt><dd>{{ day(today) }} – {{ day(availability()!.to) }}, {{ availability()!.nights }} night{{ availability()!.nights === 1 ? '' : 's' }}, {{ guestsLine() }}</dd>
+            <dt>Room</dt><dd>{{ chosen()!.name }}, {{ roomLine() }}</dd>
             <dt>Price</dt><dd><b class="num">{{ rupees(chosen()!.price!) }}</b> before tax, {{ chosen()!.ratePlanName }}</dd>
           </dl>
           <form [formGroup]="extra" class="form-grid">
@@ -182,7 +182,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
             <div class="dups" role="alert">
               <p>This may be someone who has stayed before:</p>
               @for (d of duplicates(); track d.id) {
-                <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b> · {{ phone(d.phone) || d.email }} · {{ d.reasons.join(', ') }}</button>
+                <button mat-stroked-button type="button" (click)="useGuest(d)"><b>{{ d.fullName }}</b>, {{ phone(d.phone) || d.email }}, {{ d.reasons.join(', ') }}</button>
               }
               <button mat-button type="button" (click)="submit(true)">No, add a new profile and check in</button>
             </div>
@@ -196,33 +196,33 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
     </div>
   `,
   styles: `
-    .back { color: #5b6b6e; text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
-    .step { margin-bottom: 16px; }
+    .back { color: var(--ro-mute); text-decoration: none; font-size: 0.9rem; } .back::before { content: '‹ '; }
+    .step { margin-bottom: var(--space-4); }
     .step.off { opacity: 0.55; }
-    h2 { font-size: 1.05rem; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; }
-    h3 { font-size: 0.95rem; margin: 4px 0 8px; }
-    .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #0e3b43; color: #fff; font-size: 0.85rem; }
-    .dates { display: grid; grid-template-columns: 1fr 120px 120px auto; gap: 4px 12px; align-items: start; }
-    .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0; }
-    .err { color: #b3261e; }
-    .warn { color: #8a5a00; display: block; }
-    .mute { color: #5b6b6e; }
-    .types { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-    .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid #d9e0de; border-radius: 10px; }
-    .type.on { border-color: #0e3b43; background: #eef5f3; }
-    .type.full { background: #f8faf9; }
+    h2 { font-size: 1.05rem; margin: 0 0 var(--space-3); display: flex; align-items: center; gap: 10px; }
+    h3 { font-size: 0.95rem; margin: var(--space-1) 0 var(--space-2); }
+    .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ro-tide); color: var(--ro-paper); font-size: 0.85rem; }
+    .dates { display: grid; grid-template-columns: 1fr 120px 120px auto; gap: var(--space-1) var(--space-3); align-items: start; }
+    .actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-1) 0; }
+    .err { color: var(--ro-error); }
+    .warn { color: var(--ro-warn); display: block; }
+    .mute { color: var(--ro-mute); }
+    .types { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-3); }
+    .type { display: grid; grid-template-columns: 1fr 150px 200px auto; gap: var(--space-3); align-items: center; padding: var(--space-3); border: 1px solid var(--ro-line); border-radius: 10px; }
+    .type.on { border-color: var(--ro-tide); background: var(--ro-tint); }
+    .type.full { background: var(--ro-hover); }
     .type .what small, .type .price small { display: block; }
     .type .price { text-align: right; }
     .pick { width: 100%; }
-    .guest-step { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
+    .guest-step { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-6); }
     .wide { width: 100%; }
     .found { display: block; width: 100%; text-align: left; margin-bottom: 6px; }
-    .picked { display: flex; align-items: center; gap: 8px; margin: 0; }
-    .dups { background: #fbefd8; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+    .picked { display: flex; align-items: center; gap: var(--space-2); margin: 0; }
+    .dups { background: var(--ro-warn-bg); border-radius: 8px; padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
     .dups p { margin: 0 0 6px; }
-    .dups button { display: block; margin-bottom: 4px; text-align: left; }
-    .summary { display: grid; grid-template-columns: 120px 1fr; gap: 6px 16px; margin: 0 0 12px; }
-    .summary dt { color: #5b6b6e; }
+    .dups button { display: block; margin-bottom: var(--space-1); text-align: left; }
+    .summary { display: grid; grid-template-columns: 120px 1fr; gap: 6px var(--space-4); margin: 0 0 var(--space-3); }
+    .summary dt { color: var(--ro-mute); }
     .summary dd { margin: 0; }
     @media (max-width: 760px) {
       .dates { grid-template-columns: 1fr 1fr; }
@@ -231,7 +231,7 @@ interface ChosenGuest { id: string; fullName: string; phone: string | null; }
       .type .price { text-align: left; }
       .guest-step { grid-template-columns: 1fr; }
       .summary { grid-template-columns: 1fr; gap: 0; }
-      .summary dd { margin-bottom: 8px; }
+      .summary dd { margin-bottom: var(--space-2); }
     }
   `,
 })
@@ -371,7 +371,7 @@ export class WalkInPage {
     this.frontDesk.walkIn(this.pid, body, this.key).subscribe({
       next: r => {
         const room = r.units.filter(u => u.current).map(u => u.bedCode ? `${u.unitName} bed ${u.bedCode}` : u.unitName).join(', ');
-        this.snack.open(`Checked in: ${r.reference} · ${room}`, 'OK', { duration: 5000 });
+        this.snack.open(`Checked in: ${r.reference}, ${room}`, 'OK', { duration: 5000 });
         this.router.navigateByUrl(`/reservations/${r.id}`);
       },
       error: e => {

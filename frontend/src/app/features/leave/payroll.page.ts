@@ -42,8 +42,8 @@ import { LeaveApi, monthName, short } from './leave.api';
             <mat-checkbox [ngModel]="confirm()" (ngModelChange)="confirm.set($event)">Make the file anyway; what is listed above is left out</mat-checkbox>
           </section>
         }
-        <p class="mute small">{{ p.rows.length }} {{ p.rows.length === 1 ? 'person' : 'people' }}@if (p.holidays.length) { · holidays: @for (h of p.holidays; track h.id) { {{ short(h.date) }} {{ h.name }}{{ $last ? '' : ',' }} } }
-          @if (p.approvedToLock) { · making it locks {{ p.approvedToLock }} approved {{ p.approvedToLock === 1 ? 'timesheet' : 'timesheets' }} }</p>
+        <p class="mute small">{{ p.rows.length }} {{ p.rows.length === 1 ? 'person' : 'people' }}@if (p.holidays.length) {, holidays: @for (h of p.holidays; track h.id) { {{ short(h.date) }} {{ h.name }}{{ $last ? '' : ',' }} } }
+          @if (p.approvedToLock) {, making it locks {{ p.approvedToLock }} approved {{ p.approvedToLock === 1 ? 'timesheet' : 'timesheets' }} }</p>
         <div class="scroll">
           <table data-testid="payroll-rows">
             <thead><tr><th>Employee</th><th class="n">Employed</th><th class="n">Holidays</th><th class="n">Worked</th><th class="n">Hours</th>
@@ -51,7 +51,7 @@ import { LeaveApi, monthName, short } from './leave.api';
             <tbody>
               @for (r of p.rows; track r.employeeCode) {
                 <tr [attr.data-emp]="r.employeeCode">
-                  <td><b>{{ r.employeeName }}</b> <small class="mute">{{ r.employeeCode }} · {{ r.department }}@if (r.leaveDetail) { · {{ r.leaveDetail }} }</small></td>
+                  <td><b>{{ r.employeeName }}</b> <small class="mute">{{ r.employeeCode }}, {{ r.department }}@if (r.leaveDetail) {, {{ r.leaveDetail }} }</small></td>
                   <td class="n">{{ r.employedDays }}</td><td class="n">{{ r.holidays }}</td><td class="n">{{ r.daysWorked }}</td>
                   <td class="n">{{ hours(r.workedMinutes) }}</td><td class="n">{{ r.overtimeMinutes ? hours(r.overtimeMinutes) : '–' }}</td>
                   <td class="n">{{ r.paidLeaveDays || '–' }}</td><td class="n">{{ r.unpaidLeaveDays || '–' }}</td><td class="n">{{ r.absentDays || '–' }}</td>
@@ -70,8 +70,8 @@ import { LeaveApi, monthName, short } from './leave.api';
       <h2>Files made</h2>
       <ul class="files" data-testid="payroll-files">
         @for (x of exports(); track x.id) {
-          <li><div><b>{{ monthName(x.month) }}</b> <small class="mute">{{ x.employees }} people · made {{ when(x.createdAt) }} by {{ x.by }}
-            @if (x.timesheetsLocked) { · locked {{ x.timesheetsLocked }} } @if (x.warnings.length) { · {{ x.warnings.length }} left out }</small>
+          <li><div><b>{{ monthName(x.month) }}</b> <small class="mute">{{ x.employees }} people, made {{ when(x.createdAt) }} by {{ x.by }}
+            @if (x.timesheetsLocked) {, locked {{ x.timesheetsLocked }} } @if (x.warnings.length) {, {{ x.warnings.length }} left out }</small>
             <small class="mute sha">SHA-256 {{ x.sha256.slice(0, 16) }}…</small></div>
             <button mat-stroked-button (click)="download(x)"><mat-icon>download</mat-icon>{{ x.fileName }}</button></li>
         } @empty { <li class="mute">No payroll files yet.</li> }
@@ -79,16 +79,16 @@ import { LeaveApi, monthName, short } from './leave.api';
     </div>
   `,
   styles: `
-    .payroll { max-width: 1100px; padding-bottom: 60px; } .mute { color: #5b6b6e; } .small { font-size: .85rem; } .err { color: #b3261e; }
-    .intro { max-width: 760px; } .pick { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    h2 { margin: 16px 0 6px; font-size: 1.1rem; }
-    .warnings { background: #fffaf0; border: 1px solid #e0b34a; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; } .warnings ul { margin: 6px 0; padding-left: 20px; }
-    .scroll { overflow-x: auto; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    table { width: 100%; border-collapse: collapse; font-size: .92rem; } th, td { padding: 8px 10px; border-bottom: 1px solid #eef2f1; text-align: left; white-space: nowrap; }
+    .payroll { max-width: 1100px; padding-bottom: 60px; } .mute { color: var(--ro-mute); } .small { font-size: .85rem; } .err { color: var(--ro-error); }
+    .intro { max-width: 760px; } .pick { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+    h2 { margin: var(--space-4) 0 6px; font-size: 1.1rem; }
+    .warnings { background: var(--ro-warn-wash); border: 1px solid var(--ro-warn-gold); border-radius: 12px; padding: 10px 14px; margin-bottom: var(--space-2); } .warnings ul { margin: 6px 0; padding-left: var(--space-5); }
+    .scroll { overflow-x: auto; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; } th, td { padding: var(--space-2) 10px; border-bottom: 1px solid var(--ro-sunk); text-align: left; white-space: nowrap; }
     td small { display: block; white-space: normal; } .n { text-align: right; }
-    .go { margin: 12px 0; }
-    .files { list-style: none; padding: 0; margin: 0; background: #fff; border: 1px solid #d9e0de; border-radius: 14px; }
-    .files li { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid #eef2f1; flex-wrap: wrap; }
+    .go { margin: var(--space-3) 0; }
+    .files { list-style: none; padding: 0; margin: 0; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); box-shadow: var(--ro-shadow-card); }
+    .files li { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .files li:first-child { border-top: 0; } .files li > div { display: flex; flex-direction: column; min-width: 0; } .sha { font-family: monospace; }
   `,
 })

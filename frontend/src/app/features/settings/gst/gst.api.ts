@@ -69,7 +69,7 @@ export function slabsText(slabs: TaxSlab[]): string {
   if (sorted.length === 1) return pct(sorted[0].rate) + itc(sorted[0]);
   return sorted.map((s, i) => s.upTo !== null
     ? `Up to ${rupees(s.upTo)}: ${pct(s.rate)}${itc(s)}`
-    : `Above ${rupees(sorted[i - 1].upTo)}: ${pct(s.rate)}${itc(s)}`).join(' · ');
+    : `Above ${rupees(sorted[i - 1].upTo)}: ${pct(s.rate)}${itc(s)}`).join(', ');
 }
 
 /** A bill line's GST in words: "GST 5%" (CGST + SGST shown as their total rate), "IGST 18%", "GST 5% + 18%". */

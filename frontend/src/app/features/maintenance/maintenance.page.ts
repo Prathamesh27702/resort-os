@@ -44,11 +44,11 @@ type ListFilter = 'OPEN' | 'mine' | 'RESOLVED' | 'ALL';
             </div>
             <div class="title">{{ t.title }}</div>
             <div class="meta">
-              {{ t.place }} · {{ cat(t.category) }}
-              @if (t.outOfOrder) { · <b class="ooo">Out of order@if (t.expectedReadyOn) { until {{ day(t.expectedReadyOn) }} }</b> }
-              @if (t.photos) { · <mat-icon inline>photo_camera</mat-icon>{{ t.photos }} }
+              {{ t.place }}, {{ cat(t.category) }}
+              @if (t.outOfOrder) {, <b class="ooo">Out of order@if (t.expectedReadyOn) { until {{ day(t.expectedReadyOn) }} }</b> }
+              @if (t.photos) {, <mat-icon inline>photo_camera</mat-icon>{{ t.photos }} }
             </div>
-            <div class="meta">{{ t.assignedToName ? 'With ' + t.assignedToName : 'Not assigned' }} · reported {{ when(t.createdAt) }}@if (t.reportedByName) { by {{ t.reportedByName }} }</div>
+            <div class="meta">{{ t.assignedToName ? 'With ' + t.assignedToName : 'Not assigned' }}, reported {{ when(t.createdAt) }}@if (t.reportedByName) { by {{ t.reportedByName }} }</div>
           </a>
         } @empty {
           @if (loaded()) { <p class="empty">@if (filter() === 'OPEN') { Nothing broken right now. } @else { No tickets here. }</p> }
@@ -59,26 +59,26 @@ type ListFilter = 'OPEN' | 'mine' | 'RESOLVED' | 'ALL';
   `,
   styles: `
     .mt { max-width: 900px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
     .head p { margin: 2px 0 0; }
-    .mute { color: #5b6b6e; }
+    .mute { color: var(--ro-mute); }
     .filters { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit;
-                      min-height: 40px; color: #1b2a2e; cursor: pointer; }
-    .filters button.on { background: #0e3b43; color: #fff; border-color: #0e3b43; }
-    .list { display: flex; flex-direction: column; gap: 8px; }
-    .row { display: block; background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 12px 14px; color: inherit; text-decoration: none; }
-    .row:hover { border-color: #8fa5a1; }
-    .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .title { font-size: 1.05rem; margin: 4px 0 2px; }
-    .meta { color: #5b6b6e; font-size: .88rem; }
-    .pri, .st { font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #eef2f1; }
-    .pri.urgent { background: #b3261e; color: #fff; } .pri.high { background: #fbe4e2; color: #8c1d18; }
-    .st.resolved, .st.closed { background: #e1f2e8; color: #1d5b36; } .st.on-hold { background: #fbefd8; color: #8a5a00; }
-    .st.in-progress, .st.assigned { background: #e0eff5; color: #134e63; }
-    .ooo { color: #5b3a00; }
-    .empty { color: #5b6b6e; }
-    .err { color: #b3261e; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit;
+                      min-height: 40px; color: var(--ro-ink); cursor: pointer; box-shadow: var(--ro-shadow-card); }
+    .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
+    .list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .row { display: block; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-3) 14px; color: inherit; text-decoration: none; box-shadow: var(--ro-shadow-card); }
+    .row:hover { border-color: var(--ro-on-tide-mute); }
+    .top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .title { font-size: 1.05rem; margin: var(--space-1) 0 2px; }
+    .meta { color: var(--ro-mute); font-size: .88rem; }
+    .pri, .st { font-size: .75rem; font-weight: 600; padding: 2px var(--space-2); border-radius: 999px; background: var(--ro-sunk); }
+    .pri.urgent { background: var(--ro-error); color: var(--ro-paper); } .pri.high { background: var(--ro-off-bg); color: var(--ro-error-strong); }
+    .st.resolved, .st.closed { background: var(--ro-ok-bg); color: var(--ro-ok); } .st.on-hold { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .st.in-progress, .st.assigned { background: var(--ro-info-bg); color: var(--ro-info); }
+    .ooo { color: var(--ro-warn-strong); }
+    .empty { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
   `,
 })
 export class MaintenancePage {

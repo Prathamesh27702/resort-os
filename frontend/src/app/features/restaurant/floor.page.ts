@@ -52,7 +52,7 @@ import { RestaurantApi } from './restaurant.api';
               <span class="code">{{ t.code }}</span>
               <span class="seats">{{ t.seats }} seats</span>
               @if (t.order; as o) {
-                <span class="num">{{ o.number }} · {{ rupees(o.total) }}</span>
+                <span class="num">{{ o.number }}, {{ rupees(o.total) }}</span>
                 <span class="chips">
                   @if (o.unsent) { <i class="unsent">{{ o.unsent }} not sent</i> }
                   @if (o.inKitchen) { <i class="cooking">{{ o.inKitchen }} cooking</i> }
@@ -72,7 +72,7 @@ import { RestaurantApi } from './restaurant.api';
         <div class="others">
           @for (o of floor()!.otherOrders; track o.id) {
             <a class="other" [routerLink]="['/restaurant/orders', o.id]" [attr.data-order]="o.number">
-              <b>{{ o.number }}</b> {{ o.where }}@if (o.guestName) { · {{ o.guestName }} }
+              <b>{{ o.number }}</b> {{ o.where }}@if (o.guestName) {, {{ o.guestName }} }
               <span class="right">{{ rupees(o.total) }}</span>
               <span class="chips">
                 @if (o.unsent) { <i class="unsent">{{ o.unsent }} not sent</i> }
@@ -87,30 +87,30 @@ import { RestaurantApi } from './restaurant.api';
   `,
   styles: `
     .floor { max-width: 1000px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); flex-wrap: wrap; }
     .head p { margin: 2px 0 0; }
     .tools { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
-    .mute { color: #5b6b6e; }
-    .err { color: #b3261e; }
-    .new { display: flex; gap: 8px; margin: 12px 0 4px; flex-wrap: wrap; }
+    .mute { color: var(--ro-mute); }
+    .err { color: var(--ro-error); }
+    .new { display: flex; gap: var(--space-2); margin: var(--space-3) 0 var(--space-1); flex-wrap: wrap; }
     .new button { min-height: 48px; }
-    h2 { font-size: 1rem; margin: 18px 0 8px; color: #33474a; }
+    h2 { font-size: 1rem; margin: 18px 0 var(--space-2); color: var(--ro-ink-soft); }
     .tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-    .table { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 104px; padding: 12px; text-align: left;
-             background: #fff; border: 1px solid #d9e0de; border-left: 6px solid #2e6b3c; border-radius: 12px; font: inherit; color: inherit; cursor: pointer; }
-    .table.busy { border-left-color: #d29a2c; background: #fffaf0; }
-    .table.ready { border-left-color: #1f6f8b; box-shadow: 0 0 0 2px #1f6f8b inset; }
+    .table { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 104px; padding: var(--space-3); text-align: left;
+             background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-left: 6px solid var(--ro-ok-mid); border-radius: var(--ro-radius-lg); font: inherit; color: inherit; cursor: pointer; box-shadow: var(--ro-shadow-card); }
+    .table.busy { border-left-color: var(--ro-warn-bright); background: var(--ro-warn-wash); }
+    .table.ready { border-left-color: var(--ro-info-bright); box-shadow: 0 0 0 2px var(--ro-info-bright) inset; }
     .table:disabled { cursor: default; opacity: .7; }
     .code { font-size: 1.5rem; font-weight: 700; }
-    .seats { font-size: .8rem; color: #5b6b6e; }
-    .free { color: #2e6b3c; font-weight: 600; margin-top: auto; }
-    .num { font-weight: 600; margin-top: 4px; }
-    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
-    .chips i { font-style: normal; font-size: .75rem; padding: 1px 8px; border-radius: 999px; }
-    .unsent { background: #fbefd8; color: #8a5a00; } .cooking { background: #eef2f1; color: #33474a; } .ok { background: #e0eff5; color: #134e63; }
-    .others { display: flex; flex-direction: column; gap: 8px; }
-    .other { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; background: #fff; border: 1px solid #d9e0de; border-radius: 12px;
-             padding: 12px; color: inherit; text-decoration: none; min-height: 48px; }
+    .seats { font-size: .8rem; color: var(--ro-mute); }
+    .free { color: var(--ro-ok-mid); font-weight: 600; margin-top: auto; }
+    .num { font-weight: 600; margin-top: var(--space-1); }
+    .chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+    .chips i { font-style: normal; font-size: .75rem; padding: 1px var(--space-2); border-radius: 999px; }
+    .unsent { background: var(--ro-warn-bg); color: var(--ro-warn); } .cooking { background: var(--ro-sunk); color: var(--ro-ink-soft); } .ok { background: var(--ro-info-bg); color: var(--ro-info); }
+    .others { display: flex; flex-direction: column; gap: var(--space-2); }
+    .other { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); align-items: center; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg);
+             padding: var(--space-3); color: inherit; text-decoration: none; min-height: 48px; box-shadow: var(--ro-shadow-card); }
     .other .right { margin-left: auto; font-weight: 600; }
     .other .chips { flex-basis: 100%; }
     @media (max-width: 640px) { .tables { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 1.35rem; } }

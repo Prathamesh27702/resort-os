@@ -41,9 +41,9 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
   selector: 'app-take-payment-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatButtonToggleModule, MatFormFieldModule, MatInputModule],
   template: `
-    <h2 mat-dialog-title>Take a payment · <span class="num">{{ data.folio.number }}</span></h2>
+    <h2 mat-dialog-title>Take a payment, <span class="num">{{ data.folio.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="pay-form">
-      <p class="owed">{{ data.folio.guestName }} · {{ data.folio.reference }} ·
+      <p class="owed">{{ data.folio.guestName }}, {{ data.folio.reference }},
         @if (data.folio.balance > 0) { owes <b class="num">{{ money(data.folio.balance) }}</b> } @else { owes nothing on this bill }</p>
       <mat-button-toggle-group formControlName="method" aria-label="How was it paid" class="methods">
         @for (m of methods; track m) { <mat-button-toggle [value]="m">{{ methodLabel(m) }}</mat-button-toggle> }
@@ -80,11 +80,11 @@ export interface TakePaymentData { propertyId: string; folio: Folio; }
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .owed { margin: 0 0 12px; color: #1b2a2e; }
+    .owed { margin: 0 0 var(--space-3); color: var(--ro-ink); }
     .methods, .target { margin-bottom: 14px; align-self: flex-start; flex-wrap: wrap; }
     .full { width: 100%; }
-    .err { color: #b3261e; }
-    .err.field { margin: -8px 0 12px; font-size: .85rem; }
+    .err { color: var(--ro-error); }
+    .err.field { margin: -8px 0 var(--space-3); font-size: .85rem; }
   `,
 })
 export class TakePaymentDialog {
@@ -149,7 +149,7 @@ export interface RefundData { propertyId: string; payment: Payment; }
   template: `
     <h2 mat-dialog-title>Refund from <span class="num">{{ data.payment.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="refund-form">
-      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }} from {{ data.payment.guestName }} ·
+      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }} from {{ data.payment.guestName }},
         up to <b class="num">{{ money(data.payment.refundable) }}</b> can be refunded. Nothing is deleted; the reason is kept with the refund
         and in the audit trail.</p>
       <div class="row">
@@ -174,7 +174,7 @@ export interface RefundData { propertyId: string; payment: Payment; }
           <mat-select formControlName="folioId">
             <mat-option value="">On account first, then the bills it paid</mat-option>
             @for (a of data.payment.allocations; track a.folioId) {
-              <mat-option [value]="a.folioId">{{ a.folioNumber }} · {{ a.folioName }} ({{ money(a.amount - a.refunded) }})</mat-option>
+              <mat-option [value]="a.folioId">{{ a.folioNumber }}, {{ a.folioName }} ({{ money(a.amount - a.refunded) }})</mat-option>
             }
           </mat-select>
           <mat-error>{{ err('folioId') }}</mat-error>
@@ -204,10 +204,10 @@ export interface RefundData { propertyId: string; payment: Payment; }
   `,
   styles: `
     form { min-width: min(480px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
     @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
   `,
 })
@@ -259,7 +259,7 @@ export class RefundDialog {
   template: `
     <h2 mat-dialog-title>Void <span class="num">{{ data.payment.number }}</span></h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="void-form">
-      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }} · for a payment entered by mistake. It stays on record,
+      <p class="hint">{{ methodLabel(data.payment.method) }} {{ money(data.payment.amount) }}, for a payment entered by mistake. It stays on record,
         marked voided, and comes off the bill.@if (data.payment.method === 'CASH') { The cash comes back out of the drawer's count. }</p>
       <mat-form-field appearance="outline" class="full">
         <mat-label>Reason</mat-label>
@@ -275,9 +275,9 @@ export class RefundDialog {
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class VoidPaymentDialog {
@@ -316,7 +316,7 @@ export class VoidPaymentDialog {
         <mat-label>Bill</mat-label>
         <mat-select formControlName="folioId">
           @for (f of data.payment.folios; track f.id) {
-            <mat-option [value]="f.id" [disabled]="f.balance <= 0">{{ f.number }} · {{ f.name }} · owes {{ money(f.balance) }}</mat-option>
+            <mat-option [value]="f.id" [disabled]="f.balance <= 0">{{ f.number }}, {{ f.name }}, owes {{ money(f.balance) }}</mat-option>
           }
         </mat-select>
         <mat-error>Choose the bill.</mat-error>
@@ -335,9 +335,9 @@ export class VoidPaymentDialog {
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class AllocateDialog {
@@ -403,9 +403,9 @@ export interface DrawerData { propertyId: string; session?: CashDrawerSession; }
   `,
   styles: `
     form { min-width: min(420px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #5b6b6e; margin: 0 0 12px; }
+    .hint { color: var(--ro-mute); margin: 0 0 var(--space-3); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class OpenDrawerDialog {
@@ -472,14 +472,14 @@ export class OpenDrawerDialog {
   `,
   styles: `
     form { min-width: min(440px, 82vw); display: flex; flex-direction: column; }
-    .sum { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; margin: 0 0 16px; }
-    .sum dt { color: #5b6b6e; }
+    .sum { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-4); margin: 0 0 var(--space-4); }
+    .sum dt { color: var(--ro-mute); }
     .sum dd { margin: 0; text-align: right; }
-    .variance { margin: -6px 0 12px; font-weight: 500; }
-    .variance.ok { color: #1d5b36; }
-    .variance.bad { color: #b3261e; }
+    .variance { margin: -6px 0 var(--space-3); font-weight: 500; }
+    .variance.ok { color: var(--ro-ok); }
+    .variance.bad { color: var(--ro-error); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class CloseDrawerDialog {
@@ -524,7 +524,7 @@ export class CloseDrawerDialog {
   template: `
     <h2 mat-dialog-title>Approve the variance</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="approve-form">
-      <p class="hint">{{ s.drawerName }} · closed by {{ s.closedByName ?? 'someone' }} · should have held {{ money(s.expected) }}, counted
+      <p class="hint">{{ s.drawerName }}, closed by {{ s.closedByName ?? 'someone' }}, should have held {{ money(s.expected) }}, counted
         {{ money(s.counted ?? 0) }}: <b [class]="(s.variance ?? 0) < 0 ? 'bad' : 'over'">{{ money(abs(s.variance ?? 0)) }} {{ (s.variance ?? 0) < 0 ? 'short' : 'over' }}</b>.
         <br />Their reason: “{{ s.closeNote }}”</p>
       <mat-form-field appearance="outline" class="full">
@@ -541,11 +541,11 @@ export class CloseDrawerDialog {
   `,
   styles: `
     form { min-width: min(460px, 82vw); display: flex; flex-direction: column; }
-    .hint { color: #1b2a2e; margin: 0 0 12px; }
-    .bad { color: #b3261e; }
-    .over { color: #8a5a00; }
+    .hint { color: var(--ro-ink); margin: 0 0 var(--space-3); }
+    .bad { color: var(--ro-error); }
+    .over { color: var(--ro-warn); }
     .full { width: 100%; }
-    .err { color: #b3261e; }
+    .err { color: var(--ro-error); }
   `,
 })
 export class ApproveVarianceDialog {

@@ -95,7 +95,7 @@ test('S12-01 Check-out issues the GST invoice and the receipt by itself; the boo
   await expect(r.getByTestId('customer-gstin')).toHaveText('Unregistered (B2C)');
   await expect(r.getByTestId('invoice-total')).toHaveText(money(paid));
   await expect(r.locator('[data-line]')).toHaveCount(2);
-  await expect(r.locator('[data-line^="Dinner"]')).toContainText('CGST 2.5% · SGST 2.5%');
+  await expect(r.locator('[data-line^="Dinner"]')).toContainText('CGST 2.5%, SGST 2.5%');
   await expect(r.locator('[data-receipt]')).toHaveCount(1);
   await expect(r.locator('[data-receipt]')).toContainText(money(paid));
   // the receptionist can read and print, but corrections are for accountants

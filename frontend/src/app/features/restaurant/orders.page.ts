@@ -1,3 +1,4 @@
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,7 +15,7 @@ import { RestaurantApi } from './restaurant.api';
 /** One day's restaurant orders (Sprint 14): open, settled (paid or charged to a room) and voided, with the day's totals. */
 @Component({
   selector: 'app-restaurant-orders',
-  imports: [FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [MatDatepickerModule, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
   template: `
     <div class="page list">
       <a mat-button routerLink="/restaurant" class="back"><mat-icon>arrow_back</mat-icon>Floor</a>
@@ -22,7 +23,7 @@ import { RestaurantApi } from './restaurant.api';
       <div class="bar">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Day</mat-label>
-          <input matInput type="date" [ngModel]="date()" (ngModelChange)="date.set($event || null)" />
+          <input matInput [matDatepicker]="dp18" [ngModel]="date()" (ngModelChange)="date.set($event || null)" /><mat-datepicker-toggle matIconSuffix [for]="dp18" /><mat-datepicker #dp18 />
         </mat-form-field>
         <div class="filters" role="tablist" aria-label="Which orders">
           @for (s of statuses; track s.value) {
@@ -32,16 +33,16 @@ import { RestaurantApi } from './restaurant.api';
       </div>
       @if (error()) { <p class="err" role="alert">{{ error() }}</p> }
       @if (list(); as l) {
-        <p class="totals">Settled <b>{{ rupees(l.settledTotal) }}</b> · still open <b>{{ rupees(l.openTotal) }}</b></p>
+        <p class="totals">Settled <b>{{ rupees(l.settledTotal) }}</b>, still open <b>{{ rupees(l.openTotal) }}</b></p>
         <ul>
           @for (o of l.items; track o.id) {
             <li>
               <a [routerLink]="['/restaurant/orders', o.id]" [attr.data-order]="o.number">
                 <b>{{ o.number }}</b>
-                <span>{{ o.where }}@if (o.guestName) { · {{ o.guestName }} }</span>
+                <span>{{ o.where }}@if (o.guestName) {, {{ o.guestName }} }</span>
                 <span class="amt">{{ rupees(o.total) }}</span>
                 <small [class]="'st ' + o.status">{{ state(o.status, o.settlement) }}</small>
-                <small class="mute">{{ o.lines }} line{{ o.lines === 1 ? '' : 's' }} · {{ time(o.createdAt) }}@if (o.openedByName) { · {{ o.openedByName }} }</small>
+                <small class="mute">{{ o.lines }} line{{ o.lines === 1 ? '' : 's' }}, {{ time(o.createdAt) }}@if (o.openedByName) {, {{ o.openedByName }} }</small>
               </a>
             </li>
           } @empty { <li class="mute">No orders on this day.</li> }
@@ -52,18 +53,18 @@ import { RestaurantApi } from './restaurant.api';
   styles: `
     .list { max-width: 760px; }
     .back { margin-left: -8px; }
-    .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
     .filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; min-height: 40px; cursor: pointer; }
-    .filters button.on { background: #0e3b43; color: #fff; border-color: #0e3b43; }
-    .totals { margin: 12px 0 8px; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; }
-    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-    li a { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; background: #fff; border: 1px solid #d9e0de; border-radius: 12px;
-           padding: 12px; color: inherit; text-decoration: none; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit; min-height: 40px; cursor: pointer; box-shadow: var(--ro-shadow-card); }
+    .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
+    .totals { margin: var(--space-3) 0 var(--space-2); }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); }
+    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+    li a { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg);
+           padding: var(--space-3); color: inherit; text-decoration: none; box-shadow: var(--ro-shadow-card); }
     .amt { font-weight: 600; text-align: right; }
     small { grid-column: 1 / -1; }
-    .st { font-weight: 600; color: #8a5a00; } .st.SETTLED { color: #1d5b36; } .st.VOIDED { color: #5b6b6e; }
+    .st { font-weight: 600; color: var(--ro-warn); } .st.SETTLED { color: var(--ro-ok); } .st.VOIDED { color: var(--ro-mute); }
   `,
 })
 export class OrdersPage {

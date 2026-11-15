@@ -33,7 +33,7 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
           <h1>{{ e.fullName }} <small class="mute">{{ e.code }}</small></h1>
           @if (e.status === 'LEFT') { <span class="status left">Left {{ dayText(e.leftOn!) }}</span> } @else { <span class="status ok">Working</span> }
         </div>
-        <p class="mute">{{ e.departmentName }}@if (e.designationName) { · {{ e.designationName }} } · {{ type[e.employmentType] }} · joined {{ dayText(e.joinedOn) }}</p>
+        <p class="mute">{{ e.departmentName }}@if (e.designationName) {, {{ e.designationName }}}, {{ type[e.employmentType] }}, joined {{ dayText(e.joinedOn) }}</p>
         @if (e.status === 'LEFT') { <p class="banner off">Left on {{ dayText(e.leftOn!) }}: {{ e.leavingReason }}</p> }
         <div class="acts">
           @if (can('employee.update')) { <button mat-stroked-button (click)="edit()"><mat-icon>edit</mat-icon>Edit</button> }
@@ -48,7 +48,7 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
             <dt>Weekly day off</dt><dd>{{ e.weeklyOff ? dayName(e.weeklyOff) : 'None fixed' }}</dd>
             <dt>Date of birth</dt><dd>{{ e.dateOfBirth ? dayText(e.dateOfBirth) : '—' }}</dd>
             <dt>Staff account</dt><dd>{{ e.userEmail ?? 'Not linked' }}</dd>
-            <dt>Emergency contact</dt><dd>{{ e.emergencyContactName ?? '—' }}@if (e.emergencyContactPhone) { · <a [href]="'tel:' + e.emergencyContactPhone">{{ e.emergencyContactPhone }}</a> }</dd>
+            <dt>Emergency contact</dt><dd>{{ e.emergencyContactName ?? '—' }}@if (e.emergencyContactPhone) {, <a [href]="'tel:' + e.emergencyContactPhone">{{ e.emergencyContactPhone }}</a> }</dd>
             <dt>Address</dt><dd>{{ e.address ?? '—' }}</dd>
             @if (e.note) { <dt>Note</dt><dd>{{ e.note }}</dd> }
           </dl>
@@ -59,7 +59,7 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
             <h2>Next shifts</h2>
             <ul class="shifts">
               @for (s of shifts(); track s.id) {
-                <li><b>{{ shortDay(s.workDate) }}</b> {{ hm(s.startTime) }}–{{ hm(s.endTime) }} <span class="mute">{{ s.departmentName }}@if (s.templateName) { · {{ s.templateName }} } · {{ hours(s.paidMinutes) }}</span></li>
+                <li><b>{{ shortDay(s.workDate) }}</b> {{ hm(s.startTime) }}–{{ hm(s.endTime) }} <span class="mute">{{ s.departmentName }}@if (s.templateName) {, {{ s.templateName }}}, {{ hours(s.paidMinutes) }}</span></li>
               } @empty { <li class="mute">Not on the roster from today.</li> }
             </ul>
             <a mat-button routerLink="/roster">Open the roster</a>
@@ -72,14 +72,14 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
             @if (pay(); as p) {
               @if (p.current; as c) {
                 <p class="big"><b>{{ rupees(c.gross) }}</b> {{ c.payBasis === 'DAILY' ? 'a day' : 'a month' }}
-                  <span class="mute">= basic {{ rupees(c.basic) }} + allowances {{ rupees(c.allowances) }}@if (c.pfApplicable) { · PF }@if (c.esiApplicable) { · ESI } · from {{ dayText(c.effectiveFrom) }}</span></p>
+                  <span class="mute">= basic {{ rupees(c.basic) }} + allowances {{ rupees(c.allowances) }}@if (c.pfApplicable) {, PF }@if (c.esiApplicable) {, ESI}, from {{ dayText(c.effectiveFrom) }}</span></p>
               } @else { <p class="mute">No pay recorded for today yet.</p> }
               @if (p.history.length) {
                 <ul class="hist">
                   @for (h of p.history; track h.id) {
                     <li [class.replaced]="h.replaced">{{ dayText(h.effectiveFrom) }}: {{ rupees(h.gross) }} {{ h.payBasis === 'DAILY' ? '/ day' : '/ month' }}
                       @if (h.isCurrent) { <b class="ok">now</b> }@if (h.replaced) { <span class="mute">(corrected)</span> }
-                      @if (h.note) { <span class="mute">· {{ h.note }}</span> }<span class="mute"> · {{ h.byName ?? 'set up' }}</span></li>
+                      @if (h.note) { <span class="mute">, {{ h.note }}</span> }<span class="mute">, {{ h.byName ?? 'set up' }}</span></li>
                   }
                 </ul>
               }
@@ -95,9 +95,9 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
               @for (d of docs(); track d.id) {
                 <li [class.removed]="d.status === 'REMOVED'" [attr.data-doc]="d.documentType">
                   <div><b>{{ docLabel[d.documentType] }}</b> {{ d.maskedNumber ?? '' }}
-                    @if (d.expiresOn) { <span [class.late]="d.expired"> · {{ d.expired ? 'expired' : 'expires' }} {{ dayText(d.expiresOn) }}</span> }
-                    @if (d.note) { <span class="mute"> · {{ d.note }}</span> }
-                    @if (d.status === 'REMOVED') { <span class="mute"> · removed: {{ d.removedReason }}</span> }
+                    @if (d.expiresOn) { <span [class.late]="d.expired">, {{ d.expired ? 'expired' : 'expires' }} {{ dayText(d.expiresOn) }}</span> }
+                    @if (d.note) { <span class="mute">, {{ d.note }}</span> }
+                    @if (d.status === 'REMOVED') { <span class="mute">, removed: {{ d.removedReason }}</span> }
                     @if (opened()[d.id]; as n) { <div class="num" data-testid="doc-number">{{ n }}</div> }
                   </div>
                   @if (d.status === 'ACTIVE') {
@@ -118,16 +118,16 @@ import { DOCUMENT_LABEL, EMPLOYMENT_LABEL, EmployeesApi, dayName, hm, hours, sho
   `,
   styles: `
     .one { max-width: 820px; padding-bottom: 60px; } .back { margin-left: -12px; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; } h1 { margin: 4px 0; }
-    .mute { color: #5b6b6e; font-weight: normal; } .err { color: #b3261e; } .late { color: #b3261e; } .ok { color: #1e6b3a; }
-    .status { border-radius: 12px; padding: 2px 10px; font-size: .85rem; } .status.ok { background: #e3f3e8; } .status.left { background: #fdf0d9; color: #8a5a00; }
-    .banner { border-radius: 10px; padding: 8px 12px; background: #eef3f1; } .banner.off { background: #fdf0d9; }
-    .acts { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-    .card { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 10px 16px 14px; margin-top: 12px; } h2 { font-size: 1.1rem; margin: 6px 0 8px; }
-    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; } dt { color: #5b6b6e; } dd { margin: 0; overflow-wrap: anywhere; }
-    ul { list-style: none; margin: 0 0 8px; padding: 0; } li { padding: 4px 0; }
+    .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; } h1 { margin: var(--space-1) 0; }
+    .mute { color: var(--ro-mute); font-weight: normal; } .err { color: var(--ro-error); } .late { color: var(--ro-error); } .ok { color: var(--ro-ok-mid); }
+    .status { border-radius: 12px; padding: 2px 10px; font-size: .85rem; } .status.ok { background: var(--ro-ok-bg); } .status.left { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .banner { border-radius: 10px; padding: var(--space-2) var(--space-3); background: var(--ro-sunk); } .banner.off { background: var(--ro-warn-bg); }
+    .acts { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-2) 0; }
+    .card { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: 10px var(--space-4) 14px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); } h2 { font-size: 1.1rem; margin: 6px 0 var(--space-2); }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-1) var(--space-4); margin: 0; } dt { color: var(--ro-mute); } dd { margin: 0; overflow-wrap: anywhere; }
+    ul { list-style: none; margin: 0 0 var(--space-2); padding: 0; } li { padding: var(--space-1) 0; }
     .big { font-size: 1.05rem; } .hist li.replaced { text-decoration: line-through; opacity: .7; }
-    .docs li { display: flex; gap: 8px; align-items: center; justify-content: space-between; border-bottom: 1px solid #eef1f0; flex-wrap: wrap; }
+    .docs li { display: flex; gap: var(--space-2); align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ro-line-soft); flex-wrap: wrap; }
     .docs li.removed { opacity: .6; } .dacts { display: flex; align-items: center; } .num { font-family: monospace; font-size: 1.05rem; margin-top: 2px; }
     @media (max-width: 640px) { h1 { font-size: 1.35rem; } dl { grid-template-columns: 1fr; } dt { margin-top: 6px; } }
   `,

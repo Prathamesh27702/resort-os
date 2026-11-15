@@ -1581,6 +1581,32 @@ Code: `Application/Notifications/` (`Outbox.cs`, `OutboxDispatcher.cs`, `Notific
 8. **Privacy.** Anonymising a guest (Sprint 03) also blanks their messages: name, address, body and parameters. The list
    shows numbers and emails masked (`+91 98•••••345`).
 
+### 4.35 The look: themes, glass and charts (Lagoon Glass)
+
+The staff app's look lives in one place, `frontend/src/styles.scss`, as `--ro-*` colour tokens. Every component style
+uses the tokens, never a typed colour, so one set of values per theme repaints the whole app:
+
+- **Light and dark.** Bare `html` holds the light values. A Sass mixin `ro-dark-tokens` holds the dark ones and is
+  included twice: under `@media (prefers-color-scheme: dark)` for `html:not([data-theme='light'])` (Match my phone) and
+  under `html[data-theme='dark']` (the person chose Dark). `core/theme.ts` (`ThemeService`) sets or removes
+  `data-theme`, remembers the choice per device in `localStorage` (`ro-theme`) and updates `<meta name="theme-color">`.
+  A small script in `index.html` does the same before Angular starts, so a reload never flashes the wrong theme.
+- **Material follows.** Angular Material reads `--mat-sys-*` tokens; `styles.scss` points them at the `--ro-*` tokens,
+  so dialogs, menus, date pickers and snack bars change theme with no extra code.
+- **Glass with a fallback.** Cards are slightly see-through (`--ro-paper`) over one fixed glow layer (`body::before`).
+  Only the sidebar, top bar, phone tab bar and dialogs blur (blur is costly on cheap phones). The class `ro-solid` on
+  `<html>` (set for phones with 4 GB memory or less, for "reduce transparency", or from the account menu) makes every
+  glass token solid and turns blur off.
+- **Charts.** `features/reports/chart.ts` (`ChartComponent`) draws with ECharts (Apache 2.0) from a small `ChartSpec`
+  (area, bar, horizontal bar, donut; categories and series). It loads ECharts lazily, so the first download stays
+  small, runs it outside Angular's change detection (the mouse never re-renders the page), reads the colours from the
+  tokens (`--ro-chart-1..6`, validated for colour blindness) and redraws when the theme changes or the box resizes.
+  Pages pass specs from `computed()` signals, never from a template method: a new object on every check would redraw
+  the chart forever.
+- **Navigation.** `layout/nav.ts` lists the menu in sections with each link's permission; the shell hides links and
+  whole sections a role can't use. The phone tab bar takes the first four of a preference list the person may open.
+  `layout/search.ts` is the Ctrl K search over screens, guests and bookings.
+
 ## How this guide stays current
 
 Closing a sprint ([PROCESS.md](../sprints/PROCESS.md), step 2) includes updating this guide in the acceptance pull
@@ -1615,3 +1641,4 @@ request:
 | 22 | Expenses and budgets (expenses with their GST split and cost, approval with receipts and no self-approval, frozen once decided, a budget per department and month, budget against actual with variance, run rate and standing), expense flow diagram; system design 4.32 Expenses: approval and budget against actual (accepted 5 Nov 2026) |
 | 23 | Reports and dashboards (a daily summary per property refreshed every 15 minutes and nightly, occupancy, ADR, RevPAR, revenue, booking sources with commission and net, GST, food and labour cost, profit and loss, the owner's Today and the Reports page, money hidden from managers, five views for Power BI through a read-only role, supplier bills and pay in the budget), report flow diagram; system design 4.33 Reports: the daily summary and Power BI (accepted 7 Nov 2026) |
 | 24 | Notification engine, WhatsApp, email and background jobs (the outbox written with the booking, a sender with retries, a PostgreSQL scheduler with six idempotent daily jobs, WhatsApp template messages and the signed status webhook, email through Resend, the bell, the Messages page with reasons and Send again), message flow diagram; system design 4.34 Messages: the outbox and the daily jobs (accepted 7 Nov 2026) |
+| UI | Lagoon Glass look (light and dark themes, glass with a solid fallback, sectioned menu, phone tab bar, Ctrl K search, charts on Today and Reports, Indian date pickers everywhere); system design 4.35 The look: themes, glass and charts (13 Nov 2026, in review) |

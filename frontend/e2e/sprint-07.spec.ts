@@ -115,8 +115,8 @@ test('S07-04 Choose another room: the guest is moved to a ready room and checked
 
   const dlg = q.locator('mat-dialog-container', { hasText: 'Assign a room for' });
   await dlg.locator('mat-select').click();
-  const target = q.locator('mat-option:not(.mdc-list-item--disabled)', { hasText: '· Ready' }).first();
-  const targetName = ((await target.textContent()) ?? '').split('·')[0].trim();
+  const target = q.locator('mat-option:not(.mdc-list-item--disabled)', { hasText: ', Ready' }).first();
+  const targetName = ((await target.textContent()) ?? '').split(',')[0].trim();
   await target.click();
   await shot(q, '05-choose-room');
   await dlg.getByRole('button', { name: 'Assign room' }).click();
@@ -144,7 +144,7 @@ test('S07-05 Walk-in: a guest with no booking is booked from today and checked i
   await expect(q.locator('dl.summary')).toContainText(`Walkin${runId} Traveller`);
   await shot(q, '06-walk-in');
   await q.getByRole('button', { name: 'Check in', exact: true }).click();
-  await said(q, /Checked in: R\d{5} · Dormitory bed B\d\d/);
+  await said(q, /Checked in: R\d{5}, Dormitory bed B\d\d/);
   await expect(q).toHaveURL(/\/reservations\/[0-9a-f-]{36}/);
   await expect(q.locator('h1 .chip')).toHaveText('Checked in');
   await expect(q.getByText('Walk-in', { exact: true })).toBeVisible();

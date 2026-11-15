@@ -69,7 +69,7 @@ test('S15-02 Recipes: Paneer Tikka (Full) costs ₹105 of its ₹280, a 37.5 % f
   await full.getByRole('button').first().click();
   const d = m.getByRole('dialog');
   await expect(d.getByRole('heading', { name: 'Recipe: Paneer Tikka (Full)' })).toBeVisible();
-  await expect(d.locator('.sum')).toHaveText('Cost ₹105 · food cost 37.5 % · margin ₹175');
+  await expect(d.locator('.sum')).toHaveText('Cost ₹105, food cost 37.5 %, margin ₹175');
   // A quantity in a unit of another kind is refused under its field, saying which units fit.
   await d.getByRole('combobox', { name: 'Unit 1' }).click();
   await expect(m.getByRole('option')).toHaveText(['kg', 'g']);

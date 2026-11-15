@@ -25,7 +25,7 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
       <div class="head">
         <div>
           <h1>Housekeeping</h1>
-          <p class="mute">{{ longDate() }}@if (board()?.inspectionRequired) { · cleaned rooms wait for inspection }</p>
+          <p class="mute">{{ longDate() }}@if (board()?.inspectionRequired) {, cleaned rooms wait for inspection }</p>
         </div>
         <div class="tools">
           @if (canAssign()) {
@@ -58,20 +58,20 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
           <article class="card" [class]="'card ' + cls(r.status)" [class.rush]="r.rush" [attr.data-room]="r.place">
             <button class="body" (click)="open(r)" [attr.aria-label]="r.place + ': details'">
               <div class="top">
-                <b class="code">{{ r.bedCode ? r.unitCode + ' · ' + r.bedCode : r.unitCode }}</b>
+                <b class="code">{{ r.unitCode }}@if (r.bedCode) { <span class="bed">{{ r.bedCode }}</span> }</b>
                 <span [class]="'state ' + cls(r.status)">{{ hk(r.status) }}</span>
               </div>
               <div class="meta">
                 {{ r.typeName }}
-                @if (r.rush) { · <b class="hot">Guest arrives today</b> }
-                @else if (r.arrivalToday) { · Arrival today }
-                @if (r.departureToday) { · {{ r.occupied ? 'Leaves today' : 'Guest left today' }} }
-                @else if (r.occupied) { · Guest in room }
+                @if (r.rush) {, <b class="hot">Guest arrives today</b> }
+                @else if (r.arrivalToday) {, Arrival today }
+                @if (r.departureToday) {, {{ r.occupied ? 'Leaves today' : 'Guest left today' }} }
+                @else if (r.occupied) {, Guest in room }
               </div>
               @if (r.task; as t) {
                 <div class="task">
-                  {{ typeLabel(t.taskType) }} · {{ t.assignedToName ?? 'Not assigned' }}
-                  @if (t.checklist.length) { · {{ doneCount(t) }}/{{ t.checklist.length }} }
+                  {{ typeLabel(t.taskType) }}, {{ t.assignedToName ?? 'Not assigned' }}
+                  @if (t.checklist.length) {, {{ doneCount(t) }}/{{ t.checklist.length }} }
                   @if (t.failedInspections && t.status === 'OPEN' && t.inspectionNote) { <br /><span class="back">Sent back: {{ t.inspectionNote }}</span> }
                   @if (t.status === 'IN_PROGRESS' && t.startedAt) { <br /><span class="mute">Started {{ time(t.startedAt) }} by {{ t.startedByName }}</span> }
                   @if (t.status === 'CLEANED' && t.finishedAt) { <br /><span class="mute">Cleaned {{ time(t.finishedAt) }} by {{ t.finishedByName }}</span> }
@@ -79,7 +79,7 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
               }
               @if (r.repair; as rep) {
                 <div class="repair"><mat-icon>build</mat-icon>{{ rep.number }} {{ rep.title }}
-                  @if (rep.outOfOrder && rep.expectedReadyOn) { · until {{ day(rep.expectedReadyOn) }} }</div>
+                  @if (rep.outOfOrder && rep.expectedReadyOn) {, until {{ day(rep.expectedReadyOn) }} }</div>
               }
             </button>
             @if (action(r); as a) {
@@ -103,40 +103,41 @@ import { NewTaskDialog, TaskSheet, TaskSheetData } from './task-sheet';
   `,
   styles: `
     .hk { max-width: 1100px; padding-bottom: 80px; }
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-3); }
     .head p { margin: 2px 0 0; }
-    .tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
-    .mute { color: #5b6b6e; }
-    .filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
-    .filters button { flex: 0 0 auto; border: 1px solid #d9e0de; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit;
-                      min-height: 40px; color: #1b2a2e; cursor: pointer; }
-    .filters button b { margin-left: 4px; }
-    .filters button.on { background: #0e3b43; color: #fff; border-color: #0e3b43; }
-    .rush-note { display: flex; align-items: center; gap: 6px; margin: 4px 0 12px; color: #8a5a00; font-size: .9rem; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-    .card { display: flex; flex-direction: column; background: #fff; border: 1px solid #d9e0de; border-left: 6px solid #a9b6b3;
-            border-radius: 12px; overflow: hidden; }
-    .card.rush { box-shadow: 0 0 0 2px #e0a526 inset; }
-    .card.dirty { border-left-color: #b3261e; } .card.cleaning { border-left-color: #d29a2c; }
-    .card.clean, .card.inspection { border-left-color: #1f6f8b; } .card.ready { border-left-color: #2e6b3c; }
-    .card.out-of-order { border-left-color: #5b6b6e; background: #f5f7f6; }
-    .body { all: unset; display: block; padding: 12px 14px 10px; cursor: pointer; }
-    .body:focus-visible { outline: 2px solid #8a2449; outline-offset: -2px; }
-    .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .code { font-size: 1.5rem; letter-spacing: -0.01em; }
-    .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #eef2f1; white-space: nowrap; }
-    .state.dirty { background: #fbe4e2; color: #8c1d18; } .state.cleaning { background: #fbefd8; color: #8a5a00; }
-    .state.clean, .state.inspection { background: #e0eff5; color: #134e63; } .state.ready { background: #e1f2e8; color: #1d5b36; }
-    .state.out-of-order { background: #e3e7e6; color: #33474a; }
-    .meta { color: #5b6b6e; font-size: .9rem; margin-top: 2px; }
-    .hot { color: #8a5a00; }
+    .tools { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; justify-content: flex-end; }
+    .mute { color: var(--ro-mute); }
+    .filters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: var(--space-1); margin-bottom: var(--space-2); scrollbar-width: none; }
+    .filters button { flex: 0 0 auto; border: 1px solid var(--ro-glass-edge); background: var(--ro-paper); border-radius: var(--ro-radius-lg); padding: var(--space-2) 14px; font: inherit;
+                      min-height: 40px; color: var(--ro-ink); cursor: pointer; box-shadow: var(--ro-shadow-card); }
+    .filters button b { margin-left: var(--space-1); }
+    .filters button.on { background: var(--ro-tide); color: var(--ro-paper); border-color: var(--ro-tide); }
+    .rush-note { display: flex; align-items: center; gap: 6px; margin: var(--space-1) 0 var(--space-3); color: var(--ro-warn); font-size: .9rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
+    .card { display: flex; flex-direction: column; background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-left: 6px solid var(--ro-outline);
+            border-radius: var(--ro-radius-lg); overflow: hidden; box-shadow: var(--ro-shadow-card); }
+    .card.rush { box-shadow: 0 0 0 2px var(--ro-warn-gold) inset; }
+    .card.dirty { border-left-color: var(--ro-error); } .card.cleaning { border-left-color: var(--ro-warn-bright); }
+    .card.clean, .card.inspection { border-left-color: var(--ro-info-bright); } .card.ready { border-left-color: var(--ro-ok-mid); }
+    .card.out-of-order { border-left-color: var(--ro-mute); background: var(--ro-wash); }
+    .body { all: unset; display: block; padding: var(--space-3) 14px 10px; cursor: pointer; }
+    .body:focus-visible { outline: 2px solid var(--ro-kokum); outline-offset: -2px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
+    .code { font-size: 1.5rem; letter-spacing: -0.01em; white-space: nowrap; }
+    .code .bed { margin-left: 6px; font-size: 1rem; font-weight: 400; color: var(--ro-mute); }
+    .state { font-size: .8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--ro-sunk); white-space: nowrap; }
+    .state.dirty { background: var(--ro-off-bg); color: var(--ro-error-strong); } .state.cleaning { background: var(--ro-warn-bg); color: var(--ro-warn); }
+    .state.clean, .state.inspection { background: var(--ro-info-bg); color: var(--ro-info); } .state.ready { background: var(--ro-ok-bg); color: var(--ro-ok); }
+    .state.out-of-order { background: var(--ro-line-mid); color: var(--ro-ink-soft); }
+    .meta { color: var(--ro-mute); font-size: .9rem; margin-top: 2px; }
+    .hot { color: var(--ro-warn); }
     .task { margin-top: 6px; font-size: .9rem; }
-    .back { color: #b3261e; }
-    .repair { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: .85rem; color: #5b3a00; }
+    .back { color: var(--ro-error); }
+    .repair { display: flex; align-items: center; gap: var(--space-1); margin-top: 6px; font-size: .85rem; color: var(--ro-warn-strong); }
     .repair mat-icon { font-size: 18px; width: 18px; height: 18px; }
-    .go { margin: 0 12px 12px; min-height: 52px; font-size: 1.05rem; border-radius: 10px; }
-    .empty { color: #5b6b6e; grid-column: 1 / -1; }
-    .err { color: #b3261e; }
+    .go { margin: 0 var(--space-3) var(--space-3); min-height: 52px; font-size: 1.05rem; border-radius: 10px; }
+    .empty { color: var(--ro-mute); grid-column: 1 / -1; }
+    .err { color: var(--ro-error); }
     @media (max-width: 640px) {
       .cards { grid-template-columns: 1fr; gap: 10px; }
       h1 { font-size: 1.35rem; }

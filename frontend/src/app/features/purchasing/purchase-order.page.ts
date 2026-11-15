@@ -35,9 +35,9 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
           <span [class]="'status ' + o.status" data-testid="po-status">{{ label[o.status] }}</span>
         </div>
         <p class="mute">
-          {{ o.supplierGstin ? 'GSTIN ' + o.supplierGstin : 'Unregistered supplier (no GST)' }} · {{ o.supplierState }} · deliver to {{ o.locationName }}
-          · raised {{ dayText(o.orderDate) }}@if (o.createdByName) { by {{ o.createdByName }} }@if (o.requestNumber) { from {{ o.requestNumber }} }
-          @if (o.expectedDate) { · expected {{ dayText(o.expectedDate) }} }
+          {{ o.supplierGstin ? 'GSTIN ' + o.supplierGstin : 'Unregistered supplier (no GST)' }}, {{ o.supplierState }}, deliver to {{ o.locationName }},
+         raised {{ dayText(o.orderDate) }}@if (o.createdByName) { by {{ o.createdByName }} }@if (o.requestNumber) { from {{ o.requestNumber }} }
+          @if (o.expectedDate) {, expected {{ dayText(o.expectedDate) }} }
         </p>
         @if (o.note) { <p class="note">“{{ o.note }}”</p> }
 
@@ -93,7 +93,7 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
               </div>
             }
           </div>
-          <p class="tot">Before GST {{ rupeesExact(o.subtotal) }} · {{ o.intraState ? 'CGST + SGST' : 'IGST' }} {{ rupeesExact(o.taxTotal) }} · <b>Total {{ rupeesExact(o.total) }}</b></p>
+          <p class="tot">Before GST {{ rupeesExact(o.subtotal) }}, {{ o.intraState ? 'CGST + SGST' : 'IGST' }} {{ rupeesExact(o.taxTotal) }}, <b>Total {{ rupeesExact(o.total) }}</b></p>
         </section>
 
         @if (o.receipts.length) {
@@ -101,8 +101,8 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
             <h2>Goods received</h2>
             <ul class="list">
               @for (g of o.receipts; track g.id) {
-                <li [attr.data-grn]="g.number"><b>{{ g.number }}</b> {{ dayText(g.receivedOn) }} into {{ g.locationName }}@if (g.challanNumber) { · challan {{ g.challanNumber }} }
-                  <small>{{ grnLines(g.lines) }} · {{ rupees(g.value) }} before GST@if (g.byName) { · {{ g.byName }} }</small></li>
+                <li [attr.data-grn]="g.number"><b>{{ g.number }}</b> {{ dayText(g.receivedOn) }} into {{ g.locationName }}@if (g.challanNumber) {, challan {{ g.challanNumber }} }
+                  <small>{{ grnLines(g.lines) }}, {{ rupees(g.value) }} before GST@if (g.byName) {, {{ g.byName }} }</small></li>
               }
             </ul>
           </section>
@@ -114,13 +114,13 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
             <ul class="list">
               @for (i of o.invoices; track i.id) {
                 <li [attr.data-bill]="i.number">
-                  <div class="bl"><b>{{ i.number }}</b> bill {{ i.supplierNumber }} of {{ dayText(i.invoiceDate) }} · due {{ dayText(i.dueDate) }}
-                    <small>Before GST {{ rupeesExact(i.taxableValue) }} · @if (i.intraState) { CGST {{ rupeesExact(i.cgst) }} · SGST {{ rupeesExact(i.sgst) }} } @else { IGST {{ rupeesExact(i.igst) }} }
-                      · <b>{{ rupeesExact(i.total) }}</b>@if (i.inputTax > 0) { · input tax {{ i.itcEligible ? 'claimable' : 'not claimable (no regular GST registration)' }} }</small>
+                  <div class="bl"><b>{{ i.number }}</b> bill {{ i.supplierNumber }} of {{ dayText(i.invoiceDate) }}, due {{ dayText(i.dueDate) }}
+                    <small>Before GST {{ rupeesExact(i.taxableValue) }}, @if (i.intraState) { CGST {{ rupeesExact(i.cgst) }}, SGST {{ rupeesExact(i.sgst) }} } @else { IGST {{ rupeesExact(i.igst) }}},
+                     <b>{{ rupeesExact(i.total) }}</b>@if (i.inputTax > 0) {, input tax {{ i.itcEligible ? 'claimable' : 'not claimable (no regular GST registration)' }} }</small>
                     @for (l of i.lines; track l.orderItemId) { @if (l.priceDiffers) { <small class="warn">{{ l.itemName }} billed at {{ rupeesExact(l.unitPrice) }}, ordered at {{ rupeesExact(l.orderPrice) }}</small> } }
-                    @for (p of i.payments; track p.id) { <small class="mute">{{ p.number }} {{ dayText(p.paidOn) }} · {{ rupeesExact(p.amount) }} by {{ method[p.method] }}@if (p.reference) { ({{ p.reference }}) }</small> }
+                    @for (p of i.payments; track p.id) { <small class="mute">{{ p.number }} {{ dayText(p.paidOn) }}, {{ rupeesExact(p.amount) }} by {{ method[p.method] }}@if (p.reference) { ({{ p.reference }}) }</small> }
                     <small class="mute" data-testid="bill-department">Counts in the budget for {{ i.costCentreName ?? 'no department' }}
-                      @if (can('supplier_invoice.manage')) { · <button type="button" class="linkish" (click)="department(i)" [attr.aria-label]="'Budget department of ' + i.number">change</button> }</small>
+                      @if (can('supplier_invoice.manage')) {, <button type="button" class="linkish" (click)="department(i)" [attr.aria-label]="'Budget department of ' + i.number">change</button> }</small>
                   </div>
                   <span class="right"><small [class]="'st ' + i.status + (i.overdue ? ' late' : '')">{{ i.overdue ? 'Overdue' : billLabel[i.status] }}</small>
                     @if (i.balance > 0) { <small>{{ rupees(i.balance) }} left</small> }
@@ -134,31 +134,31 @@ import { BILL_STATUS_LABEL, ORDER_STATUS_LABEL, PAY_METHOD_LABEL, PurchasingApi,
     </div>
   `,
   styles: `
-    .linkish { background: none; border: 0; padding: 0; font: inherit; color: #0e6b77; text-decoration: underline; cursor: pointer; }
+    .linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--ro-info-bright); text-decoration: underline; cursor: pointer; }
     .po { max-width: 980px; padding-bottom: 60px; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    h1 { margin: 4px 0; } .sup { font-weight: 400; color: #34484b; }
-    .mute { color: #5b6b6e; } .err { color: #b3261e; } .note { color: #34484b; margin: 0 0 6px; } .warn { color: #8a5a00; } .late { color: #b3261e; }
-    .status { padding: 2px 10px; border-radius: 12px; background: #eef2f1; font-size: .85rem; }
-    .status.PENDING_APPROVAL { background: #fff3d6; } .status.APPROVED, .status.PARTLY_RECEIVED { background: #e3f0fa; } .status.RECEIVED { background: #e3f4e5; }
-    .banner { background: #f4f7f6; border-radius: 10px; padding: 8px 12px; margin: 6px 0; } .banner.warn { background: #fff3d6; } .banner.ok { background: #e3f4e5; }
-    .banner.off { background: #eef0f0; color: #5b6b6e; }
-    .acts { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-    section { background: #fff; border: 1px solid #d9e0de; border-radius: 12px; padding: 4px 14px 10px; margin-top: 12px; }
-    h2 { font-size: 1.02rem; margin: 8px 0; }
+    .head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+    h1 { margin: var(--space-1) 0; } .sup { font-weight: 400; color: var(--ro-ink-soft); }
+    .mute { color: var(--ro-mute); } .err { color: var(--ro-error); } .note { color: var(--ro-ink-soft); margin: 0 0 6px; } .warn { color: var(--ro-warn); } .late { color: var(--ro-error); }
+    .status { padding: 2px 10px; border-radius: 12px; background: var(--ro-sunk); font-size: .85rem; }
+    .status.PENDING_APPROVAL { background: var(--ro-warn-bg); } .status.APPROVED, .status.PARTLY_RECEIVED { background: var(--ro-info-bg); } .status.RECEIVED { background: var(--ro-ok-bg); }
+    .banner { background: var(--ro-wash); border-radius: 10px; padding: var(--space-2) var(--space-3); margin: 6px 0; } .banner.warn { background: var(--ro-warn-bg); } .banner.ok { background: var(--ro-ok-bg); }
+    .banner.off { background: var(--ro-line-soft); color: var(--ro-mute); }
+    .acts { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-2) 0; }
+    section { background: var(--ro-paper); border: 1px solid var(--ro-glass-edge); border-radius: var(--ro-radius-lg); padding: var(--space-1) 14px 10px; margin-top: var(--space-3); box-shadow: var(--ro-shadow-card); }
+    h2 { font-size: 1.02rem; margin: var(--space-2) 0; }
     .table { display: flex; flex-direction: column; }
-    .tr { display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 6px; padding: 6px 0; border-bottom: 1px solid #eef2f1; font-variant-numeric: tabular-nums; }
-    .tr span:not(.dn) { text-align: right; } .th { font-weight: 600; font-size: .85rem; color: #5b6b6e; } .due { color: #8a5a00; font-weight: 600; }
+    .tr { display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--ro-sunk); font-variant-numeric: tabular-nums; }
+    .tr span:not(.dn) { text-align: right; } .th { font-weight: 600; font-size: .85rem; color: var(--ro-mute); } .due { color: var(--ro-warn); font-weight: 600; }
     .tot { text-align: right; font-variant-numeric: tabular-nums; margin: 6px 0 0; }
     ul { list-style: none; margin: 0; padding: 0; }
-    .list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef2f1; flex-wrap: wrap; }
+    .list li { display: flex; gap: 10px; padding: var(--space-2) 0; border-bottom: 1px solid var(--ro-sunk); flex-wrap: wrap; }
     .list small { display: block; } .bl { flex: 1; min-width: 0; }
     .right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .st.UNPAID { color: #b3261e; } .st.PART_PAID { color: #8a5a00; } .st.PAID { color: #2e7d32; }
+    .st.UNPAID { color: var(--ro-error); } .st.PART_PAID { color: var(--ro-warn); } .st.PAID { color: var(--ro-ok-mid); }
     @media (max-width: 640px) {
       h1 { font-size: 1.3rem; }
       .th { display: none; } .tr { grid-template-columns: 1fr 1fr; } .tr .dn { grid-column: 1 / -1; font-weight: 600; }
-      .tr span[data-l]::before { content: attr(data-l) ': '; color: #5b6b6e; float: left; }
+      .tr span[data-l]::before { content: attr(data-l) ': '; color: var(--ro-mute); float: left; }
       .right { align-items: flex-start; }
     }
   `,

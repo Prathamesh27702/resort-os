@@ -32,7 +32,7 @@ export interface IssueData {
     <h2 mat-dialog-title>Issue equipment</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="issue-form">
       @if (data.booking; as b) {
-        <p>For <b>{{ b.guestName }}</b> · {{ b.activityName }} {{ b.startTime }} · {{ b.code }}</p>
+        <p>For <b>{{ b.guestName }}</b>, {{ b.activityName }} {{ b.startTime }}, {{ b.code }}</p>
       } @else {
         <mat-form-field appearance="outline"><mat-label>Who it is for</mat-label>
           <input matInput formControlName="issuedTo" maxlength="100" placeholder="e.g. Asha Rao, Room 104" />
@@ -55,8 +55,8 @@ export interface IssueData {
       <button mat-flat-button type="submit" form="issue-form" [disabled]="busy()">{{ form.value.reserveOnly ? 'Keep aside' : 'Issue' }}</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 4px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 180px; } .row .qty { flex: 0 1 110px; } .err { color: #b3261e; } p { margin: 4px 0 10px; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-1); min-width: min(440px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 180px; } .row .qty { flex: 0 1 110px; } .err { color: var(--ro-error); } p { margin: var(--space-1) 0 10px; }`,
 })
 export class IssueEquipmentDialog {
   data = inject<IssueData>(MAT_DIALOG_DATA);
@@ -97,7 +97,7 @@ export interface ReturnData { propertyId: string; assignment: EquipmentAssignmen
   template: `
     <h2 mat-dialog-title>Return {{ x.tag }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="return-form">
-      <p>{{ x.typeName }} from <b>{{ x.issuedTo }}</b>@if (x.bookingCode) { · {{ x.bookingCode }} }</p>
+      <p>{{ x.typeName }} from <b>{{ x.issuedTo }}</b>@if (x.bookingCode) {, {{ x.bookingCode }} }</p>
       <mat-button-toggle-group formControlName="condition" aria-label="How it came back">
         <mat-button-toggle value="GOOD">Good</mat-button-toggle>
         <mat-button-toggle value="DAMAGED">Damaged</mat-button-toggle>
@@ -116,8 +116,8 @@ export interface ReturnData { propertyId: string; assignment: EquipmentAssignmen
       <button mat-flat-button type="submit" form="return-form" [disabled]="busy()">Return</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 8px; min-width: min(400px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }
-           p { margin: 4px 0; } mat-button-toggle-group { align-self: flex-start; }`,
+  styles: `form { display: flex; flex-direction: column; gap: var(--space-2); min-width: min(400px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }
+           p { margin: var(--space-1) 0; } mat-button-toggle-group { align-self: flex-start; }`,
 })
 export class ReturnEquipmentDialog {
   data = inject<ReturnData>(MAT_DIALOG_DATA);
@@ -153,7 +153,7 @@ export interface StatusData { propertyId: string; item: EquipmentItem; }
   selector: 'app-equipment-status-dialog',
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>{{ item.tag }} · {{ label[item.status] }}</h2>
+    <h2 mat-dialog-title>{{ item.tag }}, {{ label[item.status] }}</h2>
     <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()" id="status-form">
       @if (item.statusNote) { <p class="mute">{{ item.statusNote }}</p> }
       <mat-form-field appearance="outline"><mat-label>Set to</mat-label>
@@ -171,7 +171,7 @@ export interface StatusData { propertyId: string; item: EquipmentItem; }
       <button mat-flat-button type="submit" form="status-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; min-width: min(400px, 84vw); } .err { color: #b3261e; } .mute { color: #5b6b6e; }`,
+  styles: `form { display: flex; flex-direction: column; min-width: min(400px, 84vw); } .err { color: var(--ro-error); } .mute { color: var(--ro-mute); }`,
 })
 export class EquipmentStatusDialog {
   data = inject<StatusData>(MAT_DIALOG_DATA);
@@ -233,8 +233,8 @@ export interface TypeData { propertyId: string; type: EquipmentType | null; }
       <button mat-flat-button type="submit" form="type-form" [disabled]="busy()">Save</button>
     </div>
   `,
-  styles: `form { display: flex; flex-direction: column; gap: 6px; min-width: min(440px, 84vw); } .row { display: flex; gap: 8px; flex-wrap: wrap; }
-           .row > * { flex: 1 1 150px; } .code { flex: 0 1 120px; } .err { color: #b3261e; }`,
+  styles: `form { display: flex; flex-direction: column; gap: 6px; min-width: min(440px, 84vw); } .row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+           .row > * { flex: 1 1 150px; } .code { flex: 0 1 120px; } .err { color: var(--ro-error); }`,
 })
 export class EquipmentTypeDialog {
   data = inject<TypeData>(MAT_DIALOG_DATA);

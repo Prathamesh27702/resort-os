@@ -48,6 +48,17 @@ public class NotificationUnitTests
     }
 
     [Fact]
+    public void The_guest_email_carries_the_property_name_and_contact_and_escapes_everything()
+    {
+        var html = MessageText.BrandedHtml("Hello <Asha>\nSee you soon", "Sea & Sand", "Your booking R00042 is confirmed", "+91 98200 12345", null);
+        Assert.Contains("Sea &amp; Sand", html);
+        Assert.Contains("Your booking R00042 is confirmed", html);
+        Assert.Contains("Hello &lt;Asha&gt;<br>", html);
+        Assert.Contains("+91 98200 12345", html);
+        Assert.DoesNotContain("&nbsp;|&nbsp;", html);   // no separator when only the phone is set
+    }
+
+    [Fact]
     public void A_daily_job_runs_next_today_at_its_local_time_if_still_ahead_otherwise_tomorrow()
     {
         var p = new Property { Timezone = "Asia/Kolkata" };
