@@ -194,7 +194,7 @@ cd backend/Resort.Api; dotnet watch run       # terminal 1
 cd frontend; npm start                        # terminal 2
 ```
 
-If `git pull` brought new npm packages (`package-lock.json` changed), run `npm ci` in `frontend` once.
+If `git pull` brought new npm packages (`package-lock.json` changed), run `npm ci` in `frontend` once. Skipping it shows build errors like *Cannot find module 'echarts/core'*.
 New database migrations apply automatically when the API starts.
 
 Fresh local database: `pwsh -File scripts/db-reset.ps1` (macOS/Linux `bash scripts/db-reset.sh`), then restart the API.
@@ -275,6 +275,7 @@ Good to know:
 | `git pull` says *Your local changes … would be overwritten* | A file in the repo was changed on your PC. See what changed: `git diff <file>`. To throw your change away: `git restore <file>`, then `git pull` again |
 | API stops with *checksum mismatch* for a `V00x` migration | Someone edited an applied migration. Pull the latest `develop`; if it persists, reset the database |
 | Rooms page is empty after pulling Sprint 02 | Restart the API and look for `Dev seed` in its output (see *What each sprint needs*) |
+| `npm start` fails with *Cannot find module 'echarts/core'* or *Could not resolve "@fontsource/…"* | The packages from the new look (Nov 2026) aren't installed yet. Stop `npm start`, run `cd frontend; npm ci`, then `npm start` again. Do this after every `git pull` that changes `package-lock.json` |
 | `npm ci` very slow or fails on Windows | Move the repo out of OneDrive; add `C:\dev` to Windows Defender exclusions |
 
 More: [SETUP.md → Troubleshooting](SETUP.md#troubleshooting).
